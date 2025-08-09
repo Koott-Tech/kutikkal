@@ -4,6 +4,9 @@ import InfoCards from "../components/InfoCards";
 import HowItWorks from "../components/HowItWorks";
 import SupportFaq from "../components/SupportFaq";
 import ResultsSplit from "../components/ResultsSplit";
+import Testimonials from "../components/Testimonials";
+import BlogTeaser from "../components/BlogTeaser";
+import HelpFaq from "../components/HelpFaq";
 
 
 export default function Home() {
@@ -108,6 +111,15 @@ export default function Home() {
 
       {/* Results split section */}
       <ResultsSplit />
+
+      {/* Testimonials (100vh) */}
+      <Testimonials />
+
+      {/* Blog Teaser (100vh) */}
+      <BlogTeaser />
+
+      {/* Help / FAQ (100vh style) */}
+      <HelpFaq />
     </main>
   );
 }

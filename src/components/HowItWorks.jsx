@@ -23,7 +23,7 @@ export default function HowItWorks() {
           </h3>
           <button
             type="button"
-            className="mt-4 inline-flex items-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-black/85"
+            className="mt-5 inline-flex items-center rounded-full bg-black px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:bg-black/85 shadow-sm"
           >
             Get started
           </button>
