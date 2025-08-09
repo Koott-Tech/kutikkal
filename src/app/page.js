@@ -1,4 +1,10 @@
 import Image from "next/image";
+import FeatureCards from "../components/FeatureCards";
+import InfoCards from "../components/InfoCards";
+import HowItWorks from "../components/HowItWorks";
+import SupportFaq from "../components/SupportFaq";
+import ResultsSplit from "../components/ResultsSplit";
+
 
 export default function Home() {
   return (
@@ -86,6 +92,22 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Feature cards under hero */}
+      <FeatureCards />
+
+      {/* Info cards */}
+      <InfoCards />
+
+      {/* How it works */}
+      <HowItWorks />
+
+  
+      {/* Support + FAQ */}
+      <SupportFaq />
+
+      {/* Results split section */}
+      <ResultsSplit />
     </main>
   );
 }
