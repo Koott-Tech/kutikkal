@@ -10,7 +10,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full">
+    <section className="min-h-[100vh] w-full mt-20">
       <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-[50px] py-8 md:py-10">
         <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900">
           How it works
@@ -18,7 +18,7 @@ export default function HowItWorks() {
 
         {/* Inline CTA under the heading */}
         <div className="mt-6 md:mt-8 mb-8 md:mb-10 text-center">
-          <h3 className="text-2xl md:text-3xl font-semibold text-gray-900">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900">
             Your journey to mental well-being gets easier from here.
           </h3>
           <button
@@ -29,10 +29,10 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
           {/* Card 01 */}
           <div
-            className="rounded-2xl p-6 min-h-[260px]"
+            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
@@ -67,7 +67,7 @@ export default function HowItWorks() {
 
           {/* Card 02 */}
           <div
-            className="rounded-2xl p-6 min-h-[260px]"
+            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
@@ -99,7 +99,7 @@ export default function HowItWorks() {
 
           {/* Card 03 */}
           <div
-            className="rounded-2xl p-6 min-h-[260px]"
+            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
@@ -119,7 +119,7 @@ export default function HowItWorks() {
               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                 <div
                   key={d}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-full aspect-square ${
                     d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
                   }`}
                 >
@@ -136,7 +136,7 @@ export default function HowItWorks() {
 
           {/* Card 04 */}
           <div
-            className="rounded-2xl p-6 min-h-[260px]"
+            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",

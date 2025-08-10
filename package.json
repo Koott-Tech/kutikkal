@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.10",
     "framer-motion": "^12.23.12",
     "next": "15.4.6",
     "react": "19.1.0",

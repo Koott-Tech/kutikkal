@@ -1,107 +1,133 @@
 "use client";
-import TestimonialsColumn from "./ui/TestimonialsColumn";
-import { motion } from "framer-motion";
 
-const testimonials = [
-  {
-    text:
-      "This ERP revolutionized our operations, streamlining finance and inventory. The cloud-based platform keeps us productive, even remotely.",
-    image: "https://randomuser.me/api/portraits/women/1.jpg",
-    name: "Briana Patton",
-    role: "Operations Manager",
-  },
-  {
-    text:
-      "Implementing this ERP was smooth and quick. The customizable, user-friendly interface made team training effortless.",
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
-    name: "Bilal Ahmed",
-    role: "IT Manager",
-  },
-  {
-    text:
-      "The support team is exceptional, guiding us through setup and providing ongoing assistance, ensuring our satisfaction.",
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
-    name: "Saman Malik",
-    role: "Customer Support Lead",
-  },
-  {
-    text:
-      "This ERP's seamless integration enhanced our business operations and efficiency. Highly recommend for its intuitive interface.",
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
-    name: "Omar Raza",
-    role: "CEO",
-  },
-  {
-    text:
-      "Its robust features and quick support have transformed our workflow, making us significantly more efficient.",
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
-    name: "Zainab Hussain",
-    role: "Project Manager",
-  },
-  {
-    text:
-      "The smooth implementation exceeded expectations. It streamlined processes, improving overall business performance.",
-    image: "https://randomuser.me/api/portraits/women/6.jpg",
-    name: "Aliza Khan",
-    role: "Business Analyst",
-  },
-  {
-    text:
-      "Our business functions improved with a user-friendly design and positive customer feedback.",
-    image: "https://randomuser.me/api/portraits/men/7.jpg",
-    name: "Farhan Siddiqui",
-    role: "Marketing Director",
-  },
-  {
-    text:
-      "They delivered a solution that exceeded expectations, understanding our needs and enhancing our operations.",
-    image: "https://randomuser.me/api/portraits/women/8.jpg",
-    name: "Sana Sheikh",
-    role: "Sales Manager",
-  },
-  {
-    text:
-      "Using this ERP, our online presence and conversions significantly improved, boosting business performance.",
-    image: "https://randomuser.me/api/portraits/men/9.jpg",
-    name: "Hassan Ali",
-    role: "E-commerce Manager",
-  },
-];
-
-const firstColumn = testimonials.slice(0, 3);
-const secondColumn = testimonials.slice(3, 6);
-const thirdColumn = testimonials.slice(6, 9);
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from "next/image";
 
 export default function Testimonials() {
-  return (
-    <section className="h-[100vh] min-h-[100vh] w-full mt-10 md:mt-14">
-      <div className="mx-auto h-full max-w-[1200px] px-[50px] flex flex-col justify-center py-10 md:py-14">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          viewport={{ once: true }}
-          className="flex flex-col items-center justify-center max-w-[540px] mx-auto"
-        >
-          <div className="flex justify-center">
-            
-          </div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tighter mt-5">
-            What our users say
-          </h2>
-          <p className="text-center mt-5 opacity-75">
-            See what our customers have to say about us.
-          </p>
-        </motion.div>
+    return (
+        <section className="h-screen w-full bg-white flex items-center justify-center mt-32">
+            <div className="mx-auto max-w-6xl space-y-6 px-6 md:space-y-12 h-full flex flex-col justify-center">
+                <div className="relative z-10 mx-auto max-w-xl space-y-6 text-center md:space-y-12">
+                    <h2 className="text-4xl font-medium lg:text-5xl">Hear from our patients</h2>
+                    <p className="text-lg text-gray-600">We're making online therapy work the way it should.</p>
+                </div>
 
-        <div className="flex justify-center gap-6 mt-10 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[740px] overflow-hidden">
-          <TestimonialsColumn testimonials={firstColumn} duration={15} />
-          <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={19} />
-          <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={17} />
-        </div>
-      </div>
-    </section>
-  );
+                <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-rows-2 flex-1">
+                    {/* Left side - Text content card */}
+                    <div className="sm:col-span-1 lg:row-span-2 bg-green-100 rounded-2xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
+                                <span className="text-sm font-medium text-green-800">Verified Patient</span>
+                            </div>
+                            <blockquote className="space-y-6">
+                                <p className="text-xl font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
+
+                                <div className="grid grid-cols-[auto_1fr] items-center gap-3">
+                                    <Avatar className="size-12">
+                                        <AvatarImage
+                                            src="/hero.png"
+                                            alt="Rula Patient"
+                                            height="400"
+                                            width="400"
+                                            loading="lazy"
+                                        />
+                                        <AvatarFallback>RP</AvatarFallback>
+                                    </Avatar>
+
+                                    <div>
+                                        <cite className="text-sm font-medium">Rula Patient</cite>
+                                        <span className="text-muted-foreground block text-sm">Verified User</span>
+                                    </div>
+                                </div>
+                            </blockquote>
+                        </div>
+                    </div>
+                    
+                    {/* Right side - Video card */}
+                    <div className="sm:col-span-1 lg:row-span-2 rounded-2xl overflow-hidden">
+                        <video
+                            src="/lg-video-card-ashley-1.mp4"
+                            className="h-full w-full object-cover"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                        />
+                    </div>
+                    
+                    <div className="md:col-span-2 bg-blue-100 rounded-2xl p-6">
+                        <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
+                            <p className="text-xl font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
+
+                            <div className="grid grid-cols-[auto_1fr] items-center gap-3">
+                                <Avatar className="size-12">
+                                    <AvatarImage
+                                        src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+                                        alt="Rula Patient"
+                                        height="400"
+                                        width="400"
+                                        loading="lazy"
+                                    />
+                                    <AvatarFallback>RP</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <cite className="text-sm font-medium">Rula Patient</cite>
+                                    <span className="text-muted-foreground block text-sm">Verified User</span>
+                                </div>
+                            </div>
+                        </blockquote>
+                    </div>
+                    
+                    <div className="bg-gradient-to-b from-purple-100 to-white rounded-2xl p-6">
+                        <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
+                            <p>I was hesitant to go the online therapy route. But I am so glad I did. It was all an easy process and I absolutely adore my therapist. I've learned and grown so much.</p>
+
+                            <div className="grid items-center gap-3 [grid-template-columns:auto_1fr]">
+                                <Avatar className="size-12">
+                                    <AvatarImage
+                                        src="/hero.png"
+                                        alt="Rula Patient"
+                                        height="400"
+                                        width="400"
+                                        loading="lazy"
+                                    />
+                                    <AvatarFallback>RP</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <cite className="text-sm font-medium">Rula Patient</cite>
+                                    <span className="text-muted-foreground block text-sm">Verified User</span>
+                                </div>
+                            </div>
+                        </blockquote>
+                    </div>
+                    
+                    <div className="bg-yellow-100 rounded-2xl p-6">
+                        <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
+                            <p>The platform is easy to use in that I can see what each therapist specializes in and make my choice accordingly. I am not just simply given a provider, I get to choose one.</p>
+
+                            <div className="grid grid-cols-[auto_1fr] gap-3">
+                                <Avatar className="size-12">
+                                    <AvatarImage
+                                        src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+                                        alt="Rula Patient"
+                                        height="400"
+                                        width="400"
+                                        loading="lazy"
+                                    />
+                                    <AvatarFallback>RP</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="text-sm font-medium">Rula Patient</p>
+                                    <span className="text-muted-foreground block text-sm">Verified User</span>
+                                </div>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
 }
 
 
