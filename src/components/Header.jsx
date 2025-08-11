@@ -1,6 +1,6 @@
 export default function Header() {
   return (
-    <header className="w-full bg-white">
+    <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
       <div className="w-full pl-[50px] pr-[50px]">
         <div className="flex h-16 items-center justify-between">
           {/* Left group: Brand + Nav */}
