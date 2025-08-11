@@ -2,6 +2,7 @@ import Image from "next/image";
 
 export default function Hero() {
   return (
+    <div className="px-[50px]">
     <section className="bg-purple-700 text-white rounded-[10px] p-[50px] h-[80vh]">
       <div className="grid h-full grid-cols-1 gap-8 md:grid-cols-2">
         {/* Left: Text */}
@@ -57,5 +58,6 @@ export default function Hero() {
         </div>
       </div>
     </section>
+  </div>
   );
 }

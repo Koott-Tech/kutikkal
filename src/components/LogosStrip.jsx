@@ -3,8 +3,16 @@ import Image from "next/image";
 export default function LogosStrip() {
   return (
     <section className="mt-10">
-      <div className="mt-4">
-        <div className="flex flex-nowrap items-center justify-center gap-10 px-[50px] pb-2">
+      <div className="flex items-center gap-8 px-[70px]">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-gray-700">
+            120M+ individuals are covered by insurance
+          </p>
+          <div className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-200">
+            <span className="text-xs font-medium text-gray-600">i</span>
+          </div>
+        </div>
+        <div className="flex flex-nowrap items-center gap-6">
           {[
             "aetna-logo-1.png",
             "cigna-logo-1.png",
