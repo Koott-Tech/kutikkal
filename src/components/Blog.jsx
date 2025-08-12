@@ -127,7 +127,7 @@ export default function Blog() {
         {/* Blog Posts Grid - 2x3 Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
           {blogPosts.map((post) => (
-            <div key={post.id} className="bg-white rounded-xl overflow-hidden">
+            <div key={post.id} className="bg-white rounded-xl overflow-hidden py-4">
               {/* Image Container */}
               <div className="relative h-48">
                 <Image
@@ -163,7 +163,7 @@ export default function Blog() {
         {/* Additional Blog Posts - 3 Cards Horizontal Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {additionalPosts.map((post) => (
-            <div key={post.id} className="bg-white rounded-xl overflow-hidden">
+            <div key={post.id} className="bg-white rounded-xl overflow-hidden py-4">
               {/* Image Container */}
               <div className="relative h-48">
                 <Image
