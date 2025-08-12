@@ -18,8 +18,9 @@ export default function Home() {
      
       <Hero />
       <LogosStrip />
-      <PersonalizedCare />
+      
       <FeatureCards />
+      <PersonalizedCare />
       <HowItWorks />
       <Testimonials />
       <ResultsSplit />

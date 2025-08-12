@@ -10,7 +10,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full mt-20">
+    <section className="min-h-[100vh] w-full mt-12 md:mt-16">
       <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-[50px] py-8 md:py-10">
         <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900">
           How it works

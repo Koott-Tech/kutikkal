@@ -36,7 +36,7 @@ export default function SupportFaq() {
     },
   ];
 
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(-1);
 
   const gradients = [
     "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",

@@ -22,7 +22,7 @@ export default function FeatureCards() {
   ];
 
   return (
-    <section className="mt-40 md:mt-50 px-4">
+    <section className="mt-20 md:mt-24 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-center items-center gap-6 md:gap-8">
           {cards.map((card, index) => (

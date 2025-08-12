@@ -1,6 +1,14 @@
+"use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function BlogTeaser() {
+  const router = useRouter();
+
+  const handleExploreClick = () => {
+    router.push('/blog');
+  };
+
   const posts = [
     {
       src: "/hero.png",
@@ -15,7 +23,7 @@ export default function BlogTeaser() {
       alt: "Smiling person",
       author: "Liz Talago",
       date: "March 25, 2025",
-      title: "How to find a therapist who’s a good fit for you",
+      title: "How to find a therapist who's a good fit for you",
       highlight: false,
     },
     {
@@ -29,7 +37,7 @@ export default function BlogTeaser() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full mt-10 md:mt-14">
+    <section className="min-h-[100vh] w-full mt-6 md:mt-8">
       <div className="mx-auto max-w-[1400px] px-[50px] py-10 md:py-14">
         <div className="flex items-center justify-between">
           <div>
@@ -40,6 +48,7 @@ export default function BlogTeaser() {
           </div>
           <button
             type="button"
+            onClick={handleExploreClick}
             className="mt-3 inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-black/90"
           >
             Explore more articles

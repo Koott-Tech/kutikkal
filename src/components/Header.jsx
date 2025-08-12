@@ -1,9 +1,15 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
+  const router = useRouter();
+
+  const handleBlogClick = () => {
+    router.push('/blog');
+  };
 
   return (
     <header className="w-full bg-white sticky top-0 z-50">
@@ -27,7 +33,7 @@ export default function Header() {
                       setIsForProvidersOpen(false);
                     }}
                   >
-                    <span>Find Care</span>
+                  <span>Find Care</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
@@ -86,7 +92,7 @@ export default function Header() {
                       setIsFindCareOpen(false);
                     }}
                   >
-                    <span>For Providers</span>
+                  <span>For Providers</span>
                     <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
@@ -144,7 +150,7 @@ export default function Header() {
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                 </li>
                 <li className="relative group cursor-pointer hover:text-gray-900">
-                  <span>Blog</span>
+                  <span onClick={handleBlogClick}>Blog</span>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                 </li>
               </ul>
