@@ -3,16 +3,18 @@
 export default function Footer() {
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
-            {/* New Section with Gradient Background */}
-            <div className="w-full py-20" style={{ background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)' }}>
-                <div className="max-w-6xl mx-auto px-6 text-center">
-                    <h2 className="text-4xl md:text-5xl font-normal text-gray-800 mb-4 leading-tight">
+            {/* New section above footer */}
+            <div className="w-full py-20 px-8 md:px-16 lg:px-24" style={{ 
+                background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)'
+            }}>
+                <div className="text-center max-w-4xl mx-auto">
+                    <h2 className="text-4xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
                         Ready to start your journey to mental well-being?
                     </h2>
-                    <p className="text-lg md:text-xl text-gray-800 mb-6 leading-relaxed font-light">
+                    <p className="text-lg md:text-xl text-gray-800 mb-8 leading-relaxed max-w-3xl mx-auto font-light">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
-                    <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-6 rounded-full text-base transition-colors">
+                    <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-3 px-6 rounded-full text-base transition-colors duration-200">
                         Get started
                     </button>
                 </div>

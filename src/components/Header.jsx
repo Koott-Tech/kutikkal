@@ -11,6 +11,27 @@ export default function Header() {
     router.push('/blog');
   };
 
+  const handleHomeClick = () => {
+    router.push('/');
+  };
+
+  const handleTherapyTypeClick = (therapyType) => {
+    const routeMap = {
+      "Individual therapy": "/individual-therapy",
+      "Couples therapy": "/couples-therapy",
+      "Family therapy": "/family-therapy",
+      "Child therapy": "/child-therapy",
+      "Teen therapy": "/teen-therapy",
+      "Psychiatry": "/psychiatry"
+    };
+    
+    const route = routeMap[therapyType];
+    if (route) {
+      router.push(route);
+      setIsFindCareOpen(false);
+    }
+  };
+
   return (
     <header className="w-full bg-white sticky top-0 z-50">
       <div className="w-full pl-[50px] pr-[50px]">
@@ -18,9 +39,12 @@ export default function Header() {
           {/* Left group: Brand + Nav */}
           <div className="flex items-center gap-10">
             <div className="flex items-center">
-              <span className="text-2xl font-semibold tracking-tight text-gray-900">
+              <button 
+                onClick={handleHomeClick}
+                className="text-2xl font-semibold tracking-tight text-gray-900 hover:text-gray-700 transition-colors cursor-pointer"
+              >
                 kuttikal
-              </span>
+              </button>
             </div>
 
             <nav className="hidden md:block">
@@ -53,7 +77,11 @@ export default function Header() {
                             "Teen therapy",
                             "Psychiatry"
                           ].map((option) => (
-                            <div key={option} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                            <div 
+                              key={option} 
+                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => handleTherapyTypeClick(option)}
+                            >
                               <span className="text-gray-700">{option}</span>
                             </div>
                           ))}
