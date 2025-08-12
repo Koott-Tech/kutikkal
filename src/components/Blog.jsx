@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Footer from "./Footer";
 
 export default function Blog() {
   const featuredPost = {
@@ -124,7 +125,7 @@ export default function Blog() {
         </div>
 
         {/* Blog Posts Grid - 2x3 Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
           {blogPosts.map((post) => (
             <div key={post.id} className="bg-white rounded-xl overflow-hidden">
               {/* Image Container */}
@@ -160,7 +161,7 @@ export default function Blog() {
         </div>
 
         {/* Additional Blog Posts - 3 Cards Horizontal Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {additionalPosts.map((post) => (
             <div key={post.id} className="bg-white rounded-xl overflow-hidden">
               {/* Image Container */}
@@ -210,6 +211,7 @@ export default function Blog() {
           </button>
         </div>
       </div>
+      <Footer />
     </section>
   );
 }
