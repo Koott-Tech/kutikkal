@@ -12,14 +12,14 @@ export default function HowItWorks() {
   return (
     <section className="min-h-[100vh] w-full mt-12 md:mt-16">
       <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-[50px] py-8 md:py-10">
-        <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900">
+        <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900 leading-tight mt-8">
           How it works
         </h2>
 
         {/* Inline CTA under the heading */}
-        <div className="mt-6 md:mt-8 mb-8 md:mb-10 text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900">
-            Your journey to mental well-being gets easier from here.
+        <div className="mt-2 mb-6 text-center">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight">
+            Your journey to mental well-being gets easier<br />from here.
           </h3>
           <button
             type="button"
@@ -29,21 +29,21 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
+        <div className="mt-8 flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
           {/* Card 01 */}
           <div
-            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
+            className="rounded-2xl p-5 min-h-[360px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">01</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
               Tell us what's important
             </h3>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="mt-4 flex flex-col gap-3">
               {[
                 "Anxiety and Depression",
                 "Accepts Cigna Health Plans",
@@ -59,15 +59,15 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-6 text-sm leading-relaxed text-gray-700">
-              We’ll use your preferences and insurance information to find
+            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
+              We'll use your preferences and insurance information to find
               providers who fit your needs.
             </p>
           </div>
 
           {/* Card 02 */}
           <div
-            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
+            className="rounded-2xl p-5 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
@@ -91,7 +91,7 @@ export default function HowItWorks() {
               <p className="text-sm text-gray-600">Licensed Psychiatric Provider</p>
             </div>
 
-            <p className="mt-4 text-sm leading-relaxed text-gray-700">
+            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
               Browse the profiles of licensed, in‑network providers who match
               your preferences.
             </p>
@@ -99,7 +99,7 @@ export default function HowItWorks() {
 
           {/* Card 03 */}
           <div
-            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
+            className="rounded-2xl p-5 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
@@ -115,11 +115,11 @@ export default function HowItWorks() {
               <span>Evenings After 4pm</span>
             </div>
 
-            <div className="mt-6 flex items-center gap-4 text-sm text-gray-700">
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-700">
               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                 <div
                   key={d}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full aspect-square ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${
                     d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
                   }`}
                 >
@@ -128,7 +128,7 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-4 text-sm leading-relaxed text-gray-700">
+            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
               Choose your preferred time and meet with your provider as soon as
               tomorrow.
             </p>
@@ -136,7 +136,7 @@ export default function HowItWorks() {
 
           {/* Card 04 */}
           <div
-            className="rounded-2xl p-6 min-h-[240px] w-[330px] flex-shrink-0"
+            className="rounded-2xl p-5 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
@@ -168,7 +168,7 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-relaxed text-gray-700">
+            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
               Connect with your provider over live video from wherever you feel
               comfortable.
             </p>

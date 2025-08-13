@@ -12,7 +12,7 @@ const DATA = [
       },
       {
         q: "What should I consider when choosing a therapist?",
-        a: "Consider experience, identity preferences, specialties, and availability. We’ll help you match on these preferences.",
+        a: "Consider experience, identity preferences, specialties, and availability. We'll help you match on these preferences.",
       },
       {
         q: "Can I combine therapy and psychiatry?",
@@ -24,15 +24,15 @@ const DATA = [
     title: "Understanding costs",
     items: [
       {
-        q: "Which insurance do you accept?",
+        q: "Which insurance does Rula accept?",
         a: "We work with major plans and are expanding coverage regularly. Check your specific plan during signup.",
       },
       {
-        q: "What will my cost per session be if I’m using insurance?",
-        a: "Your cost depends on your benefits (copay, coinsurance, or deductible). We’ll verify and show transparent pricing before you book.",
+        q: "What will my cost per session be if I'm using insurance?",
+        a: "Your cost depends on your benefits (copay, coinsurance, or deductible). We'll verify and show transparent pricing before you book.",
       },
       {
-        q: "What if I don’t have insurance or my insurance doesn’t cover sessions?",
+        q: "What if I don't have insurance or my insurance doesn't cover sessions?",
         a: "We offer out‑of‑pocket options and can provide superbills for reimbursement when available.",
       },
     ],
@@ -45,16 +45,17 @@ export default function HelpFaq() {
 
   return (
     <section className="min-h-[100vh] w-full mt-0">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-[50px] py-12 md:grid-cols-[0.9fr_1.1fr]">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-[50px] py-2 md:py-4 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col">
           <div>
-            <h2 className="text-[28px] leading-[1.1] font-medium tracking-tight md:text-[42px] text-gray-900">
+            <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:text-[48px] text-gray-900">
               Questions?
-              <br />We’re here to help
+              <br />
+              <span>We're here to help</span>
             </h2>
-            <p className="mt-5 text-gray-700">
-              Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more
+            <p className="mt-5 text-lg text-gray-700">
+              Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br />
               commonly asked questions.
             </p>
           </div>
@@ -69,43 +70,40 @@ export default function HelpFaq() {
           </div>
         </div>
 
-        {/* Right column: Accordion */}
-        <div>
+        {/* Right column: Accordion FAQ */}
+        <div className=" mr-12">
           {DATA.map((section, ci) => (
             <div key={section.title} className="mb-10">
-              <h3 className="text-2xl md:text-3xl font-medium text-gray-900">
+              <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-6">
                 {section.title}
               </h3>
-              <div className="mt-4 rounded-2xl">
+              <div className="space-y-0">
                 {section.items.map((item, qi) => {
                   const id = `${ci}-${qi}`;
                   const open = openId === id;
                   return (
-                    <div key={id} className="bg-white">
+                    <div key={id} className="border-b border-gray-200 last:border-b-0">
                       <button
                         type="button"
                         onClick={() => setOpenId(open ? "" : id)}
-                        className="flex w-full items-center justify-between px-5 py-5 text-left"
+                        className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
                       >
-                        <span className="text-base md:text-lg text-gray-900">
+                        <span className="text-lg text-gray-900">
                           {item.q}
                         </span>
                         <Chevron className={`h-5 w-5 text-gray-800 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
                       <div
-                        className={`grid overflow-hidden transition-all duration-300 ease-out ${
-                          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                        } px-5 pb-0`}
+                        className={`overflow-hidden transition-all duration-300 ease-out ${
+                          open ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                        }`}
                       >
-                        <div className="min-h-0">
-                          <p className="pb-5 pr-4 text-sm text-gray-700">
+                        <div className="px-0 pb-4">
+                          <p className="text-base text-gray-700 leading-relaxed">
                             {item.a}
                           </p>
                         </div>
                       </div>
-                      {qi < section.items.length - 1 && (
-                        <div className="mx-5 h-px bg-gray-300/40" />
-                      )}
                     </div>
                   );
                 })}

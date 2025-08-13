@@ -41,15 +41,15 @@ export default function BlogTeaser() {
       <div className="mx-auto max-w-[1400px] px-[50px] py-10 md:py-14">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-700">From our blog</p>
-            <h2 className="mt-3 text-3xl md:text-5xl font-medium tracking-tight text-gray-900">
+            <p className="text-base text-gray-700">From our blog</p>
+            <h2 className="mt-3 text-4xl md:text-5xl font-medium tracking-tight text-gray-900">
               Tips for getting started on your journey
             </h2>
           </div>
           <button
             type="button"
             onClick={handleExploreClick}
-            className="mt-3 inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-black/90"
+            className="mt-3 inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-sm font-normal text-white hover:bg-black/90"
           >
             Explore more articles
           </button>
@@ -71,12 +71,12 @@ export default function BlogTeaser() {
                   sizes="(min-width: 1024px) 33vw, 100vw"
                 />
               </div>
-              <div className="mt-3 text-xs text-gray-700">
+              <div className="mt-4 text-sm text-gray-600 leading-relaxed">
                 <span>{post.author}</span>
                 <span className="px-2">•</span>
                 <span>{post.date}</span>
               </div>
-              <h3 className="mt-1 text-lg md:text-xl font-medium text-gray-900">
+              <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 leading-tight">
                 {post.title}
               </h3>
             </article>

@@ -21,13 +21,16 @@ export default function Home() {
       
       <FeatureCards />
       <PersonalizedCare />
+      <InfoCards />
       <HowItWorks />
       <Testimonials />
-      <ResultsSplit />
-      <InfoCards />
-      <BlogTeaser />
-      <HelpFaq />
       <SupportFaq />
+      <ResultsSplit />
+      
+      <BlogTeaser />
+      
+      <HelpFaq />
+      
       <Footer />
     </main>
   );

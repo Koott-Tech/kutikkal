@@ -3,29 +3,29 @@ import Image from "next/image";
 export default function Hero() {
   return (
     <div className="px-[50px]">
-    <section className="bg-purple-700 text-white rounded-[10px] p-[50px] h-[80vh]">
+    <section className="bg-purple-100 text-black rounded-[10px] p-[50px] h-[80vh]">
       <div className="grid h-full grid-cols-1 gap-8 md:grid-cols-2">
         {/* Left: Text */}
         <div className="flex flex-col justify-center pl-10">
-          <h1 className="text-5xl font-semibold leading-tight md:text-6xl">
+          <h1 className="text-5xl font-normal leading-tight md:text-6xl">
             Connect with mental health experts who specialize in you
           </h1>
-          <p className="mt-4 text-base opacity-95">
+          <p className="mt-4 text-base font-light opacity-95">
             You deserve quality care from someone who cares.
           </p>
-          <p className="mt-1 text-sm opacity-90">
-            <span className="font-medium">Subheading -</span> Match with a licensed provider today.
+          <p className="mt-1 text-sm font-light opacity-90">
+            <span className="font-normal">Subheading -</span> Match with a licensed provider today.
           </p>
           <div className="mt-6 flex items-center gap-6">
             <button
-              className="inline-flex w-fit items-center rounded-[20px] bg-white px-8 py-3 text-sm font-semibold text-purple-700 shadow-sm hover:bg-purple-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              className="inline-flex w-fit items-center rounded-[20px] bg-purple-600 px-8 py-3 text-sm font-normal text-white shadow-sm hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600/40"
               type="button"
             >
               Get started
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 hover:text-white"
+              className="inline-flex items-center gap-2 text-sm font-normal text-black hover:text-gray-800"
             >
               <span>How does it work?</span>
               <svg
@@ -61,6 +61,7 @@ export default function Hero() {
   </div>
   );
 }
+
 
 
 

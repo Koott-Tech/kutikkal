@@ -2,14 +2,14 @@ import Image from "next/image";
 
 export default function PersonalizedCare() {
   return (
-    <section className="w-full min-h-screen flex items-center">
+    <section className="w-full min-h-screen flex items-center ">
       <div className="w-full px-[70px] py-16">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h2 className="text-5xl font-medium text-gray-900 mb-6 leading-tight">
+          <h2 className="text-5xl font-medium text-gray-900 mb-6 leading-none">
             The care you need, whenever you need it
           </h2>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-tight">
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-none">
             No matter where you start, your provider will work with you to develop a treatment plan that's tailored around you and your individual needs.
           </p>
         </div>
@@ -38,12 +38,12 @@ export default function PersonalizedCare() {
           </div>
 
           {/* Central Large Image */}
-          <div className="w-[600px] h-[400px] rounded-2xl overflow-hidden">
+          <div className="w-[700px] h-[500px] rounded-2xl overflow-hidden">
             <Image
               src="/treatment-plan .png"
               alt="Treatment plan"
-              width={600}
-              height={400}
+              width={700}
+              height={500}
               className="w-full h-full object-cover"
             />
           </div>
