@@ -21,10 +21,11 @@ export default function Home() {
       
       <FeatureCards />
       <PersonalizedCare />
-      <InfoCards />
+      {/* <InfoCards /> */}
       <HowItWorks />
-      <Testimonials />
       <SupportFaq />
+      <Testimonials />
+      
       <ResultsSplit />
       
       <BlogTeaser />

@@ -6,7 +6,7 @@ export default function LogosStrip() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <section className="w-full bg-white py-8 mt-4 md:mt-6">
+    <section className="w-full bg-white py-8 mt-4 md:mt-[-10px]">
       <div className="flex items-center justify-between gap-8 px-[70px]">
         <div className="flex items-start gap-2">
           <div className="text-left relative">

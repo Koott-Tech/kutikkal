@@ -57,9 +57,9 @@ export default function SupportFaq() {
           Support at every step, so the next one is easier.
         </h2>
 
-        <div className="mt-2 grid grid-cols-1 gap-8 md:grid-cols-2 items-start">
+        <div className="mt-2 grid grid-cols-1 gap-8 md:grid-cols-5 items-start">
           {/* Left: Image that changes per selection */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100">
+          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100 md:col-span-3">
             <Image
               key={items[active >= 0 ? active : 0]?.image}
               src={items[active >= 0 ? active : 0]?.image}
@@ -72,7 +72,7 @@ export default function SupportFaq() {
           </div>
 
           {/* Right: FAQ Accordion */}
-          <div className="w-full">
+          <div className="w-full md:col-span-2">
             <div className="rounded-2xl bg-white">
               {items.map((item, idx) => {
                 const open = active === idx;
