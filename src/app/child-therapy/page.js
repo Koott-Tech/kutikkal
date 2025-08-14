@@ -25,7 +25,7 @@ export default function ChildTherapyPage() {
             
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Parent Involvement</h3>
-              <p className="text-gray-600">Work together with therapists to support your child's growth and development.</p>
+              <p className="text-gray-600">Work together with therapists to support your child&apos;s growth and development.</p>
             </div>
           </div>
         </div>

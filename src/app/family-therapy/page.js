@@ -15,7 +15,7 @@ export default function FamilyTherapyPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Family Dynamics</h3>
-              <p className="text-gray-600">Understand how family patterns and interactions affect everyone's well-being.</p>
+              <p className="text-gray-600">Understand how family patterns and interactions affect everyone&apos;s well-being.</p>
             </div>
             
             <div className="bg-white rounded-xl border border-gray-200 p-6">
