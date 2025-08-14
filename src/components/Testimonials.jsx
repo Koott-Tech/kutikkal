@@ -17,7 +17,7 @@ export default function Testimonials() {
                         </div>
 
                         {/* Grid Cards Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100%-120px)]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-120px)]">
                             {/* Left side - Text content card */}
                             <div className="md:col-span-1 lg:row-span-2 bg-green-100 rounded-2xl p-6 flex flex-col justify-between">
                                 <div>
@@ -25,7 +25,7 @@ export default function Testimonials() {
                                         <span className="text-sm font-medium text-green-800">Verified Patient</span>
                                     </div>
                                     <blockquote className="space-y-6">
-                                        <p className="text-xl font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
+                                        <p className="text-lg font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
 
                                         <div className="grid grid-cols-[auto_1fr] items-center gap-3">
                                             <Avatar className="size-12">
@@ -62,7 +62,7 @@ export default function Testimonials() {
                             
                             <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p className="text-xl font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
+                                    <p className="text-lg font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
 
                                     <div className="grid grid-cols-[auto_1fr] items-center gap-3">
                                         <Avatar className="size-12">
@@ -83,56 +83,34 @@ export default function Testimonials() {
                                 </blockquote>
                             </div>
                             
-                            <div className="bg-gradient-to-b from-purple-100 to-white rounded-2xl p-6">
-                                <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p>I was hesitant to go the online therapy route. But I am so glad I did. It was all an easy process and I absolutely adore my therapist. I've learned and grown so much.</p>
-
-                                    <div className="grid items-center gap-3 [grid-template-columns:auto_1fr]">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/hero.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <cite className="text-sm font-medium">Rula Patient</cite>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
+                            {/* Image card 1 */}
+                            <div className="rounded-2xl overflow-hidden">
+                                <Image
+                                    src="/kids.png"
+                                    alt="Children in therapy session"
+                                    width={400}
+                                    height={400}
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                />
                             </div>
                             
-                            <div className="bg-yellow-100 rounded-2xl p-6">
-                                <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p>The platform is easy to use in that I can see what each therapist specializes in and make my choice accordingly. I am not just simply given a provider, I get to choose one.</p>
-
-                                    <div className="grid grid-cols-[auto_1fr] gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/hero.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-medium">Rula Patient</p>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
+                            {/* Image card 2 */}
+                            <div className="rounded-2xl overflow-hidden">
+                                <Image
+                                    src="/treatment-plan.webp"
+                                    alt="Therapy treatment plan"
+                                    width={400}
+                                    height={400}
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                />
                             </div>
                             
                             {/* Additional card 1 */}
                             <div className="bg-pink-100 rounded-2xl p-6">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p>I love how easy it is to schedule sessions and the flexibility of online therapy. My therapist is amazing and I've made significant progress in just a few months.</p>
+                                    <p className="text-lg">I love how easy it is to schedule sessions and the flexibility of online therapy. My therapist is amazing and I've made significant progress in just a few months.</p>
 
                                     <div className="grid grid-cols-[auto_1fr] gap-3">
                                         <Avatar className="size-12">
@@ -156,7 +134,7 @@ export default function Testimonials() {
                             {/* Additional card 2 */}
                             <div className="bg-indigo-100 rounded-2xl p-6">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p>The quality of care I've received through Rula has been exceptional. My therapist truly understands my needs and has helped me develop better coping strategies.</p>
+                                    <p className="text-lg">The quality of care I've received through Rula has been exceptional. My therapist truly understands my needs and has helped me develop better coping strategies.</p>
 
                                     <div className="grid grid-cols-[auto_1fr] gap-3">
                                         <Avatar className="size-12">
