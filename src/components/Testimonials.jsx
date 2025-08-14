@@ -18,34 +18,60 @@ export default function Testimonials() {
 
                         {/* Grid Cards Layout */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-120px)]">
-                            {/* Left side - Text content card */}
-                            <div className="md:col-span-1 lg:row-span-2 bg-green-100 rounded-2xl p-6 flex flex-col justify-between">
-                                <div>
-                                    <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
-                                        <span className="text-sm font-medium text-green-800">Verified Patient</span>
-                                    </div>
-                                    <blockquote className="space-y-6">
-                                        <p className="text-lg font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
-
-                                        <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                                            <Avatar className="size-12">
-                                                <AvatarImage
-                                                    src="/hero.png"
-                                                    alt="Rula Patient"
-                                                    height="400"
-                                                    width="400"
-                                                    loading="lazy"
-                                                />
-                                                <AvatarFallback>RP</AvatarFallback>
-                                            </Avatar>
-
-                                            <div>
-                                                <cite className="text-sm font-medium">Rula Patient</cite>
-                                                <span className="text-muted-foreground block text-sm">Verified User</span>
-                                            </div>
-                                        </div>
-                                    </blockquote>
+                            {/* Left side - Text content card (top half) */}
+                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6">
+                                <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
+                                    <span className="text-sm font-medium text-green-800">Verified Patient</span>
                                 </div>
+                                <blockquote className="space-y-4">
+                                    <p className="text-lg font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
+
+                                    <div className="grid grid-cols-[auto_1fr] items-center gap-3">
+                                        <Avatar className="size-12">
+                                            <AvatarImage
+                                                src="/hero.png"
+                                                alt="Rula Patient"
+                                                height="400"
+                                                width="400"
+                                                loading="lazy"
+                                            />
+                                            <AvatarFallback>RP</AvatarFallback>
+                                        </Avatar>
+
+                                        <div>
+                                            <cite className="text-sm font-medium">Rula Patient</cite>
+                                            <span className="text-muted-foreground block text-sm">Verified User</span>
+                                        </div>
+                                    </div>
+                                </blockquote>
+                            </div>
+                            
+                            {/* Content card (bottom half) */}
+                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6">
+                                <div className="h-6 w-fit bg-amber-200 rounded px-3 py-1 mb-4">
+                                    <span className="text-sm font-medium text-amber-800">Success Story</span>
+                                </div>
+                                <blockquote className="space-y-4">
+                                    <p className="text-lg font-medium">Through consistent therapy sessions, I've learned valuable coping mechanisms and gained a deeper understanding of myself. The progress I've made is truly life-changing.</p>
+
+                                    <div className="grid grid-cols-[auto_1fr] items-center gap-3">
+                                        <Avatar className="size-12">
+                                            <AvatarImage
+                                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+                                                alt="Rula Patient"
+                                                height="400"
+                                                width="400"
+                                                loading="lazy"
+                                            />
+                                            <AvatarFallback>RP</AvatarFallback>
+                                        </Avatar>
+
+                                        <div>
+                                            <cite className="text-sm font-medium">Rula Patient</cite>
+                                            <span className="text-muted-foreground block text-sm">Verified User</span>
+                                        </div>
+                                    </div>
+                                </blockquote>
                             </div>
                             
                             {/* Right side - Two separate cards instead of one large video card */}
