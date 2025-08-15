@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function ResultsSplit() {
   return (
     <div className="px-[50px]">
-      <section className="w-full mt-6 md:mt-8 mb-6 md:mb-8">
+      <section className="w-full mt-6 md:mt-20 mb-6 md:mb-8">
         <div className="h-[100vh] w-full rounded-2xl overflow-hidden shadow-sm">
           <div className="grid h-full w-full grid-cols-1 items-stretch md:grid-cols-2">
             {/* Left: Text + Stats */}

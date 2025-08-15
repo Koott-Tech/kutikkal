@@ -37,8 +37,8 @@ export default function BlogTeaser() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full mt-6 md:mt-8">
-      <div className="mx-auto max-w-[1400px] px-[50px] py-10 md:py-14">
+    <section className="min-h-[100vh] w-full mt-6 md:mt-20">
+      <div className="mx-auto max-w-[1400px] px-[120px] py-10 md:py-14">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-base text-gray-700">From our blog</p>
