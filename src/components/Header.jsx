@@ -32,6 +32,16 @@ export default function Header() {
     }
   };
 
+  const handleFAQClick = () => {
+    router.push('/faq');
+    setIsFindCareOpen(false);
+  };
+
+  const handleGetStartedClick = () => {
+    router.push('/');
+    setIsFindCareOpen(false);
+  };
+
   return (
     <header className="w-full bg-white sticky top-0 z-50">
       <div className="w-full pl-[50px] pr-[50px]">
@@ -91,7 +101,10 @@ export default function Header() {
                       {/* Bottom section - Get Started and FAQs */}
                       <div className="px-4 pt-3">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                          <div 
+                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={handleGetStartedClick}
+                          >
                             <div className="w-5 h-5 flex items-center justify-center">
                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -99,7 +112,10 @@ export default function Header() {
                             </div>
                             <span className="text-gray-700">Get Started</span>
                           </div>
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                          <div 
+                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={handleFAQClick}
+                          >
                             <div className="w-5 h-5 flex items-center justify-center">
                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
