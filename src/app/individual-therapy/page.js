@@ -13,10 +13,10 @@ import Footer from '@/components/Footer';
 export default function IndividualTherapy() {
   return (
     <div>
-      <HeroSection />
+      <HeroSection therapyType="individual" />
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
-      <ProcessSteps />
-      <BenefitsSection />
+      <ProcessSteps therapyType="individual" />
+      <BenefitsSection therapyType="individual" />
       <TherapyTypesSplit />
       {/* <TherapyTypes />
       <ResourcesTeaser /> */}

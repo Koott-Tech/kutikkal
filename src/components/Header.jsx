@@ -42,6 +42,10 @@ export default function Header() {
     setIsFindCareOpen(false);
   };
 
+  const handleAboutClick = () => {
+    router.push('/about');
+  };
+
   return (
     <header className="w-full bg-white sticky top-0 z-50">
       <div className="w-full pl-[50px] pr-[50px]">
@@ -190,7 +194,7 @@ export default function Header() {
                   )}
                 </li>
                 <li className="relative group cursor-pointer hover:text-gray-900">
-                  <span>About Us</span>
+                  <span onClick={handleAboutClick}>About Us</span>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                 </li>
                 <li className="relative group cursor-pointer hover:text-gray-900">
