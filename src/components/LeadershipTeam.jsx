@@ -19,7 +19,7 @@ export default function LeadershipTeam() {
                 lineHeight: '106%'
               }}
             >
-              kuttikal leadership team
+              Advisory board
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Meet the team shaping our unique approach to mental healthcare.

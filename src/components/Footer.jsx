@@ -21,16 +21,16 @@ export default function Footer() {
             </div>
 
             {/* Original footer content */}
-            <div className="h-screen w-full flex items-center justify-center" style={{ backgroundColor: '#1e9d5d' }}>
+            <div className="w-full py-16" style={{ backgroundColor: '#3e2e73' }}>
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3" style={{ backgroundColor: '#171c21' }}></div>
                 
-                <div className="w-full h-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-12">
+                <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-12">
                     {/* Top horizontal line */}
                     <div className="w-full h-px mb-16" style={{ backgroundColor: '#171c21' }}></div>
                     
                     {/* Main footer content */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16 flex-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16">
                         {/* Kuttikal Column */}
                         <div className="space-y-6">
                             <h3 className="text-2xl font-bold leading-relaxed tracking-wide" style={{ color: '#171c21' }}>Kuttikal</h3>

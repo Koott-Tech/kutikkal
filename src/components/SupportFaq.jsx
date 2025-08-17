@@ -36,7 +36,7 @@ export default function SupportFaq() {
     },
   ];
 
-  const [active, setActive] = useState(-1);
+  const [active, setActive] = useState(0);
 
   const gradients = [
     "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
@@ -57,9 +57,9 @@ export default function SupportFaq() {
           Support at every step, so the next one is easier.
         </h2>
 
-        <div className="mt-2 grid grid-cols-1 gap-8 md:grid-cols-5 items-start">
+        <div className="mt-2 grid grid-cols-1 gap-8 md:grid-cols-2 items-start">
           {/* Left: Image that changes per selection */}
-          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100 md:col-span-3">
+          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
               key={items[active >= 0 ? active : 0]?.image}
               src={items[active >= 0 ? active : 0]?.image}
@@ -72,8 +72,8 @@ export default function SupportFaq() {
           </div>
 
           {/* Right: FAQ Accordion */}
-          <div className="w-full md:col-span-2">
-            <div className="rounded-2xl bg-white">
+          <div className="w-full">
+            <div className="rounded-2xl bg-white space-y-4">
               {items.map((item, idx) => {
                 const open = active === idx;
                 const gradient = gradients[idx % gradients.length];
@@ -85,7 +85,7 @@ export default function SupportFaq() {
                       style={{ background: gradient, opacity: open ? 1 : 0 }}
                     />
 
-                    <div className="relative p-5">
+                    <div className="relative p-6">
                       <button
                         type="button"
                         onClick={() => toggle(idx)}
@@ -100,7 +100,7 @@ export default function SupportFaq() {
 
                       {/* Smoothly expanding answer */}
                       <div
-                        className={`overflow-hidden transition-all duration-500 ${open ? "max-h-40 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0"}`}
+                        className={`overflow-hidden transition-all duration-500 ${open ? "max-h-40 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
                       >
                         <p className="text-sm text-gray-800">{item.body}</p>
                       </div>
