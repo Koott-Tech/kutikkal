@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const router = useRouter();
 
   const handleBlogClick = () => {
@@ -44,6 +45,20 @@ export default function Header() {
 
   const handleAboutClick = () => {
     router.push('/about');
+  };
+
+  const handleCompanyClick = () => {
+    router.push('/about');
+    setIsAboutOpen(false);
+  };
+
+  const handleCareerClick = () => {
+    router.push('/career');
+    setIsAboutOpen(false);
+  };
+
+  const handleLoginClick = () => {
+    router.push('/login');
   };
 
   return (
@@ -199,9 +214,39 @@ export default function Header() {
                     </div>
                   )}
                 </li>
-                <li className="relative group cursor-pointer hover:text-gray-900">
-                  <span onClick={handleAboutClick}>About Us</span>
+                <li className="relative group">
+                  <button 
+                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    onClick={() => {
+                      setIsAboutOpen(!isAboutOpen);
+                      setIsFindCareOpen(false);
+                      setIsForProvidersOpen(false);
+                    }}
+                  >
+                    <span>About Us</span>
+                    <ChevronUpIcon className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
+                  </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
+                  
+                  {/* About Us Dropdown */}
+                  {isAboutOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                      <div className="px-4 space-y-2">
+                        <div 
+                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          onClick={handleCompanyClick}
+                        >
+                          <span className="text-gray-700 text-sm">Company</span>
+                        </div>
+                        <div 
+                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          onClick={handleCareerClick}
+                        >
+                          <span className="text-gray-700 text-sm">Career</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </li>
                 <li className="relative group cursor-pointer hover:text-gray-900">
                   <span onClick={handleBlogClick}>Blog</span>
@@ -213,7 +258,10 @@ export default function Header() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
-            <button className="hidden md:inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900">
+            <button 
+              onClick={handleLoginClick}
+              className="hidden md:inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+            >
               <span>Login</span>
             </button>
             <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
