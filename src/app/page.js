@@ -10,7 +10,6 @@ import InfoCards from "../components/InfoCards";
 import BlogTeaser from "../components/BlogTeaser";
 import HelpFaq from "../components/HelpFaq";
 import SupportFaq from "../components/SupportFaq";
-import Footer from "../components/Footer";
 
 export default function Home() {
   return (
@@ -31,8 +30,6 @@ export default function Home() {
       <BlogTeaser />
       
       <HelpFaq />
-      
-      <Footer />
     </main>
   );
 }

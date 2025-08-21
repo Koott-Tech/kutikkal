@@ -27,3 +27,9 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Login page specific styles */
+.login-page {
+  height: 90vh !important;
+  min-height: 90vh !important;
+}

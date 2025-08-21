@@ -6,7 +6,6 @@ import ProcessSteps from '@/components/ProcessSteps';
 import BenefitsSection from '@/components/BenefitsSection';
 import Testimonials from '@/components/Testimonials';
 import HelpFaq from '@/components/HelpFaq';
-import Footer from '@/components/Footer';
 
 export default function CouplesTherapy() {
   return (
@@ -21,7 +20,7 @@ export default function CouplesTherapy() {
       <div className="mt-24">
         <HelpFaq />
       </div>
-      <Footer />
+
     </div>
   );
 }

@@ -8,7 +8,7 @@ import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import Testimonials from '@/components/Testimonials';
 import HelpFaq from '@/components/HelpFaq';
 import ResourcesTeaser from '@/components/ResourcesTeaser';
-import Footer from '@/components/Footer';
+
 
 export default function IndividualTherapy() {
   return (
@@ -26,7 +26,7 @@ export default function IndividualTherapy() {
       <div className="mt-24">
         <HelpFaq />
       </div>
-      <Footer />
+
     </div>
   );
 }

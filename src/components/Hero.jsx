@@ -1,6 +1,14 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  const router = useRouter();
+
+  const handleGetStartedClick = () => {
+    router.push('/guide');
+  };
   return (
     <div className="px-[50px]">
     <section className="bg-purple-100 text-black rounded-[10px] p-[50px] h-[80vh]">
@@ -18,6 +26,7 @@ export default function Hero() {
           </p>
           <div className="mt-6 flex items-center gap-6">
             <button
+              onClick={handleGetStartedClick}
               className="inline-flex w-fit items-center rounded-[20px] bg-purple-600 px-8 py-3 text-sm font-normal text-white shadow-sm hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600/40"
               type="button"
             >

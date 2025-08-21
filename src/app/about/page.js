@@ -8,7 +8,6 @@ import AboutStats from '@/components/AboutStats';
 import MeetTheTeam from '@/components/MeetTheTeam';
 import TestimonialsAbout from '@/components/TestimonialsAbout';
 import LeadershipTeam from '@/components/LeadershipTeam';
-import Footer from '@/components/Footer';
 
 export default function About() {
   return (
@@ -40,7 +39,6 @@ export default function About() {
       
 
       <div className="mt-20">
-        <Footer />
       </div>
     </div>
   );
