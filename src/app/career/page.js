@@ -26,7 +26,7 @@ export default function Career() {
           care for everyone
         </h1>
         <p style={{ fontSize: "1.25rem", color: "#666", textAlign: "center", maxWidth: 700, fontWeight: 400, margin: 0, marginBottom: "3rem" }}>
-          Let's work together to make mental healthcare work the way it should.
+          Let&apos;s work together to make mental healthcare work the way it should.
         </p>
         
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -100,7 +100,7 @@ export default function Career() {
                  marginBottom: "2rem",
                  lineHeight: "1.2"
                }}>
-                 Why We're Here
+                 Why We&apos;re Here
                </h2>
                
                <div style={{ fontSize: "1.1rem", lineHeight: "1.7", color: "#444" }}>
@@ -113,7 +113,7 @@ export default function Career() {
                  </p>
                  
                  <p style={{ marginBottom: "1.5rem" }}>
-                   We're building the future of mental healthcare - providing high-quality, affordable care from licensed professionals who truly care.
+                   We&apos;re building the future of mental healthcare - providing high-quality, affordable care from licensed professionals who truly care.
                  </p>
                  
                  <p style={{ marginBottom: "1.5rem" }}>
@@ -121,7 +121,7 @@ export default function Career() {
                  </p>
                  
                  <p style={{ marginBottom: "1.5rem" }}>
-                   We're inspired and energized by the impact we're making on the lives of those who entrust us with their care.
+                   We&apos;re inspired and energized by the impact we&apos;re making on the lives of those who entrust us with their care.
                  </p>
                </div>
              </div>
@@ -561,7 +561,7 @@ export default function Career() {
                      color: "#666", 
                      lineHeight: "1.6"
                    }}>
-                     Be honest even if it's uncomfortable.
+                     Be honest even if it&apos;s uncomfortable.
                    </p>
                  </div>
                  
@@ -617,7 +617,7 @@ export default function Career() {
                 Full-time • Remote • Competitive salary
               </p>
               <p style={{ color: "#444", lineHeight: "1.6" }}>
-                We're looking for experienced clinical psychologists to join our team and provide high-quality mental health care to our clients.
+                We&apos;re looking for experienced clinical psychologists to join our team and provide high-quality mental health care to our clients.
               </p>
               <button style={{
                 background: "#27ae60",
@@ -708,10 +708,10 @@ export default function Career() {
             borderRadius: "12px"
           }}>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1a1a1a", marginBottom: "12px" }}>
-              Don't see a role that fits?
+              Don&apos;t see a role that fits?
             </h3>
             <p style={{ color: "#666", marginBottom: "20px" }}>
-              We're always looking for talented individuals to join our team. Send us your resume and we'll keep you in mind for future opportunities.
+              We&apos;re always looking for talented individuals to join our team. Send us your resume and we&apos;ll keep you in mind for future opportunities.
             </p>
             <button style={{
               background: "#27ae60",

@@ -354,7 +354,7 @@ export default function LoginPage() {
                 fontSize: "0.875rem",
                 color: "#6b7280"
               }}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
                 style={{

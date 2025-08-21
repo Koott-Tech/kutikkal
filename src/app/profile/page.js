@@ -111,7 +111,7 @@ export default function ProfilePage() {
       symptoms: "Frequent arguments, poor communication, lack of emotional connection",
       treatment: "Couples Therapy with Communication Focus",
       progress: "Improved communication patterns, better conflict resolution",
-      recommendations: "Practice active listening daily, use 'I' statements, schedule weekly check-ins",
+                        recommendations: "Practice active listening daily, use &apos;I&apos; statements, schedule weekly check-ins",
       nextSession: "2024-01-29"
     },
     {
@@ -252,7 +252,7 @@ export default function ProfilePage() {
                   color: "#1a1a1a",
                   marginBottom: "0.5rem"
                 }}>
-                  📋 Doctor's Report
+                  📋 Doctor&apos;s Report
                 </h5>
                 <p style={{
                   fontSize: "0.875rem",
@@ -821,7 +821,7 @@ export default function ProfilePage() {
                 color: "#1a1a1a",
                 marginBottom: "1rem"
               }}>
-                Doctor's Comprehensive Report
+                Doctor&apos;s Comprehensive Report
               </h3>
               <div style={{
                 background: "#f8fafc",
