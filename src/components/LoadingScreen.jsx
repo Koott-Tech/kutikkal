@@ -96,29 +96,10 @@ export default function LoadingScreen() {
         }}>
           kuttikal
         </h1>
-        <div style={{
-          marginTop: "2rem",
-          opacity: textOpacity,
-          transition: "opacity 1s ease-in-out 0.5s"
-        }}>
-          <div style={{
-            width: "40px",
-            height: "40px",
-            border: "3px solid rgba(255, 255, 255, 0.3)",
-            borderTop: "3px solid white",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-            margin: "0 auto"
-          }}></div>
-        </div>
+
       </div>
       
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+
     </div>
   );
 }
