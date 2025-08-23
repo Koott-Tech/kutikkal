@@ -14,14 +14,14 @@ export default function Hero() {
       <section className="text-black rounded-[10px] p-6 sm:p-8 md:p-[50px] min-h-[80vh] md:h-[80vh]" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)' }}>
         <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
           {/* Left: Text */}
-          <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left">
+          <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight" style={{ color: '#1d1733', letterSpacing: '-0.052em', lineHeight: '1.1', fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif', fontWeight: 500 }}>
               Connect with mental health experts who specialize in you
             </h1>
-            <p className="mt-6 text-[8px] sm:text-base md:text-lg font-light opacity-95 leading-none" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500, whiteSpace: 'nowrap' }}>
+            <p className="mt-6 text-[8px] sm:text-sm md:text-lg font-light opacity-95 leading-none" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500, whiteSpace: 'nowrap' }}>
               You deserve quality care from someone who cares.
             </p>
-            <p className="mt-3 text-[8px] sm:text-base md:text-lg font-light opacity-90 leading-none" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>
+            <p className="mt-3 text-[8px] sm:text-sm md:text-lg font-light opacity-90 leading-none" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>
               Match with a licensed provider today.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
