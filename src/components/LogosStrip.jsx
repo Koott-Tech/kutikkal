@@ -63,21 +63,53 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
           </div>
         </div>
         
-                 {/* Logo Grid - Center on mobile, right on desktop */}
-         <div className="flex flex-col items-center order-2 md:order-2">
-                       <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-between w-full max-w-4xl gap-4 md:gap-6">
-             {logosToShow.map((src) => (
-               <div key={src} className="flex-shrink-0">
-                 <Image
-                   src={`/${src}`}
-                   alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
-                   width={144}
-                   height={56}
-                   className={`h-14 w-auto md:h-14 object-contain ${logoFilter}`}
-                 />
-               </div>
-             ))}
-           </div>
+                                   {/* Logo Grid - Center on mobile, right on desktop */}
+          <div className="flex flex-col items-center order-2 md:order-2">
+                        <div className="hidden md:flex md:flex-nowrap items-center justify-between w-full max-w-4xl gap-6">
+              {logosToShow.map((src) => (
+                <div key={src} className="flex-shrink-0">
+                  <Image
+                    src={`/${src}`}
+                    alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                    width={144}
+                    height={56}
+                    className={`h-14 w-auto object-contain ${logoFilter}`}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {/* Mobile Logo Grid - 4 logos per row */}
+            <div className="md:hidden w-full max-w-4xl">
+              {/* First row - 4 logos */}
+              <div className="flex items-center justify-center gap-4 mb-4">
+                {logosToShow.slice(0, 4).map((src) => (
+                  <div key={src} className="flex-shrink-0">
+                    <Image
+                      src={`/${src}`}
+                      alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                      width={144}
+                      height={56}
+                      className={`h-14 w-auto object-contain ${logoFilter}`}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Second row - 4 logos */}
+              <div className="flex items-center justify-center gap-4">
+                {logosToShow.slice(4, 8).map((src) => (
+                  <div key={src} className="flex-shrink-0">
+                    <Image
+                      src={`/${src}`}
+                      alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                      width={144}
+                      height={56}
+                      className={`h-14 w-auto object-contain ${logoFilter}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
             <div className="md:hidden mt-4">
               <span className={`text-lg font-medium ${textColor}`}>More partners →</span>
