@@ -30,13 +30,16 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-4 sm:px-6 md:px-[70px]">
         {/* Insurance Coverage Text - Left on desktop, top on mobile */}
         <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
-          <div className="text-center md:text-left relative">
-            <p className={`text-sm md:text-base font-medium ${textColor} leading-tight`}>
-              120M+ individuals are
-            </p>
-            <p className={`text-sm md:text-base font-medium ${textColor} leading-tight`}>
-              covered by insurance
-            </p>
+                     <div className="text-center md:text-left relative">
+             <p className={`text-base font-medium ${textColor} leading-tight block md:hidden`}>
+               120M+ individuals are covered by insurance
+             </p>
+             <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
+               120M+ individuals are
+             </p>
+             <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
+               covered by insurance
+             </p>
             <div className="absolute -top-1 -right-6 md:-right-6">
               <button
                 onMouseEnter={() => setShowTooltip(true)}
@@ -75,10 +78,10 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                </div>
              ))}
            </div>
-           {/* More partners text - visible on mobile, hidden on desktop */}
-           <div className="md:hidden mt-4">
-             <span className={`text-base font-medium ${textColor}`}>More partners →</span>
-           </div>
+                       {/* More partners text - visible on mobile, hidden on desktop */}
+            <div className="md:hidden mt-4">
+              <span className={`text-lg font-medium ${textColor}`}>More partners →</span>
+            </div>
          </div>
         
         {/* More Partners Link - Right on desktop, hidden on mobile */}
