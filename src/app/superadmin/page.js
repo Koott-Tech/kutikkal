@@ -26,9 +26,9 @@ export default function SuperAdminPage() {
     });
 
     setAdminUsers([
-      { id: 1, name: 'Admin User', email: 'admin@kuttikal.com', role: 'admin', status: 'active', lastLogin: '2024-01-22 10:30', permissions: ['user_management', 'booking_management'] },
-      { id: 2, name: 'Finance Manager', email: 'finance@kuttikal.com', role: 'finance', status: 'active', lastLogin: '2024-01-22 09:15', permissions: ['financial_reports', 'payment_management'] },
-      { id: 3, name: 'Support Staff', email: 'support@kuttikal.com', role: 'staff', status: 'active', lastLogin: '2024-01-22 08:45', permissions: ['customer_support', 'booking_assistance'] }
+              { id: 1, name: 'Admin User', email: 'admin@littleminds.com', role: 'admin', status: 'active', lastLogin: '2024-01-22 10:30', permissions: ['user_management', 'booking_management'] },
+        { id: 2, name: 'Finance Manager', email: 'finance@littleminds.com', role: 'finance', status: 'active', lastLogin: '2024-01-22 09:15', permissions: ['financial_reports', 'payment_management'] },
+        { id: 3, name: 'Support Staff', email: 'support@littleminds.com', role: 'staff', status: 'active', lastLogin: '2024-01-22 08:45', permissions: ['customer_support', 'booking_assistance'] }
     ]);
 
     setSystemLogs([
@@ -39,7 +39,7 @@ export default function SuperAdminPage() {
     ]);
 
     setPendingActions([
-      { id: 1, type: 'admin_approval', user: 'finance@kuttikal.com', action: 'Request for payment system access', priority: 'high' },
+              { id: 1, type: 'admin_approval', user: 'finance@littleminds.com', action: 'Request for payment system access', priority: 'high' },
       { id: 2, type: 'system_update', user: 'System', action: 'Database maintenance scheduled for 2:00 AM', priority: 'medium' },
       { id: 3, type: 'security_alert', user: 'Security', action: 'Multiple failed login attempts detected', priority: 'critical' }
     ]);

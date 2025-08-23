@@ -94,7 +94,7 @@ export default function LoadingScreen() {
           transition: "opacity 1s ease-in-out",
           textShadow: "0 4px 8px rgba(0, 0, 0, 0.3)"
         }}>
-          kuttikal
+                          LittleMinds
         </h1>
 
       </div>

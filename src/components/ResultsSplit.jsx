@@ -2,13 +2,13 @@ import Image from "next/image";
 
 export default function ResultsSplit() {
   return (
-    <div className="px-[50px]">
+    <div className="w-full">
       <section className="w-full mt-6 md:mt-20 mb-6 md:mb-8">
-        <div className="h-[100vh] w-full rounded-2xl overflow-hidden shadow-sm">
-          <div className="grid h-full w-full grid-cols-1 items-stretch md:grid-cols-2">
+                 <div className="min-h-[120vh] md:h-[100vh] w-full overflow-hidden shadow-sm">
+          <div className="flex flex-col md:grid md:grid-cols-2 h-full w-full">
             {/* Left: Text + Stats */}
             <div
-              className="flex flex-col justify-center px-[60px] md:px-[80px] py-12 text-[#1c331d]"
+              className="flex flex-col justify-center px-8 md:px-[80px] py-8 md:py-12 text-[#1c331d] order-1 md:order-1"
               style={{ background: "#d3e9d1" }}
             >
               <h2 className="text-3xl md:text-5xl font-medium leading-tight">
@@ -21,21 +21,30 @@ export default function ResultsSplit() {
                 style={{ borderColor: "#1c331d" }}
               >
                 <p>
-                  With Kuttikal, you're not just finding care — you're finding the
+                  With LittleMinds, you're not just finding care — you're finding the
                   right care for your needs.
                 </p>
               </div>
 
-              <div className="mt-10 grid grid-cols-2 gap-x-12 gap-y-10">
-                <StatBlock value="15,000+" label="licensed providers with diverse backgrounds and specialties" />
-                <StatBlock value="170+" label="clinical specialties and modalities offered" />
-                <StatBlock value="98%" label="find a provider that meets their unique preferences" />
-                <StatBlock value="93%" label="report feeling better about their symptoms after receiving care through Kuttikal" />
-              </div>
+                             <div className="mt-10 grid grid-cols-2 gap-x-12 gap-y-10">
+                 <StatBlock value="15,000+" label="licensed providers with diverse backgrounds and specialties" />
+                 <StatBlock value="170+" label="clinical specialties and modalities offered" />
+                 <StatBlock value="98%" label="find a provider that meets their unique preferences" />
+                 <StatBlock value="93%" label="report feeling better about their symptoms after receiving care through LittleMinds" />
+               </div>
+               
+                                               {/* Get Started Button */}
+                <div className="mt-12 flex justify-center md:justify-start">
+                  <button className="bg-[#38663a] hover:bg-[#2d4f2e] text-white font-semibold py-2.5 px-6 rounded-3xl transition-colors duration-200">
+                    Get Started
+                  </button>
+                </div>
+
+
             </div>
 
-            {/* Right: Image with quote area */}
-            <div className="relative">
+                         {/* Right: Image with quote area */}
+             <div className="relative order-2 md:order-2 h-[60vh] md:h-full">
               <Image
                 src="/rightside5th.png"
                 alt="Person enjoying a cup"

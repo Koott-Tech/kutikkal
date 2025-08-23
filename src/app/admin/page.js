@@ -24,7 +24,7 @@ export default function AdminPage() {
 
     setRecentUsers([
       { id: 1, name: 'John Doe', email: 'john@example.com', role: 'user', status: 'active', joined: '2024-01-15' },
-      { id: 2, name: 'Dr. Sarah Johnson', email: 'sarah@kuttikal.com', role: 'psychologist', status: 'active', joined: '2024-01-14' },
+              { id: 2, name: 'Dr. Sarah Johnson', email: 'sarah@littleminds.com', role: 'psychologist', status: 'active', joined: '2024-01-14' },
       { id: 3, name: 'Mike Wilson', email: 'mike@example.com', role: 'user', status: 'pending', joined: '2024-01-13' }
     ]);
 

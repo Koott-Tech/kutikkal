@@ -59,7 +59,7 @@ export default function HelpFaq() {
               commonly asked questions.
             </p>
           </div>
-          <div className="relative mt-8 w-[240px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
+          <div className="relative mt-8 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
             <Image
               src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
               alt="Smiling people"
@@ -71,7 +71,7 @@ export default function HelpFaq() {
         </div>
 
         {/* Right column: Accordion FAQ */}
-        <div className=" mr-12">
+        <div className="mr-12 w-full md:max-w-2xl">
           {DATA.map((section, ci) => (
             <div key={section.title} className="mb-10">
               <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-6">
@@ -88,7 +88,7 @@ export default function HelpFaq() {
                         onClick={() => setOpenId(open ? "" : id)}
                         className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
                       >
-                        <span className="text-lg text-gray-900">
+                        <span className="text-lg text-gray-900 w-full md:w-auto pr-8 md:pr-0">
                           {item.q}
                         </span>
                         <Chevron className={`h-5 w-5 text-gray-800 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />

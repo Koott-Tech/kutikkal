@@ -129,7 +129,7 @@ export default function LoginPage() {
                 marginBottom: "1rem"
               }}
             >
-              kuttikal
+                              LittleMinds
             </button>
             <h2 style={{
               fontSize: "2rem",

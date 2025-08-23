@@ -23,10 +23,10 @@ export default function FeatureCards() {
   return (
     <section className="mt-20 md:mt-24 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-center items-center gap-8 md:gap-12">
+        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
           {cards.map((card, index) => (
             <div key={`${card.title}-${index}`} className="flex-shrink-0">
-              <div className="flex h-[450px] w-[370px] min-w-[350px] flex-col rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <div className="flex h-[450px] w-full md:w-[370px] md:min-w-[350px] flex-col rounded-2xl border border-gray-200 bg-white shadow-sm">
                 {/* Top: Image (60% height) */}
                 <div className="relative h-[100%] w-full overflow-hidden rounded-t-2xl">
                   <Image
