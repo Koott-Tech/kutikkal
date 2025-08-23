@@ -10,7 +10,7 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full mt-12 md:mt-16">
+    <section className="min-h-[100vh] w-full mt-4 md:mt-8">
       <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-10 md:py-12">
         <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900 leading-tight mt-8">
           How it works
@@ -18,7 +18,7 @@ export default function HowItWorks() {
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight tracking-tight md:tracking-normal">
             Your journey to mental well-being gets easier<br />from here.
           </h3>
           <button

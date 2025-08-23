@@ -49,7 +49,7 @@ export default function HelpFaq() {
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col">
           <div>
-            <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:text-[48px] text-gray-900">
+                         <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:tracking-normal md:text-[48px] text-gray-900">
               Questions?
               <br />
               <span>We're here to help</span>

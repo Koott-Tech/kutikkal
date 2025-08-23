@@ -15,7 +15,7 @@ export default function Hero() {
         <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
           {/* Left: Text */}
           <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0 px-2 sm:px-0">
-            <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight break-words" style={{ color: '#1d1733', letterSpacing: '-0.052em', lineHeight: '1.1', fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif', fontWeight: 500 }}>
+                         <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight break-words" style={{ color: '#1d1733', letterSpacing: '-0.06em', lineHeight: '1.1', fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif', fontWeight: 500 }}>
               Connect with mental health experts who specialize in you
             </h1>
             <p className="mt-6 text-[8px] sm:text-sm md:text-lg font-light opacity-95 leading-none break-words" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>

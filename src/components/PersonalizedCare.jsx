@@ -6,7 +6,7 @@ export default function PersonalizedCare() {
       <div className="w-full px-3 sm:px-8 md:px-[70px] py-16">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h2 className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 leading-tight max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-medium text-gray-900 mb-6 leading-tight max-w-4xl mx-auto tracking-tight md:tracking-normal">
             The care you need, whenever you need it
           </h2>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
