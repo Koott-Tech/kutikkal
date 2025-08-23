@@ -70,7 +70,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                    alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
                    width={144}
                    height={56}
-                   className={`h-10 w-auto md:h-14 object-contain ${logoFilter}`}
+                   className={`h-14 w-auto md:h-14 object-contain ${logoFilter}`}
                  />
                </div>
              ))}
