@@ -38,11 +38,11 @@ export default function BlogTeaser() {
 
   return (
     <section className="min-h-[100vh] w-full mt-6 md:mt-20">
-      <div className="mx-auto max-w-[1400px] px-[120px] py-10 md:py-14">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-[120px] py-10 md:py-14 overflow-hidden">
                  <div className="flex items-center justify-between">
            <div className="ml-4 md:ml-0">
              <p className="text-xl md:text-base text-gray-700">From our blog</p>
-                          <h2 className="mt-3 text-5xl md:text-5xl font-medium tracking-tight text-gray-900">
+                          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-gray-900 break-words">
                Tips for getting started on your journey
              </h2>
            </div>
@@ -57,7 +57,7 @@ export default function BlogTeaser() {
 
                  <div className="mt-16 md:mt-20 grid grid-cols-1 gap-10 md:gap-8 md:grid-cols-3">
            {posts.map((post) => (
-                                                       <article key={post.title} className="group w-[105%] md:w-full mx-auto md:mx-0">
+                                                       <article key={post.title} className="group w-full md:w-full mx-auto md:mx-0">
                <div
                  className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl ${
                    post.highlight ? "ring-8 ring-sky-100" : ""
