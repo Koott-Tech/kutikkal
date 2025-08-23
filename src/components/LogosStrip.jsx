@@ -26,8 +26,8 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
   const logosToShow = allLogos.slice(0, logosCount);
 
   return (
-    <section className={`w-full ${bgColor} ${height} mt-2 md:mt-4`}>
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-4 sm:px-6 md:px-[70px]">
+         <section className={`w-full ${bgColor} ${height} mt-2 md:mt-4`}>
+       <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-2 sm:px-4 md:px-[70px]">
         {/* Insurance Coverage Text - Left on desktop, top on mobile */}
         <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
                      <div className="text-center md:text-left relative">
@@ -79,37 +79,37 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
               ))}
             </div>
             
-                         {/* Mobile Logo Grid - 4 logos per row */}
-             <div className="md:hidden w-full max-w-4xl">
-               {/* First row - 4 logos */}
-               <div className="flex items-center justify-center gap-3 mb-6">
-                 {logosToShow.slice(0, 4).map((src) => (
-                   <div key={src} className="flex-shrink-0">
-                     <Image
-                       src={`/${src}`}
-                       alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
-                       width={144}
-                       height={56}
-                       className={`h-10 w-auto object-contain ${logoFilter}`}
-                     />
-                   </div>
-                 ))}
-               </div>
-               {/* Second row - 4 logos */}
-               <div className="flex items-center justify-center gap-3">
-                 {logosToShow.slice(4, 8).map((src) => (
-                   <div key={src} className="flex-shrink-0">
-                     <Image
-                       src={`/${src}`}
-                       alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
-                       width={144}
-                       height={56}
-                       className={`h-10 w-auto object-contain ${logoFilter}`}
-                     />
-                   </div>
-                 ))}
-               </div>
-             </div>
+                                                   {/* Mobile Logo Grid - 4 logos per row */}
+              <div className="md:hidden w-full">
+                {/* First row - 4 logos */}
+                <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6">
+                  {logosToShow.slice(0, 4).map((src) => (
+                    <div key={src} className="flex-shrink-0">
+                      <Image
+                        src={`/${src}`}
+                        alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                        width={144}
+                        height={56}
+                        className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                {/* Second row - 4 logos */}
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
+                  {logosToShow.slice(4, 8).map((src) => (
+                    <div key={src} className="flex-shrink-0">
+                      <Image
+                        src={`/${src}`}
+                        alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                        width={144}
+                        height={56}
+                        className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
             <div className="md:hidden mt-4">
               <span className={`text-lg font-medium ${textColor}`}>More partners →</span>

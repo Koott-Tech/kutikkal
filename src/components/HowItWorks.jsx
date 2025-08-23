@@ -11,7 +11,7 @@ export default function HowItWorks() {
 
   return (
     <section className="min-h-[100vh] w-full mt-12 md:mt-16">
-      <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-[50px] py-8 md:py-10">
+      <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-10 md:py-12">
         <h2 className="text-center text-xl md:text-2xl font-medium tracking-tight text-gray-900 leading-tight mt-8">
           How it works
         </h2>
@@ -29,10 +29,10 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-8 flex flex-col md:flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
+        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Card 01 */}
           <div
-            className="rounded-2xl p-5 min-h-[360px] w-full md:w-[330px] md:flex-shrink-0"
+            className="rounded-2xl p-6 min-h-[360px] w-full md:w-[330px] md:flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
@@ -67,7 +67,7 @@ export default function HowItWorks() {
 
           {/* Card 02 */}
           <div
-            className="rounded-2xl p-5 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
@@ -99,7 +99,7 @@ export default function HowItWorks() {
 
           {/* Card 03 */}
           <div
-            className="rounded-2xl p-5 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
@@ -136,7 +136,7 @@ export default function HowItWorks() {
 
           {/* Card 04 */}
           <div
-            className="rounded-2xl p-5 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",

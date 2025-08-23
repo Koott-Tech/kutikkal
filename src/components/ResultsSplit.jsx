@@ -8,7 +8,7 @@ export default function ResultsSplit() {
           <div className="flex flex-col md:grid md:grid-cols-2 h-full w-full">
             {/* Left: Text + Stats */}
             <div
-              className="flex flex-col justify-center px-8 md:px-[80px] py-8 md:py-12 text-[#1c331d] order-1 md:order-1"
+              className="flex flex-col justify-center px-5 sm:px-8 md:px-[80px] py-8 md:py-12 text-[#1c331d] order-1 md:order-1"
               style={{ background: "#d3e9d1" }}
             >
               <h2 className="text-3xl md:text-5xl font-medium leading-tight">

@@ -21,8 +21,8 @@ export default function FeatureCards() {
   ];
 
   return (
-    <section className="mt-20 md:mt-24 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="mt-20 md:mt-24">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6">
         <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12">
           {cards.map((card, index) => (
             <div key={`${card.title}-${index}`} className="flex-shrink-0 w-full md:w-auto">
