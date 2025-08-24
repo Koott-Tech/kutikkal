@@ -47,7 +47,7 @@ export default function HelpFaq() {
     <section className="min-h-[100vh] w-full mt-0">
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-4 sm:px-10 md:px-[50px] py-4 md:py-8 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
-        <div className="flex flex-col">
+        <div className="flex flex-col ml-4 md:ml-0">
           <div>
                          <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:tracking-normal md:text-[48px] text-gray-900">
               Questions?
@@ -71,7 +71,7 @@ export default function HelpFaq() {
         </div>
 
                  {/* Right column: Accordion FAQ */}
-         <div className="mr-12 w-full md:max-w-2xl">
+         <div className="mr-12 w-full md:max-w-2xl ml-4 md:ml-0">
            {DATA.map((section, ci) => (
              <div key={section.title} className="mb-12">
                <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-8">
