@@ -12,14 +12,21 @@ export default function TestimonialsAbout() {
                     <div className="h-full w-full p-8">
                         {/* Header Section */}
                         <div className="text-center mb-8">
-                            <h2 className="text-5xl font-medium lg:text-6xl mb-2 tracking-tight">We take pride in connecting patients and providers.</h2>
+                            <h2 
+                              className="text-[2.5rem] md:text-[3.75rem] font-medium md:font-[500] leading-[110%] md:leading-[3.975rem] tracking-[-0.125rem] md:tracking-[-0.195rem] mb-2 md:mb-4 text-center"
+                              style={{
+                                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
+                              }}
+                            >
+                              We take pride in connecting patients and providers.
+                            </h2>
                             <p className="text-lg text-gray-600">We're making online therapy work the way it should.</p>
                         </div>
 
                         {/* Grid Cards Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-140px)]">
+                        <div className="flex md:grid md:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-140px)] overflow-x-auto md:overflow-x-visible">
                             {/* Left side - Text content card (top half) */}
-                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
                                     <span className="text-sm font-medium text-green-800">Verified Patient</span>
                                 </div>
@@ -47,7 +54,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Content card (bottom half) */}
-                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <div className="h-6 w-fit bg-amber-200 rounded px-3 py-1 mb-4">
                                     <span className="text-sm font-medium text-amber-800">Success Story</span>
                                 </div>
@@ -75,7 +82,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Right side - Two separate cards instead of one large video card */}
-                            <div className="md:col-span-1 rounded-2xl overflow-hidden">
+                            <div className="md:col-span-1 rounded-2xl overflow-hidden min-w-[300px] md:min-w-0">
                                 <video
                                     src="/lg-video-card-ashley-1.mp4"
                                     className="h-full w-full object-cover"
@@ -86,7 +93,7 @@ export default function TestimonialsAbout() {
                                 />
                             </div>
                             
-                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
                                     <p className="text-lg font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
 
@@ -110,7 +117,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Image card 1 */}
-                            <div className="rounded-2xl overflow-hidden">
+                            <div className="rounded-2xl overflow-hidden min-w-[300px] md:min-w-0">
                                 <Image
                                     src="/kids.png"
                                     alt="Children in therapy session"
@@ -122,7 +129,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Image card 2 */}
-                            <div className="rounded-2xl overflow-hidden">
+                            <div className="rounded-2xl overflow-hidden min-w-[300px] md:min-w-0">
                                 <Image
                                     src="/treatment-plan.webp"
                                     alt="Therapy treatment plan"
@@ -134,7 +141,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Additional card 1 */}
-                            <div className="bg-pink-100 rounded-2xl p-6">
+                            <div className="bg-pink-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
                                     <p className="text-lg">I love how easy it is to schedule sessions and the flexibility of online therapy. My therapist is amazing and I've made significant progress in just a few months.</p>
 
@@ -158,7 +165,7 @@ export default function TestimonialsAbout() {
                             </div>
                             
                             {/* Additional card 2 */}
-                            <div className="bg-indigo-100 rounded-2xl p-6">
+                            <div className="bg-indigo-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
                                     <p className="text-lg">The quality of care I've received through Rula has been exceptional. My therapist truly understands my needs and has helped me develop better coping strategies.</p>
 

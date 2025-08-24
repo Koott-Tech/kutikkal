@@ -7,12 +7,12 @@ export default function WhyWereHere() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}
-          <div className="space-y-6 ml-8 max-w-lg">
+          <div className="space-y-6 ml-4 md:ml-8 max-w-lg">
             <h2 className="text-4xl md:text-5xl font-medium text-black leading-tight tracking-tight">
               Why We're Here
             </h2>
             
-            <div className="space-y-6 text-base text-gray-700 leading-relaxed tracking-tight">
+            <div className="space-y-6 text-[1.125rem] md:text-base text-gray-700 leading-[150%] md:leading-relaxed tracking-[-0.03375rem] md:tracking-tight">
               <p>
                 Each year, more than 65 million Americans seek help for a mental health condition. 
                 And due to a broken and frustrating system, 2 out of 3 of those individuals give up 
@@ -45,9 +45,9 @@ export default function WhyWereHere() {
           </div>
 
           {/* Right Section - Image Collage */}
-          <div className="relative ml-12 -mt-16">
+          <div className="relative ml-20 md:ml-12 mt-8 md:-mt-16">
             {/* Top Image - Larger, vertical */}
-            <div className="relative w-80 h-[32rem] mx-auto">
+            <div className="relative w-64 h-96 md:w-80 md:h-[32rem] mx-auto">
               <Image
                 src="/kids.png"
                 alt="Young man with laptop and dog"
@@ -63,7 +63,7 @@ export default function WhyWereHere() {
             </div>
 
             {/* Bottom Image - Smaller, horizontal, overlapping */}
-            <div className="absolute -bottom-8 -left-8 w-80 h-60">
+            <div className="absolute -bottom-8 -left-8 w-64 h-48 md:w-80 md:h-60">
               <Image
                 src="/rightside5th.png"
                 alt="Woman reading a book"

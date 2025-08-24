@@ -10,13 +10,10 @@ export default function LeadershipTeam() {
           {/* Header Section */}
           <div className="text-center mb-16">
             <h2 
-              className="text-4xl font-medium lg:text-5xl mb-4"
+              className="text-[2.5rem] md:text-[3.75rem] font-medium md:font-[500] leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem] mb-4"
               style={{
                 color: '#1d1733',
-                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif',
-                fontSize: '3.75rem',
-                letterSpacing: '-0.195rem',
-                lineHeight: '106%'
+                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
               }}
             >
               Advisory board

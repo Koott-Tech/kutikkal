@@ -4,24 +4,21 @@ export default function AboutStats() {
   return (
     <div className="w-full">
       <section className="w-full mt-6 md:mt-20 mb-6 md:mb-8">
-        <div className="h-[100vh] w-full overflow-hidden shadow-sm">
-          <div className="grid h-full w-full grid-cols-1 items-stretch md:grid-cols-2">
+        <div className="min-h-[120vh] md:h-[100vh] w-full overflow-hidden shadow-sm">
+          <div className="flex flex-col md:grid md:grid-cols-2 h-full w-full">
             {/* Left: Text + Stats */}
             <div
-              className="flex flex-col justify-center px-[100px] md:px-[120px] py-12 text-[#1c331d]"
+              className="flex flex-col justify-center px-5 sm:px-8 md:px-[100px] lg:px-[120px] py-8 md:py-12 text-[#1c331d] order-1 md:order-1"
               style={{ background: "#d3e9d1" }}
             >
               <h2 
-                className="text-3xl md:text-5xl font-medium leading-tight"
+                className="text-[2.5rem] md:text-[3.75rem] font-medium leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem]"
                 style={{
                   color: '#1c331d',
-                  fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif',
-                  fontSize: '3.75rem',
-                  letterSpacing: '-0.195rem',
-                  lineHeight: '106%'
+                  fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
                 }}
               >
-                Our impact by the numbers
+                Our impact<br />by the numbers
               </h2>
               <div
                 className="mt-4 max-w-xl"
@@ -39,15 +36,15 @@ export default function AboutStats() {
               </div>
 
               {/* Find Care Button */}
-              <div className="mt-8">
-                <button className="px-8 py-3 bg-[#1c331d] text-white font-medium rounded-full hover:bg-[#152a18] transition-colors duration-200 shadow-lg">
+              <div className="mt-8 flex justify-center md:justify-start">
+                <button className="px-25 md:px-8 py-2 bg-[#1c331d] text-white font-medium rounded-full hover:bg-[#152a18] transition-colors duration-200 shadow-lg">
                   Find care
                 </button>
               </div>
             </div>
 
             {/* Right: Image */}
-            <div className="relative">
+            <div className="relative order-2 md:order-2 h-[60vh] md:h-full">
               <Image
                 src="/rightside5th.png"
                 alt="Person enjoying a cup"
