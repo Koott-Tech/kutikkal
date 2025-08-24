@@ -210,7 +210,7 @@ export default function BenefitsSection({ therapyType = "individual" }) {
           </div>
 
           {/* Right Section - Benefits List */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-4 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-4 w-full justify-items-start">
             {currentContent.benefits.map((benefit, index) => (
               <div 
                 key={index} 
@@ -218,13 +218,13 @@ export default function BenefitsSection({ therapyType = "individual" }) {
                   index >= 4 && !isExpanded ? 'opacity-50 lg:opacity-100' : ''
                 } ${index >= 4 && !isExpanded ? 'hidden lg:block' : ''}`}
               >
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start gap-4">
                   <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-2.5 h-2.5 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-black text-lg mb-2">{benefit.title}</h3>
                     <p className="text-black md:font-sans" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>{benefit.description}</p>
                   </div>
