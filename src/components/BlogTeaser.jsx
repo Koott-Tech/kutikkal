@@ -39,20 +39,22 @@ export default function BlogTeaser() {
   return (
     <section className="min-h-[100vh] w-full mt-6 md:mt-20">
       <div className="mx-auto max-w-[1400px] px-3 sm:px-10 md:px-[120px] py-10 md:py-14 overflow-hidden">
-                 <div className="flex items-center justify-between">
+                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
            <div className="ml-3 sm:ml-6 md:ml-0">
              <p className="text-xl md:text-base text-gray-700">From our blog</p>
                           <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
                Tips for getting started on your journey
              </h2>
            </div>
-          <button
-            type="button"
-            onClick={handleExploreClick}
-            className="mt-3 inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-base md:text-sm font-normal text-white hover:bg-black/90"
-          >
-            Explore more articles
-          </button>
+          <div className="flex justify-center md:justify-end mt-6 md:mt-0">
+            <button
+              type="button"
+              onClick={handleExploreClick}
+              className="inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-base md:text-sm font-normal text-white hover:bg-black/90"
+            >
+              Explore more articles
+            </button>
+          </div>
         </div>
 
                  <div className="mt-16 md:mt-20 grid grid-cols-1 gap-10 md:gap-8 md:grid-cols-3">
