@@ -79,20 +79,37 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
               ))}
             </div>
             
-                                                   {/* Mobile Logo Grid - Single line */}
+                                                   {/* Mobile Logo Grid - 2 lines with 4 logos each */}
               <div className="md:hidden w-full">
-                <div className="flex items-center justify-center gap-2 sm:gap-3">
-                  {logosToShow.map((src) => (
-                    <div key={src} className="flex-shrink-0">
-                      <Image
-                        src={`/${src}`}
-                        alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
-                        width={144}
-                        height={56}
-                        className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
-                      />
-                    </div>
-                  ))}
+                <div className="flex flex-col gap-4 sm:gap-6 max-w-2xl mx-auto">
+                  {/* First line - 4 logos */}
+                  <div className="flex items-center justify-center gap-3 sm:gap-4">
+                    {logosToShow.slice(0, 4).map((src) => (
+                      <div key={src} className="flex items-center justify-center">
+                        <Image
+                          src={`/${src}`}
+                          alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                          width={144}
+                          height={56}
+                          className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {/* Second line - 4 logos */}
+                  <div className="flex items-center justify-center gap-3 sm:gap-4">
+                    {logosToShow.slice(4, 8).map((src) => (
+                      <div key={src} className="flex items-center justify-center">
+                        <Image
+                          src={`/${src}`}
+                          alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                          width={144}
+                          height={56}
+                          className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
