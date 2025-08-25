@@ -31,7 +31,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                  {/* Insurance Coverage Text - Left on desktop, top on mobile */}
          <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
                       <div className="text-center md:text-left relative">
-              <p className={`text-[0.9rem] font-medium ${textColor} leading-[1.5] block md:hidden`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>
+              <p className={`text-base font-medium ${textColor} leading-[1.5] block md:hidden`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>
                 120M+ individuals are covered by insurance
               </p>
               <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
@@ -91,7 +91,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                           alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
                           width={144}
                           height={56}
-                          className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                          className={`h-12 sm:h-14 w-auto object-contain ${logoFilter}`}
                         />
                       </div>
                     ))}
@@ -105,7 +105,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                           alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
                           width={144}
                           height={56}
-                          className={`h-8 sm:h-10 w-auto object-contain ${logoFilter}`}
+                          className={`h-12 sm:h-14 w-auto object-contain ${logoFilter}`}
                         />
                       </div>
                     ))}
@@ -114,7 +114,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
               </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
             <div className="md:hidden mt-4">
-              <span className={`text-[0.9rem] font-medium ${textColor} leading-[1.5]`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>More partners →</span>
+              <span className={`text-base font-medium ${textColor} leading-[1.5]`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>More partners →</span>
             </div>
          </div>
         
