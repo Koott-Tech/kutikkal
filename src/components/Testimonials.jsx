@@ -6,12 +6,12 @@ import Image from "next/image";
 
 export default function Testimonials() {
     return (
-        <div className="px-[50px]">
-            <section className="w-full mt-6 md:mt-8 mb-6 md:mb-8">
+        <div className="px-4 sm:px-8 md:px-[50px]">
+            <section className="w-full mt-4 sm:mt-6 md:mt-8 mb-4 sm:mb-6 md:mb-8">
                 <div className="h-[100vh] w-full rounded-2xl overflow-hidden bg-white">
-                    <div className="h-full w-full p-8">
+                    <div className="h-full w-full p-4 sm:p-6 md:p-8">
                         {/* Header Section */}
-                        <div className="text-center mb-8">
+                        <div className="text-center mb-4 sm:mb-6 md:mb-8">
                             <h2 className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium mb-2 tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">Hear from our patients</h2>
                             <p className="text-[1.125rem] md:text-lg text-gray-600 tracking-[-0.03375rem] md:tracking-normal leading-[154%] md:leading-normal">We're making online therapy work the way it should.</p>
                         </div>
