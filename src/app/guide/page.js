@@ -1,43 +1,9 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
-
-const DOCTORS = [
-  {
-    name: "Dr. Irene Cheriyan",
-    expertise: ["Anxiety", "CBT", "Mindfulness"],
-    experience: 12,
-    languages: ["English", "Malayalam", "Hindi"],
-    qualifications: "PhD in Clinical Psychology, University of Mumbai. Certified CBT Practitioner.",
-    bio: "Dr. Irene Cheriyan is a passionate psychologist dedicated to helping individuals overcome anxiety and improve their mental wellness through evidence-based therapy."
-  },
-  {
-    name: "Dr. Rahul Menon",
-    expertise: ["Depression", "Adolescents", "Family Therapy"],
-    experience: 9,
-    languages: ["English", "Tamil"],
-    qualifications: "M.Phil in Psychiatry, NIMHANS. Family Therapy Certification.",
-    bio: "Dr. Rahul Menon specializes in treating depression and adolescents. He is certified in family therapy and dedicated to helping families navigate through difficult times."
-  },
-  {
-    name: "Dr. Priya Nair",
-    expertise: ["Stress", "Relationships", "Trauma"],
-    experience: 7,
-    languages: ["English", "Hindi", "Kannada"],
-    qualifications: "MSc in Counseling Psychology, Christ University. Trauma Specialist.",
-    bio: "Dr. Priya Nair is a trauma specialist with expertise in helping individuals cope with stress and improve their relationships."
-  },
-  {
-    name: "Dr. Arjun Sinha",
-    expertise: ["Sleep", "Addiction", "Self-Esteem"],
-    experience: 15,
-    languages: ["English", "Bengali", "Hindi"],
-    qualifications: "PhD in Psychology, Jadavpur University. Addiction Recovery Expert.",
-    bio: "Dr. Arjun Sinha specializes in addiction recovery and self-esteem. He is dedicated to helping individuals overcome addiction and improve their self-esteem."
-  }
-];
+import { publicApi } from '../../lib/backendApi';
 
 const Guide = () => {
   const [selected, setSelected] = useState(null);
@@ -47,7 +13,39 @@ const Guide = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
+
+  // Fetch doctors from database
+  const fetchDoctors = async () => {
+    try {
+      console.log('Fetching doctors...');
+      setLoading(true);
+      setError(null);
+      const response = await publicApi.getPsychologists();
+      console.log('API Response:', response);
+      const psychologists = response?.data?.psychologists || [];
+      console.log('Psychologists data:', psychologists);
+      
+
+      
+      setDoctors(psychologists);
+    } catch (err) {
+      console.error('Error fetching doctors:', err);
+      setError('Failed to load doctors. Please try again later.');
+      // Fallback to empty array
+      setDoctors([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch doctors on component mount
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
   // Prevent background scroll when modal is open
   React.useEffect(() => {
@@ -117,7 +115,7 @@ const Guide = () => {
         onClick={() => router.push('/')}
         title="Go to homepage"
       >
-        CureMinds
+        Kuttikal
       </div>
       
       <div style={{ position: "relative", zIndex: 3 }}></div>
@@ -129,6 +127,23 @@ const Guide = () => {
         <p style={{ fontSize: "1.18rem", color: "#444", textAlign: "center", maxWidth: 600, fontWeight: 500, margin: 0, marginBottom: "2.2rem" }}>
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
         </p>
+        
+        {/* Debug/Refresh Button */}
+        <button
+          onClick={fetchDoctors}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#27ae60",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            marginBottom: "2rem",
+            fontSize: "0.9rem"
+          }}
+        >
+          Refresh Doctors
+        </button>
         
         <style>{`
           .find-therapist-btn {
@@ -171,13 +186,35 @@ const Guide = () => {
           }
         `}</style>
         
-        <button 
-          className="find-therapist-btn" 
-          style={{ marginTop: "2.5rem", marginBottom: "2.5rem", padding: "12px 44px", fontSize: 28, fontWeight: 800, borderRadius: 15, letterSpacing: "-0.01em" }} 
-          onClick={() => setShowOnboarding(true)}
-        >
-          <span>Find My Therapist</span>
-        </button>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginTop: "2.5rem", marginBottom: "2.5rem" }}>
+          <button 
+            className="find-therapist-btn" 
+            style={{ padding: "12px 44px", fontSize: 28, fontWeight: 800, borderRadius: 15, letterSpacing: "-0.01em" }} 
+            onClick={() => setShowOnboarding(true)}
+          >
+            <span>Find My Therapist</span>
+          </button>
+          
+          {!loading && (
+            <button 
+              style={{ 
+                padding: "12px 24px", 
+                fontSize: 16, 
+                fontWeight: 600, 
+                borderRadius: 15, 
+                background: "#f8f9fa",
+                color: "#27ae60",
+                border: "2px solid #27ae60",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }} 
+              onClick={fetchDoctors}
+              title="Refresh doctors list"
+            >
+              🔄 Refresh
+            </button>
+          )}
+        </div>
         
         <OnboardingModal 
           open={showOnboarding} 
@@ -185,7 +222,7 @@ const Guide = () => {
           onComplete={() => { setShowOnboarding(false); router.push('/guide'); }} 
         />
         
-        {/* Guide video cards row */}
+        {/* Guide video cards row - Single row with real doctors only */}
         <div style={{
           width: "100%",
           marginTop: "3.2rem",
@@ -218,157 +255,200 @@ const Guide = () => {
             }
           `}</style>
           
-          {DOCTORS.map((doc, idx) => {
-            const thumb = `thumb${idx+1}.jpg`;
-            return (
-              <div
-                className="guide-video-card"
-                key={doc.name}
-                style={{ zIndex: idx+1, position: "relative" }}
-                onMouseEnter={e => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) video.play();
-                }}
-                onMouseLeave={e => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}
-                onClick={() => setSelected(idx)}
-              >
-                <video
-                  src={`/intro_${idx+1}.mp4`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster={`/${thumb}`}
-                />
-                {/* Doctor name and expertise bubbles */}
-                <div style={{
-                  position: "absolute",
-                  left: 18,
-                  bottom: 18,
-                  zIndex: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 8,
-                  width: "80%"
-                }}>
-                  <div style={{
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: "1.15rem",
-                    textShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                    marginBottom: 4,
-                    letterSpacing: "-0.01em"
-                  }}>{doc.name}</div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {doc.expertise.map((exp, i) => (
-                      <span key={i} style={{
-                        background: "rgba(255,255,255,0.22)",
-                        color: "#fff",
-                        borderRadius: 16,
-                        padding: "0.32em 1.1em",
-                        fontWeight: 600,
-                        fontSize: "0.98rem",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-                        backdropFilter: "blur(8px)",
-                        WebkitBackdropFilter: "blur(8px)",
-                        border: "1.5px solid rgba(255,255,255,0.18)",
-                        marginBottom: 2
-                      }}>{exp}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          {loading ? (
+            <div style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 380,
+              color: "#666",
+              fontSize: "1.2rem"
+            }}>
+              Loading doctors...
+            </div>
+          ) : error ? (
+            <div style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 380,
+              color: "#e74c3c",
+              fontSize: "1.2rem",
+              textAlign: "center"
+            }}>
+              {error}
+            </div>
+          ) : doctors.length === 0 ? (
+            <div style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 380,
+              color: "#666",
+              fontSize: "1.2rem",
+              textAlign: "center"
+            }}>
+              No doctors available at the moment.
+            </div>
+          ) : (
+            doctors.map((doc, idx) => {
+              return (
+                <div
+                  className="guide-video-card"
+                  key={doc.id || doc.name || idx}
+                  style={{ zIndex: idx+1, position: "relative" }}
 
-        {/* Repeat the same row again below */}
-        <div style={{
-          width: "100%",
-          marginTop: "2.8rem",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          position: "relative",
-          height: 380,
-          gap: 18,
-        }}>
-          {DOCTORS.map((doc, idx) => {
-            const thumb = `thumb${idx+1}.jpg`;
-            return (
-              <div
-                className="guide-video-card"
-                key={doc.name + "-repeat"}
-                style={{ zIndex: idx+1, position: "relative" }}
-                onMouseEnter={e => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) video.play();
-                }}
-                onMouseLeave={e => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}
-                onClick={() => setSelected(idx)}
-              >
-                <video
-                  src={`/intro_${idx+1}.mp4`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster={`/${thumb}`}
-                />
-                {/* Doctor name and expertise bubbles */}
-                <div style={{
-                  position: "absolute",
-                  left: 18,
-                  bottom: 18,
-                  zIndex: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 8,
-                  width: "80%"
-                }}>
+                  onClick={() => setSelected(idx)}
+                >
+                  {/* Doctor Profile Picture or Cover Image */}
+                  {(() => {
+                    // First try actual image URLs from database
+                    let imageSrc = doc.cover_image_url || doc.profile_picture_url;
+                    
+                    // If no database image, use fallback based on name
+                    if (!imageSrc) {
+                      const name = (doc.name || doc.first_name || '').toLowerCase();
+                      if (name.includes('irene') || name.includes('marium')) {
+                        imageSrc = '/irene.jpeg';
+                      } else if (name.includes('doug') || name.includes('douglas')) {
+                        imageSrc = '/doug.png';
+                      } else if (name.includes('ashley') || name.includes('ash') || name.includes('sarah')) {
+                        imageSrc = '/hero.png';
+                      } else if (name.includes('child') || name.includes('teen') || name.includes('liana')) {
+                        imageSrc = '/kids.png';
+                      }
+                    }
+                    
+                    console.log(`Doctor ${doc.name || doc.first_name}: imageSrc = ${imageSrc}`);
+                    
+                    if (imageSrc) {
+                      return (
+                        <img
+                          src={imageSrc}
+                          alt={`${doc.name || doc.first_name} profile`}
+                          style={{ 
+                            width: "100%", 
+                            height: "100%", 
+                            objectFit: "cover"
+                          }}
+                          onError={(e) => {
+                            console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            // Fallback to initials if image fails to load
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                          onLoad={() => {
+                            console.log(`Image loaded successfully for ${doc.name || doc.first_name}: ${imageSrc}`);
+                          }}
+                        />
+                      );
+                    }
+                    return null;
+                  })()}
+                  
+                  {/* Fallback: Doctor Initials Avatar */}
+                  <div 
+                    style={{
+                      display: (() => {
+                        // Check if we have any image (database or fallback)
+                        const name = (doc.name || doc.first_name || '').toLowerCase();
+                        if (doc.cover_image_url || doc.profile_picture_url) return 'none';
+                        if (name.includes('irene') || name.includes('marium') || 
+                            name.includes('doug') || name.includes('douglas') || 
+                            name.includes('ashley') || name.includes('ash') || 
+                            name.includes('child') || name.includes('teen') ||
+                            name.includes('sarah') || name.includes('liana')) return 'none';
+                        return 'flex';
+                      })(),
+                      width: "100%",
+                      height: "100%",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "4rem",
+                      fontWeight: "bold",
+                      color: "#fff",
+                      textShadow: "0 2px 8px rgba(0,0,0,0.3)"
+                    }}
+                  >
+                    {doc.name ? 
+                      doc.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
+                      doc.first_name ? 
+                        doc.first_name.charAt(0).toUpperCase() : 
+                        'D'
+                    }
+                  </div>
+                  {/* Doctor name and expertise bubbles */}
                   <div style={{
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: "1.15rem",
-                    textShadow: "0 2px 8px rgba(0,0,0,0.25)" ,
-                    marginBottom: 4,
-                    letterSpacing: "-0.01em"
-                  }}>{doc.name}</div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {doc.expertise.map((exp, i) => (
-                      <span key={i} style={{
-                        background: "rgba(255,255,255,0.22)",
+                    position: "absolute",
+                    left: 18,
+                    bottom: 18,
+                    zIndex: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    width: "80%"
+                  }}>
+                    <div style={{
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "1.15rem",
+                      textShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                      marginBottom: 4,
+                      letterSpacing: "-0.01em"
+                    }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
+                    {doc.experience_years && (
+                      <div style={{
                         color: "#fff",
-                        borderRadius: 16,
-                        padding: "0.32em 1.1em",
                         fontWeight: 600,
-                        fontSize: "0.98rem",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-                        backdropFilter: "blur(8px)",
-                        WebkitBackdropFilter: "blur(8px)",
-                        border: "1.5px solid rgba(255,255,255,0.18)",
-                        marginBottom: 2
-                      }}>{exp}</span>
-                    ))}
+                        fontSize: "0.9rem",
+                        textShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                        marginBottom: 8,
+                        opacity: 0.9
+                      }}>{doc.experience_years} years experience</div>
+                    )}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? (
+                        doc.area_of_expertise.slice(0, 3).map((exp, i) => (
+                          <span key={i} style={{
+                            background: "rgba(255,255,255,0.22)",
+                            color: "#fff",
+                            borderRadius: 16,
+                            padding: "0.32em 1.1em",
+                            fontWeight: 600,
+                            fontSize: "0.98rem",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                            backdropFilter: "blur(8px)",
+                            WebkitBackdropFilter: "blur(8px)",
+                            border: "1.5px solid rgba(255,255,255,0.18)",
+                            marginBottom: 2
+                          }}>{exp}</span>
+                        ))
+                      ) : (
+                        <span style={{
+                          background: "rgba(255,255,255,0.22)",
+                          color: "#fff",
+                          borderRadius: 16,
+                          padding: "0.32em 1.1em",
+                          fontWeight: 600,
+                          fontSize: "0.98rem",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                          backdropFilter: "blur(8px)",
+                          WebkitBackdropFilter: "blur(8px)",
+                          border: "1.5px solid rgba(255,255,255,0.18)",
+                          marginBottom: 2
+                        }}>Psychology</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Modal Popup for Doctor Details */}
@@ -392,7 +472,7 @@ const Guide = () => {
               style={{
                 width: "80vw",
                 maxWidth: 1300,
-                height: 620,
+                height: 700,
                 background: "#fff",
                 borderRadius: 10,
                 boxShadow: "0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12)",
@@ -436,64 +516,180 @@ const Guide = () => {
                 </svg>
               </button>
               
-              {/* Left: Video */}
+              {/* Left: Doctor Profile Picture or Cover Image */}
               <div style={{ flex: 1.2, background: "#000", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                <video
-                  src={`/intro_${selected+1}.mp4`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", maxHeight: 620 }}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster={`/thumb${selected+1}.jpg`}
-                />
+                {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
+                  (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
+                                             doctors[selected].name.toLowerCase().includes('marium')))) ? (
+                  <img
+                    src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url ||
+                         (() => {
+                           const name = doctors[selected]?.name?.toLowerCase() || '';
+                           if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                           if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                           if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                           return null;
+                         })()}
+                    alt={`${doctors[selected]?.name || doctors[selected]?.first_name} profile`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", maxHeight: 700 }}
+                    onError={(e) => {
+                      // Fallback to initials if image fails to load
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                
+                {/* Fallback: Doctor Initials Avatar */}
+                <div 
+                  style={{
+                    display: (doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
+                              (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
+                                                         doctors[selected].name.toLowerCase().includes('marium') ||
+                                                         doctors[selected].name.toLowerCase().includes('doug') ||
+                                                         doctors[selected].name.toLowerCase().includes('ashley') ||
+                                                         doctors[selected].name.toLowerCase().includes('child')))) ? 'none' : 'flex',
+                    width: "100%",
+                    height: "100%",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "8rem",
+                    fontWeight: "bold",
+                    color: "#fff",
+                    textShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                  }}
+                >
+                  {doctors[selected]?.name ? 
+                    doctors[selected].name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
+                    doctors[selected]?.first_name ? 
+                      doctors[selected].first_name.charAt(0).toUpperCase() : 
+                      'D'
+                  }
+                </div>
               </div>
               
               {/* Right: Details */}
-              <div style={{ flex: 1, padding: 56, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28, position: "relative" }}>
-                <h2 style={{ fontSize: 36, fontWeight: 700, marginBottom: 0 }}>{DOCTORS[selected].name}</h2>
-                <div style={{ display: "flex", gap: 16, marginBottom: 0 }}>
-                  {DOCTORS[selected].expertise.map((exp, i) => (
-                    <span key={i} style={{ background: "rgba(39,174,96,0.12)", color: "#27ae60", borderRadius: 10, padding: "6px 16px", fontWeight: 600, fontSize: 16 }}>{exp}</span>
-                  ))}
+              <div style={{ flex: 1, padding: "40px 48px", display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 16, position: "relative" }}>
+                <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</h2>
+                
+                {/* Experience Years */}
+                {doctors[selected]?.experience_years && (
+                  <div style={{ marginBottom: 44 }}>
+                    <span style={{ 
+                      background: "rgba(255,193,7,0.15)", 
+                      color: "#ff9800", 
+                      borderRadius: 8, 
+                      padding: "6px 16px", 
+                      fontWeight: 600, 
+                      fontSize: 15,
+                      border: "1px solid rgba(255,193,7,0.3)"
+                    }}>
+                      {doctors[selected].experience_years} years experience
+                    </span>
+                  </div>
+                )}
+                
+                {/* Expertise Tags */}
+                <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+                  {doctors[selected]?.area_of_expertise && Array.isArray(doctors[selected].area_of_expertise) && doctors[selected].area_of_expertise.length > 0 ? (
+                    doctors[selected].area_of_expertise.map((exp, i) => (
+                      <span key={i} style={{ background: "rgba(39,174,96,0.12)", color: "#27ae60", borderRadius: 8, padding: "4px 12px", fontWeight: 600, fontSize: 14 }}>{exp}</span>
+                    ))
+                  ) : (
+                    <span style={{ background: "rgba(39,174,96,0.12)", color: "#27ae60", borderRadius: 8, padding: "4px 12px", fontWeight: 600, fontSize: 14 }}>Psychology</span>
+                  )}
                 </div>
-                <div style={{ fontSize: 18, color: "#222" }}><b>Experience:</b> {DOCTORS[selected].experience} years</div>
-                <div style={{ fontSize: 18, color: "#222" }}><b>Languages:</b> {DOCTORS[selected].languages.join(", ")}</div>
-                <div style={{ fontSize: 18, color: "#222" }}><b>Qualifications:</b> {DOCTORS[selected].qualifications}</div>
-                <div style={{ fontSize: 17, color: "#444", marginTop: -10, marginBottom: 8 }}><b>Bio:</b> {DOCTORS[selected].bio || "Dr. CureMinds is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}</div>
-                <div style={{ display: "flex", flexDirection: "row", gap: 12, justifyContent: "center", alignItems: "center", marginTop: "auto", marginBottom: 60 }}>
+                
+                {/* Contact Info */}
+                <div style={{ marginBottom: 16 }}>
+                  {doctors[selected]?.phone && doctors[selected].phone !== 'N/A' && (
+                    <div style={{ fontSize: 16, color: "#333", marginBottom: 8 }}><b>Phone:</b> {doctors[selected].phone}</div>
+                  )}
+  
+                </div>
+                
+                {/* Education - Only show if not N/A */}
+                {(doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A') || 
+                 (doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A') || 
+                 (doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A') ? (
+                  <div style={{ marginBottom: 16 }}>
+                    {doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Education:</b> {doctors[selected].ug_college}</div>
+                    )}
+                    {doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Post Graduate:</b> {doctors[selected].pg_college}</div>
+                    )}
+                    {doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333" }}><b>PhD:</b> {doctors[selected].phd_college}</div>
+                    )}
+                  </div>
+                ) : null}
+                
+                {/* Bio */}
+                <div style={{ fontSize: 16, color: "#555", lineHeight: 1.5, marginBottom: 24 }}>
+                  <b>Bio:</b> {doctors[selected]?.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
+                </div>
+                
+                {/* Session Types & Pricing */}
+                <div style={{ marginBottom: 32 }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: "#333", marginBottom: 12 }}>Session Types & Pricing</div>
+                  <div style={{ fontSize: 16, color: "#555", lineHeight: 1.6 }}>
+                    • Individual Therapy (60 min) - <b>$150</b><br/>
+                    • Child Therapy (45 min) - <b>$120</b>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div style={{ display: "flex", flexDirection: "row", gap: 16, justifyContent: "center", alignItems: "center", marginTop: 32 }}>
                   <button
                     style={{
                       background: "#27ae60",
                       color: "#fff",
                       border: "none",
-                      borderRadius: 20,
-                      padding: "10px 24px",
-                      fontSize: 16,
+                      borderRadius: 12,
+                      padding: "12px 24px",
+                      fontSize: 15,
                       fontWeight: 600,
-                      boxShadow: "0 2px 8px rgba(39,174,96,0.12)",
+                      boxShadow: "0 2px 8px rgba(39,174,96,0.15)",
                       cursor: "pointer",
                       transition: "all 0.2s"
                     }}
-                    onClick={() => handleBookSession(DOCTORS[selected])}
+                    onClick={() => handleBookSession(doctors[selected])}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#229954";
+                      e.target.style.transform = "translateY(-1px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "#27ae60";
+                      e.target.style.transform = "translateY(0)";
+                    }}
                   >
                     Book a Session
                   </button>
                   <button
                     style={{
-                      background: "#f8f9fa",
+                      background: "transparent",
                       color: "#27ae60",
                       border: "2px solid #27ae60",
-                      borderRadius: 20,
-                      padding: "10px 24px",
-                      fontSize: 16,
+                      borderRadius: 12,
+                      padding: "12px 24px",
+                      fontSize: 15,
                       fontWeight: 600,
-                      boxShadow: "0 2px 8px rgba(39,174,96,0.12)",
                       cursor: "pointer",
                       transition: "all 0.2s"
                     }}
                     onClick={() => {
                       router.push(`/therapist-profile?doctor=${selected}`);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#27ae60";
+                      e.target.style.color = "#fff";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "transparent";
+                      e.target.style.color = "#27ae60";
                     }}
                   >
                     View Profile
@@ -520,7 +716,7 @@ const Guide = () => {
                     zIndex: 10
                   }}
                   onClick={() => {
-                    const prevIndex = selected === 0 ? DOCTORS.length - 1 : selected - 1;
+                    const prevIndex = selected === 0 ? doctors.length - 1 : selected - 1;
                     setSelected(prevIndex);
                   }}
                   onMouseEnter={(e) => {
@@ -556,7 +752,7 @@ const Guide = () => {
                     zIndex: 10
                   }}
                   onClick={() => {
-                    const nextIndex = selected === DOCTORS.length - 1 ? 0 : selected + 1;
+                    const nextIndex = selected === doctors.length - 1 ? 0 : selected + 1;
                     setSelected(nextIndex);
                   }}
                   onMouseEnter={(e) => {

@@ -1,14 +1,61 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
+import { clientApi, authApi } from "../../lib/backendApi";
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  LogOut,
+  FileText,
+  User,
+  MessageSquare,
+  BarChart3,
+  AlertCircle,
+  X
+} from "lucide-react";
 
 export default function ProfilePage() {
+  const { user, logout, hasRole } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("sessions");
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
-  const router = useRouter();
+  const [sessions, setSessions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  const loadUserData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (hasRole('client')) {
+        // Load client sessions
+        const sessionsData = await clientApi.getSessions();
+        setSessions(sessionsData.data?.sessions || []);
+      }
+    } catch (err) {
+      console.error('Error loading user data:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
+    logout();
     router.push('/login');
   };
 
@@ -26,851 +73,393 @@ export default function ProfilePage() {
     setSelectedReport(null);
   };
 
-  // Mock data for all sessions
-  const allSessions = [
-    {
-      id: 1,
-      date: "2024-01-15",
-      time: "10:00 AM",
-      doctor: "Dr. Sarah Johnson",
-      patient: "John Doe",
-      type: "Individual Therapy",
-      duration: "50 minutes",
-      status: "Completed",
-      report: "Patient showed significant improvement in managing anxiety symptoms. Cognitive behavioral techniques were effective. Focus on anxiety management, discussed recent stressors, practiced relaxation techniques, set goals for next session. Recommended continued practice of breathing exercises and mindfulness techniques."
-    },
-    {
-      id: 2,
-      date: "2024-01-08",
-      time: "2:30 PM",
-      doctor: "Dr. Michael Chen",
-      patient: "John Doe",
-      type: "Couples Therapy",
-      duration: "60 minutes",
-      status: "Completed",
-      report: "Couple demonstrated improved communication patterns. Conflict resolution strategies were practiced successfully. Worked on communication skills, addressed recent conflicts, practiced active listening exercises, assigned homework for communication practice. Relationship dynamics are showing positive changes."
-    },
-    {
-      id: 3,
-      date: "2024-01-01",
-      time: "11:15 AM",
-      doctor: "Dr. Emily Rodriguez",
-      patient: "John Doe",
-      type: "Individual Therapy",
-      duration: "45 minutes",
-      status: "Completed",
-      report: "Initial assessment completed. Patient presents with mild depression symptoms. Initial consultation, mental health assessment, discussed treatment goals, established therapeutic relationship, planned next steps. Treatment plan established focusing on cognitive restructuring and behavioral activation."
-    },
-    {
-      id: 4,
-      date: "2024-01-22",
-      time: "3:00 PM",
-      doctor: "Dr. Sarah Johnson",
-      patient: "John Doe",
-      type: "Individual Therapy",
-      duration: "50 minutes",
-      status: "Scheduled",
-      report: "Follow-up session planned to continue anxiety management work and assess progress on previously set goals."
-    },
-    {
-      id: 5,
-      date: "2024-01-29",
-      time: "1:00 PM",
-      doctor: "Dr. Michael Chen",
-      patient: "John Doe",
-      type: "Couples Therapy",
-      duration: "60 minutes",
-      status: "Scheduled",
-      report: "Continued couples therapy focusing on deepening communication skills and addressing ongoing relationship challenges."
+  // Helper function to get status color
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'rescheduled':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  ];
+  };
 
-  const reports = [
-    {
-      id: 1,
-      sessionId: 1,
-      date: "2024-01-15",
-      doctor: "Dr. Sarah Johnson",
-      patient: "John Doe",
-      type: "Individual Therapy",
-      diagnosis: "Generalized Anxiety Disorder",
-      symptoms: "Excessive worry, restlessness, difficulty concentrating",
-      treatment: "Cognitive Behavioral Therapy (CBT)",
-      progress: "Significant improvement in anxiety management",
-      recommendations: "Continue breathing exercises, practice mindfulness daily, schedule follow-up in 2 weeks",
-      nextSession: "2024-01-22"
-    },
-    {
-      id: 2,
-      sessionId: 2,
-      date: "2024-01-08",
-      doctor: "Dr. Michael Chen",
-      patient: "John Doe",
-      type: "Couples Therapy",
-      diagnosis: "Relationship Communication Issues",
-      symptoms: "Frequent arguments, poor communication, lack of emotional connection",
-      treatment: "Couples Therapy with Communication Focus",
-      progress: "Improved communication patterns, better conflict resolution",
-                        recommendations: "Practice active listening daily, use &apos;I&apos; statements, schedule weekly check-ins",
-      nextSession: "2024-01-29"
-    },
-    {
-      id: 3,
-      sessionId: 3,
-      date: "2024-01-01",
-      doctor: "Dr. Emily Rodriguez",
-      patient: "John Doe",
-      type: "Individual Therapy",
-      diagnosis: "Mild Depression",
-      symptoms: "Low mood, decreased energy, social withdrawal",
-      treatment: "Cognitive Restructuring and Behavioral Activation",
-      progress: "Initial assessment completed, treatment plan established",
-      recommendations: "Start daily mood tracking, increase social activities, practice positive self-talk",
-      nextSession: "2024-01-15"
-    }
-  ];
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
-  const invoices = [
-    {
-      id: 1,
-      date: "2024-01-15",
-      amount: "$150.00",
-      status: "Paid",
-      description: "Individual Therapy Session"
-    },
-    {
-      id: 2,
-      date: "2024-01-08",
-      amount: "$180.00",
-      status: "Paid",
-      description: "Couples Therapy Session"
-    },
-    {
-      id: 3,
-      date: "2024-01-01",
-      amount: "$150.00",
-      status: "Paid",
-      description: "Individual Therapy Session"
-    }
-  ];
+  // Helper function to format time
+  const formatTime = (timeString) => {
+    if (!timeString) return 'N/A';
+    return timeString;
+  };
 
-  const renderSessions = (sessions, title) => (
-    <div style={{ marginBottom: "2rem" }}>
-      <h3 style={{
-        fontSize: "1.5rem",
-        fontWeight: "600",
-        color: "#1a1a1a",
-        marginBottom: "1rem"
-      }}>
-        {title}
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {sessions.map((session) => (
-          <div key={session.id} style={{
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            borderRadius: "0.75rem",
-            padding: "1.5rem",
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-          }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: "1rem"
-            }}>
-              <div>
-                <h4 style={{
-                  fontSize: "1.125rem",
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginBottom: "0.5rem"
-                }}>
-                  {session.type}
-                </h4>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "0.25rem"
-                }}>
-                  <strong>Doctor:</strong> {session.doctor}
-                </p>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "0.25rem"
-                }}>
-                  <strong>Patient:</strong> {session.patient}
-                </p>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280"
-                }}>
-                  <strong>Duration:</strong> {session.duration}
-                </p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{
-                  padding: "0.25rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  background: session.status === "Completed" ? "#dcfce7" : "#fef3c7",
-                  color: session.status === "Completed" ? "#166534" : "#92400e"
-                }}>
-                  {session.status}
-                </div>
-                <p style={{
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginTop: "0.5rem"
-                }}>
-                  {session.date}
-                </p>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280"
-                }}>
-                  {session.time}
-                </p>
-              </div>
-            </div>
-            
-            {/* Doctor's Report Section */}
-            {session.report && (
-              <div style={{ 
-                marginBottom: "1rem", 
-                padding: "1rem", 
-                background: "#f8fafc", 
-                borderRadius: "0.5rem",
-                border: "1px solid #e2e8f0"
-              }}>
-                <h5 style={{
-                  fontSize: "1rem",
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginBottom: "0.5rem"
-                }}>
-                  📋 Doctor&apos;s Report
-                </h5>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#4b5563",
-                  lineHeight: "1.5"
-                }}>
-                  {session.report}
-                </p>
-              </div>
-            )}
-            
-                        {/* Action Buttons */}
-            <div style={{
-              display: "flex",
-              gap: "0.5rem",
-              marginTop: "1rem"
-            }}>
-              {session.status === "Completed" && (
-                <button 
-                  onClick={() => handleViewFullReport(session)}
-                  style={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "0.5rem",
-                    padding: "0.5rem 1rem",
-                    fontSize: "0.875rem",
-                    fontWeight: "500",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem"
-                  }}
-                >
-                  📄 View Full Report
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderReports = () => (
-    <div>
-      <h3 style={{
-        fontSize: "1.5rem",
-        fontWeight: "600",
-        color: "#1a1a1a",
-        marginBottom: "1rem"
-      }}>
-        Session Reports & Details
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {reports.map((report) => (
-          <div key={report.id} style={{
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            borderRadius: "0.75rem",
-            padding: "1.5rem",
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-          }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: "1rem"
-            }}>
-              <div>
-                <h4 style={{
-                  fontSize: "1.125rem",
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginBottom: "0.5rem"
-                }}>
-                  {report.type} - {report.diagnosis}
-                </h4>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "0.25rem"
-                }}>
-                  <strong>Doctor:</strong> {report.doctor}
-                </p>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "0.25rem"
-                }}>
-                  <strong>Date:</strong> {report.date}
-                </p>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "0.25rem"
-                }}>
-                  <strong>Treatment:</strong> {report.treatment}
-                </p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{
-                  padding: "0.25rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  background: "#dbeafe",
-                  color: "#1e40af"
-                }}>
-                  Report #{report.id}
-                </div>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginTop: "0.5rem"
-                }}>
-                  Next Session: {report.nextSession}
-                </p>
-              </div>
-            </div>
-            
-            <div style={{ marginBottom: "1rem" }}>
-              <h5 style={{
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginBottom: "0.5rem"
-              }}>
-                Symptoms & Assessment
-              </h5>
-              <p style={{
-                fontSize: "0.875rem",
-                color: "#4b5563",
-                lineHeight: "1.5"
-              }}>
-                {report.symptoms}
-              </p>
-            </div>
-            
-            <div style={{ marginBottom: "1rem" }}>
-              <h5 style={{
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginBottom: "0.5rem"
-              }}>
-                Progress & Observations
-              </h5>
-              <p style={{
-                fontSize: "0.875rem",
-                color: "#4b5563",
-                lineHeight: "1.5"
-              }}>
-                {report.progress}
-              </p>
-            </div>
-            
-            <div style={{ marginBottom: "1rem" }}>
-              <h5 style={{
-                fontSize: "1rem",
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginBottom: "0.5rem"
-              }}>
-                Recommendations
-              </h5>
-              <p style={{
-                fontSize: "0.875rem",
-                color: "#4b5563",
-                lineHeight: "1.5"
-              }}>
-                {report.recommendations}
-              </p>
-            </div>
-            
-            <div style={{
-              display: "flex",
-              gap: "0.5rem",
-              marginTop: "1rem"
-            }}>
-              <button style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "0.5rem",
-                padding: "0.5rem 1rem",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                transition: "transform 0.2s"
-              }}
-              onMouseEnter={(e) => e.target.style.transform = "translateY(-1px)"}
-              onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
-              >
-                📄 Download Report
-              </button>
-              <button style={{
-                background: "white",
-                color: "#374151",
-                border: "1px solid #d1d5db",
-                borderRadius: "0.5rem",
-                padding: "0.5rem 1rem",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem"
-              }}>
-                📋 View Session Details
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderInvoices = () => (
-    <div>
-      <h3 style={{
-        fontSize: "1.5rem",
-        fontWeight: "600",
-        color: "#1a1a1a",
-        marginBottom: "1rem"
-      }}>
-        Invoices & Bills
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {invoices.map((invoice) => (
-          <div key={invoice.id} style={{
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            borderRadius: "0.75rem",
-            padding: "1.5rem",
-            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-          }}>
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start"
-            }}>
-              <div>
-                <h4 style={{
-                  fontSize: "1.125rem",
-                  fontWeight: "600",
-                  color: "#1a1a1a",
-                  marginBottom: "0.5rem"
-                }}>
-                  {invoice.description}
-                </h4>
-                <p style={{
-                  fontSize: "0.875rem",
-                  color: "#6b7280",
-                  marginBottom: "1rem"
-                }}>
-                  Date: {invoice.date}
-                </p>
-                <button style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  transition: "transform 0.2s"
-                }}
-                onMouseEnter={(e) => e.target.style.transform = "translateY(-1px)"}
-                onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
-                >
-                  📄 Download Receipt
-                </button>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "700",
-                  color: "#1a1a1a",
-                  marginBottom: "0.5rem"
-                }}>
-                  {invoice.amount}
-                </p>
-                <div style={{
-                  padding: "0.25rem 0.75rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  background: "#dcfce7",
-                  color: "#166534"
-                }}>
-                  {invoice.status}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderSupport = () => (
-    <div>
-      <h3 style={{
-        fontSize: "1.5rem",
-        fontWeight: "600",
-        color: "#1a1a1a",
-        marginBottom: "1rem"
-      }}>
-        Support & Help
-      </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.75rem",
-          padding: "1.5rem",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-        }}>
-          <h4 style={{
-            fontSize: "1.125rem",
-            fontWeight: "600",
-            color: "#1a1a1a",
-            marginBottom: "0.5rem"
-          }}>
-            Contact Support
-          </h4>
-          <p style={{
-            fontSize: "0.875rem",
-            color: "#6b7280",
-            marginBottom: "1rem"
-          }}>
-            Need help? Our support team is here to assist you.
-          </p>
-          <button style={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            border: "none",
-            borderRadius: "0.5rem",
-            padding: "0.75rem 1.5rem",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            cursor: "pointer"
-          }}>
-            Contact Support
-          </button>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
         </div>
-        
-        <div style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: "0.75rem",
-          padding: "1.5rem",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-        }}>
-          <h4 style={{
-            fontSize: "1.125rem",
-            fontWeight: "600",
-            color: "#1a1a1a",
-            marginBottom: "0.5rem"
-          }}>
-            FAQ
-          </h4>
-          <p style={{
-            fontSize: "0.875rem",
-            color: "#6b7280",
-            marginBottom: "1rem"
-          }}>
-            Find answers to frequently asked questions.
-          </p>
-          <button style={{
-            background: "white",
-            color: "#374151",
-            border: "1px solid #d1d5db",
-            borderRadius: "0.5rem",
-            padding: "0.75rem 1.5rem",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-            cursor: "pointer"
-          }}>
-            View FAQ
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Not Logged In</h2>
+          <p className="mt-2 text-gray-600">Please log in to view your profile.</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go to Login
           </button>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Error</h2>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#f9fafb",
-      fontFamily: "Arial, Helvetica, sans-serif",
-      paddingTop: "2rem"
-    }}>
-      <div style={{
-        display: "flex",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        padding: "0 2rem"
-      }}>
-        {/* Sidebar */}
-        <div style={{
-          width: "250px",
-          background: "white",
-          borderRadius: "0.75rem",
-          padding: "1.5rem",
-          height: "fit-content",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-        }}>
-          <h2 style={{
-            fontSize: "1.25rem",
-            fontWeight: "600",
-            color: "#1a1a1a",
-            marginBottom: "1.5rem"
-          }}>
-            Dashboard
-          </h2>
-          <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {[
-              { id: "sessions", label: "Sessions", icon: "📅" },
-              { id: "reports", label: "Reports", icon: "📊" },
-              { id: "invoices", label: "Invoices & Bills", icon: "💰" },
-              { id: "support", label: "Support", icon: "🆘" }
-            ].map((item) => (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
               <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  padding: "0.75rem 1rem",
-                  background: activeTab === item.id ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "transparent",
-                  color: activeTab === item.id ? "white" : "#374151",
-                  border: "none",
-                  borderRadius: "0.5rem",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                  textAlign: "left",
-                  width: "100%"
-                }}
+                onClick={handleBackToHome}
+                className="text-gray-600 hover:text-gray-900"
               >
-                <span style={{ fontSize: "1rem" }}>{item.icon}</span>
-                {item.label}
+                ← Back to Home
               </button>
-            ))}
-          </nav>
+              <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleLogout}
+                className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
+      </header>
 
-        {/* Main Content */}
-        <div style={{
-          flex: "1",
-          marginLeft: "2rem"
-        }}>
-          {activeTab === "sessions" && renderSessions(allSessions, "All Sessions")}
-          {activeTab === "reports" && renderReports()}
-          {activeTab === "invoices" && renderInvoices()}
-          {activeTab === "support" && renderSupport()}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-10 w-10 text-blue-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {user.profile?.first_name} {user.profile?.last_name}
+                </h2>
+                <p className="text-sm text-gray-600 capitalize">{user.role}</p>
+              </div>
+
+              {/* Navigation Menu */}
+              <nav className="space-y-2">
+                <button
+                  onClick={() => setActiveTab("sessions")}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    activeTab === "sessions"
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Calendar className="h-5 w-5 mr-3" />
+                  Sessions
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("contact")}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    activeTab === "contact"
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <MessageSquare className="h-5 w-5 mr-3" />
+                  Contact
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab("report")}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    activeTab === "report"
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <BarChart3 className="h-5 w-5 mr-3" />
+                  Report
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {/* Sessions Tab */}
+            {activeTab === "sessions" && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">My Sessions</h2>
+                  <div className="text-sm text-gray-600">
+                    Total: {sessions.length} sessions
+                  </div>
+                </div>
+
+                {sessions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions yet</h3>
+                    <p className="text-gray-600">You haven&apos;t booked any sessions yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sessions.map((session) => (
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+                                {session.status}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                              </span>
+                            </div>
+                            
+                            <h3 className="font-medium text-gray-900 mb-1">
+                              Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                            </h3>
+                            
+                            {session.package && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                Package: {session.package.package_type?.replace('_', ' ')}
+                              </p>
+                            )}
+                            
+                            {session.price && (
+                              <p className="text-sm text-gray-600">
+                                Price: ${session.price}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {session.status === 'completed' && (
+                            <button
+                              onClick={() => handleViewFullReport(session)}
+                              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                            >
+                              View Report
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contact Tab */}
+            {activeTab === "contact" && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
+                
+                <div className="space-y-6">
+                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <Mail className="h-6 w-6 text-blue-600 mr-4" />
+                    <div>
+                      <h3 className="font-medium text-gray-900">Email</h3>
+                      <p className="text-gray-600">{user.email}</p>
+                    </div>
+                  </div>
+                  
+                  {user.profile?.phone_number && (
+                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                      <Phone className="h-6 w-6 text-blue-600 mr-4" />
+                      <div>
+                        <h3 className="font-medium text-gray-900">Phone</h3>
+                        <p className="text-gray-600">{user.profile.phone_number}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <User className="h-6 w-6 text-blue-600 mr-4" />
+                    <div>
+                      <h3 className="font-medium text-gray-900">Name</h3>
+                      <p className="text-gray-600">{user.profile?.first_name} {user.profile?.last_name}</p>
+                    </div>
+                  </div>
+                  
+                  {hasRole('client') && user.profile?.child_name && (
+                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                      <User className="h-6 w-6 text-blue-600 mr-4" />
+                      <div>
+                        <h3 className="font-medium text-gray-900">Child Information</h3>
+                        <p className="text-gray-600">{user.profile.child_name} ({user.profile.child_age} years old)</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Report Tab */}
+            {activeTab === "report" && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Session Reports</h2>
+                
+                {sessions.filter(s => s.status === 'completed').length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No reports available</h3>
+                    <p className="text-gray-600">Session reports will appear here after sessions are completed.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {sessions
+                      .filter(s => s.status === 'completed')
+                      .map((session) => (
+                        <div key={session.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-medium text-gray-900">
+                                Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => handleViewFullReport(session)}
+                              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                            >
+                              View Full Report
+                            </button>
+                          </div>
+                          
+                          {session.session_summary && (
+                            <div className="mb-3">
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Summary</h4>
+                              <p className="text-sm text-gray-600">{session.session_summary}</p>
+                            </div>
+                          )}
+                          
+                          {session.session_notes && (
+                            <div className="mb-3">
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Notes</h4>
+                              <p className="text-sm text-gray-600">{session.session_notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      
-      {/* Detailed Report Modal */}
+
+      {/* Report Modal */}
       {showReportModal && selectedReport && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0, 0, 0, 0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-          padding: "2rem"
-        }}>
-          <div style={{
-            background: "white",
-            borderRadius: "1rem",
-            padding: "2rem",
-            maxWidth: "800px",
-            width: "100%",
-            maxHeight: "90vh",
-            overflow: "auto",
-            position: "relative"
-          }}>
-            {/* Close Button */}
-            <button
-              onClick={handleCloseReportModal}
-              style={{
-                position: "absolute",
-                top: "1rem",
-                right: "1rem",
-                background: "none",
-                border: "none",
-                fontSize: "1.5rem",
-                cursor: "pointer",
-                color: "#6b7280",
-                width: "2rem",
-                height: "2rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "50%",
-                background: "#f3f4f6"
-              }}
-            >
-              ✕
-            </button>
-            
-            {/* Report Header */}
-            <div style={{
-              borderBottom: "2px solid #e5e7eb",
-              paddingBottom: "1rem",
-              marginBottom: "2rem"
-            }}>
-              <h2 style={{
-                fontSize: "2rem",
-                fontWeight: "700",
-                color: "#1a1a1a",
-                marginBottom: "0.5rem"
-              }}>
-                Session Report
-              </h2>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "1rem",
-                fontSize: "0.875rem",
-                color: "#6b7280"
-              }}>
-                <div>
-                  <strong>Session Type:</strong> {selectedReport.type}
-                </div>
-                <div>
-                  <strong>Date:</strong> {selectedReport.date}
-                </div>
-                <div>
-                  <strong>Time:</strong> {selectedReport.time}
-                </div>
-                <div>
-                  <strong>Duration:</strong> {selectedReport.duration}
-                </div>
-                <div>
-                  <strong>Doctor:</strong> {selectedReport.doctor}
-                </div>
-                <div>
-                  <strong>Patient:</strong> {selectedReport.patient}
-                </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900">Session Report</h3>
+                <button
+                  onClick={handleCloseReportModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
               </div>
             </div>
             
-            {/* Detailed Report Content */}
-            <div style={{ marginBottom: "2rem" }}>
-              <h3 style={{
-                fontSize: "1.5rem",
-                fontWeight: "600",
-                color: "#1a1a1a",
-                marginBottom: "1rem"
-              }}>
-                Doctor&apos;s Comprehensive Report
-              </h3>
-              <div style={{
-                background: "#f8fafc",
-                padding: "1.5rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #e2e8f0",
-                lineHeight: "1.7",
-                fontSize: "1rem",
-                color: "#374151"
-              }}>
-                {selectedReport.report}
+            <div className="px-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-900">Session Details</h4>
+                  <p className="text-sm text-gray-600">
+                    {selectedReport.scheduled_date} at {selectedReport.scheduled_time}
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900">Status</h4>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    selectedReport.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedReport.status}
+                  </span>
+                </div>
+
+                {selectedReport.session_summary && (
+                  <div>
+                    <h4 className="font-medium text-gray-900">Session Summary</h4>
+                    <p className="text-sm text-gray-600">{selectedReport.session_summary}</p>
+                  </div>
+                )}
+
+                {selectedReport.session_notes && (
+                  <div>
+                    <h4 className="font-medium text-gray-900">Session Notes</h4>
+                    <p className="text-sm text-gray-600">{selectedReport.session_notes}</p>
+                  </div>
+                )}
+
+                {selectedReport.feedback && (
+                  <div>
+                    <h4 className="font-medium text-gray-900">Feedback</h4>
+                    <p className="text-sm text-gray-600">{selectedReport.feedback}</p>
+                  </div>
+                )}
               </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div style={{
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "flex-end",
-              borderTop: "1px solid #e5e7eb",
-              paddingTop: "1.5rem"
-            }}>
-              <button
-                onClick={handleCloseReportModal}
-                style={{
-                  background: "white",
-                  color: "#374151",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "0.5rem",
-                  padding: "0.75rem 1.5rem",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                  cursor: "pointer"
-                }}
-              >
-                Close
-              </button>
-              <button style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "0.5rem",
-                padding: "0.75rem 1.5rem",
-                fontSize: "0.875rem",
-                fontWeight: "500",
-                cursor: "pointer"
-              }}>
-                📄 Download Report
-              </button>
             </div>
           </div>
         </div>

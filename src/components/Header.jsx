@@ -1,12 +1,15 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleBlogClick = () => {
     router.push('/blog');
@@ -59,6 +62,37 @@ export default function Header() {
 
   const handleLoginClick = () => {
     router.push('/login');
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    if (user?.role === 'admin' || user?.role === 'superadmin') {
+      router.push('/admin');
+    } else if (user?.role === 'psychologist') {
+      router.push('/psychologist');
+    } else if (user?.role === 'finance') {
+      router.push('/finance');
+    } else {
+      router.push('/profile');
+    }
+    setIsUserMenuOpen(false);
+  };
+
+  const getRoleDisplayName = (role) => {
+    const roleMap = {
+      'admin': 'Admin',
+      'superadmin': 'Super Admin',
+      'psychologist': 'Psychologist',
+      'finance': 'Finance',
+      'client': 'Client',
+      'user': 'User'
+    };
+    return roleMap[role] || role;
   };
 
   return (
@@ -258,12 +292,58 @@ export default function Header() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
-            <button 
-              onClick={handleLoginClick}
-              className="hidden md:inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
-            >
-              <span>Login</span>
-            </button>
+            {isAuthenticated() ? (
+              /* Logged in user menu */
+              <div className="relative">
+                <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+                >
+                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-indigo-700 font-semibold text-sm">
+                      {user?.name?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                  <span>{user?.name || 'User'}</span>
+                  <ChevronUpIcon className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* User dropdown menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="px-4 pb-3 border-b border-gray-200">
+                      <div className="text-sm font-medium text-gray-900">{user?.name}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                      <div className="text-xs text-indigo-600 font-medium mt-1">
+                        {getRoleDisplayName(user?.role)}
+                      </div>
+                    </div>
+                    <div className="px-4 pt-3 space-y-2">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full text-left py-2 px-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left py-2 px-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Login button for non-authenticated users */
+              <button 
+                onClick={handleLoginClick}
+                className="hidden md:inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+              >
+                <span>Login</span>
+              </button>
+            )}
             <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
               Get started
             </button>
