@@ -610,22 +610,7 @@ const Guide = () => {
   
                 </div>
                 
-                {/* Education - Only show if not N/A */}
-                {(doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A') || 
-                 (doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A') || 
-                 (doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A') ? (
-                  <div style={{ marginBottom: 16 }}>
-                    {doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Education:</b> {doctors[selected].ug_college}</div>
-                    )}
-                    {doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Post Graduate:</b> {doctors[selected].pg_college}</div>
-                    )}
-                    {doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333" }}><b>PhD:</b> {doctors[selected].phd_college}</div>
-                    )}
-                  </div>
-                ) : null}
+                {/* Education section removed */}
                 
                 {/* Bio */}
                 <div style={{ fontSize: 16, color: "#555", lineHeight: 1.5, marginBottom: 24 }}>
@@ -842,6 +827,7 @@ const Guide = () => {
                           if (isAvailable) {
                             const today = new Date();
                             const selectedDay = new Date(today.getFullYear(), today.getMonth(), day);
+                            // Use Indian Standard Time (IST) - UTC+5:30
                             setSelectedDate(selectedDay.toISOString().split('T')[0]);
                           }
                         }}

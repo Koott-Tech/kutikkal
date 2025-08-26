@@ -17,13 +17,71 @@ const handleResponse = async (response) => {
         error: error,
         headers: Object.fromEntries(response.headers.entries())
       });
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      
+      // Handle empty error responses
+      if (!error || Object.keys(error).length === 0) {
+        if (response.status === 404) {
+          throw new Error('Resource not found');
+        } else if (response.status === 204) {
+          // No content - this is often successful for DELETE operations
+          return null;
+        } else if (response.status === 200) {
+          // 200 with empty response - this is successful but no data
+          return null;
+        } else {
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
+      }
+      
+      throw new Error(error.message || error.error || `HTTP error! status: ${response.status}`);
     } catch (parseError) {
       console.error('Failed to parse error response:', parseError);
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+      
+      // If JSON parsing fails, provide a more helpful error message
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      if (response.statusText) {
+        errorMessage += ` - ${response.statusText}`;
+      }
+      
+      // Add specific error messages for common status codes
+      switch (response.status) {
+        case 401:
+          errorMessage = 'Authentication required. Please log in again.';
+          break;
+        case 403:
+          errorMessage = 'Access denied. You do not have permission to perform this action.';
+          break;
+        case 404:
+          errorMessage = 'Resource not found. The requested endpoint does not exist.';
+          break;
+        case 500:
+          errorMessage = 'Internal server error. Please try again later.';
+          break;
+        case 502:
+        case 503:
+        case 504:
+          errorMessage = 'Service temporarily unavailable. Please try again later.';
+          break;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
-  return response.json();
+  
+  // Handle successful responses
+  try {
+    const responseText = await response.text();
+    
+    // Handle empty responses
+    if (!responseText || responseText.trim() === '') {
+      return null;
+    }
+    
+    return JSON.parse(responseText);
+  } catch (parseError) {
+    console.error('Response parsing failed:', parseError);
+    throw new Error('Invalid response format from server');
+  }
 };
 
 // Helper function to make API requests
@@ -66,20 +124,25 @@ async function apiRequest(endpoint, options = {}) {
 
 // Authentication API
 export const authApi = {
-  // User registration
-  async register(userData) {
-    return apiRequest('/auth/register', {
+  // Client registration (only clients can register)
+  async registerClient(clientData) {
+    return apiRequest('/auth/register/client', {
       method: 'POST',
-      body: JSON.stringify(userData),
+      body: JSON.stringify(clientData),
     });
   },
 
-  // User login
+  // User login (all user types)
   async login(credentials) {
     return apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
+  },
+
+  // Get registration information
+  async getRegistrationInfo() {
+    return apiRequest('/auth/registration-info');
   },
 
   // Get current user profile
@@ -254,6 +317,16 @@ export const adminApi = {
     return apiRequest(`/admin/users?${queryParams}`);
   },
 
+  // Get all psychologists directly from psychologists table
+  async getPsychologists(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/admin/psychologists?${queryParams}`);
+  },
+
   // Get user details
   async getUserDetails(userId) {
     return apiRequest(`/admin/users/${userId}`);
@@ -392,12 +465,12 @@ export const superadminApi = {
 export const dashboardApi = {
   // Get recent users for dashboard
   async getRecentUsers(limit = 5) {
-    return apiRequest(`/admin/users?limit=${limit}&sort=created_at&order=desc`);
+    return apiRequest(`/admin/recent-users?limit=${limit}`);
   },
 
   // Get recent bookings for dashboard
   async getRecentBookings(limit = 5) {
-    return apiRequest(`/sessions?limit=${limit}&sort=created_at&order=desc`);
+    return apiRequest(`/admin/recent-bookings?limit=${limit}`);
   },
 
   // Get dashboard statistics
@@ -485,6 +558,11 @@ export const publicApi = {
   // Get all psychologists (public)
   async getPsychologists() {
     return apiRequest('/public/psychologists');
+  },
+
+  // Get psychologist availability (public)
+  async getPsychologistAvailability(psychologistId) {
+    return apiRequest(`/public/psychologists/${psychologistId}/availability`);
   },
 };
 

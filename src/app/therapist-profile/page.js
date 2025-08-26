@@ -40,58 +40,16 @@ const TherapistProfileContent = () => {
     try {
       setLoadingAvailability(true);
       
-      // TODO: Replace with real API call
-      // const response = await publicApi.getPsychologistAvailability(psychologistId);
-      // setPsychologistAvailability(response.data.availability);
+      // Use real API call to get psychologist availability
+      const response = await publicApi.getPsychologistAvailability(psychologistId);
       
-      // For now, we'll create realistic mock availability data
-      // In a real implementation, this would call an API endpoint like:
-      // GET /api/public/psychologists/{id}/availability
-      
-      const mockAvailability = {};
-      const today = new Date();
-      
-      // Generate availability for the next 30 days
-      for (let i = 0; i < 30; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // Skip weekends (Saturday = 6, Sunday = 0)
-        const dayOfWeek = date.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        
-        // Generate realistic availability patterns
-        let isAvailable = false;
-        let timeSlots = {};
-        
-        if (!isWeekend) {
-          // Weekdays have 80% chance of availability
-          isAvailable = Math.random() > 0.2;
-          
-          if (isAvailable) {
-            // Generate time slots based on typical psychologist schedules
-            timeSlots = {
-              noon: ['1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'].filter(() => Math.random() > 0.3),
-              evening: ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM'].filter(() => Math.random() > 0.4),
-              night: ['8:00 PM'].filter(() => Math.random() > 0.6)
-            };
-            
-            // Ensure at least some slots are available
-            if (timeSlots.noon.length === 0 && timeSlots.evening.length === 0 && timeSlots.night.length === 0) {
-              timeSlots.noon = ['2:00 PM', '3:00 PM'];
-            }
-          }
-        }
-        
-        mockAvailability[dateStr] = {
-          available: isAvailable,
-          timeSlots: timeSlots
-        };
+      if (response.success) {
+        console.log('Real availability data:', response.data.availability);
+        setPsychologistAvailability(response.data.availability);
+      } else {
+        console.error('Failed to fetch availability:', response);
+        setPsychologistAvailability({});
       }
-      
-      console.log('Generated mock availability:', mockAvailability);
-      setPsychologistAvailability(mockAvailability);
     } catch (error) {
       console.error('Error fetching psychologist availability:', error);
       // Set default availability if API fails
@@ -153,7 +111,9 @@ const TherapistProfileContent = () => {
     setSelectedTime(null);
     
     // Check if the selected date has availability
-    const dateStr = newSelectedDate.toISOString().split('T')[0];
+    // Use Indian Standard Time (IST) - UTC+5:30
+    const istNewSelectedDate = new Date(newSelectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
+    const dateStr = istNewSelectedDate.toISOString().split('T')[0];
     const dateAvailability = psychologistAvailability[dateStr];
     
     if (!dateAvailability || !dateAvailability.available) {
@@ -234,12 +194,7 @@ const TherapistProfileContent = () => {
     );
   }
 
-  // Available time slots
-  const availableTimes = {
-    noon: ['1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'],
-    evening: ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM'],
-    night: ['8:00 PM']
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -719,12 +674,15 @@ const TherapistProfileContent = () => {
                     const isAvailable = day >= today.getDate() || !isCurrentMonth;
                     
                     // Check if this specific date is available for the psychologist
-                    const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString().split('T')[0];
+                    // Use Indian Standard Time (IST) - UTC+5:30
+                    const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const istCalendarDate = new Date(calendarDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
+                    const dateStr = istCalendarDate.toISOString().split('T')[0];
                     const dateAvailability = psychologistAvailability[dateStr];
                     const isPsychologistAvailable = dateAvailability && dateAvailability.available;
                     
-                    // Simplified logic: make all future dates selectable initially
-                    const isActuallyAvailable = isAvailable;
+                    // Only show dates as available if they actually have availability data
+                    const isActuallyAvailable = isPsychologistAvailable && isAvailable;
                     
                     // Debug logging
                     console.log(`Day ${day}: isAvailable=${isAvailable}, isPsychologistAvailable=${isPsychologistAvailable}, isActuallyAvailable=${isActuallyAvailable}, dateStr=${dateStr}, dateAvailability=`, dateAvailability);
@@ -734,7 +692,7 @@ const TherapistProfileContent = () => {
                         key={`day-${day}`}
                         onClick={() => {
                           console.log(`Clicked day ${day}: isAvailable=${isAvailable}, isPsychologistAvailable=${isPsychologistAvailable}, isActuallyAvailable=${isActuallyAvailable}`);
-                          // Temporarily make all future dates clickable for testing
+                          // Allow clicking on any future date, not just those with availability
                           if (isAvailable) {
                             handleDateSelect(day);
                           } else {
@@ -743,20 +701,23 @@ const TherapistProfileContent = () => {
                         }}
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
                           isSelected 
-                            ? 'bg-green-500 text-white cursor-pointer' 
+                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
                             : isToday
                               ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                              : isActuallyAvailable
-                                ? 'hover:bg-green-100 text-gray-700 bg-green-50 cursor-pointer' 
-                                : isAvailable
-                                  ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
-                                  : 'text-gray-300 cursor-not-allowed'
+                              : isPsychologistAvailable
+                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform' // Dates with actual availability - highlighted with hover effects
+                              : isAvailable
+                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer' // Future dates without availability (now clickable)
+                                : 'text-gray-300 cursor-not-allowed' // Past dates
                         }`}
-                        title={isActuallyAvailable ? 'Available for booking' : 'Not available'}
+                        title={isPsychologistAvailable ? 'Available for booking' : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
                         {isPsychologistAvailable && (
-                          <div className="w-1 h-1 bg-green-500 rounded-full mx-auto mt-1"></div>
+                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
+                        )}
+                        {!isPsychologistAvailable && isAvailable && (
+                          <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
                         )}
                       </div>
                     );
@@ -766,17 +727,44 @@ const TherapistProfileContent = () => {
                 })()}
               </div>
               
+              {/* Calendar Legend */}
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium text-gray-700">Calendar Legend:</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded border-2 border-green-600"></div>
+                    <span className="font-medium">Available for booking</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                    <span>Today</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-100 rounded"></div>
+                    <span>Future date (clickable)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-300 rounded"></div>
+                    <span>Past date</span>
+                  </div>
+                </div>
+              </div>
+              
               {/* Time Slots */}
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800 mb-3 text-sm">Available Times</h4>
                 
                 {selectedDate ? (
                   (() => {
-                    const dateStr = selectedDate.toISOString().split('T')[0];
+                    // Use Indian Standard Time (IST) - UTC+5:30
+                    const istSelectedDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
+                    const dateStr = istSelectedDate.toISOString().split('T')[0];
                     const dateAvailability = psychologistAvailability[dateStr];
-                    const availableSlots = dateAvailability?.timeSlots || {};
+                    const availableSlots = dateAvailability?.timeSlots || [];
                     
-                    if (!dateAvailability || !dateAvailability.available) {
+                    if (!dateAvailability || !dateAvailability.available || !availableSlots.length) {
                       return (
                         <div className="text-center py-8">
                           <div className="text-gray-500 text-sm">
@@ -790,7 +778,7 @@ const TherapistProfileContent = () => {
                                 // Find next available date
                                 const nextAvailable = Object.entries(psychologistAvailability)
                                   .find(([date, availability]) => 
-                                    new Date(date) > selectedDate && availability.available
+                                    new Date(date) > selectedDate && availability.available && availability.timeSlots?.length > 0
                                   );
                                 if (nextAvailable) {
                                   setSelectedDate(new Date(nextAvailable[0]));
@@ -806,88 +794,27 @@ const TherapistProfileContent = () => {
                     }
                     
                     return (
-                      <>
-                        {/* NOON Section */}
-                        {availableSlots.noon && availableSlots.noon.length > 0 && (
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <h5 className="font-bold text-gray-800 text-sm">NOON</h5>
-                              <span className="font-bold text-gray-800 text-sm">12:00 PM - 05:00 PM</span>
-                            </div>
-                            <div className="grid grid-cols-5 gap-1">
-                              {availableSlots.noon.map((time) => (
-                                <button
-                                  key={time}
-                                  onClick={() => handleTimeSelect(time)}
-                                  className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
-                                    selectedTime === time
-                                      ? 'border-green-500 bg-green-50 text-green-700' 
-                                      : 'border-gray-300 hover:border-green-300 text-gray-700'
-                                  }`}
-                                >
-                                  {time}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* EVENING Section */}
-                        {availableSlots.evening && availableSlots.evening.length > 0 && (
-                          <>
-                            {availableSlots.noon && availableSlots.noon.length > 0 && <hr className="border-gray-200" />}
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <h5 className="font-bold text-gray-800 text-sm">EVENING</h5>
-                                <span className="font-bold text-gray-800 text-sm">05:00 PM - 08:00 PM</span>
-                              </div>
-                              <div className="grid grid-cols-5 gap-1">
-                                {availableSlots.evening.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() => handleTimeSelect(time)}
-                                    className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
-                                      selectedTime === time
-                                        ? 'border-green-500 bg-green-50 text-green-700' 
-                                        : 'border-gray-300 hover:border-green-300 text-gray-700'
-                                    }`}
-                                  >
-                                    {time}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                        
-                        {/* NIGHT Section */}
-                        {availableSlots.night && availableSlots.night.length > 0 && (
-                          <>
-                            {(availableSlots.noon?.length > 0 || availableSlots.evening?.length > 0) && <hr className="border-gray-200" />}
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <h5 className="font-bold text-gray-800 text-sm">NIGHT</h5>
-                                <span className="font-bold text-gray-800 text-sm">08:00 PM - 12:00 AM</span>
-                              </div>
-                              <div className="grid grid-cols-5 gap-1">
-                                {availableSlots.night.map((time) => (
-                                  <button
-                                    key={time}
-                                    onClick={() => handleTimeSelect(time)}
-                                    className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
-                                      selectedTime === time
-                                        ? 'border-green-500 bg-green-50 text-green-700' 
-                                        : 'border-gray-300 hover:border-green-300 text-gray-700'
-                                    }`}
-                                  >
-                                    {time}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <h5 className="font-bold text-gray-800 text-sm">AVAILABLE TIMES</h5>
+                          <span className="font-bold text-gray-800 text-sm">All Day</span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1">
+                          {availableSlots.map((time) => (
+                            <button
+                              key={time}
+                              onClick={() => handleTimeSelect(time)}
+                              className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
+                                selectedTime === time
+                                  ? 'border-green-500 bg-green-50 text-green-700' 
+                                  : 'border-gray-300 hover:border-green-300 text-gray-700'
+                              }`}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     );
                   })()
                 ) : (

@@ -401,6 +401,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <button
                 type="button"
+                onClick={() => router.push('/register')}
                 style={{
                   background: "none",
                   border: "none",
@@ -411,6 +412,16 @@ export default function LoginPage() {
               >
                 Sign up
               </button>
+            </div>
+            
+            {/* Registration Info */}
+            <div style={{
+              textAlign: "center",
+              marginTop: "0.5rem",
+              fontSize: "0.75rem",
+              color: "#9ca3af"
+            }}>
+              Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators.
             </div>
           </form>
         </div>
