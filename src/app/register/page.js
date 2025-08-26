@@ -52,8 +52,8 @@ export default function RegisterPage() {
       // Auto-login after successful registration
       login(data.data.user, data.data.token);
 
-      // Redirect to profile to complete setup
-      router.push('/profile');
+      // Redirect to profile contact tab to complete setup
+      router.push('/profile?tab=contact');
     } catch (error) {
       console.error('Registration error:', error);
       setError(error.message || 'Registration failed. Please try again.');

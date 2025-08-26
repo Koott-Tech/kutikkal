@@ -106,7 +106,11 @@ export default function UsersPage() {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.profile?.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.profile?.child_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     
@@ -150,7 +154,7 @@ export default function UsersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search users by name or email..."
+                placeholder="Search by name, email, phone, or child name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -191,10 +195,22 @@ export default function UsersPage() {
 
             {/* User Info */}
             <div className="space-y-2 mb-4 text-sm text-gray-600">
-              {user.phone && (
+              {user.profile?.first_name && user.profile?.last_name && (
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  <span>{user.profile.first_name} {user.profile.last_name}</span>
+                </div>
+              )}
+              {user.profile?.phone_number && (
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  <span>{user.phone}</span>
+                  <span>{user.profile.phone_number}</span>
+                </div>
+              )}
+              {user.profile?.child_name && (
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  <span>Child: {user.profile.child_name} ({user.profile.child_age} years)</span>
                 </div>
               )}
               {user.created_at && (
@@ -291,16 +307,21 @@ export default function UsersPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Name</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedUser.name || 'Not provided'}</p>
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedUser.profile?.first_name && selectedUser.profile?.last_name 
+                          ? `${selectedUser.profile.first_name} ${selectedUser.profile.last_name}`
+                          : 'Not provided'
+                        }
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Email</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedUser.email}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Phone</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedUser.phone || 'Not provided'}</p>
+                      <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedUser.profile?.phone_number || 'Not provided'}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -308,6 +329,25 @@ export default function UsersPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Child Information (for clients) */}
+                {selectedUser.role === 'client' && (selectedUser.profile?.child_name || selectedUser.profile?.child_age) && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Child Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Child Name</label>
+                        <p className="mt-1 text-sm text-gray-900">{selectedUser.profile?.child_name || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Child Age</label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {selectedUser.profile?.child_age ? `${selectedUser.profile.child_age} years old` : 'Not provided'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Additional Info */}
                 {selectedUser.created_at && (

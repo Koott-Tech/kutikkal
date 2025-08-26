@@ -12,7 +12,13 @@ import {
   UserCheck,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  X,
+  Phone,
+  Mail,
+  Package,
+  DollarSign,
+  MapPin
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 
@@ -43,7 +49,8 @@ export default function BookingsPage() {
       const response = await sessionsApi.getAllSessions();
       
       if (response && response.success) {
-        setBookings(response.data || []);
+        console.log('Bookings data received:', response);
+        setBookings(response.data?.sessions || []);
       }
     } catch (error) {
       console.error('Failed to load bookings:', error);
@@ -54,6 +61,7 @@ export default function BookingsPage() {
   };
 
   const handleViewSession = (session) => {
+    console.log('Session data for details:', session);
     setSelectedSession(session);
     setIsSessionDetailsOpen(true);
   };
@@ -61,8 +69,8 @@ export default function BookingsPage() {
   const handleReschedule = (session) => {
     setSelectedSession(session);
     setRescheduleData({
-      date: session.date || '',
-      time: session.time || '',
+      date: session.scheduled_date || '',
+      time: session.scheduled_time || '',
       duration: session.duration || 60
     });
     setIsRescheduleOpen(true);
@@ -110,6 +118,25 @@ export default function BookingsPage() {
     }
   };
 
+  const formatTime = (time) => {
+    if (!time) return 'N/A';
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const showNotification = (message, type = 'success') => {
     setNotificationMessage(message);
     setNotificationType(type);
@@ -117,14 +144,19 @@ export default function BookingsPage() {
   };
 
   const filteredBookings = bookings.filter(booking => {
+    const clientName = `${booking.client?.first_name || ''} ${booking.client?.last_name || ''}`.toLowerCase();
+    const psychologistName = `${booking.psychologist?.first_name || ''} ${booking.psychologist?.last_name || ''}`.toLowerCase();
+    const clientEmail = booking.client?.user?.email?.toLowerCase() || '';
+    
     const matchesSearch = 
-      booking.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.psychologist_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.session_type?.toLowerCase().includes(searchTerm.toLowerCase());
+      clientName.includes(searchTerm.toLowerCase()) ||
+      psychologistName.includes(searchTerm.toLowerCase()) ||
+      clientEmail.includes(searchTerm.toLowerCase()) ||
+      booking.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
     
-    const matchesDate = !filterDate || booking.date === filterDate;
+    const matchesDate = !filterDate || booking.scheduled_date === filterDate;
     
     return matchesSearch && matchesStatus && matchesDate;
   });
@@ -159,7 +191,7 @@ export default function BookingsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by client name, psychologist, or session type..."
+                placeholder="Search by client name, psychologist, email, or session ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -220,31 +252,43 @@ export default function BookingsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {booking.session_type || 'Therapy Session'}
+                        Session #{booking.id?.slice(0, 8)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {new Date(booking.date).toLocaleDateString()} at {booking.time}
+                        {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}
                       </div>
-                      <div className="text-xs text-gray-400">
-                        Duration: {booking.duration || 60} minutes
-                      </div>
+                      {booking.package && (
+                        <div className="text-xs text-gray-400">
+                          Package: {booking.package.package_type}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <User className="h-4 w-4 text-gray-400 mr-2" />
                       <div className="text-sm text-gray-900">
-                        {booking.client_name || 'Unknown Client'}
+                        {booking.client?.first_name} {booking.client?.last_name}
                       </div>
                     </div>
+                    {booking.client?.child_name && (
+                      <div className="text-xs text-gray-500">
+                        Child: {booking.client.child_name} ({booking.client.child_age} years)
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <UserCheck className="h-4 w-4 text-gray-400 mr-2" />
                       <div className="text-sm text-gray-900">
-                        {booking.psychologist_name || 'Unknown Psychologist'}
+                        {booking.psychologist?.first_name} {booking.psychologist?.last_name}
                       </div>
                     </div>
+                    {booking.psychologist?.area_of_expertise && (
+                      <div className="text-xs text-gray-500">
+                        {booking.psychologist.area_of_expertise.join(', ')}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -259,10 +303,10 @@ export default function BookingsPage() {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleViewSession(booking)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        View
+                        View Details
                       </button>
                       {booking.status === 'booked' && (
                         <button
@@ -296,104 +340,189 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Session Details Modal */}
+      {/* Enhanced Session Details Modal */}
       {isSessionDetailsOpen && selectedSession && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Session Details</h2>
-                <button
-                  onClick={() => setIsSessionDetailsOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Session Info */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Session Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Session Type</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedSession.session_type || 'Therapy Session'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Date</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {new Date(selectedSession.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Time</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedSession.time}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Duration</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedSession.duration || 60} minutes
-                      </p>
-                    </div>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Session Details</h3>
+              <button
+                onClick={() => setIsSessionDetailsOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Session Information */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                  Session Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Session ID</p>
+                    <p className="text-sm text-gray-900 font-mono">
+                      #{selectedSession.id}
+                    </p>
                   </div>
-                </div>
-
-                {/* Participants */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Participants</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Client</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedSession.client_name || 'Unknown Client'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Psychologist</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedSession.psychologist_name || 'Unknown Psychologist'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Status</h3>
-                  <div className="flex items-center">
-                    {getStatusIcon(selectedSession.status)}
-                    <span className={`ml-2 inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(selectedSession.status)}`}>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Status</p>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status)}`}>
                       {selectedSession.status === 'no_show' ? 'No Show' : 
                        selectedSession.status?.charAt(0).toUpperCase() + selectedSession.status?.slice(1) || 'Unknown'}
                     </span>
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Date</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                      {formatDate(selectedSession.scheduled_date)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Time</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Clock className="h-4 w-4 mr-1 text-gray-500" />
+                      {formatTime(selectedSession.scheduled_time)}
+                    </p>
+                  </div>
                 </div>
+              </div>
 
-                {/* Actions */}
-                <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                  {selectedSession.status === 'booked' && (
-                    <button
-                      onClick={() => {
-                        setIsSessionDetailsOpen(false);
-                        handleReschedule(selectedSession);
-                      }}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Reschedule
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setIsSessionDetailsOpen(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Close
-                  </button>
+              {/* Client Information */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-blue-600" />
+                  Client Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Full Name</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.first_name} {selectedSession.client?.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Email</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Mail className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.client?.user?.email || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Phone Number</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Phone className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.client?.phone_number || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Child Name</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.child_name || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Child Age</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.child_age ? `${selectedSession.client.child_age} years` : 'Not provided'}
+                    </p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Psychologist Information */}
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <UserCheck className="h-5 w-5 mr-2 text-green-600" />
+                  Psychologist Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Full Name</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.psychologist?.first_name} {selectedSession.psychologist?.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Email</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Mail className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.psychologist?.email}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Areas of Expertise</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.psychologist?.area_of_expertise?.join(', ') || 'Not specified'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Package & Pricing Information */}
+              {selectedSession.package && (
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                    <Package className="h-5 w-5 mr-2 text-yellow-600" />
+                    Package & Pricing
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Package Type</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.package.package_type}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Price</p>
+                      <p className="text-sm text-gray-900 flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+                        ${selectedSession.package.price}
+                      </p>
+                    </div>
+                    {selectedSession.package.description && (
+                      <div className="md:col-span-2">
+                        <p className="text-sm font-medium text-gray-700">Description</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedSession.package.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Session Notes */}
+              {selectedSession.session_notes && (
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">Session Notes</h4>
+                  <p className="text-sm text-gray-900">{selectedSession.session_notes}</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex space-x-3 pt-4 border-t border-gray-200">
+                {selectedSession.status === 'booked' && (
+                  <button
+                    onClick={() => {
+                      setIsSessionDetailsOpen(false);
+                      handleReschedule(selectedSession);
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Reschedule
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsSessionDetailsOpen(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
@@ -479,4 +608,5 @@ export default function BookingsPage() {
     </div>
   );
 }
+
 

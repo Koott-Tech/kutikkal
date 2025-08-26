@@ -8,7 +8,13 @@ import {
   User,
   CheckCircle,
   Edit,
-  AlertCircle
+  AlertCircle,
+  X,
+  Phone,
+  Mail,
+  MapPin,
+  Package,
+  DollarSign
 } from "lucide-react";
 
 export default function PsychologistSessions() {
@@ -16,6 +22,10 @@ export default function PsychologistSessions() {
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [completingSessions, setCompletingSessions] = useState(new Set());
+  const [selectedSession, setSelectedSession] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -28,6 +38,7 @@ export default function PsychologistSessions() {
       setIsLoading(true);
       setError(null);
       const sessionsData = await psychologistApi.getSessions();
+      console.log('Sessions data received:', sessionsData);
       setSessions(sessionsData.data?.sessions || []);
     } catch (err) {
       console.error('Error loading sessions:', err);
@@ -47,12 +58,65 @@ export default function PsychologistSessions() {
     }
   };
 
+  const handleCompleteSession = async (sessionId) => {
+    try {
+      setError(null);
+      setCompletingSessions(prev => new Set(prev).add(sessionId));
+      
+      await psychologistApi.updateSession(sessionId, { status: 'completed' });
+      
+      // Show success feedback
+      setSuccessMessage('Session marked as completed successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+      // Reload sessions to update the UI
+      await loadSessions();
+    } catch (err) {
+      console.error('Error completing session:', err);
+      setError(`Failed to complete session: ${err.message}`);
+    } finally {
+      setCompletingSessions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(sessionId);
+        return newSet;
+      });
+    }
+  };
+
+  const confirmCompleteSession = (sessionId, clientName) => {
+    if (window.confirm(`Are you sure you want to mark the session with ${clientName} as completed?`)) {
+      handleCompleteSession(sessionId);
+    }
+  };
+
+  const handleViewDetails = (session) => {
+    console.log('Session data for details:', session);
+    console.log('Client data:', session.client);
+    console.log('User email:', session.client?.user?.email);
+    setSelectedSession(session);
+    setShowDetailsModal(true);
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedSession(null);
+  };
+
   const formatTime = (time) => {
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (isLoading) {
@@ -81,6 +145,9 @@ export default function PsychologistSessions() {
     s.status === 'booked' || s.status === 'rescheduled'
   );
   const completedSessions = sessions.filter(s => s.status === 'completed');
+  const pastSessions = sessions.filter(s => 
+    s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show'
+  );
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -93,9 +160,39 @@ export default function PsychologistSessions() {
         </div>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-green-800">{successMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-red-800">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Upcoming Sessions */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Upcoming Sessions</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
+          Upcoming Sessions ({upcomingSessions.length})
+        </h2>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">Scheduled Appointments</h3>
@@ -105,9 +202,9 @@ export default function PsychologistSessions() {
               <div className="px-6 py-8 text-center">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</h3>
-                              <p className="mt-1 text-sm text-gray-500">
-                You don&apos;t have any scheduled sessions at the moment.
-              </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  You don&apos;t have any scheduled sessions at the moment.
+                </p>
               </div>
             ) : (
               upcomingSessions.map((session) => (
@@ -152,6 +249,12 @@ export default function PsychologistSessions() {
                         {session.status}
                       </span>
                       <button
+                        onClick={() => handleViewDetails(session)}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        View Details
+                      </button>
+                      <button
                         onClick={() => handleUpdateSession(session.id, { status: 'completed' })}
                         className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
                         title="Mark as completed"
@@ -169,22 +272,24 @@ export default function PsychologistSessions() {
 
       {/* Completed Sessions */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Completed Sessions</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">
+          Past Sessions ({pastSessions.length})
+        </h2>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Past Sessions</h3>
+            <h3 className="text-lg font-medium text-gray-900">Completed & Past Sessions</h3>
           </div>
           <div className="divide-y divide-gray-200">
-            {completedSessions.length === 0 ? (
+            {pastSessions.length === 0 ? (
               <div className="px-6 py-8 text-center">
                 <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No completed sessions</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No past sessions</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Completed sessions will appear here.
+                  Completed, cancelled, and no-show sessions will appear here.
                 </p>
               </div>
             ) : (
-              completedSessions.map((session) => (
+              pastSessions.map((session) => (
                 <div key={session.id} className="px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -209,15 +314,52 @@ export default function PsychologistSessions() {
                             <Clock className="h-4 w-4 mr-1" />
                             {formatTime(session.scheduled_time)}
                           </span>
+                          {session.status === 'completed' && session.updated_at && (
+                            <span className="flex items-center text-sm text-green-600">
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Completed {new Date(session.updated_at).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Completed
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        session.status === 'no_show' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {session.status === 'no_show' ? 'No Show' : 
+                         session.status?.charAt(0).toUpperCase() + session.status?.slice(1) || 'Unknown'}
                       </span>
-                      <button className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50">
-                        <Edit className="h-5 w-5" />
+                      <button
+                        onClick={() => handleViewDetails(session)}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => confirmCompleteSession(session.id, `${session.client?.first_name} ${session.client?.last_name}`)}
+                        disabled={completingSessions.has(session.id)}
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
+                          completingSessions.has(session.id)
+                            ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                            : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                        }`}
+                        title="Mark session as completed"
+                      >
+                        {completingSessions.has(session.id) ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                            Completing...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Complete
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -227,6 +369,150 @@ export default function PsychologistSessions() {
           </div>
         </div>
       </div>
+
+      {/* Session Details Modal */}
+      {showDetailsModal && selectedSession && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Session Details</h3>
+              <button
+                onClick={closeDetailsModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Client Information */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-blue-600" />
+                  Client Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Full Name</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.first_name} {selectedSession.client?.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Email</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Mail className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.client?.user?.email || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Phone Number</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Phone className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.client?.phone_number || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Child Name</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.child_name || 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Child Age</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedSession.client?.child_age ? `${selectedSession.client.child_age} years` : 'Not provided'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Session Information */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+                  Session Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Session Date</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                      {formatDate(selectedSession.scheduled_date)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Session Time</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Clock className="h-4 w-4 mr-1 text-gray-500" />
+                      {formatTime(selectedSession.scheduled_time)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Status</p>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedSession.status === 'booked' ? 'bg-blue-100 text-blue-800' :
+                      selectedSession.status === 'rescheduled' ? 'bg-yellow-100 text-yellow-800' :
+                      selectedSession.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedSession.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Session ID</p>
+                    <p className="text-sm text-gray-900 font-mono">
+                      #{selectedSession.id}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Package & Pricing Information */}
+              {selectedSession.package && (
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                    <Package className="h-5 w-5 mr-2 text-green-600" />
+                    Package & Pricing
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Package Type</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.package.package_type}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Price</p>
+                      <p className="text-sm text-gray-900 flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1 text-green-600" />
+                        ${selectedSession.price}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Notes */}
+              {selectedSession.notes && (
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">Additional Notes</h4>
+                  <p className="text-sm text-gray-900">{selectedSession.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeDetailsModal}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

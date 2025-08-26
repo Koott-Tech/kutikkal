@@ -521,7 +521,7 @@ export const sessionsApi = {
       if (value) queryParams.append(key, value);
     });
     
-    return apiRequest(`/sessions?${queryParams}`);
+    return apiRequest(`/sessions/admin/all?${queryParams}`);
   },
 
   // Update session status (admin only)

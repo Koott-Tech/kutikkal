@@ -159,6 +159,15 @@ const TherapistProfileContent = () => {
       return;
     }
 
+    // Require client profile completion before booking
+    const profile = user?.profile || {};
+    const hasBasicContact = Boolean(profile.first_name) && Boolean(profile.last_name) && Boolean(profile.phone_number);
+    if (!hasBasicContact) {
+      alert('Please complete your contact profile before booking.');
+      router.push('/profile?tab=contact');
+      return;
+    }
+
     setIsBooking(true);
     try {
       // Get current date and time in IST

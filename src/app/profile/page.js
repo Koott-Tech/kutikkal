@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { user, logout, hasRole } = useAuth();
+  const { user, token, login, logout, hasRole } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("sessions");
   const [selectedReport, setSelectedReport] = useState(null);
@@ -28,13 +28,44 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Contact/profile form state for clients
+  const [profileForm, setProfileForm] = useState({
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    child_name: '',
+    child_age: ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileSaveMsg, setProfileSaveMsg] = useState("");
+
   useEffect(() => {
     if (user) {
       loadUserData();
+      // Prime contact form with existing values
+      const p = user.profile || {};
+      setProfileForm({
+        first_name: p.first_name || '',
+        last_name: p.last_name || '',
+        phone_number: p.phone_number || '',
+        child_name: p.child_name || '',
+        child_age: p.child_age || ''
+      });
     } else {
       setIsLoading(false);
     }
   }, [user]);
+
+  // If query contains ?tab=contact, open Contact tab on arrival
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab === 'contact') {
+        setActiveTab('contact');
+      }
+    }
+  }, []);
 
   const loadUserData = async () => {
     try {
@@ -71,6 +102,45 @@ export default function ProfilePage() {
   const handleCloseReportModal = () => {
     setShowReportModal(false);
     setSelectedReport(null);
+  };
+
+  const handleProfileInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveContact = async (e) => {
+    e?.preventDefault?.();
+    setProfileSaveMsg("");
+    try {
+      setIsSavingProfile(true);
+      // Minimal validation
+      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number) {
+        setProfileSaveMsg('Please fill first name, last name and phone number.');
+        return;
+      }
+
+      // Persist to backend
+      await clientApi.updateProfile({
+        first_name: profileForm.first_name,
+        last_name: profileForm.last_name,
+        phone_number: profileForm.phone_number,
+        child_name: profileForm.child_name || null,
+        child_age: profileForm.child_age ? Number(profileForm.child_age) : null
+      });
+
+      // Refresh auth user from backend and update context/localStorage
+      const refreshed = await authApi.getProfile();
+      if (refreshed?.data?.user) {
+        login(refreshed.data.user, token);
+      }
+      setProfileSaveMsg('Contact information saved successfully.');
+    } catch (err) {
+      console.error('Save contact failed:', err);
+      setProfileSaveMsg(err.message || 'Failed to save. Please try again.');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   // Helper function to get status color
@@ -333,44 +403,93 @@ export default function ProfilePage() {
             {activeTab === "contact" && (
               <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
-                
-                <div className="space-y-6">
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                    <Mail className="h-6 w-6 text-blue-600 mr-4" />
+
+                <form className="space-y-6" onSubmit={handleSaveContact}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="font-medium text-gray-900">Email</h3>
-                      <p className="text-gray-600">{user.email}</p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        name="first_name"
+                        value={profileForm.first_name}
+                        onChange={handleProfileInputChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                        placeholder="Enter your first name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        name="last_name"
+                        value={profileForm.last_name}
+                        onChange={handleProfileInputChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                        placeholder="Enter your last name"
+                        required
+                      />
                     </div>
                   </div>
-                  
-                  {user.profile?.phone_number && (
-                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                      <Phone className="h-6 w-6 text-blue-600 mr-4" />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      value={profileForm.phone_number}
+                      onChange={handleProfileInputChange}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      placeholder="Enter your phone number"
+                      required
+                    />
+                  </div>
+
+                  {hasRole('client') && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <h3 className="font-medium text-gray-900">Phone</h3>
-                        <p className="text-gray-600">{user.profile.phone_number}</p>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Child Name (optional)</label>
+                        <input
+                          type="text"
+                          name="child_name"
+                          value={profileForm.child_name}
+                          onChange={handleProfileInputChange}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          placeholder="Your child's name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Child Age (optional)</label>
+                        <input
+                          type="number"
+                          name="child_age"
+                          min="1"
+                          max="18"
+                          value={profileForm.child_age}
+                          onChange={handleProfileInputChange}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2"
+                          placeholder="Age"
+                        />
                       </div>
                     </div>
                   )}
-                  
-                  <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                    <User className="h-6 w-6 text-blue-600 mr-4" />
-                    <div>
-                      <h3 className="font-medium text-gray-900">Name</h3>
-                      <p className="text-gray-600">{user.profile?.first_name} {user.profile?.last_name}</p>
-                    </div>
-                  </div>
-                  
-                  {hasRole('client') && user.profile?.child_name && (
-                    <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                      <User className="h-6 w-6 text-blue-600 mr-4" />
-                      <div>
-                        <h3 className="font-medium text-gray-900">Child Information</h3>
-                        <p className="text-gray-600">{user.profile.child_name} ({user.profile.child_age} years old)</p>
-                      </div>
+
+                  {profileSaveMsg && (
+                    <div className="p-3 rounded border text-sm ${profileSaveMsg.includes('successfully') ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}">
+                      {profileSaveMsg}
                     </div>
                   )}
-                </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSavingProfile}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                    >
+                      {isSavingProfile ? 'Saving...' : 'Save Contact'}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
