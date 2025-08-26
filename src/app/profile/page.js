@@ -198,6 +198,16 @@ export default function ProfilePage() {
 
               {/* Navigation Menu */}
               <nav className="space-y-2">
+                {hasRole('client') && (
+                  <button
+                    onClick={() => router.push('/guide')}
+                    className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors text-green-700 hover:bg-green-50 border-l-4 border-green-500"
+                  >
+                    <Calendar className="h-5 w-5 mr-3" />
+                    Browse Therapists
+                  </button>
+                )}
+                
                 <button
                   onClick={() => setActiveTab("sessions")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
@@ -244,8 +254,17 @@ export default function ProfilePage() {
               <div className="bg-white shadow rounded-lg p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">My Sessions</h2>
-                  <div className="text-sm text-gray-600">
-                    Total: {sessions.length} sessions
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => router.push('/guide')}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Book New Session
+                    </button>
+                    <div className="text-sm text-gray-600">
+                      Total: {sessions.length} sessions
+                    </div>
                   </div>
                 </div>
 
@@ -253,7 +272,14 @@ export default function ProfilePage() {
                   <div className="text-center py-12">
                     <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions yet</h3>
-                    <p className="text-gray-600">You haven&apos;t booked any sessions yet.</p>
+                    <p className="text-gray-600 mb-6">You haven&apos;t booked any sessions yet.</p>
+                    <button
+                      onClick={() => router.push('/guide')}
+                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto"
+                    >
+                      <Calendar className="h-5 w-5" />
+                      Browse Therapists & Book Your First Session
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">

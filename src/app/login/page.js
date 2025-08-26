@@ -12,6 +12,18 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const { login } = useAuth();
+  
+  // Get return URL from query parameters
+  const [returnUrl, setReturnUrl] = useState("");
+  
+  useEffect(() => {
+    // Get return URL from query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrlParam = urlParams.get('returnUrl');
+    if (returnUrlParam) {
+      setReturnUrl(returnUrlParam);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,15 +37,23 @@ export default function LoginPage() {
       // Use the auth context to login
       login(data.data.user, data.data.token);
 
-      // Redirect based on user role
-      if (data.data.user.role === 'admin' || data.data.user.role === 'superadmin') {
-        router.push('/admin');
-      } else if (data.data.user.role === 'psychologist') {
-        router.push('/psychologist');
-      } else if (data.data.user.role === 'finance') {
-        router.push('/finance');
+      // If there's a return URL and user is a client, redirect there
+      if (returnUrl && data.data.user.role === 'client') {
+        router.push(returnUrl);
       } else {
-        router.push('/profile');
+        // Redirect based on user role
+        if (data.data.user.role === 'admin' || data.data.user.role === 'superadmin') {
+          router.push('/admin');
+        } else if (data.data.user.role === 'psychologist') {
+          router.push('/psychologist');
+        } else if (data.data.user.role === 'finance') {
+          router.push('/finance');
+        } else if (data.data.user.role === 'client') {
+          // Clients go to guide page to browse and book therapists
+          router.push('/guide');
+        } else {
+          router.push('/profile');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

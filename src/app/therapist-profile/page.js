@@ -3,12 +3,14 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Separate component that uses useSearchParams
 const TherapistProfileContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const doctorIndex = searchParams.get('doctor');
+  const { user, token, isAuthenticated, hasRole } = useAuth();
   
   // State for doctor data and UI
   const [doctors, setDoctors] = useState([]);
@@ -34,6 +36,11 @@ const TherapistProfileContent = () => {
   // Availability state
   const [psychologistAvailability, setPsychologistAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  
+  // Booking state
+  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // Fetch psychologist availability
   const fetchPsychologistAvailability = async (psychologistId) => {
@@ -58,6 +65,8 @@ const TherapistProfileContent = () => {
       setLoadingAvailability(false);
     }
   };
+
+
 
   // Fetch doctors data
   const fetchDoctors = async () => {
@@ -125,6 +134,102 @@ const TherapistProfileContent = () => {
     setSelectedTime(time);
   };
 
+  const handleBookSession = async () => {
+    if (!selectedDate || !selectedTime || !selectedPrice) {
+      alert('Please select a date, time, and pricing option');
+      return;
+    }
+
+    if (!selectedDoctor) {
+      alert('Doctor information not available');
+      return;
+    }
+
+    // Check if user is authenticated and is a client
+    if (!isAuthenticated()) {
+      alert('Please log in to book a session. Only clients can book sessions.');
+      const returnUrl = `/therapist-profile?doctor=${doctorIndex}`;
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
+    // Check if user is a client
+    if (!hasRole('client')) {
+      alert('Only clients can book sessions. You are logged in as a ' + user.role);
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      // Get current date and time in IST
+      const now = new Date();
+      const istNow = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      
+      // Format selected date for scheduled session
+      const istSelectedDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000));
+      const scheduledDate = istSelectedDate.toISOString().split('T')[0];
+      
+      // Convert time to 24-hour format for database
+      const timeStr = selectedTime;
+      let scheduledTime;
+      if (timeStr.includes('PM') && !timeStr.includes('12')) {
+        const hour = parseInt(timeStr.split(':')[0]) + 12;
+        const minute = timeStr.split(':')[1].split(' ')[0];
+        scheduledTime = `${hour.toString().padStart(2, '0')}:${minute}:00`;
+      } else if (timeStr.includes('AM') && timeStr.includes('12')) {
+        scheduledTime = `00:${timeStr.split(':')[1].split(' ')[0]}:00`;
+      } else {
+        const hour = timeStr.split(':')[0];
+        const minute = timeStr.split(':')[1].split(' ')[0];
+        scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
+      }
+
+      const bookingData = {
+        psychologist_id: selectedDoctor.id,
+        scheduled_date: scheduledDate,
+        scheduled_time: scheduledTime
+      };
+
+      const response = await fetch('http://localhost:5001/api/sessions/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (response.ok) {
+        setBookingSuccess(true);
+        // Reset selections
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setSelectedPrice(null);
+        // Show success message
+        setTimeout(() => setBookingSuccess(false), 5000);
+      } else {
+        const errorData = await response.json();
+        if (response.status === 401) {
+          alert('Session expired. Please log in again.');
+          router.push('/login');
+        } else if (response.status === 403) {
+          alert('Only clients can book sessions. Please log in with a client account.');
+          router.push('/login');
+        } else if (response.status === 404) {
+          alert('Client profile not found. Please complete your profile first.');
+          router.push('/profile');
+        } else {
+          alert(`Booking failed: ${errorData.message || 'Unknown error'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('Booking failed. Please try again.');
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -143,11 +248,7 @@ const TherapistProfileContent = () => {
     setSelectedPricing(pricing);
   };
 
-  const handleBookSession = () => {
-    // Navigate to booking page or open booking modal
-    console.log('Booking session for:', selectedDoctor?.name);
-    // You can implement the actual booking logic here
-  };
+
 
   useEffect(() => {
     fetchDoctors();
@@ -165,6 +266,8 @@ const TherapistProfileContent = () => {
       }
     }
   }, [doctorIndex, doctors]);
+
+
 
   if (loading) {
     return (
@@ -752,6 +855,39 @@ const TherapistProfileContent = () => {
                 </div>
               </div>
               
+              {/* Pricing Selection */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Pricing</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  <button
+                    onClick={() => setSelectedPrice(50)}
+                    className={`p-3 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                      selectedPrice === 50
+                        ? 'border-green-500 bg-green-50 text-green-700' 
+                        : 'border-gray-300 hover:border-green-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>Single Session</span>
+                      <span className="font-semibold">$50</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedPrice(200)}
+                    className={`p-3 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                      selectedPrice === 200
+                        ? 'border-green-500 bg-green-50 text-green-700' 
+                        : 'border-gray-300 hover:border-green-300 text-gray-700'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>Package (4 Sessions)</span>
+                      <span className="font-semibold">$200</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {/* Time Slots */}
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800 mb-3 text-sm">Available Times</h4>
@@ -829,13 +965,42 @@ const TherapistProfileContent = () => {
                 )}
               </div>
               
+              {/* Login/Role Prompt */}
+              {!isAuthenticated() ? (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-blue-700 text-sm text-center">
+                    🔐 Please <button onClick={() => router.push('/login')} className="underline font-semibold">log in</button> to book a session
+                  </p>
+                </div>
+              ) : !hasRole('client') ? (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-700 text-sm text-center">
+                    ⚠️ Only clients can book sessions. You are logged in as a {user.role}.
+                  </p>
+                </div>
+              ) : null}
+
               {/* Book Button */}
               <button 
                 onClick={handleBookSession}
-                className="w-full mt-4 bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors duration-200 text-sm"
+                disabled={!selectedDate || !selectedTime || !selectedPrice || isBooking || !isAuthenticated() || !hasRole('client')}
+                className={`w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm ${
+                  !selectedDate || !selectedTime || !selectedPrice || isBooking || !isAuthenticated() || !hasRole('client')
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-green-500 text-white hover:bg-green-600'
+                }`}
               >
-                Book Session
+                {isBooking ? 'Booking...' : 'Book Session'}
               </button>
+
+              {/* Success Message */}
+              {bookingSuccess && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-700 text-sm text-center">
+                    ✅ Session booked successfully! You will receive a confirmation email.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
