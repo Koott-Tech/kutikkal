@@ -26,6 +26,8 @@ export default function PsychologistSessions() {
   const [completingSessions, setCompletingSessions] = useState(new Set());
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedRescheduleSession, setSelectedRescheduleSession] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -86,6 +88,56 @@ export default function PsychologistSessions() {
   const confirmCompleteSession = (sessionId, clientName) => {
     if (window.confirm(`Are you sure you want to mark the session with ${clientName} as completed?`)) {
       handleCompleteSession(sessionId);
+    }
+  };
+
+  const handleApproveReschedule = async (session) => {
+    const newDate = prompt('Enter new date (YYYY-MM-DD):', session.scheduled_date);
+    const newTime = prompt('Enter new time (HH:MM):', session.scheduled_time);
+    
+    if (!newDate || !newTime) {
+      setError('Date and time are required');
+      return;
+    }
+
+    try {
+      setError(null);
+      await psychologistApi.respondToRescheduleRequest(session.id, {
+        action: 'approve',
+        newDate,
+        newTime,
+        reason: 'Reschedule approved'
+      });
+      
+      setSuccessMessage('Reschedule request approved successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+      await loadSessions();
+      setShowRescheduleModal(false);
+    } catch (err) {
+      console.error('Error approving reschedule:', err);
+      setError(`Failed to approve reschedule: ${err.message}`);
+    }
+  };
+
+  const handleRejectReschedule = async (session) => {
+    const reason = prompt('Enter rejection reason (optional):') || 'Reschedule rejected';
+    
+    try {
+      setError(null);
+      await psychologistApi.respondToRescheduleRequest(session.id, {
+        action: 'reject',
+        reason
+      });
+      
+      setSuccessMessage('Reschedule request rejected successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+      await loadSessions();
+      setShowRescheduleModal(false);
+    } catch (err) {
+      console.error('Error rejecting reschedule:', err);
+      setError(`Failed to reject reschedule: ${err.message}`);
     }
   };
 
@@ -157,6 +209,17 @@ export default function PsychologistSessions() {
           <p className="mt-2 text-sm text-gray-700">
             Manage your therapy sessions and client appointments.
           </p>
+        </div>
+        <div className="flex items-center space-x-4">
+          {sessions.some(s => s.status === 'reschedule_requested') && (
+            <button
+              onClick={() => setShowRescheduleModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Reschedule Requests ({sessions.filter(s => s.status === 'reschedule_requested').length})
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,6 +295,12 @@ export default function PsychologistSessions() {
                             <Clock className="h-4 w-4 mr-1" />
                             {formatTime(session.scheduled_time)}
                           </span>
+                          {session.status === 'reschedule_requested' && (
+                            <span className="flex items-center text-sm text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              Reschedule Requested
+                            </span>
+                          )}
                         </div>
                         {session.package && (
                           <p className="text-sm text-gray-500 mt-1">
@@ -509,6 +578,73 @@ export default function PsychologistSessions() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Request Modal */}
+      {showRescheduleModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Reschedule Requests</h3>
+              <button
+                onClick={() => setShowRescheduleModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {sessions
+                .filter(s => s.status === 'reschedule_requested')
+                .map((session) => (
+                  <div key={session.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-medium text-gray-900">
+                          {session.client?.first_name} {session.client?.last_name}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Current: {new Date(session.scheduled_date).toLocaleDateString()} at {formatTime(session.scheduled_time)}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Client requested reschedule
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        Pending
+                      </span>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleApproveReschedule(session)}
+                        className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectReschedule(session)}
+                        className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              
+              {sessions.filter(s => s.status === 'reschedule_requested').length === 0 && (
+                <div className="text-center py-8">
+                  <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pending reschedule requests</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    All reschedule requests have been processed.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

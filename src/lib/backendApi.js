@@ -214,6 +214,13 @@ export const clientApi = {
     });
   },
 
+  // Request reschedule for a session
+  async requestReschedule(sessionId) {
+    return apiRequest(`/clients/sessions/${sessionId}/reschedule-request`, {
+      method: 'POST',
+    });
+  },
+
   // Get available psychologists
   async getPsychologists(params = {}) {
     const queryParams = new URLSearchParams();
@@ -255,6 +262,14 @@ export const psychologistApi = {
     return apiRequest(`/psychologists/sessions/${sessionId}`, {
       method: 'PUT',
       body: JSON.stringify(updateData),
+    });
+  },
+
+  // Respond to reschedule request
+  async respondToRescheduleRequest(sessionId, responseData) {
+    return apiRequest(`/psychologists/sessions/${sessionId}/reschedule-response`, {
+      method: 'POST',
+      body: JSON.stringify(responseData),
     });
   },
 

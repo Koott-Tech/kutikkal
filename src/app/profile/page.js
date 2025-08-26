@@ -99,6 +99,19 @@ export default function ProfilePage() {
     setShowReportModal(true);
   };
 
+  const handleRescheduleRequest = async (session) => {
+    try {
+      setError(null);
+      await clientApi.requestReschedule(session.id);
+      setProfileSaveMsg('Reschedule request sent successfully!');
+      setTimeout(() => setProfileSaveMsg(''), 3000);
+      await loadUserData(); // Reload to update session status
+    } catch (err) {
+      console.error('Error requesting reschedule:', err);
+      setError(`Failed to send reschedule request: ${err.message}`);
+    }
+  };
+
   const handleCloseReportModal = () => {
     setShowReportModal(false);
     setSelectedReport(null);
@@ -390,6 +403,21 @@ export default function ProfilePage() {
                             >
                               View Report
                             </button>
+                          )}
+                          
+                          {session.status === 'booked' && (
+                            <button
+                              onClick={() => handleRescheduleRequest(session)}
+                              className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
+                            >
+                              Request Reschedule
+                            </button>
+                          )}
+                          
+                          {session.status === 'reschedule_requested' && (
+                            <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-sm">
+                              Reschedule Requested
+                            </span>
                           )}
                         </div>
                       </div>
