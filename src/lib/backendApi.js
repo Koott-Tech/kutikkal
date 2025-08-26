@@ -276,6 +276,21 @@ export const psychologistApi = {
     });
   },
 
+  // Add new availability
+  async addAvailability(availabilityData) {
+    return apiRequest('/psychologists/availability', {
+      method: 'POST',
+      body: JSON.stringify(availabilityData),
+    });
+  },
+
+  // Delete availability
+  async deleteAvailability(availabilityId) {
+    return apiRequest(`/psychologists/availability/${availabilityId}`, {
+      method: 'DELETE',
+    });
+  },
+
   // Get packages
   async getPackages() {
     return apiRequest('/psychologists/packages');
