@@ -1118,9 +1118,11 @@ export default function SuperAdminPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {doctor.availability.slice(0, 6).map((item, index) => (
                       <div key={index} className="bg-blue-50 rounded-md p-2 border border-blue-200">
-                        <div className="font-medium text-blue-800 text-sm mb-1">{item.day}</div>
+                        <div className="font-medium text-blue-800 text-sm mb-1">{item.date}</div>
                         <div className="text-blue-600 text-xs">
-                          {item.slots && Array.isArray(item.slots) ? item.slots.join(', ') : 'No slots'}
+                          {item.time_slots && Array.isArray(item.time_slots) ? 
+                            item.time_slots.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') : 
+                            'No slots'}
                         </div>
                       </div>
                     ))}
@@ -1547,8 +1549,12 @@ export default function SuperAdminPage() {
                       <div className="grid grid-cols-1 gap-3">
                         {selectedDoctor.availability.map((item, index) => (
                           <div key={index} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            <div className="font-semibold text-gray-800 mb-1">{item.day}</div>
-                            <div className="text-gray-600">{item.slots.join(', ')}</div>
+                            <div className="font-semibold text-gray-800 mb-1">{item.date}</div>
+                            <div className="text-gray-600">
+                              {item.time_slots && Array.isArray(item.time_slots) ? 
+                                item.time_slots.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') : 
+                                'No slots'}
+                            </div>
                           </div>
                         ))}
                       </div>

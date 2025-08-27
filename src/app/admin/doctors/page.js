@@ -11,7 +11,7 @@ import {
   Filter,
   Clock
 } from 'lucide-react';
-import { adminApi, publicApi } from '@/lib/backendApi';
+import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
 
 export default function DoctorsPage() {
@@ -23,8 +23,6 @@ export default function DoctorsPage() {
   const [filterSpecialty, setFilterSpecialty] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [fetchedAvailability, setFetchedAvailability] = useState([]);
-  const [isFetchingAvailability, setIsFetchingAvailability] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('success');
 
@@ -90,38 +88,6 @@ export default function DoctorsPage() {
     setSelectedDoctor(doctor);
     setIsFullProfileOpen(true);
   };
-
-  // Fetch fresh availability for the selected doctor when the profile modal opens
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!isFullProfileOpen || !selectedDoctor?.id) {
-        setFetchedAvailability([]);
-        return;
-      }
-      try {
-        setIsFetchingAvailability(true);
-        const resp = await publicApi.getPsychologistAvailability(selectedDoctor.id);
-        // resp.data.availability is an object keyed by date { 'YYYY-MM-DD': { available, timeSlots: [] } }
-        if (resp && resp.success && resp.data && resp.data.availability) {
-          const entries = Object.entries(resp.data.availability)
-            .map(([date, v]) => ({ date, time_slots: Array.isArray(v.timeSlots) ? v.timeSlots : [] }))
-            // show only dates that actually have at least one time slot
-            .filter(e => Array.isArray(e.time_slots) && e.time_slots.length > 0)
-            .sort((a, b) => a.date.localeCompare(b.date));
-          setFetchedAvailability(entries);
-        } else {
-          setFetchedAvailability([]);
-        }
-      } catch (e) {
-        console.error('Failed to fetch doctor availability:', e);
-        setFetchedAvailability([]);
-      } finally {
-        setIsFetchingAvailability(false);
-      }
-    };
-
-    fetchAvailability();
-  }, [isFullProfileOpen, selectedDoctor]);
 
   const handleDoctorModalClose = () => {
     setIsDoctorModalOpen(false);
@@ -377,21 +343,17 @@ export default function DoctorsPage() {
                 {/* Availability */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Availability</h3>
-                  {isFetchingAvailability ? (
-                    <div className="text-gray-500 text-sm">Loading availability...</div>
-                  ) : fetchedAvailability && fetchedAvailability.length > 0 ? (
+
+                  {selectedDoctor.availability && selectedDoctor.availability.length > 0 ? (
                     <div className="space-y-2">
-                      {console.log('Fetched date-based availability:', fetchedAvailability)}
-                      {fetchedAvailability.map((slot, index) => {
-                        return (
-                          <div key={index} className="flex items-center space-x-2 text-sm">
-                            <Clock className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-900">
-                              {slot.date}: {Array.isArray(slot.time_slots) ? slot.time_slots.join(', ') : 'No time slots'}
-                            </span>
-                          </div>
-                        );
-                      })}
+                      {selectedDoctor.availability.map((slot, index) => (
+                        <div key={index} className="flex items-center space-x-2 text-sm">
+                          <Clock className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-900">
+                            {slot.date}: {slot.time_slots?.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') || 'Available'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="flex items-center text-gray-500">

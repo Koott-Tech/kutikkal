@@ -46,7 +46,8 @@ export default function RegisterPage() {
       // Register client with minimal data
       const data = await authApi.registerClient({
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        role: 'client'
       });
 
       // Auto-login after successful registration
@@ -56,7 +57,15 @@ export default function RegisterPage() {
       router.push('/profile?tab=contact');
     } catch (error) {
       console.error('Registration error:', error);
-      setError(error.message || 'Registration failed. Please try again.');
+      
+      // Handle validation errors specifically
+      if (error.message && error.message.includes('Validation Error')) {
+        setError('Please check your input. Make sure email is valid and password is at least 6 characters.');
+      } else if (error.message && error.message.includes('already exists')) {
+        setError('An account with this email already exists. Please use a different email or try logging in.');
+      } else {
+        setError(error.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

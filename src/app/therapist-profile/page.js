@@ -42,17 +42,33 @@ const TherapistProfileContent = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Fetch psychologist availability
+  // Fetch psychologist availability for current month
   const fetchPsychologistAvailability = async (psychologistId) => {
     try {
       setLoadingAvailability(true);
       
-      // Use real API call to get psychologist availability
-      const response = await publicApi.getPsychologistAvailability(psychologistId);
+      // Get current month dates
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      
+      
+      
+      // Use real API call to get psychologist availability range
+      const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
       
       if (response.success) {
-        console.log('Real availability data:', response.data.availability);
-        setPsychologistAvailability(response.data.availability);
+
+        
+        // Convert array to object with date keys
+        const availabilityObject = {};
+        response.data.data.forEach(dayAvailability => {
+          availabilityObject[dayAvailability.date] = dayAvailability;
+        });
+        
+
+        setPsychologistAvailability(availabilityObject);
       } else {
         console.error('Failed to fetch availability:', response);
         setPsychologistAvailability({});
@@ -106,11 +122,23 @@ const TherapistProfileContent = () => {
   };
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    setCurrentDate(newDate);
+    
+    // Refetch availability for new month
+    if (selectedDoctor) {
+      fetchPsychologistAvailability(selectedDoctor.id);
+    }
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    setCurrentDate(newDate);
+    
+    // Refetch availability for new month
+    if (selectedDoctor) {
+      fetchPsychologistAvailability(selectedDoctor.id);
+    }
   };
 
   const handleDateSelect = (day) => {
@@ -125,8 +153,10 @@ const TherapistProfileContent = () => {
     const dateStr = istNewSelectedDate.toISOString().split('T')[0];
     const dateAvailability = psychologistAvailability[dateStr];
     
-    if (!dateAvailability || !dateAvailability.available) {
-      console.log('Selected date has no availability');
+    if (!dateAvailability || !dateAvailability.availableSlots || dateAvailability.availableSlots === 0) {
+      
+    } else {
+      
     }
   };
 
@@ -196,8 +226,11 @@ const TherapistProfileContent = () => {
       const bookingData = {
         psychologist_id: selectedDoctor.id,
         scheduled_date: scheduledDate,
-        scheduled_time: scheduledTime
+        scheduled_time: scheduledTime,
+        price: selectedPrice
       };
+
+
 
       const response = await fetch('http://localhost:5001/api/sessions/book', {
         method: 'POST',
@@ -267,10 +300,10 @@ const TherapistProfileContent = () => {
     if (doctorIndex !== null && doctors.length > 0) {
       const doctor = doctors[parseInt(doctorIndex)];
       if (doctor) {
-        console.log('Setting selected doctor:', doctor);
+
         setSelectedDoctor(doctor);
         // Fetch availability for this psychologist
-        console.log('Fetching availability for doctor ID:', doctor.id);
+
         fetchPsychologistAvailability(doctor.id);
       }
     }
@@ -747,7 +780,7 @@ const TherapistProfileContent = () => {
                   <p>Availability loaded: {Object.keys(psychologistAvailability).length > 0 ? 'Yes' : 'No'}</p>
                   <button 
                     onClick={() => {
-                      console.log('Manual availability fetch triggered');
+              
                       if (selectedDoctor) {
                         fetchPsychologistAvailability(selectedDoctor.id);
                       }
@@ -791,24 +824,18 @@ const TherapistProfileContent = () => {
                     const istCalendarDate = new Date(calendarDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
                     const dateStr = istCalendarDate.toISOString().split('T')[0];
                     const dateAvailability = psychologistAvailability[dateStr];
-                    const isPsychologistAvailable = dateAvailability && dateAvailability.available;
+                    const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
                     
                     // Only show dates as available if they actually have availability data
                     const isActuallyAvailable = isPsychologistAvailable && isAvailable;
-                    
-                    // Debug logging
-                    console.log(`Day ${day}: isAvailable=${isAvailable}, isPsychologistAvailable=${isPsychologistAvailable}, isActuallyAvailable=${isActuallyAvailable}, dateStr=${dateStr}, dateAvailability=`, dateAvailability);
                     
                     calendarDays.push(
                       <div
                         key={`day-${day}`}
                         onClick={() => {
-                          console.log(`Clicked day ${day}: isAvailable=${isAvailable}, isPsychologistAvailable=${isPsychologistAvailable}, isActuallyAvailable=${isActuallyAvailable}`);
                           // Allow clicking on any future date, not just those with availability
                           if (isAvailable) {
                             handleDateSelect(day);
-                          } else {
-                            console.log('Date not clickable (past date):', { day, isAvailable });
                           }
                         }}
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
@@ -907,9 +934,13 @@ const TherapistProfileContent = () => {
                     const istSelectedDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
                     const dateStr = istSelectedDate.toISOString().split('T')[0];
                     const dateAvailability = psychologistAvailability[dateStr];
-                    const availableSlots = dateAvailability?.timeSlots || [];
+                    const allTimeSlots = dateAvailability?.timeSlots || [];
+                    const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
+                    const blockedSlots = allTimeSlots.filter(slot => !slot.available).map(slot => slot.displayTime);
                     
-                    if (!dateAvailability || !dateAvailability.available || !availableSlots.length) {
+
+                    
+                    if (!dateAvailability || !allTimeSlots.length) {
                       return (
                         <div className="text-center py-8">
                           <div className="text-gray-500 text-sm">
@@ -941,24 +972,49 @@ const TherapistProfileContent = () => {
                     return (
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <h5 className="font-bold text-gray-800 text-sm">AVAILABLE TIMES</h5>
-                          <span className="font-bold text-gray-800 text-sm">All Day</span>
+                          <h5 className="font-bold text-gray-800 text-sm">TIME SLOTS</h5>
+                          <span className="font-bold text-gray-800 text-sm">Available: {availableSlots.length} | Blocked: {blockedSlots.length}</span>
                         </div>
-                        <div className="grid grid-cols-5 gap-1">
-                          {availableSlots.map((time) => (
-                            <button
-                              key={time}
-                              onClick={() => handleTimeSelect(time)}
-                              className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
-                                selectedTime === time
-                                  ? 'border-green-500 bg-green-50 text-green-700' 
-                                  : 'border-gray-300 hover:border-green-300 text-gray-700'
-                              }`}
-                            >
-                              {time}
-                            </button>
-                          ))}
-                        </div>
+                        
+                        {/* Available Time Slots */}
+                        {availableSlots.length > 0 && (
+                          <div className="space-y-2">
+                            <h6 className="text-sm font-medium text-green-700">Available Times:</h6>
+                            <div className="grid grid-cols-5 gap-1">
+                              {availableSlots.map((time) => (
+                                <button
+                                  key={time}
+                                  onClick={() => handleTimeSelect(time)}
+                                  className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
+                                    selectedTime === time
+                                      ? 'border-green-500 bg-green-50 text-green-700' 
+                                      : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                                  }`}
+                                >
+                                  {time}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Blocked Time Slots */}
+                        {blockedSlots.length > 0 && (
+                          <div className="space-y-2">
+                            <h6 className="text-sm font-medium text-red-700">Blocked Times:</h6>
+                            <div className="grid grid-cols-5 gap-1">
+                              {blockedSlots.map((time) => (
+                                <div
+                                  key={time}
+                                  className="p-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-xs w-full h-10 flex items-center justify-center cursor-not-allowed"
+                                  title="This time slot is not available"
+                                >
+                                  {time}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })()

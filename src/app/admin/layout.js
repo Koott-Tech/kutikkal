@@ -12,50 +12,29 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { authApi } from '@/lib/backendApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, hasRole, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
+    if (!authLoading) {
+      if (!isAuthenticated()) {
         router.push('/login');
         return;
       }
-
-      // Use the proper backendApi instead of direct fetch
-      const userData = await authApi.getProfile();
       
-      if (!userData.success || !userData.data.user) {
-        throw new Error('Authentication failed');
-      }
-
-      const user = userData.data.user;
-      if (user.role !== 'admin' && user.role !== 'superadmin') {
+      if (!hasRole('admin') && !hasRole('superadmin')) {
         router.push('/');
         return;
       }
-
-      setUser(user);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      router.push('/login');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [authLoading, isAuthenticated, hasRole, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+    logout();
     router.push('/login');
   };
 
@@ -67,7 +46,7 @@ export default function AdminLayout({ children }) {
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>

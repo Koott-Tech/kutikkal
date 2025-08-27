@@ -60,35 +60,6 @@ const Guide = () => {
   }, [selected, showDateTimePicker, showPaymentModal]);
 
   const handleBookSession = (doctor) => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
-    
-    if (!token || !userData) {
-      // User is not logged in, redirect to login with return URL
-      const returnUrl = `/guide?doctor=${doctors.indexOf(doctor)}`;
-      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-      return;
-    }
-    
-    // Check if user is a client
-    try {
-      const user = JSON.parse(userData);
-      if (user.role !== 'client') {
-        alert('Only clients can book sessions. You are logged in as a ' + user.role);
-        return;
-      }
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      // Clear invalid data and redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
-      const returnUrl = `/guide?doctor=${doctors.indexOf(doctor)}`;
-      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-      return;
-    }
-    
-    // User is authenticated client, proceed with booking
     setSelectedDoctor(doctor);
     setShowDateTimePicker(true);
     setSelected(null); // Close doctor modal
@@ -639,7 +610,22 @@ const Guide = () => {
   
                 </div>
                 
-                {/* Education section removed */}
+                {/* Education - Only show if not N/A */}
+                {(doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A') || 
+                 (doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A') || 
+                 (doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A') ? (
+                  <div style={{ marginBottom: 16 }}>
+                    {doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Education:</b> {doctors[selected].ug_college}</div>
+                    )}
+                    {doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Post Graduate:</b> {doctors[selected].pg_college}</div>
+                    )}
+                    {doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A' && (
+                      <div style={{ fontSize: 16, color: "#333" }}><b>PhD:</b> {doctors[selected].phd_college}</div>
+                    )}
+                  </div>
+                ) : null}
                 
                 {/* Bio */}
                 <div style={{ fontSize: 16, color: "#555", lineHeight: 1.5, marginBottom: 24 }}>
@@ -655,28 +641,8 @@ const Guide = () => {
                   </div>
                 </div>
                 
-                {/* Login Prompt */}
-                <div style={{ 
-                  background: "#e3f2fd", 
-                  border: "1px solid #2196f3", 
-                  borderRadius: "8px", 
-                  padding: "12px", 
-                  marginBottom: "16px",
-                  textAlign: "center",
-                  width: "100%"
-                }}>
-                  <p style={{ 
-                    fontSize: "14px", 
-                    color: "#1976d2", 
-                    margin: 0,
-                    fontWeight: 500
-                  }}>
-                    🔐 You'll need to log in to book a session
-                  </p>
-                </div>
-
                 {/* Action Buttons */}
-                <div style={{ display: "flex", flexDirection: "row", gap: 16, justifyContent: "center", alignItems: "center", marginTop: 16 }}>
+                <div style={{ display: "flex", flexDirection: "row", gap: 16, justifyContent: "center", alignItems: "center", marginTop: 32 }}>
                   <button
                     style={{
                       background: "#27ae60",
@@ -876,7 +842,6 @@ const Guide = () => {
                           if (isAvailable) {
                             const today = new Date();
                             const selectedDay = new Date(today.getFullYear(), today.getMonth(), day);
-                            // Use Indian Standard Time (IST) - UTC+5:30
                             setSelectedDate(selectedDay.toISOString().split('T')[0]);
                           }
                         }}
@@ -939,25 +904,6 @@ const Guide = () => {
                 </div>
               </div>
 
-              {/* Login Prompt */}
-              <div style={{ 
-                background: "#e3f2fd", 
-                border: "1px solid #2196f3", 
-                borderRadius: "8px", 
-                padding: "12px", 
-                marginBottom: "15px",
-                textAlign: "center"
-              }}>
-                <p style={{ 
-                  fontSize: "14px", 
-                  color: "#1976d2", 
-                  margin: 0,
-                  fontWeight: 500
-                }}>
-                  🔐 You'll need to log in to complete your booking
-                </p>
-              </div>
-
               <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
                 <button
                   onClick={() => setShowDateTimePicker(false)}
@@ -990,7 +936,7 @@ const Guide = () => {
                     transition: "all 0.2s"
                   }}
                 >
-                  Continue to Login
+                  Continue to Payment
                 </button>
               </div>
             </div>

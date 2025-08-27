@@ -45,6 +45,9 @@ const handleResponse = async (response) => {
       
       // Add specific error messages for common status codes
       switch (response.status) {
+        case 400:
+          errorMessage = 'Please check your input and try again.';
+          break;
         case 401:
           errorMessage = 'Authentication required. Please log in again.';
           break;
@@ -592,7 +595,12 @@ export const publicApi = {
 
   // Get psychologist availability (public)
   async getPsychologistAvailability(psychologistId) {
-    return apiRequest(`/public/psychologists/${psychologistId}/availability`);
+    return apiRequest(`/availability/public/psychologist/${psychologistId}`);
+  },
+
+  // Get psychologist availability range (public)
+  async getPsychologistAvailabilityRange(psychologistId, startDate, endDate) {
+    return apiRequest(`/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}`);
   },
 };
 
