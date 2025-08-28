@@ -59,8 +59,11 @@ export default function DoctorsPage() {
   };
 
   const handleAddDoctor = () => {
+    console.log('Add Doctor button clicked!'); // Debug log
+    console.log('Current isDoctorModalOpen state:', isDoctorModalOpen); // Debug log
     setEditingDoctor(null);
     setIsDoctorModalOpen(true);
+    console.log('Modal state should now be true'); // Debug log
   };
 
   const handleEditDoctor = (doctor) => {
@@ -163,8 +166,14 @@ export default function DoctorsPage() {
           </p>
         </div>
         <button
-          onClick={handleAddDoctor}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Button click event triggered');
+            handleAddDoctor();
+          }}
           className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          type="button"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Doctor
@@ -290,13 +299,16 @@ export default function DoctorsPage() {
 
       {/* Doctor Modal */}
       {isDoctorModalOpen && (
-        <DoctorModal
-          isOpen={isDoctorModalOpen}
-          onClose={handleDoctorModalClose}
-          onSave={handleDoctorModalSuccess}
-          doctor={editingDoctor}
-          mode={editingDoctor ? 'edit' : 'add'}
-        />
+        <>
+          {console.log('Rendering DoctorModal with state:', { isDoctorModalOpen, editingDoctor })}
+          <DoctorModal
+            isOpen={isDoctorModalOpen}
+            onClose={handleDoctorModalClose}
+            onSave={handleDoctorModalSuccess}
+            doctor={editingDoctor}
+            mode={editingDoctor ? 'edit' : 'add'}
+          />
+        </>
       )}
 
       {/* Full Profile Modal */}
