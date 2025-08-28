@@ -15,7 +15,7 @@ export default function WhyWereHere() {
             <div className="space-y-6 text-base text-gray-700 leading-relaxed tracking-tight">
               <p>
                 Each year, more than 65 million Americans seek help for a mental health condition. 
-                And due to a broken and frustrating system, 2 out of 3 of those individuals give up 
+                And due to a broken haha and frustrating system, 2 out of 3 of those individuals give up 
                 before ever getting the help they need.
               </p>
               
