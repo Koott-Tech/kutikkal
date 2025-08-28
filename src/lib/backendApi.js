@@ -1,4 +1,10 @@
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+// Ensure the backend URL always has /api suffix
+const getBackendBaseUrl = () => {
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+
+const BACKEND_BASE_URL = getBackendBaseUrl();
 
 // Debug logging
 console.log('Environment variables:', {
