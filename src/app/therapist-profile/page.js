@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { publicApi } from '../../lib/backendApi';
+import backendApi, { publicApi } from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Separate component that uses useSearchParams
@@ -232,38 +232,16 @@ const TherapistProfileContent = () => {
 
 
 
-      const response = await fetch('http://localhost:5001/api/sessions/book', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(bookingData),
-      });
-
-      if (response.ok) {
-        setBookingSuccess(true);
-        // Reset selections
-        setSelectedDate(null);
-        setSelectedTime(null);
-        setSelectedPrice(null);
-        // Show success message
-        setTimeout(() => setBookingSuccess(false), 5000);
-      } else {
-        const errorData = await response.json();
-        if (response.status === 401) {
-          alert('Session expired. Please log in again.');
-          router.push('/login');
-        } else if (response.status === 403) {
-          alert('Only clients can book sessions. Please log in with a client account.');
-          router.push('/login');
-        } else if (response.status === 404) {
-          alert('Client profile not found. Please complete your profile first.');
-          router.push('/profile');
-        } else {
-          alert(`Booking failed: ${errorData.message || 'Unknown error'}`);
-        }
-      }
+      const response = await backendApi.client.bookSession(bookingData);
+      
+      // Success case - backendApi returns data directly
+      setBookingSuccess(true);
+      // Reset selections
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setSelectedPrice(null);
+      // Show success message
+      setTimeout(() => setBookingSuccess(false), 5000);
     } catch (error) {
       console.error('Booking error:', error);
       alert('Booking failed. Please try again.');
