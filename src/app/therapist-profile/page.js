@@ -214,13 +214,13 @@ const TherapistProfileContent = () => {
       if (timeStr.includes('PM') && !timeStr.includes('12')) {
         const hour = parseInt(timeStr.split(':')[0]) + 12;
         const minute = timeStr.split(':')[1].split(' ')[0];
-        scheduledTime = `${hour.toString().padStart(2, '0')}:${minute}:00`;
+        scheduledTime = `${hour.toString().padStart(2, '0')}:${minute}`;
       } else if (timeStr.includes('AM') && timeStr.includes('12')) {
-        scheduledTime = `00:${timeStr.split(':')[1].split(' ')[0]}:00`;
+        scheduledTime = `00:${timeStr.split(':')[1].split(' ')[0]}`;
       } else {
         const hour = timeStr.split(':')[0];
         const minute = timeStr.split(':')[1].split(' ')[0];
-        scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
+        scheduledTime = `${hour.padStart(2, '0')}:${minute}`;
       }
 
       const bookingData = {
