@@ -656,7 +656,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 0 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don't believe in one-size-fits-all therapy. Each person's journey is unique, so I adapt my methods to fit their specific needs and cultural background."
+                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
                         </p>
                       </div>
                     )}
@@ -676,7 +676,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 1 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey."
+                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
                         </p>
                       </div>
                     )}
@@ -688,7 +688,7 @@ const TherapistProfileContent = () => {
                       onClick={() => toggleFAQ(2)}
                       className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-800">What's most important in successful therapy?</span>
+                      <span className="font-medium text-gray-800">What&apos;s most important in successful therapy?</span>
                       <span className="text-gray-500 text-xl font-bold">
                         {openFAQ === 2 ? '−' : '+'}
                       </span>
@@ -696,7 +696,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 2 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement."
+                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
                         </p>
                       </div>
                     )}
@@ -1074,7 +1074,7 @@ const TherapistProfileContent = () => {
       {/* Support Contact Section */}
       <div className="w-full h-[100px] bg-green-500 flex items-center justify-center">
         <p className="text-white text-sm text-center px-4">
-          If you didn't find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We're here for you - for anything you might need.
+          If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>
       </div>
       
