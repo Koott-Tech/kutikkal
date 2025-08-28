@@ -23,7 +23,9 @@ export default function Home() {
       {/* <InfoCards /> */}
       <HowItWorks />
       <SupportFaq />
-      <Testimonials />
+      <div className="hidden md:block">
+        <Testimonials />
+      </div>
       
       <ResultsSplit />
       

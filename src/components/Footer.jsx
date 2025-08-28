@@ -31,9 +31,9 @@ export default function Footer() {
                     
                     {/* Main footer content */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16">
-                        {/* Kuttikal Column */}
+                        {/* LittleMinds Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Kuttikal</h3>
+                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">LittleMinds</h3>
                             <ul className="space-y-4 text-base leading-relaxed">
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">About us</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Insurance & pricing</a></li>

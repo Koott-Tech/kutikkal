@@ -52,7 +52,7 @@ export default function InfoCards() {
 
   return (
     <section className="mt-1">
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-[50px]">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
         {items.map((item) => (
           <div
             key={item.title}

@@ -6,14 +6,14 @@ export default function MissionHero() {
       {/* Row 1: Header Content */}
       <div className="flex flex-col items-center px-6 pt-16 text-center">
         <h1 
-          className="text-3xl md:text-4xl lg:text-5xl font-medium leading-tight mb-6 max-w-4xl"
+          className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[110%] md:leading-tight mb-6 max-w-4xl tracking-[-0.195rem]"
           style={{ color: '#1d1733' }}
         >
           Our mission is to make<br />
           mental healthcare work for everyone.
         </h1>
         
-        <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-4xl leading-relaxed">
+        <p className="text-[1rem] md:text-lg lg:text-xl text-gray-700 mb-8 max-w-4xl leading-[1.3rem] md:leading-relaxed">
           Creating a future where high-quality mental healthcare is the standard for all.
         </p>
       </div>

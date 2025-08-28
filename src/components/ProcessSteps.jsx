@@ -4,7 +4,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
   // Content configuration for different therapy types
   const content = {
     individual: {
-      title: "How individual therapy works at Kuttikal",
+      title: "How individual therapy works at LittleMinds",
       subtitle: "From beginning to end, we'll tailor your online therapy experience to you.",
       step1: {
         title: "1. Tell us what's important",
@@ -25,7 +25,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       }
     },
     couples: {
-      title: "How couples therapy works at Kuttikal",
+      title: "How couples therapy works at LittleMinds",
       subtitle: "From beginning to end, we'll tailor your couples therapy experience to strengthen your relationship.",
       step1: {
         title: "1. Share your relationship goals",
@@ -46,7 +46,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       }
     },
     family: {
-      title: "How family therapy works at Kuttikal",
+      title: "How family therapy works at LittleMinds",
       subtitle: "From beginning to end, we'll help your family build stronger bonds and better communication.",
       step1: {
         title: "1. Identify family dynamics",
@@ -67,7 +67,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       }
     },
     child: {
-      title: "How child therapy works at Kuttikal",
+      title: "How child therapy works at LittleMinds",
       subtitle: "From beginning to end, we'll create a safe, supportive environment for your child's growth.",
       step1: {
         title: "1. Understand your child's needs",
@@ -88,7 +88,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       }
     },
     teen: {
-      title: "How teen therapy works at Kuttikal",
+      title: "How teen therapy works at LittleMinds",
       subtitle: "From beginning to end, we'll provide a safe space for your teenager to explore and grow.",
       step1: {
         title: "1. Address teen-specific concerns",
@@ -109,7 +109,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       }
     },
     psychiatry: {
-      title: "How psychiatry works at Kuttikal",
+      title: "How psychiatry works at LittleMinds",
       subtitle: "From beginning to end, we'll provide comprehensive psychiatric care for your mental health needs.",
       step1: {
         title: "1. Share your symptoms",
@@ -138,19 +138,19 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       <div className="mx-auto max-w-[1400px] pl-8 pr-16">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="text-4xl md:text-5xl font-medium text-black mb-4">
+          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black mb-4 tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">
             {currentContent.title}
           </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto">
-            {currentContent.subtitle}
-          </p>
+                     <p className="text-base md:text-xl text-black max-w-3xl mx-auto tracking-[-0.0375rem] md:tracking-normal leading-[150%] md:leading-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+             {currentContent.subtitle}
+           </p>
         </div>
 
-        {/* Four Step Process */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mx-auto">
-          {/* Step 1 */}
-          <div className="text-center">
-            <div className="bg-purple-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex items-center justify-center">
+                 {/* Four Step Process */}
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mx-auto md:mx-auto ml-4 md:ml-0">
+                     {/* Step 1 */}
+           <div className="text-center ml-2 md:ml-0">
+             <div className="bg-purple-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex items-center justify-center">
               <div className="space-y-2">
                 {currentContent.step1.tags?.map((tag, index) => (
                   <div key={index} className="bg-white rounded-full px-4 py-2 text-sm text-gray-600">{tag}</div>
@@ -158,14 +158,14 @@ export default function ProcessSteps({ therapyType = "individual" }) {
               </div>
             </div>
             <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step1.title}</h3>
-            <p className="text-black text-left font-light">
-              {currentContent.step1.description}
-            </p>
+                         <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+               {currentContent.step1.description}
+             </p>
           </div>
 
-          {/* Step 2 */}
-          <div className="text-center">
-            <div className="bg-green-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex items-center justify-center">
+                     {/* Step 2 */}
+           <div className="text-center ml-2 md:ml-0">
+             <div className="bg-green-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex items-center justify-center">
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
                 <div className="w-16 h-16 bg-gray-400 rounded-full"></div>
@@ -175,14 +175,14 @@ export default function ProcessSteps({ therapyType = "individual" }) {
               </div>
             </div>
             <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step2.title}</h3>
-            <p className="text-black text-left font-light">
-              {currentContent.step2.description}
-            </p>
+                         <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+               {currentContent.step2.description}
+             </p>
           </div>
 
-          {/* Step 3 */}
-          <div className="text-center">
-            <div className="bg-orange-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex flex-col items-center justify-center space-y-4">
+                     {/* Step 3 */}
+           <div className="text-center ml-2 md:ml-0">
+             <div className="bg-orange-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex flex-col items-center justify-center space-y-4">
               <div className="text-sm font-medium text-gray-700">Mornings Before 12pm</div>
               <div className="flex space-x-2">
                 {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'S'].map((day, index) => (
@@ -200,14 +200,14 @@ export default function ProcessSteps({ therapyType = "individual" }) {
               </div>
             </div>
             <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step3.title}</h3>
-            <p className="text-black text-left font-light">
-              {currentContent.step3.description}
-            </p>
+                         <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+               {currentContent.step3.description}
+             </p>
           </div>
 
-          {/* Step 4 */}
-          <div className="text-center">
-            <div className="bg-blue-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex flex-col items-center justify-center relative">
+                     {/* Step 4 */}
+           <div className="text-center ml-2 md:ml-0">
+             <div className="bg-blue-100 rounded-2xl p-6 mb-6 h-56 min-w-[320px] flex flex-col items-center justify-center relative">
               <div className="text-center mb-4">
                 <div className="text-sm font-bold text-gray-800">Tyrell Washington</div>
                 <div className="text-xs text-gray-600">LMFT</div>
@@ -223,9 +223,9 @@ export default function ProcessSteps({ therapyType = "individual" }) {
               </div>
             </div>
             <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step4.title}</h3>
-            <p className="text-black text-left font-light">
-              {currentContent.step4.description}
-            </p>
+                         <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+               {currentContent.step4.description}
+             </p>
           </div>
         </div>
       </div>
