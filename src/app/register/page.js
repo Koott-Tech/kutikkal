@@ -188,7 +188,7 @@ export default function RegisterPage() {
               marginTop: "1rem",
               fontSize: "0.75rem"
             }}>
-              <strong>Note:</strong> Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators. You'll complete your profile after registration to access therapy services.
+              <strong>Note:</strong> Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators. You&apos;ll complete your profile after registration to access therapy services.
             </div>
           </div>
 

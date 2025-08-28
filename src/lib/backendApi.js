@@ -604,7 +604,7 @@ export const publicApi = {
   },
 };
 
-export default {
+const backendApi = {
   auth: authApi,
   client: clientApi,
   psychologist: psychologistApi,
@@ -613,3 +613,5 @@ export default {
   sessions: sessionsApi,
   dashboard: dashboardApi,
 };
+
+export default backendApi;
