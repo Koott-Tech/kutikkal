@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -42,68 +42,11 @@ const TherapistProfileContent = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  // Fetch psychologist availability for current month
-  const fetchPsychologistAvailability = async (psychologistId) => {
-    try {
-      setLoadingAvailability(true);
-      
-      // Get current month dates
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
-      
-      
-      
-      // Use real API call to get psychologist availability range
-      const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
-      
-      if (response.success) {
-
-        
-        // Convert array to object with date keys
-        const availabilityObject = {};
-        response.data.data.forEach(dayAvailability => {
-          availabilityObject[dayAvailability.date] = dayAvailability;
-        });
-        
-
-        setPsychologistAvailability(availabilityObject);
-      } else {
-        console.error('Failed to fetch availability:', response);
-        setPsychologistAvailability({});
-      }
-    } catch (error) {
-      console.error('Error fetching psychologist availability:', error);
-      // Set default availability if API fails
-      setPsychologistAvailability({});
-    } finally {
-      setLoadingAvailability(false);
-    }
-  };
 
 
 
-  // Fetch doctors data
-  const fetchDoctors = async () => {
-    try {
-      setLoading(true);
-      const response = await publicApi.getPsychologists();
-      if (response.success) {
-        setDoctors(response.data.psychologists);
-        if (doctorIndex !== null && response.data.psychologists[parseInt(doctorIndex)]) {
-          setSelectedDoctor(response.data.psychologists[parseInt(doctorIndex)]);
-        }
-      } else {
-        setError('Failed to fetch doctors');
-      }
-    } catch (error) {
-      console.error('Error fetching doctors:', error);
-      setError('Failed to load doctor information');
-    } finally {
-      setLoading(false);
-    }
-  };
+
+
 
   // Calendar helper functions
   const getMonthName = (date) => {
@@ -292,22 +235,74 @@ const TherapistProfileContent = () => {
 
 
 
+  const fetchDoctors = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await publicApi.getPsychologists();
+      if (response.success) {
+        setDoctors(response.data.psychologists);
+        if (doctorIndex !== null && response.data.psychologists[parseInt(doctorIndex)]) {
+          setSelectedDoctor(response.data.psychologists[parseInt(doctorIndex)]);
+        }
+      } else {
+        setError('Failed to fetch doctors');
+      }
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      setError('Failed to load doctor information');
+    } finally {
+      setLoading(false);
+    }
+  }, [doctorIndex]);
+
   useEffect(() => {
     fetchDoctors();
-  }, []);
+  }, [fetchDoctors]);
+
+  const fetchPsychologistAvailability = useCallback(async (psychologistId) => {
+    try {
+      setLoadingAvailability(true);
+      
+      // Get current month dates
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      
+      // Use real API call to get psychologist availability range
+      const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
+      
+      if (response.success) {
+        // Convert array to object with date keys
+        const availabilityObject = {};
+        response.data.data.forEach(dayAvailability => {
+          availabilityObject[dayAvailability.date] = dayAvailability;
+        });
+        
+        setPsychologistAvailability(availabilityObject);
+      } else {
+        console.error('Failed to fetch availability:', response);
+        setPsychologistAvailability({});
+      }
+    } catch (error) {
+      console.error('Error fetching psychologist availability:', error);
+      // Set default availability if API fails
+      setPsychologistAvailability({});
+    } finally {
+      setLoadingAvailability(false);
+    }
+  }, [currentDate]);
 
   useEffect(() => {
     if (doctorIndex !== null && doctors.length > 0) {
       const doctor = doctors[parseInt(doctorIndex)];
       if (doctor) {
-
         setSelectedDoctor(doctor);
         // Fetch availability for this psychologist
-
         fetchPsychologistAvailability(doctor.id);
       }
     }
-  }, [doctorIndex, doctors]);
+  }, [doctorIndex, doctors, fetchPsychologistAvailability]);
 
 
 
@@ -656,7 +651,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 0 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don't believe in one-size-fits-all therapy. Each person's journey is unique, so I adapt my methods to fit their specific needs and cultural background."
+                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
                         </p>
                       </div>
                     )}
@@ -676,7 +671,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 1 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey."
+                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
                         </p>
                       </div>
                     )}
@@ -688,7 +683,7 @@ const TherapistProfileContent = () => {
                       onClick={() => toggleFAQ(2)}
                       className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
                     >
-                      <span className="font-medium text-gray-800">What's most important in successful therapy?</span>
+                      <span className="font-medium text-gray-800">What&apos;s most important in successful therapy?</span>
                       <span className="text-gray-500 text-xl font-bold">
                         {openFAQ === 2 ? '−' : '+'}
                       </span>
@@ -696,7 +691,7 @@ const TherapistProfileContent = () => {
                     {openFAQ === 2 && (
                       <div className="px-4 pb-4">
                         <p className="text-gray-700 leading-relaxed text-sm">
-                          "The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement."
+                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
                         </p>
                       </div>
                     )}
@@ -1074,7 +1069,7 @@ const TherapistProfileContent = () => {
       {/* Support Contact Section */}
       <div className="w-full h-[100px] bg-green-500 flex items-center justify-center">
         <p className="text-white text-sm text-center px-4">
-          If you didn't find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We're here for you - for anything you might need.
+          If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>
       </div>
       

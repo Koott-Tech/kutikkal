@@ -28,7 +28,7 @@ export default function DoctorsPage() {
 
   useEffect(() => {
     loadDoctors();
-  }, []);
+  }, [loadDoctors]);
 
   const loadDoctors = async () => {
     try {

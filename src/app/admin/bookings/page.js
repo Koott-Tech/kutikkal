@@ -41,7 +41,7 @@ export default function BookingsPage() {
 
   useEffect(() => {
     loadBookings();
-  }, []);
+  }, [loadBookings]);
 
   const loadBookings = async () => {
     try {

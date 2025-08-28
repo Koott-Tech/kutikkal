@@ -54,7 +54,7 @@ export default function ProfilePage() {
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, loadUserData]);
 
   // If query contains ?tab=contact, open Contact tab on arrival
   useEffect(() => {
