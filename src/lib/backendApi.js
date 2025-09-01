@@ -202,6 +202,11 @@ export const clientApi = {
     return apiRequest(`/clients/sessions?${queryParams}`);
   },
 
+  // Get single session with summary
+  async getSession(sessionId) {
+    return apiRequest(`/clients/sessions/${sessionId}`);
+  },
+
   // Book a session
   async bookSession(sessionData) {
     return apiRequest('/clients/book-session', {
@@ -221,6 +226,14 @@ export const clientApi = {
   async requestReschedule(sessionId) {
     return apiRequest(`/clients/sessions/${sessionId}/reschedule-request`, {
       method: 'POST',
+    });
+  },
+
+  // Reschedule session with new date/time
+  async rescheduleSession(sessionId, rescheduleData) {
+    return apiRequest(`/clients/sessions/${sessionId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(rescheduleData),
     });
   },
 
@@ -268,11 +281,27 @@ export const psychologistApi = {
     });
   },
 
+  // Complete session with summary and notes
+  async completeSession(sessionId, sessionData) {
+    return apiRequest(`/psychologists/sessions/${sessionId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(sessionData),
+    });
+  },
+
   // Respond to reschedule request
   async respondToRescheduleRequest(sessionId, responseData) {
     return apiRequest(`/psychologists/sessions/${sessionId}/reschedule-response`, {
       method: 'POST',
       body: JSON.stringify(responseData),
+    });
+  },
+
+  // Handle reschedule request (approve/reject)
+  async handleRescheduleRequest(notificationId, action, reason = '') {
+    return apiRequest(`/sessions/reschedule-request/${notificationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, reason }),
     });
   },
 
@@ -333,6 +362,42 @@ export const psychologistApi = {
   // Delete package
   async deletePackage(packageId) {
     return apiRequest(`/psychologists/packages/${packageId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get notifications
+  async getNotifications(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/notifications?${queryParams}`);
+  },
+
+  // Get unread notification count
+  async getUnreadNotificationCount() {
+    return apiRequest('/notifications/unread-count');
+  },
+
+  // Mark notification as read
+  async markNotificationAsRead(notificationId) {
+    return apiRequest(`/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    });
+  },
+
+  // Mark all notifications as read
+  async markAllNotificationsAsRead() {
+    return apiRequest('/notifications/mark-all-read', {
+      method: 'PUT',
+    });
+  },
+
+  // Delete notification
+  async deleteNotification(notificationId) {
+    return apiRequest(`/notifications/${notificationId}`, {
       method: 'DELETE',
     });
   },
@@ -421,6 +486,14 @@ export const adminApi = {
   async deletePsychologist(psychologistId) {
     return apiRequest(`/admin/psychologists/${psychologistId}`, {
       method: 'DELETE',
+    });
+  },
+
+  // Create packages for psychologist (admin only)
+  async createPsychologistPackages(psychologistId, packagesData) {
+    return apiRequest(`/admin/psychologists/${psychologistId}/packages`, {
+      method: 'POST',
+      body: JSON.stringify(packagesData),
     });
   },
 
@@ -601,6 +674,11 @@ export const publicApi = {
   // Get psychologist availability range (public)
   async getPsychologistAvailabilityRange(psychologistId, startDate, endDate) {
     return apiRequest(`/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}`);
+  },
+
+  // Get psychologist packages (public)
+  async getPsychologistPackages(psychologistId) {
+    return apiRequest(`/clients/psychologists/${psychologistId}/packages`);
   },
 };
 

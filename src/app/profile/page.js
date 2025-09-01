@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { clientApi, authApi } from "../../lib/backendApi";
+import RescheduleModal from "../../components/RescheduleModal";
 import { 
   Calendar, 
   Clock, 
@@ -24,9 +25,14 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("sessions");
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [isSummaryView, setIsSummaryView] = useState(false); // true for summary, false for report
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Reschedule modal state
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [sessionToReschedule, setSessionToReschedule] = useState(null);
 
   // Contact/profile form state for clients
   const [profileForm, setProfileForm] = useState({
@@ -67,6 +73,8 @@ export default function ProfilePage() {
     }
   }, []);
 
+
+
   const loadUserData = async () => {
     try {
       setIsLoading(true);
@@ -96,6 +104,13 @@ export default function ProfilePage() {
 
   const handleViewFullReport = (session) => {
     setSelectedReport(session);
+    setIsSummaryView(false);
+    setShowReportModal(true);
+  };
+
+  const handleViewSummary = (session) => {
+    setSelectedReport(session);
+    setIsSummaryView(true);
     setShowReportModal(true);
   };
 
@@ -112,9 +127,28 @@ export default function ProfilePage() {
     }
   };
 
+  const handleRescheduleClick = (session) => {
+    setSessionToReschedule(session);
+    setShowRescheduleModal(true);
+  };
+
+  const handleRescheduleSuccess = async (updatedSession) => {
+    setProfileSaveMsg('Session rescheduled successfully!');
+    setTimeout(() => setProfileSaveMsg(''), 3000);
+    await loadUserData(); // Reload sessions to show updated data
+    setShowRescheduleModal(false);
+    setSessionToReschedule(null);
+  };
+
+  const handleRescheduleModalClose = () => {
+    setShowRescheduleModal(false);
+    setSessionToReschedule(null);
+  };
+
   const handleCloseReportModal = () => {
     setShowReportModal(false);
     setSelectedReport(null);
+    setIsSummaryView(false);
   };
 
   const handleProfileInputChange = (e) => {
@@ -186,7 +220,31 @@ export default function ProfilePage() {
   // Helper function to format time
   const formatTime = (timeString) => {
     if (!timeString) return 'N/A';
-    return timeString;
+    // Convert 24-hour format (HH:MM:SS) to 12-hour format with AM/PM
+    try {
+      // Extract hours and minutes from time string
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours, 10);
+      const minute = minutes || '00';
+      
+      // Convert to 12-hour format
+      let hour12 = hour;
+      let ampm = 'AM';
+      
+      if (hour === 0) {
+        hour12 = 12;
+      } else if (hour === 12) {
+        ampm = 'PM';
+      } else if (hour > 12) {
+        hour12 = hour - 12;
+        ampm = 'PM';
+      }
+      
+      return `${hour12}:${minute} ${ampm}`;
+    } catch (error) {
+      // Fallback to original string if parsing fails
+      return timeString;
+    }
   };
 
   if (isLoading) {
@@ -377,6 +435,11 @@ export default function ProfilePage() {
                               <span className="text-sm text-gray-500">
                                 {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                               </span>
+                              {session.reschedule_count > 0 && (
+                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                  Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
+                                </span>
+                              )}
                             </div>
                             
                             <h3 className="font-medium text-gray-900 mb-1">
@@ -397,27 +460,59 @@ export default function ProfilePage() {
                           </div>
                           
                           {session.status === 'completed' && (
-                            <button
-                              onClick={() => handleViewFullReport(session)}
-                              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                            >
-                              View Report
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleViewFullReport(session)}
+                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                title="View complete session details including summary, status, and feedback"
+                              >
+                                View Full Report
+                              </button>
+                              {session.session_summary && (
+                                <button
+                                  onClick={() => handleViewSummary(session)}
+                                  className="text-green-600 hover:text-green-900 text-sm font-medium"
+                                  title="View session summary only"
+                                >
+                                  View Summary Only
+                                </button>
+                              )}
+                            </div>
                           )}
                           
                           {session.status === 'booked' && (
-                            <button
-                              onClick={() => handleRescheduleRequest(session)}
-                              className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
-                            >
-                              Request Reschedule
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleRescheduleClick(session)}
+                                className="text-blue-600 hover:text-blue-900 text-sm font-medium border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                                title={session.reschedule_count > 0 ? 'Second reschedule requires psychologist approval' : 'First reschedule - direct if >24h before session'}
+                              >
+                                {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
+                              </button>
+                              <button
+                                onClick={() => handleRescheduleRequest(session)}
+                                className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
+                              >
+                                Request Help
+                              </button>
+                            </div>
                           )}
                           
                           {session.status === 'reschedule_requested' && (
                             <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-sm">
                               Reschedule Requested
                             </span>
+                          )}
+                          
+                          {/* Show summary button for any session with summary */}
+                          {session.session_summary && session.status !== 'completed' && (
+                            <button
+                              onClick={() => handleViewSummary(session)}
+                              className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                              title="View session summary only"
+                            >
+                              View Summary Only
+                            </button>
                           )}
                         </div>
                       </div>
@@ -562,12 +657,7 @@ export default function ProfilePage() {
                             </div>
                           )}
                           
-                          {session.session_notes && (
-                            <div className="mb-3">
-                              <h4 className="text-sm font-medium text-gray-700 mb-1">Notes</h4>
-                              <p className="text-sm text-gray-600">{session.session_notes}</p>
-                            </div>
-                          )}
+                          {/* Session notes are private and not visible to clients */}
                         </div>
                       ))}
                   </div>
@@ -578,13 +668,15 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Report Modal */}
+            {/* Report/Summary Modal */}
       {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div key={`${isSummaryView ? 'summary' : 'report'}-${selectedReport.id}`} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">Session Report</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {isSummaryView ? 'Session Summary' : 'Session Report'}
+                </h3>
                 <button
                   onClick={handleCloseReportModal}
                   className="text-gray-400 hover:text-gray-600"
@@ -595,48 +687,77 @@ export default function ProfilePage() {
             </div>
             
             <div className="px-6 py-4">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium text-gray-900">Session Details</h4>
-                  <p className="text-sm text-gray-600">
-                    {selectedReport.scheduled_date} at {selectedReport.scheduled_time}
-                  </p>
+
+              
+              {isSummaryView ? (
+                // Summary View - Only show the summary
+                <div className="space-y-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">Session Summary</h4>
+                    {selectedReport.session_summary ? (
+                      <p className="text-gray-700 leading-relaxed">{selectedReport.session_summary}</p>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">No summary available for this session.</p>
+                    )}
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 text-center">
+                    This summary was provided by your therapist after the session.
+                  </div>
                 </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-900">Status</h4>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedReport.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {selectedReport.status}
-                  </span>
-                </div>
-
-                {selectedReport.session_summary && (
+              ) : !isSummaryView ? (
+                // Full Report View - Show comprehensive information
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900">Session Summary</h4>
-                    <p className="text-sm text-gray-600">{selectedReport.session_summary}</p>
+                    <h4 className="font-medium text-gray-900">Session Details</h4>
+                    <p className="text-sm text-gray-600">
+                      {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-gray-900">Status</h4>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedReport.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedReport.status}
+                    </span>
+                  </div>
+
+                    {selectedReport.session_summary && (
+                      <div>
+                        <h4 className="font-medium text-gray-900">Session Summary</h4>
+                        <p className="text-sm text-gray-600">{selectedReport.session_summary}</p>
+                      </div>
+                    )}
+
+                    {/* Session notes are private and not visible to clients */}
+
+                    {selectedReport.feedback && (
+                      <div>
+                        <h4 className="font-medium text-gray-900">Feedback</h4>
+                        <p className="text-sm text-gray-600">{selectedReport.feedback}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Fallback - should not happen
+                  <div className="text-center text-red-600">
+                    Error: Unknown view mode &quot;{isSummaryView ? 'summary' : 'report'}&quot;
                   </div>
                 )}
-
-                {selectedReport.session_notes && (
-                  <div>
-                    <h4 className="font-medium text-gray-900">Session Notes</h4>
-                    <p className="text-sm text-gray-600">{selectedReport.session_notes}</p>
-                  </div>
-                )}
-
-                {selectedReport.feedback && (
-                  <div>
-                    <h4 className="font-medium text-gray-900">Feedback</h4>
-                    <p className="text-sm text-gray-600">{selectedReport.feedback}</p>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Reschedule Modal */}
+      <RescheduleModal
+        session={sessionToReschedule}
+        isOpen={showRescheduleModal}
+        onClose={handleRescheduleModalClose}
+        onRescheduleSuccess={handleRescheduleSuccess}
+      />
     </div>
   );
 }

@@ -14,8 +14,13 @@ import {
   Mail,
   MapPin,
   Package,
-  DollarSign
+  DollarSign,
+  FileText,
+  MessageSquare
 } from "lucide-react";
+
+import CompleteSessionModal from "../../../components/CompleteSessionModal";
+import SessionDetailsModal from "../../../components/SessionDetailsModal";
 
 export default function PsychologistSessions() {
   const { user } = useAuth();
@@ -28,6 +33,9 @@ export default function PsychologistSessions() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedRescheduleSession, setSelectedRescheduleSession] = useState(null);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
+
 
   useEffect(() => {
     if (user) {
@@ -40,7 +48,6 @@ export default function PsychologistSessions() {
       setIsLoading(true);
       setError(null);
       const sessionsData = await psychologistApi.getSessions();
-      console.log('Sessions data received:', sessionsData);
       setSessions(sessionsData.data?.sessions || []);
     } catch (err) {
       console.error('Error loading sessions:', err);
@@ -60,22 +67,23 @@ export default function PsychologistSessions() {
     }
   };
 
-  const handleCompleteSession = async (sessionId) => {
+  const handleCompleteSession = async (sessionId, sessionData) => {
     try {
       setError(null);
       setCompletingSessions(prev => new Set(prev).add(sessionId));
       
-      await psychologistApi.updateSession(sessionId, { status: 'completed' });
+      await psychologistApi.completeSession(sessionId, sessionData);
       
       // Show success feedback
-      setSuccessMessage('Session marked as completed successfully!');
+      setSuccessMessage('Session finished successfully with summary and notes!');
       setTimeout(() => setSuccessMessage(null), 3000);
       
       // Reload sessions to update the UI
       await loadSessions();
     } catch (err) {
       console.error('Error completing session:', err);
-      setError(`Failed to complete session: ${err.message}`);
+      setError(`Failed to finish session: ${err.message}`);
+      throw err; // Re-throw to let the modal handle the error
     } finally {
       setCompletingSessions(prev => {
         const newSet = new Set(prev);
@@ -85,11 +93,20 @@ export default function PsychologistSessions() {
     }
   };
 
-  const confirmCompleteSession = (sessionId, clientName) => {
-    if (window.confirm(`Are you sure you want to mark the session with ${clientName} as completed?`)) {
-      handleCompleteSession(sessionId);
+  const openCompleteSessionModal = (session) => {
+    // Only allow finishing for non-completed sessions
+    if (session.status === 'completed') {
+      setError('This session is already completed');
+      return;
     }
+    
+    setSelectedCompleteSession(session);
+    setShowCompleteModal(true);
   };
+
+
+
+
 
   const handleApproveReschedule = async (session) => {
     const newDate = prompt('Enter new date (YYYY-MM-DD):', session.scheduled_date);
@@ -323,13 +340,37 @@ export default function PsychologistSessions() {
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => handleUpdateSession(session.id, { status: 'completed' })}
-                        className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                        title="Mark as completed"
-                      >
-                        <CheckCircle className="h-5 w-5" />
-                      </button>
+                      {/* Only show Finish button for non-completed sessions */}
+                      {session.status !== 'completed' && (
+                        <button
+                          onClick={() => openCompleteSessionModal(session)}
+                          disabled={completingSessions.has(session.id)}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
+                            completingSessions.has(session.id)
+                              ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                              : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                          }`}
+                          title="Open modal to add summary, notes, and report"
+                        >
+                          {completingSessions.has(session.id) ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                              Finishing...
+                            </>
+                          ) : (
+                            <>
+                              Finish
+                            </>
+                          )}
+                        </button>
+                      )}
+                      
+                      {/* Show "Completed" badge for completed sessions */}
+                      {session.status === 'completed' && (
+                        <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                          Completed
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -408,28 +449,37 @@ export default function PsychologistSessions() {
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => confirmCompleteSession(session.id, `${session.client?.first_name} ${session.client?.last_name}`)}
-                        disabled={completingSessions.has(session.id)}
-                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
-                          completingSessions.has(session.id)
-                            ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                            : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-                        }`}
-                        title="Mark session as completed"
-                      >
-                        {completingSessions.has(session.id) ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                            Completing...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Complete
-                          </>
-                        )}
-                      </button>
+                      {/* Only show Finish button for non-completed sessions */}
+                      {session.status !== 'completed' && (
+                        <button
+                          onClick={() => handleFinishSession(session)}
+                          disabled={completingSessions.has(session.id)}
+                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
+                            completingSessions.has(session.id)
+                              ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                              : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                          }`}
+                          title="Mark session as completed"
+                        >
+                          {completingSessions.has(session.id) ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                              Finishing...
+                            </>
+                          ) : (
+                            <>
+                              Finish
+                            </>
+                          )}
+                        </button>
+                      )}
+                      
+                      {/* Show "Completed" badge for completed sessions */}
+                      {session.status === 'completed' && (
+                        <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                          Completed
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -438,6 +488,17 @@ export default function PsychologistSessions() {
           </div>
         </div>
       </div>
+
+      {/* Complete Session Modal */}
+      <CompleteSessionModal
+        session={selectedCompleteSession}
+        isOpen={showCompleteModal}
+        onClose={() => {
+          setShowCompleteModal(false);
+          setSelectedCompleteSession(null);
+        }}
+        onComplete={handleCompleteSession}
+      />
 
       {/* Session Details Modal */}
       {showDetailsModal && selectedSession && (
@@ -649,6 +710,19 @@ export default function PsychologistSessions() {
           </div>
         </div>
       )}
+
+
+
+      {/* Session Details Modal */}
+      <SessionDetailsModal
+        session={selectedSession}
+        isOpen={showDetailsModal}
+        onClose={() => {
+          setShowDetailsModal(false);
+          setSelectedSession(null);
+        }}
+        isPsychologist={true}
+      />
     </div>
   );
 }

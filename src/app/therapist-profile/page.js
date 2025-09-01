@@ -33,6 +33,11 @@ const TherapistProfileContent = () => {
   // Pricing state
   const [selectedPricing, setSelectedPricing] = useState(null);
   
+  // Package state
+  const [packages, setPackages] = useState([]);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [loadingPackages, setLoadingPackages] = useState(false);
+  
   // Availability state
   const [psychologistAvailability, setPsychologistAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
@@ -42,16 +47,46 @@ const TherapistProfileContent = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
+  // Fetch psychologist packages
+  const fetchPsychologistPackages = async (psychologistId) => {
+    try {
+      setLoadingPackages(true);
+      const response = await publicApi.getPsychologistPackages(psychologistId);
+      if (response.success) {
+        setPackages(response.data.packages || []);
+        console.log('📦 Packages loaded:', response.data.packages);
+      } else {
+        console.error('Failed to fetch packages:', response);
+        setPackages([]);
+      }
+    } catch (error) {
+      console.error('Error fetching packages:', error);
+      setPackages([]);
+    } finally {
+      setLoadingPackages(false);
+    }
+  };
+
   // Fetch psychologist availability for current month
   const fetchPsychologistAvailability = async (psychologistId) => {
     try {
       setLoadingAvailability(true);
       
-      // Get current month dates
+      // Get current month dates using local formatting to avoid timezone issues
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0];
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
+      
+      // Format start date (first day of month)
+      const startYear = year;
+      const startMonth = String(month + 1).padStart(2, '0');
+      const startDay = '01';
+      const startDate = `${startYear}-${startMonth}-${startDay}`;
+      
+      // Format end date (last day of month)
+      const endYear = year;
+      const endMonth = String(month + 1).padStart(2, '0');
+      const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
+      const endDate = `${endYear}-${endMonth}-${endDay}`;
       
       
       
@@ -144,13 +179,16 @@ const TherapistProfileContent = () => {
   const handleDateSelect = (day) => {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(newSelectedDate);
-    // Clear selected time when date changes
+    // Clear selected time and package when date changes
     setSelectedTime(null);
+    setSelectedPackage(null);
     
     // Check if the selected date has availability
-    // Use Indian Standard Time (IST) - UTC+5:30
-    const istNewSelectedDate = new Date(newSelectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
-    const dateStr = istNewSelectedDate.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone conversion issues
+    const year = newSelectedDate.getFullYear();
+    const month = String(newSelectedDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(newSelectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${dayStr}`;
     const dateAvailability = psychologistAvailability[dateStr];
     
     if (!dateAvailability || !dateAvailability.availableSlots || dateAvailability.availableSlots === 0) {
@@ -162,11 +200,13 @@ const TherapistProfileContent = () => {
 
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
+    // Clear selected package when time changes
+    setSelectedPackage(null);
   };
 
   const handleBookSession = async () => {
-    if (!selectedDate || !selectedTime || !selectedPrice) {
-      alert('Please select a date, time, and pricing option');
+    if (!selectedDate || !selectedTime || !selectedPackage) {
+      alert('Please select a date, time, and package');
       return;
     }
 
@@ -200,13 +240,14 @@ const TherapistProfileContent = () => {
 
     setIsBooking(true);
     try {
-      // Get current date and time in IST
+      // Get current date and time in local timezone
       const now = new Date();
-      const istNow = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
       
-      // Format selected date for scheduled session
-      const istSelectedDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000));
-      const scheduledDate = istSelectedDate.toISOString().split('T')[0];
+      // Format selected date for scheduled session using local formatting
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(selectedDate.getDate()).padStart(2, '0');
+      const scheduledDate = `${year}-${month}-${dayStr}`;
       
       // Convert time to 24-hour format for database
       const timeStr = selectedTime;
@@ -227,12 +268,15 @@ const TherapistProfileContent = () => {
         psychologist_id: selectedDoctor.id,
         scheduled_date: scheduledDate,
         scheduled_time: scheduledTime,
-        price: selectedPrice
+        package_id: selectedPackage.id,
+        package_type: selectedPackage.package_type,
+        session_count: selectedPackage.session_count,
+        price: selectedPackage.price
       };
 
 
 
-      const response = await fetch('http://localhost:5001/api/sessions/book', {
+      const response = await fetch('http://localhost:5001/api/clients/book-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,6 +290,7 @@ const TherapistProfileContent = () => {
         // Reset selections
         setSelectedDate(null);
         setSelectedTime(null);
+        setSelectedPackage(null);
         setSelectedPrice(null);
         // Show success message
         setTimeout(() => setBookingSuccess(false), 5000);
@@ -302,9 +347,10 @@ const TherapistProfileContent = () => {
       if (doctor) {
 
         setSelectedDoctor(doctor);
-        // Fetch availability for this psychologist
+        // Fetch availability and packages for this psychologist
 
         fetchPsychologistAvailability(doctor.id);
+        fetchPsychologistPackages(doctor.id);
       }
     }
   }, [doctorIndex, doctors]);
@@ -818,13 +864,15 @@ const TherapistProfileContent = () => {
                     const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear();
                     const isAvailable = day >= today.getDate() || !isCurrentMonth;
                     
-                    // Check if this specific date is available for the psychologist
-                    // Use Indian Standard Time (IST) - UTC+5:30
-                    const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                    const istCalendarDate = new Date(calendarDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
-                    const dateStr = istCalendarDate.toISOString().split('T')[0];
-                    const dateAvailability = psychologistAvailability[dateStr];
-                    const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
+                                          // Check if this specific date is available for the psychologist
+                      // Use local date formatting to avoid timezone conversion issues
+                      const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                      const year = calendarDate.getFullYear();
+                      const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
+                      const dayStr = String(calendarDate.getDate()).padStart(2, '0');
+                      const dateStr = `${year}-${month}-${dayStr}`;
+                      const dateAvailability = psychologistAvailability[dateStr];
+                      const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
                     
                     // Only show dates as available if they actually have availability data
                     const isActuallyAvailable = isPsychologistAvailable && isAvailable;
@@ -891,37 +939,90 @@ const TherapistProfileContent = () => {
                 </div>
               </div>
               
-              {/* Pricing Selection */}
+              {/* Package Selection */}
               <div className="space-y-4">
-                <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Pricing</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  <button
-                    onClick={() => setSelectedPrice(50)}
-                    className={`p-3 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                      selectedPrice === 50
-                        ? 'border-green-500 bg-green-50 text-green-700' 
-                        : 'border-gray-300 hover:border-green-300 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span>Single Session</span>
-                      <span className="font-semibold">$50</span>
+                <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Package</h4>
+                
+                {/* Individual Session Option - Always Available */}
+                <button
+                  onClick={() => {
+                    setSelectedPackage({
+                      id: 'individual',
+                      name: 'Single Session',
+                      description: 'One therapy session',
+                      session_count: 1,
+                      price: 100, // Default price, can be made dynamic
+                      package_type: 'individual',
+                      discount_percentage: 0
+                    });
+                    setSelectedPrice(100);
+                  }}
+                  className={`p-4 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                    selectedPackage?.id === 'individual'
+                      ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                      : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-left">
+                      <span className="font-semibold text-base">Single Session</span>
                     </div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedPrice(200)}
-                    className={`p-3 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                      selectedPrice === 200
-                        ? 'border-green-500 bg-green-50 text-green-700' 
-                        : 'border-gray-300 hover:border-green-300 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span>Package (4 Sessions)</span>
-                      <span className="font-semibold">$200</span>
-                    </div>
-                  </button>
-                </div>
+                    <span className="font-bold text-lg">$100</span>
+                  </div>
+                  <div className="text-left text-gray-600 text-xs">
+                    <p>One therapy session</p>
+                    <p className="mt-1 font-medium">1 session • Single session</p>
+                  </div>
+                </button>
+                
+                {/* Dynamic Packages from Database */}
+                {loadingPackages ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                    <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
+                  </div>
+                ) : packages.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3">
+                    {packages.map((pkg) => (
+                      <button
+                        key={pkg.id}
+                        onClick={() => {
+                          setSelectedPackage(pkg);
+                          setSelectedPrice(pkg.price);
+                        }}
+                        className={`p-4 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                          selectedPackage?.id === pkg.id
+                            ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                            : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="text-left">
+                            <span className="font-semibold text-base">{pkg.name}</span>
+                            {pkg.discount_percentage > 0 && (
+                              <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                Save {pkg.discount_percentage}%
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-bold text-lg">${pkg.price}</span>
+                        </div>
+                        <div className="text-left text-gray-600 text-xs">
+                          <p>{pkg.description}</p>
+                          <p className="mt-1 font-medium">
+                            {pkg.session_count} session{pkg.session_count > 1 ? 's' : ''} • 
+                            {pkg.session_count > 1 ? ` $${(pkg.price / pkg.session_count).toFixed(0)} per session` : ' Single session'}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    <p>No additional packages available</p>
+                    <p className="text-xs mt-1">Single session option is always available above</p>
+                  </div>
+                )}
               </div>
 
               {/* Time Slots */}
@@ -929,10 +1030,12 @@ const TherapistProfileContent = () => {
                 <h4 className="font-semibold text-gray-800 mb-3 text-sm">Available Times</h4>
                 
                 {selectedDate ? (
-                  (() => {
-                    // Use Indian Standard Time (IST) - UTC+5:30
-                    const istSelectedDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
-                    const dateStr = istSelectedDate.toISOString().split('T')[0];
+                                      (() => {
+                      // Use local date formatting to avoid timezone conversion issues
+                      const year = selectedDate.getFullYear();
+                      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                      const dayStr = String(selectedDate.getDate()).padStart(2, '0');
+                      const dateStr = `${year}-${month}-${dayStr}`;
                     const dateAvailability = psychologistAvailability[dateStr];
                     const allTimeSlots = dateAvailability?.timeSlots || [];
                     const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
@@ -1048,14 +1151,14 @@ const TherapistProfileContent = () => {
               {/* Book Button */}
               <button 
                 onClick={handleBookSession}
-                disabled={!selectedDate || !selectedTime || !selectedPrice || isBooking || !isAuthenticated() || !hasRole('client')}
+                disabled={!selectedDate || !selectedTime || !selectedPackage || isBooking || !isAuthenticated() || !hasRole('client')}
                 className={`w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm ${
-                  !selectedDate || !selectedTime || !selectedPrice || isBooking || !isAuthenticated() || !hasRole('client')
+                  !selectedDate || !selectedTime || !selectedPackage || isBooking || !isAuthenticated() || !hasRole('client')
                     ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     : 'bg-green-500 text-white hover:bg-green-600'
                 }`}
               >
-                {isBooking ? 'Booking...' : 'Book Session'}
+                {isBooking ? 'Booking...' : `Book ${selectedPackage?.name || 'Session'}`}
               </button>
 
               {/* Success Message */}
