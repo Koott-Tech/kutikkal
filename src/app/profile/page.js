@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { clientApi, authApi } from "../../lib/backendApi";
 import RescheduleModal from "../../components/RescheduleModal";
+import SessionFeedbackModal from "../../components/SessionFeedbackModal";
 import { 
   Calendar, 
   Clock, 
@@ -34,6 +35,10 @@ export default function ProfilePage() {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [sessionToReschedule, setSessionToReschedule] = useState(null);
 
+  // Feedback modal state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [sessionToFeedback, setSessionToFeedback] = useState(null);
+
   // Contact/profile form state for clients
   const [profileForm, setProfileForm] = useState({
     first_name: '',
@@ -44,6 +49,9 @@ export default function ProfilePage() {
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSaveMsg, setProfileSaveMsg] = useState("");
+
+  // Packages state for clients
+  const [clientPackages, setClientPackages] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -84,6 +92,10 @@ export default function ProfilePage() {
         // Load client sessions
         const sessionsData = await clientApi.getSessions();
         setSessions(sessionsData.data?.sessions || []);
+
+        // Load client packages
+        const packagesData = await clientApi.getClientPackages();
+        setClientPackages(packagesData.data?.clientPackages || []);
       }
     } catch (err) {
       console.error('Error loading user data:', err);
@@ -96,6 +108,32 @@ export default function ProfilePage() {
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  const openFeedbackModal = (session) => {
+    setSessionToFeedback(session);
+    setShowFeedbackModal(true);
+  };
+
+  const handleSubmitFeedback = async (sessionId, feedbackData) => {
+    try {
+      await clientApi.submitSessionFeedback(sessionId, feedbackData);
+      
+      // Show success message
+      setProfileSaveMsg('Feedback submitted successfully!');
+      setTimeout(() => setProfileSaveMsg(''), 3000);
+      
+      // Reload sessions to update the UI
+      await loadUserData();
+      
+      // Close modal
+      setShowFeedbackModal(false);
+      setSessionToFeedback(null);
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+      setError(`Failed to submit feedback: ${err.message}`);
+      throw err;
+    }
   };
 
   const handleBackToHome = () => {
@@ -384,6 +422,20 @@ export default function ProfilePage() {
                   <BarChart3 className="h-5 w-5 mr-3" />
                   Report
                 </button>
+
+                {hasRole('client') && (
+                  <button
+                    onClick={() => setActiveTab("packages")}
+                    className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                      activeTab === "packages"
+                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <FileText className="h-5 w-5 mr-3" />
+                    Packages
+                  </button>
+                )}
               </nav>
             </div>
           </div>
@@ -423,100 +475,253 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {sessions.map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
-                                {session.status}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                              </span>
-                              {session.reschedule_count > 0 && (
-                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                  Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
-                            
-                            <h3 className="font-medium text-gray-900 mb-1">
-                              Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
-                            </h3>
-                            
-                            {session.package && (
-                              <p className="text-sm text-gray-600 mb-2">
-                                Package: {session.package.package_type?.replace('_', ' ')}
-                              </p>
-                            )}
-                            
-                            {session.price && (
-                              <p className="text-sm text-gray-600">
-                                Price: ${session.price}
-                              </p>
-                            )}
-                          </div>
-                          
-                          {session.status === 'completed' && (
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleViewFullReport(session)}
-                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                                title="View complete session details including summary, status, and feedback"
-                              >
-                                View Full Report
-                              </button>
-                              {session.session_summary && (
-                                <button
-                                  onClick={() => handleViewSummary(session)}
-                                  className="text-green-600 hover:text-green-900 text-sm font-medium"
-                                  title="View session summary only"
-                                >
-                                  View Summary Only
-                                </button>
-                              )}
-                            </div>
-                          )}
-                          
-                          {session.status === 'booked' && (
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleRescheduleClick(session)}
-                                className="text-blue-600 hover:text-blue-900 text-sm font-medium border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
-                                title={session.reschedule_count > 0 ? 'Second reschedule requires psychologist approval' : 'First reschedule - direct if >24h before session'}
-                              >
-                                {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
-                              </button>
-                              <button
-                                onClick={() => handleRescheduleRequest(session)}
-                                className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
-                              >
-                                Request Help
-                              </button>
-                            </div>
-                          )}
-                          
-                          {session.status === 'reschedule_requested' && (
-                            <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-sm">
-                              Reschedule Requested
-                            </span>
-                          )}
-                          
-                          {/* Show summary button for any session with summary */}
-                          {session.session_summary && session.status !== 'completed' && (
-                            <button
-                              onClick={() => handleViewSummary(session)}
-                              className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
-                              title="View session summary only"
-                            >
-                              View Summary Only
-                            </button>
-                          )}
+                  <div className="space-y-8">
+                    {/* Scheduled Sessions Section */}
+                    {sessions.filter(s => ['booked', 'reschedule_requested'].includes(s.status)).length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <Calendar className="h-6 w-6 text-blue-600" />
+                          <h3 className="text-lg font-semibold text-gray-900">Scheduled Sessions</h3>
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {sessions.filter(s => ['booked', 'reschedule_requested'].includes(s.status)).length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {sessions
+                            .filter(s => ['booked', 'reschedule_requested'].includes(s.status))
+                            .map((session) => (
+                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-blue-50/30">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+                                        {session.status === 'booked' ? 'Scheduled' : 'Reschedule Requested'}
+                                      </span>
+                                      <span className="text-sm text-gray-500">
+                                        {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                                      </span>
+                                      {session.reschedule_count > 0 && (
+                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                          Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <h3 className="font-medium text-gray-900 mb-1">
+                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                    </h3>
+                                    
+                                    {session.package && (
+                                      <p className="text-sm text-gray-600 mb-2">
+                                        Package: {session.package.package_type?.replace('_', ' ')}
+                                      </p>
+                                    )}
+                                    
+                                    {session.price && (
+                                      <p className="text-sm text-gray-600">
+                                        Price: ${session.price}
+                                      </p>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex gap-2">
+                                    {session.status === 'booked' && (
+                                      <>
+                                        <button
+                                          onClick={() => handleRescheduleClick(session)}
+                                          className="text-blue-600 hover:text-blue-900 text-sm font-medium border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                                          title={session.reschedule_count > 0 ? 'Second reschedule requires psychologist approval' : 'First reschedule - direct if >24h before session'}
+                                        >
+                                          {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
+                                        </button>
+                                        <button
+                                          onClick={() => handleRescheduleRequest(session)}
+                                          className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
+                                        >
+                                          Request Help
+                                        </button>
+                                      </>
+                                    )}
+                                    
+                                    {session.status === 'reschedule_requested' && (
+                                      <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-sm">
+                                        Reschedule Requested
+                                      </span>
+                                    )}
+                                    
+                                    {/* Show summary button for any session with summary */}
+                                    {session.session_summary && (
+                                      <button
+                                        onClick={() => handleViewSummary(session)}
+                                        className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                                        title="View session summary only"
+                                      >
+                                        View Summary Only
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                         </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Completed Sessions Section */}
+                    {sessions.filter(s => s.status === 'completed').length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <div className="h-3 w-3 bg-green-600 rounded-full"></div>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Completed Sessions</h3>
+                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {sessions.filter(s => s.status === 'completed').length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {sessions
+                            .filter(s => s.status === 'completed')
+                            .map((session) => (
+                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-green-50/30">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Completed
+                                      </span>
+                                      <span className="text-sm text-gray-500">
+                                        {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                                      </span>
+                                      {session.reschedule_count > 0 && (
+                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                          Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <h3 className="font-medium text-gray-900 mb-1">
+                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                    </h3>
+                                    
+                                    {session.package && (
+                                      <p className="text-sm text-gray-600 mb-2">
+                                        Package: {session.package.package_type?.replace('_', ' ')}
+                                      </p>
+                                    )}
+                                    
+                                    {session.price && (
+                                      <p className="text-sm text-gray-600">
+                                        Price: ${session.price}
+                                      </p>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => handleViewFullReport(session)}
+                                      className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                      title="View complete session details including summary, status, and feedback"
+                                    >
+                                      View Full Report
+                                    </button>
+                                    {session.session_summary && (
+                                      <button
+                                        onClick={() => handleViewSummary(session)}
+                                        className="text-green-600 hover:text-green-900 text-sm font-medium"
+                                        title="View session summary only"
+                                      >
+                                        View Summary Only
+                                      </button>
+                                    )}
+                                    {!session.feedback && (
+                                      <button
+                                        onClick={() => openFeedbackModal(session)}
+                                        className="text-purple-600 hover:text-purple-900 text-sm font-medium border border-purple-300 px-3 py-1 rounded-md hover:bg-purple-50 transition-colors"
+                                        title="Provide feedback for this session"
+                                      >
+                                        Give Feedback
+                                      </button>
+                                    )}
+                                    {session.feedback && (
+                                      <span className="text-green-600 bg-green-100 px-2 py-1 rounded-md text-sm">
+                                        ✓ Feedback Submitted
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Other Status Sessions Section */}
+                    {sessions.filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status)).length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <AlertCircle className="h-6 w-6 text-gray-600" />
+                          <h3 className="text-lg font-semibold text-gray-900">Other Sessions</h3>
+                          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            {sessions.filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status)).length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {sessions
+                            .filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status))
+                            .map((session) => (
+                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50/30">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+                                        {session.status}
+                                      </span>
+                                      <span className="text-sm text-gray-500">
+                                        {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                                      </span>
+                                      {session.reschedule_count > 0 && (
+                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                          Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
+                                        </span>
+                                      )}
+                                    </div>
+                                    
+                                    <h3 className="text-sm text-gray-600 mb-2">
+                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                    </h3>
+                                    
+                                    {session.package && (
+                                      <p className="text-sm text-gray-600 mb-2">
+                                        Package: {session.package.package_type?.replace('_', ' ')}
+                                      </p>
+                                    )}
+                                    
+                                    {session.price && (
+                                      <p className="text-sm text-gray-600">
+                                        Price: ${session.price}
+                                      </p>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex gap-2">
+                                    {/* Show summary button for any session with summary */}
+                                    {session.session_summary && (
+                                      <button
+                                        onClick={() => handleViewSummary(session)}
+                                        className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                                        title="View session summary only"
+                                      >
+                                        View Summary Only
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -664,6 +869,91 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
+
+            {/* Packages Tab */}
+            {activeTab === "packages" && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">My Packages</h2>
+                {clientPackages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No packages purchased yet</h3>
+                    <p className="text-gray-600">You can browse therapists and purchase packages from the guide page.</p>
+                    <button
+                      onClick={() => router.push('/guide')}
+                      className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                    >
+                      Browse Therapists
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {clientPackages.map((pkg) => (
+                      <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-lg">
+                              {pkg.package_type ? pkg.package_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Package'}
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4 mt-2">
+                              <div>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Total Sessions:</span> {pkg.total_sessions}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Remaining:</span> 
+                                  <span className={`ml-1 ${pkg.remaining_sessions > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {pkg.remaining_sessions}
+                                  </span>
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Total Amount:</span> ${pkg.total_amount}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Status:</span> 
+                                  <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
+                                    pkg.status === 'active' ? 'bg-green-100 text-green-800' : 
+                                    pkg.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {pkg.status}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Purchased: {new Date(pkg.purchased_at).toLocaleDateString()}
+                            </p>
+                            {pkg.psychologist && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                <span className="font-medium">Therapist:</span> {pkg.psychologist.first_name} {pkg.psychologist.last_name}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {pkg.remaining_sessions > 0 && pkg.status === 'active' ? (
+                              <button
+                                onClick={() => router.push(`/therapist-profile?doctor=${pkg.psychologist?.id || 0}&package_id=${pkg.id}`)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                              >
+                                <Calendar className="h-4 w-4" />
+                                Book Remaining Sessions
+                              </button>
+                            ) : (
+                              <span className="text-gray-500 text-sm px-3 py-2 bg-gray-100 rounded-lg">
+                                {pkg.status === 'completed' ? 'Package Completed' : 'No sessions remaining'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -750,6 +1040,17 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Feedback Modal */}
+      <SessionFeedbackModal
+        session={sessionToFeedback}
+        isOpen={showFeedbackModal}
+        onClose={() => {
+          setShowFeedbackModal(false);
+          setSessionToFeedback(null);
+        }}
+        onSubmit={handleSubmitFeedback}
+      />
 
       {/* Reschedule Modal */}
       <RescheduleModal

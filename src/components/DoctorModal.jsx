@@ -40,6 +40,17 @@ export default function DoctorModal({
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [availablePackages, setAvailablePackages] = useState([
+    { id: 2, name: 'Package of 2 Sessions', sessions: 2 },
+    { id: 3, name: 'Package of 3 Sessions', sessions: 3 },
+    { id: 4, name: 'Package of 4 Sessions', sessions: 4 },
+    { id: 5, name: 'Package of 5 Sessions', sessions: 5 },
+    { id: 6, name: 'Package of 6 Sessions', sessions: 6 },
+    { id: 7, name: 'Package of 7 Sessions', sessions: 7 },
+    { id: 8, name: 'Package of 8 Sessions', sessions: 8 }
+  ]);
 
   // Common time slots for selection (1-hour intervals)
   const timeSlots = {
@@ -56,7 +67,7 @@ export default function DoctorModal({
         lastName: doctor.last_name || doctor.lastName || '',
         phone: doctor.phone || '',
         email: doctor.email || '',
-        password: '', // Don't load password for editing
+        password: '', // Don't load password for editing (passwords are hashed)
         education: {
           ug: doctor.ug_college || doctor.education?.ug || '',
           pg: doctor.pg_college || doctor.education?.pg || '',
@@ -65,32 +76,206 @@ export default function DoctorModal({
         description: doctor.description || '',
         price: doctor.price || '',
         experience_years: doctor.experience_years || '',
-        packages: doctor.packages || [{ name: 'Individual Session', price: '', sessions: 1 }],
+        packages: (() => {
+          const packagesArray = doctor.packages || [{ name: 'Individual Session', price: doctor.price || '', sessions: 1 }];
+          console.log('Original packages:', packagesArray);
+          const mappedPackages = packagesArray.map((pkg, index) => ({
+            ...pkg,
+            id: pkg.id || `temp-${Date.now() + index}`
+          }));
+          console.log('Mapped packages with IDs:', mappedPackages);
+          return mappedPackages;
+        })(),
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
         coverImage: doctor.coverImage || null
       });
       
-      // Load existing availability if editing
-      if (doctor.availability) {
-        // Convert existing availability to new format
-        const convertedAvailability = {};
-        doctor.availability.forEach(item => {
-          // Convert day-based availability to date-based
-          const nextOccurrence = getNextDayOccurrence(item.day);
-          if (nextOccurrence) {
-            const dateStr = nextOccurrence.toISOString().split('T')[0];
-            convertedAvailability[dateStr] = {
-              available: true,
-              timeSlots: {
-                morning: item.slots.filter(slot => timeSlots.morning.includes(slot)),
-                noon: item.slots.filter(slot => timeSlots.noon.includes(slot)),
-                evening: item.slots.filter(slot => timeSlots.evening.includes(slot)),
-                night: item.slots.filter(slot => timeSlots.night.includes(slot))
+              // Load existing availability if editing
+        if (doctor.availability && Array.isArray(doctor.availability)) {
+          console.log('Processing array-based availability:', doctor.availability);
+          // Convert existing availability to new format
+          const convertedAvailability = {};
+          doctor.availability.forEach((item, index) => {
+            // Handle new structure: {date, time_slots, is_available}
+            if (item && item.date && item.time_slots && Array.isArray(item.time_slots)) {
+              const dateStr = item.date;
+              console.log(`Processing new structure for date ${dateStr}:`, item.time_slots);
+              
+              // Helper function to normalize time format for comparison
+              const normalizeTime = (time) => {
+                // Handle object-based time slots
+                if (typeof time === 'object' && time !== null) {
+                  if (time.time) {
+                    time = time.time;
+                  } else if (time.displayTime) {
+                    time = time.displayTime;
+                  } else {
+                    console.warn('Time object has no time property:', time);
+                    return '';
+                  }
+                }
+                
+                // Ensure time is a string
+                if (typeof time !== 'string') {
+                  console.warn('Time is not a string:', time, typeof time);
+                  return String(time || '');
+                }
+                // Remove AM/PM and convert to 24-hour format for comparison
+                const cleanTime = time.replace(/\s*(AM|PM)/i, '').trim();
+                return cleanTime;
+              };
+              
+              // Helper function to check if a time slot matches any predefined slot
+              const findMatchingSlot = (dbSlot) => {
+                const normalizedDbSlot = normalizeTime(dbSlot);
+                for (const [period, slots] of Object.entries(timeSlots)) {
+                  for (const predefinedSlot of slots) {
+                    if (normalizeTime(predefinedSlot) === normalizedDbSlot) {
+                      return period;
+                    }
+                  }
+                }
+                return null;
+              };
+              
+              // Categorize time slots into periods
+              const categorizedSlots = { morning: [], noon: [], evening: [], night: [] };
+              item.time_slots.forEach(slot => {
+                try {
+                  const period = findMatchingSlot(slot);
+                  if (period) {
+                    categorizedSlots[period].push(slot);
+                  } else {
+                    // If no match found, add to the most appropriate period based on time
+                    const hour = parseInt(String(slot).split(':')[0]);
+                    if (isNaN(hour)) {
+                      console.warn('Invalid time slot format:', slot);
+                      // Default to noon if we can't parse the hour
+                      categorizedSlots.noon.push(slot);
+                    } else if (hour >= 9 && hour < 12) {
+                      categorizedSlots.morning.push(slot);
+                    } else if (hour >= 12 && hour < 17) {
+                      categorizedSlots.noon.push(slot);
+                    } else if (hour >= 17 && hour < 21) {
+                      categorizedSlots.evening.push(slot);
+                    } else if (hour >= 21 || hour < 9) {
+                      categorizedSlots.night.push(slot);
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error processing time slot:', slot, error);
+                  // Default to noon if there's an error
+                  categorizedSlots.noon.push(slot);
+                }
+              });
+              
+              convertedAvailability[dateStr] = {
+                available: item.is_available || true,
+                timeSlots: categorizedSlots
+              };
+              
+              console.log(`Categorized slots for ${dateStr}:`, categorizedSlots);
+            }
+            // Handle legacy structure: {day, slots}
+            else if (item && item.day && item.slots && Array.isArray(item.slots)) {
+              const nextOccurrence = getNextDayOccurrence(item.day);
+              if (nextOccurrence) {
+                const dateStr = nextOccurrence.toISOString().split('T')[0];
+                console.log(`Processing legacy structure for day ${item.day}:`, item.slots);
+                
+                // Helper function to normalize time format for comparison
+                const normalizeTime = (time) => {
+                  // Handle object-based time slots
+                  if (typeof time === 'object' && time !== null) {
+                    if (time.time) {
+                      time = time.time;
+                    } else if (time.displayTime) {
+                      time = time.displayTime;
+                    } else {
+                      console.warn('Time object has no time property:', time);
+                      return '';
+                    }
+                  }
+                  
+                  // Ensure time is a string
+                  if (typeof time !== 'string') {
+                    console.warn('Time is not a string:', time, typeof time);
+                    return String(time || '');
+                  }
+                  // Remove AM/PM and convert to 24-hour format for comparison
+                  const cleanTime = time.replace(/\s*(AM|PM)/i, '').trim();
+                  return cleanTime;
+                };
+                
+                // Helper function to check if a time slot matches any predefined slot
+                const findMatchingSlot = (dbSlot) => {
+                  const normalizedDbSlot = normalizeTime(dbSlot);
+                  for (const [period, slots] of Object.entries(timeSlots)) {
+                    for (const predefinedSlot of slots) {
+                      if (normalizeTime(predefinedSlot) === normalizedDbSlot) {
+                        return period;
+                      }
+                    }
+                  }
+                  return null;
+                };
+                
+                // Categorize time slots into periods
+                const categorizedSlots = { morning: [], noon: [], evening: [], night: [] };
+                item.slots.forEach(slot => {
+                  try {
+                    const period = findMatchingSlot(slot);
+                    if (period) {
+                      categorizedSlots[period].push(slot);
+                    } else {
+                      // If no match found, add to the most appropriate period based on time
+                      const hour = parseInt(String(slot).split(':')[0]);
+                      if (isNaN(hour)) {
+                        console.warn('Invalid time slot format:', slot);
+                        // Default to noon if we can't parse the hour
+                        categorizedSlots.noon.push(slot);
+                      } else if (hour >= 9 && hour < 12) {
+                        categorizedSlots.morning.push(slot);
+                      } else if (hour >= 12 && hour < 17) {
+                        categorizedSlots.noon.push(slot);
+                      } else if (hour >= 17 && hour < 21) {
+                        categorizedSlots.evening.push(slot);
+                      } else if (hour >= 21 || hour < 9) {
+                        categorizedSlots.night.push(slot);
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error processing time slot:', slot, error);
+                    // Default to noon if there's an error
+                    categorizedSlots.noon.push(slot);
+                  }
+                });
+                
+                convertedAvailability[dateStr] = {
+                  available: true,
+                  timeSlots: categorizedSlots
+                };
+                
+                console.log(`Categorized legacy slots for ${dateStr}:`, categorizedSlots);
               }
-            };
-          }
-        });
-        setAvailabilityData(convertedAvailability);
+            }
+            // Skip if item is invalid
+            else {
+              console.warn('Invalid availability item:', item);
+              return;
+            }
+          });
+          console.log('Converted availability:', convertedAvailability);
+          setAvailabilityData(convertedAvailability);
+      } else if (doctor.availability && typeof doctor.availability === 'object') {
+        // Handle case where availability might be in a different format
+        console.log('Doctor availability structure (object):', doctor.availability);
+        // Try to convert or set empty availability
+        setAvailabilityData({});
+      } else {
+        // No availability data, set empty
+        console.log('No availability data found for doctor');
+        setAvailabilityData({});
       }
     }
   }, [doctor, mode]);
@@ -234,55 +419,8 @@ export default function DoctorModal({
     }));
   };
 
-  const handlePackageChange = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      packages: prev.packages.map((pkg, i) => 
-        i === index ? { ...pkg, [field]: value } : pkg
-      )
-    }));
-  };
 
-  const addPackage = () => {
-    setFormData(prev => ({
-      ...prev,
-      packages: [...prev.packages, { name: '', price: '', sessions: 1 }]
-    }));
-  };
 
-  const removePackage = (index) => {
-    if (formData.packages.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        packages: prev.packages.filter((_, i) => i !== index)
-      }));
-    }
-  };
-
-  const handleSpecializationChange = (index, value) => {
-    setFormData(prev => ({
-      ...prev,
-      specializations: prev.specializations.map((spec, i) => 
-        i === index ? value : spec
-      )
-    }));
-  };
-
-  const addSpecialization = () => {
-    setFormData(prev => ({
-      ...prev,
-      specializations: [...prev.specializations, '']
-    }));
-  };
-
-  const removeSpecialization = (index) => {
-    if (formData.specializations.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        specializations: prev.specializations.filter((_, i) => i !== index)
-      }));
-    }
-  };
 
   const handleImageUpload = (field, file) => {
     if (file) {
@@ -297,10 +435,93 @@ export default function DoctorModal({
     }
   };
 
+  // Package management functions
+  const addPackage = () => {
+    const newPackage = {
+      id: `pkg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: '',
+      price: '',
+      sessions: 1,
+      discount: 0
+    };
+    setFormData(prev => ({
+      ...prev,
+      packages: [...prev.packages, newPackage]
+    }));
+  };
+
+  const removePackage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      packages: prev.packages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updatePackage = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => 
+        i === index ? { ...pkg, [field]: value } : pkg
+      )
+    }));
+  };
+
+  const selectPackageType = (index, packageType) => {
+    const selectedPackage = availablePackages.find(p => p.id === packageType);
+    if (selectedPackage) {
+      updatePackage(index, 'name', selectedPackage.name);
+      updatePackage(index, 'sessions', selectedPackage.sessions);
+      // Calculate discount based on base price
+      if (formData.price) {
+        const basePrice = parseFloat(formData.price);
+        const totalPrice = basePrice * selectedPackage.sessions;
+        const discount = Math.round((totalPrice * 0.1) / selectedPackage.sessions); // 10% discount per session
+        updatePackage(index, 'price', (basePrice - discount).toFixed(2));
+        updatePackage(index, 'discount', discount);
+      }
+    }
+  };
+
+  // Legacy package functions for compatibility
+  const handlePackageChange = (index, field, value) => {
+    updatePackage(index, field, value);
+  };
+
+  const addSpecialization = () => {
+    setFormData(prev => ({
+      ...prev,
+      specializations: [...prev.specializations, '']
+    }));
+  };
+
+  const removeSpecialization = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      specializations: prev.specializations.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSpecializationChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      specializations: prev.specializations.map((spec, i) => 
+        i === index ? value : spec
+      )
+    }));
+  };
+
   const removeImage = (field) => {
     setFormData(prev => ({
       ...prev,
       [field]: null
+    }));
+  };
+
+  // Ensure all packages have unique IDs
+  const ensurePackageIds = (packages) => {
+    return packages.map((pkg, index) => ({
+      ...pkg,
+      id: pkg.id || `pkg-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
     }));
   };
 
@@ -352,17 +573,23 @@ export default function DoctorModal({
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        password: formData.password,
         phone: formData.phone,
         ug_college: formData.education.ug,
         pg_college: formData.education.pg,
         phd_college: formData.education.phd,
         description: formData.description,
         experience_years: parseInt(formData.experience_years) || 0,
-
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
-        availability: convertedAvailability
+        availability: convertedAvailability,
+        packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions)
       };
+
+      // Handle password for edit mode
+      if (mode === 'edit' && showPasswordReset && newPassword.trim()) {
+        doctorData.password = newPassword;
+      } else if (mode === 'add') {
+        doctorData.password = formData.password;
+      }
 
       await onSave(doctorData);
       onClose();
@@ -472,17 +699,58 @@ export default function DoctorModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password *
+                {mode === 'edit' ? 'Password' : 'Password *'}
               </label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter password"
-              />
+              {mode === 'edit' ? (
+                <div className="space-y-3">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="px-3 py-2 border border-gray-300 rounded-md bg-green-50">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm text-green-700 font-medium">Password is set and secure</span>
+                          </div>
+                          <p className="text-xs text-green-600 mt-1">
+                            Password is encrypted and cannot be displayed for security reasons
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordReset(!showPasswordReset)}
+                        className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm font-medium transition-colors whitespace-nowrap"
+                      >
+                        {showPasswordReset ? 'Cancel Reset' : 'Reset Password'}
+                      </button>
+                    </div>
+                  </div>
+                  {showPasswordReset && (
+                    <div className="space-y-2">
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter new password"
+                      />
+                      <p className="text-xs text-gray-600">
+                        Leave empty to keep current password unchanged
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter password"
+                />
+              )}
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
@@ -622,88 +890,151 @@ export default function DoctorModal({
                   <p className="text-red-500 text-sm mt-1">{errors.price}</p>
                 )}
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Years of Experience *
-                </label>
-                <input
-                  type="number"
-                  value={formData.experience_years}
-                  onChange={(e) => handleInputChange('experience_years', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.experience_years ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="5"
-                  min="0"
-                  max="50"
-                  step="1"
-                />
-                {errors.experience_years && (
-                  <p className="text-red-500 text-sm mt-1">{errors.experience_years}</p>
-                )}
-              </div>
             </div>
 
-            {/* Packages */}
-            <div className="mt-4">
-              <div className="flex justify-between items-center mb-3">
+            {/* Packages Section */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
                 <h4 className="text-md font-medium text-gray-700">Session Packages</h4>
                 <button
                   type="button"
                   onClick={addPackage}
-                  className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                  className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium transition-colors flex items-center gap-2"
                 >
-                  <Plus className="w-4 h-4 inline mr-1" />
+                  <Plus className="w-4 h-4" />
                   Add Package
                 </button>
               </div>
               
-              <div className="space-y-3">
-                {formData.packages.map((pkg, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <input
-                      type="text"
-                      value={pkg.name}
-                      onChange={(e) => handlePackageChange(index, 'name', e.target.value)}
-                      className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors[`package${index}Name`] ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="Package name"
-                    />
-                    <input
-                      type="number"
-                      value={pkg.price}
-                      onChange={(e) => handlePackageChange(index, 'price', e.target.value)}
-                      className={`w-24 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors[`package${index}Price`] ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="Price"
-                      min="0"
-                      step="0.01"
-                    />
-                    <input
-                      type="number"
-                      value={pkg.sessions}
-                      onChange={(e) => handlePackageChange(index, 'sessions', parseInt(e.target.value))}
-                      className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Sessions"
-                      min="1"
-                    />
-                    {formData.packages.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removePackage(index)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
+              <div className="space-y-4">
+                {ensurePackageIds(formData.packages).map((pkg, index) => (
+                  <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="font-medium text-gray-800">
+                        {index === 0 ? 'Single Session (Base)' : `Package ${index + 1}`}
+                      </h5>
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => removePackage(index)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {index === 0 ? (
+                        // Single session (fixed)
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Package Name
+                          </label>
+                          <input
+                            type="text"
+                            value={pkg.name}
+                            disabled
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                          />
+                        </div>
+                      ) : (
+                        // Package selection dropdown
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Package Type *
+                          </label>
+                          <select
+                            value={pkg.sessions}
+                            onChange={(e) => selectPackageType(index, parseInt(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Package</option>
+                            {availablePackages
+                              .filter(p => !formData.packages.some((existingPkg, i) => 
+                                i !== index && existingPkg.sessions === p.sessions
+                              ))
+                              .map(p => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Sessions
+                        </label>
+                        <input
+                          type="number"
+                          value={pkg.sessions}
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Price per Session ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={pkg.price}
+                          onChange={(e) => updatePackage(index, 'price', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="0.00"
+                          min="0"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+                    
+                    {index > 0 && pkg.sessions > 1 && (
+                      <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-blue-700">
+                            Total Package Price: ${(pkg.price * pkg.sessions).toFixed(2)}
+                          </span>
+                          <span className="text-green-600 font-medium">
+                            Save: ${((formData.price * pkg.sessions) - (pkg.price * pkg.sessions)).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
+              
+              <p className="text-xs text-gray-500 mt-3">
+                * Single session is always required. Additional packages provide discounts for multiple sessions.
+              </p>
             </div>
           </div>
+
+          {/* Experience */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Years of Experience *
+            </label>
+            <input
+              type="number"
+              value={formData.experience_years}
+              onChange={(e) => handleInputChange('experience_years', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.experience_years ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="5"
+              min="0"
+              max="50"
+              step="1"
+            />
+            {errors.experience_years && (
+              <p className="text-red-500 text-sm mt-1">{errors.experience_years}</p>
+            )}
+          </div>
+
 
           {/* Specializations */}
           <div>
@@ -973,13 +1304,24 @@ export default function DoctorModal({
                 <h4 className="text-lg font-medium text-gray-800 mb-3">Current Availability</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.entries(availabilityData).map(([dateStr, data]) => {
+                    // Ensure data has the expected structure
+                    if (!data || !data.timeSlots) {
+                      console.warn('Invalid availability data for date:', dateStr, data);
+                      return null;
+                    }
+                    
+                    console.log(`Processing date ${dateStr}:`, data);
+                    console.log(`Time slots for ${dateStr}:`, data.timeSlots);
+                    
                     const date = new Date(dateStr);
                     const allSlots = [
-                      ...data.timeSlots.morning,
-                      ...data.timeSlots.noon,
-                      ...data.timeSlots.evening,
-                      ...data.timeSlots.night
+                      ...(data.timeSlots.morning || []),
+                      ...(data.timeSlots.noon || []),
+                      ...(data.timeSlots.evening || []),
+                      ...(data.timeSlots.night || [])
                     ];
+                    
+                    console.log(`All slots for ${dateStr}:`, allSlots);
                     
                     return (
                       <div key={dateStr} className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -1000,15 +1342,30 @@ export default function DoctorModal({
                           </button>
                         </div>
                         <div className="space-y-1">
-                          {allSlots.map((slot, index) => (
-                            <span key={index} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
-                              {slot}
-                            </span>
-                          ))}
+                          {allSlots.map((slot, slotIndex) => {
+                            // Handle both string and object time slots
+                            let displayText = slot;
+                            if (typeof slot === 'object' && slot !== null) {
+                              // If slot is an object, extract the display value
+                              if (slot.displayTime) {
+                                displayText = slot.displayTime;
+                              } else if (slot.time) {
+                                displayText = slot.time;
+                              } else {
+                                displayText = JSON.stringify(slot); // Fallback for debugging
+                              }
+                            }
+                            
+                            return (
+                              <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
+                                {displayText}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     );
-                  })}
+                  }).filter(Boolean)}
                 </div>
               </div>
             )}

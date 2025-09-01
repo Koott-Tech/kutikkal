@@ -237,6 +237,29 @@ export const clientApi = {
     });
   },
 
+  // Submit session feedback
+  async submitSessionFeedback(sessionId, feedbackData) {
+    return apiRequest(`/clients/sessions/${sessionId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    });
+  },
+
+  // Get client packages
+  async getClientPackages() {
+    return apiRequest('/clients/packages', {
+      method: 'GET'
+    });
+  },
+
+  // Book remaining session from package
+  async bookRemainingSession(data) {
+    return apiRequest('/clients/book-remaining-session', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
   // Get available psychologists
   async getPsychologists(params = {}) {
     const queryParams = new URLSearchParams();
