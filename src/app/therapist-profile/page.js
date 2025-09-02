@@ -662,7 +662,7 @@ const TherapistProfileContent = () => {
                 <div>
                   <p className="text-gray-800 text-sm">
                     <span className="font-medium">
-                      {selectedDoctor.price ? `Starts at $${selectedDoctor.price} per session` : 'Pricing available upon request'}
+                      {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
                     </span>
                   </p>
                 </div>
@@ -774,7 +774,7 @@ const TherapistProfileContent = () => {
                               <p className="text-sm text-gray-600">90 minutes</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold text-purple-600">${Math.round(selectedDoctor.price * 1.5)}</p>
+                              <p className="text-lg font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 1.5)}</p>
                             </div>
                           </button>
                           
@@ -791,7 +791,7 @@ const TherapistProfileContent = () => {
                               <p className="text-sm text-gray-600">45 minutes</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold text-purple-600">${Math.round(selectedDoctor.price * 0.8)}</p>
+                              <p className="text-lg font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 0.8)}</p>
                             </div>
                           </button>
                         </>
@@ -897,7 +897,7 @@ const TherapistProfileContent = () => {
                        selectedPricing.type === 'family' ? 'Family' : 'Child'} Session
                     </p>
                     <p className="text-xs text-green-700 mt-1">
-                      {selectedPricing.duration} - ${selectedPricing.price}
+                      {selectedPricing.duration} - ₹{selectedPricing.price}
                     </p>
                   </div>
                 ) : (
@@ -1117,7 +1117,7 @@ const TherapistProfileContent = () => {
                         <div className="text-left">
                           <span className="font-semibold text-base">Individual Session</span>
                         </div>
-                        <span className="font-bold text-lg">${selectedDoctor.price}</span>
+                        <span className="font-bold text-lg">₹{selectedDoctor.price}</span>
                       </div>
                       <div className="text-left text-gray-600 text-xs">
                         <p>One therapy session</p>
@@ -1155,13 +1155,13 @@ const TherapistProfileContent = () => {
                                   </span>
                                 )}
                               </div>
-                              <span className="font-bold text-lg">${pkg.price}</span>
+                              <span className="font-bold text-lg">₹{pkg.price}</span>
                             </div>
                             <div className="text-left text-gray-600 text-xs">
                               <p>{pkg.description}</p>
                               <p className="mt-1 font-medium">
                                 {pkg.session_count} session{pkg.session_count > 1 ? 's' : ''} • 
-                                {pkg.session_count > 1 ? ` $${(pkg.price / pkg.session_count).toFixed(0)} per session` : ' Single session'}
+                                {pkg.session_count > 1 ? ` ₹${(pkg.price / pkg.session_count).toFixed(0)} per session` : ' Single session'}
                               </p>
                             </div>
                           </button>

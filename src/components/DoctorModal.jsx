@@ -913,7 +913,7 @@ export default function DoctorModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Individual Price per Session ($) *
+                  Individual Price per Session (₹) *
                 </label>
                 <input
                   type="number"
@@ -1002,7 +1002,7 @@ export default function DoctorModal({
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Price per Session ($)
+                          Price per Session (₹)
                         </label>
                         <input
                           type="number"
@@ -1020,10 +1020,10 @@ export default function DoctorModal({
                       <div className="mt-3 p-3 bg-blue-50 rounded-md">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-blue-700">
-                            Total Package Price: ${(pkg.price * pkg.sessions).toFixed(2)}
+                            Total Package Price: ₹{(pkg.price * pkg.sessions).toFixed(2)}
                           </span>
                           <span className="text-green-600 font-medium">
-                            Save: ${((formData.price * pkg.sessions) - (pkg.price * pkg.sessions)).toFixed(2)}
+                            Save: ₹{((formData.price * pkg.sessions) - (pkg.price * pkg.sessions)).toFixed(2)}
                           </span>
                         </div>
                       </div>
