@@ -1,18 +1,12 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "env": {
-    "NEXT_TELEMETRY_DISABLED": "1"
-  }
-}
-
-{
-  "framework": "nextjs",
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "regions": ["iad1"],
   "env": {
+    "NEXT_TELEMETRY_DISABLED": "1",
     "NEXT_PUBLIC_BACKEND_URL": "https://littlecare-backend.onrender.com/api",
     "NEXT_PUBLIC_APP_NAME": "Kuttikal Child Therapy",
     "NEXT_PUBLIC_APP_URL": "https://kutikkal.vercel.app"
