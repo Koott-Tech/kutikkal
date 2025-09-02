@@ -86,8 +86,8 @@ export default function DoctorModal({
         setFormData(prev => ({
           ...prev,
           packages: [
-            // Keep the individual session package
-            { name: 'Individual Session', price: prev.price || '', sessions: 1 },
+            // Keep the individual session package with the current price
+            { name: 'Individual Session', price: prev.price || doctor.price || '', sessions: 1 },
             // Add the fetched multi-session packages
             ...multiSessionPackages
           ]
@@ -916,15 +916,17 @@ export default function DoctorModal({
                   Individual Price per Session (₹) *
                 </label>
                 <input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  type="text"
+                  value={formData.price || ''}
+                  onChange={(e) => {
+                    // Only allow numbers
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    handleInputChange('price', value);
+                  }}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.price ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="150"
-                  min="0"
-                  step="0.01"
                 />
                 {errors.price && (
                   <p className="text-red-500 text-sm mt-1">{errors.price}</p>
@@ -1005,13 +1007,15 @@ export default function DoctorModal({
                           Price per Session (₹)
                         </label>
                         <input
-                          type="number"
-                          value={pkg.price}
-                          onChange={(e) => updatePackage(index, 'price', e.target.value)}
+                          type="text"
+                          value={pkg.price || ''}
+                          onChange={(e) => {
+                            // Only allow numbers
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            updatePackage(index, 'price', value);
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="0.00"
-                          min="0"
-                          step="0.01"
+                          placeholder="150"
                         />
                       </div>
                     </div>
