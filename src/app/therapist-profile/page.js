@@ -335,14 +335,7 @@ const TherapistProfileContent = () => {
           package_id: clientPackage.id
         };
 
-        response = await fetch('http://localhost:5001/api/clients/book-remaining-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(bookingData),
-        });
+        response = await clientApi.bookRemainingSession(bookingData);
       } else {
         // Regular booking with package selection
         const bookingData = {
@@ -355,17 +348,11 @@ const TherapistProfileContent = () => {
           price: selectedPackage.price
         };
 
-        response = await fetch('http://localhost:5001/api/clients/book-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(bookingData),
-        });
+        response = await clientApi.bookSession(bookingData);
+        
       }
 
-      if (response.ok) {
+      if (response.success) {
         setBookingSuccess(true);
         // Reset selections
         setSelectedDate(null);
@@ -375,18 +362,17 @@ const TherapistProfileContent = () => {
         // Show success message
         setTimeout(() => setBookingSuccess(false), 5000);
       } else {
-        const errorData = await response.json();
-        if (response.status === 401) {
+        if (response.statusCode === 401) {
           alert('Session expired. Please log in again.');
           router.push('/login');
-        } else if (response.status === 403) {
+        } else if (response.statusCode === 403) {
           alert('Only clients can book sessions. Please log in with a client account.');
           router.push('/login');
-        } else if (response.status === 404) {
+        } else if (response.statusCode === 404) {
           alert('Client profile not found. Please complete your profile first.');
           router.push('/profile');
         } else {
-          alert(`Booking failed: ${errorData.message || 'Unknown error'}`);
+          alert(`Booking failed: ${response.message || 'Unknown error'}`);
         }
       }
     } catch (error) {
