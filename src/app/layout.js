@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import FooterWrapper from "@/components/FooterWrapper";
 import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SocketProvider } from "@/contexts/SocketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +28,12 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <LoadingScreen />
-          <Header />
-          {children}
-          <FooterWrapper />
+          <SocketProvider>
+            <LoadingScreen />
+            <Header />
+            {children}
+            <FooterWrapper />
+          </SocketProvider>
         </AuthProvider>
       </body>
     </html>

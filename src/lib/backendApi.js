@@ -705,6 +705,42 @@ export const publicApi = {
   },
 };
 
+// Messages API
+export const messagesApi = {
+  // Get user conversations
+  async getConversations() {
+    return apiRequest('/messages/conversations');
+  },
+
+  // Get messages for a conversation
+  async getMessages(conversationId) {
+    return apiRequest(`/messages/conversations/${conversationId}/messages`);
+  },
+
+  // Send a message
+  async sendMessage(conversationId, messageData) {
+    return apiRequest(`/messages/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify(messageData),
+    });
+  },
+
+  // Mark messages as read
+  async markAsRead(conversationId) {
+    return apiRequest(`/messages/conversations/${conversationId}/read`, {
+      method: 'PUT',
+    });
+  },
+
+  // Create new conversation
+  async createConversation(sessionId) {
+    return apiRequest('/messages/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId }),
+    });
+  },
+};
+
 export default {
   auth: authApi,
   client: clientApi,

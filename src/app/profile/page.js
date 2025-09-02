@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
-import { clientApi, authApi } from "../../lib/backendApi";
+import { clientApi, authApi, messagesApi } from "../../lib/backendApi";
 import RescheduleModal from "../../components/RescheduleModal";
 import SessionFeedbackModal from "../../components/SessionFeedbackModal";
+import Messages from "../../components/Messages";
 import { 
   Calendar, 
   Clock, 
@@ -38,6 +39,10 @@ export default function ProfilePage() {
   // Feedback modal state
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
+
+  // Messages modal state
+  const [showMessages, setShowMessages] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
 
   // Contact/profile form state for clients
   const [profileForm, setProfileForm] = useState({
@@ -187,6 +192,53 @@ export default function ProfilePage() {
     setShowReportModal(false);
     setSelectedReport(null);
     setIsSummaryView(false);
+  };
+
+  const handleMessageClick = async (session) => {
+    try {
+      console.log('Creating conversation for session:', session);
+      console.log('Session details:', {
+        id: session.id,
+        psychologist: session.psychologist,
+        scheduled_date: session.scheduled_date,
+        scheduled_time: session.scheduled_time
+      });
+      
+      // Create conversation if it doesn't exist
+      const response = await messagesApi.createConversation(session.id);
+      console.log('Conversation created:', response);
+      
+      // Check if conversation was created successfully
+      if (response && response.success && response.message) {
+        // Handle both new conversation and existing conversation responses
+        let conversationId = null;
+        
+        if (response.message.conversation) {
+          // New conversation created
+          conversationId = response.message.conversation.id;
+        } else if (response.message.conversationId) {
+          // Conversation already exists
+          conversationId = response.message.conversationId;
+        }
+        
+        if (conversationId) {
+          // Store the session info to pass to Messages component
+          session.conversationId = conversationId;
+          console.log('Session with conversation ID:', session);
+          setSelectedSession(session);
+          setShowMessages(true);
+        } else {
+          console.error('Failed to create conversation: No conversation ID found', response);
+          setError('Failed to create conversation. Please try again.');
+        }
+      } else {
+        console.error('Failed to create conversation: Invalid response format', response);
+        setError('Failed to create conversation. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error creating conversation:', err);
+      setError(err.message || 'Failed to create conversation. Please try again.');
+    }
   };
 
   const handleProfileInputChange = (e) => {
@@ -400,6 +452,18 @@ export default function ProfilePage() {
                 </button>
                 
                 <button
+                  onClick={() => setActiveTab("messages")}
+                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                    activeTab === "messages"
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <MessageSquare className="h-5 w-5 mr-3" />
+                  Messages
+                </button>
+                
+                <button
                   onClick={() => setActiveTab("contact")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     activeTab === "contact"
@@ -448,6 +512,13 @@ export default function ProfilePage() {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">My Sessions</h2>
                   <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => router.push('/messages')}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      View All Messages
+                    </button>
                     <button
                       onClick={() => router.push('/guide')}
                       className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
@@ -527,6 +598,13 @@ export default function ProfilePage() {
                                   <div className="flex gap-2">
                                     {session.status === 'booked' && (
                                       <>
+                                        <button
+                                          onClick={() => handleMessageClick(session)}
+                                          className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                                        >
+                                          <MessageSquare className="h-4 w-4 inline mr-1" />
+                                          Message
+                                        </button>
                                         <button
                                           onClick={() => handleRescheduleClick(session)}
                                           className="text-blue-600 hover:text-blue-900 text-sm font-medium border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
@@ -954,6 +1032,26 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
+
+            {/* Messages Tab */}
+            {activeTab === "messages" && (
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">My Messages</h2>
+                <div className="text-center py-12">
+                  <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Messages Dashboard</h3>
+                  <p className="text-gray-600 mb-4">
+                    View and manage your conversations with therapists.
+                  </p>
+                  <button
+                    onClick={() => router.push('/messages')}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Open Messages
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1059,6 +1157,19 @@ export default function ProfilePage() {
         onClose={handleRescheduleModalClose}
         onRescheduleSuccess={handleRescheduleSuccess}
       />
+
+      {/* Messages Modal */}
+      {showMessages && (
+        <Messages 
+          isOpen={showMessages} 
+          onClose={() => {
+            console.log('Closing messages modal');
+            setShowMessages(false);
+            setSelectedSession(null);
+          }}
+          session={selectedSession}
+        />
+      )}
     </div>
   );
 }

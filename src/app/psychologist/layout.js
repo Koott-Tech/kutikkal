@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   X,
-  Bell
+  Bell,
+  MessageSquare
 } from "lucide-react";
 
 export default function PsychologistLayout({ children }) {
@@ -40,6 +41,7 @@ export default function PsychologistLayout({ children }) {
     { name: 'Dashboard', href: '/psychologist', icon: Clock },
     { name: 'Sessions', href: '/psychologist/sessions', icon: Calendar },
     { name: 'Availability', href: '/psychologist/availability', icon: Clock },
+    { name: 'Messages', href: '/psychologist/messages', icon: MessageSquare },
     { name: 'Notifications', href: '/psychologist/notifications', icon: Bell },
     { name: 'Packages', href: '/psychologist/packages', icon: FileText },
     { name: 'Settings', href: '/psychologist/settings', icon: Settings },
