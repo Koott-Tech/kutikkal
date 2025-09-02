@@ -661,7 +661,9 @@ const TherapistProfileContent = () => {
                 </div>
                 <div>
                   <p className="text-gray-800 text-sm">
-                    <span className="font-medium">Starts at $150 per session</span>
+                    <span className="font-medium">
+                      {selectedDoctor.price ? `Starts at $${selectedDoctor.price} per session` : 'Pricing available upon request'}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -748,52 +750,7 @@ const TherapistProfileContent = () => {
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">Session Pricing</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Individual Sessions */}
-                  <div>
-                    <div className="text-center mb-4">
-                      <h4 className="text-lg font-bold text-gray-800 mb-2">Individual Sessions</h4>
-                      <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <button 
-                        onClick={() => handlePricingSelect({ type: 'individual', package: 'single', price: 150, duration: '60 minutes' })}
-                        className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
-                          selectedPricing?.type === 'individual' && selectedPricing?.package === 'single'
-                            ? 'bg-blue-50 border-2 border-blue-300'
-                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-semibold text-gray-800">Single Session</p>
-                          <p className="text-sm text-gray-600">60 minutes</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-blue-600">$150</p>
-                        </div>
-                      </button>
-                      
-                      <button 
-                        onClick={() => handlePricingSelect({ type: 'individual', package: '4', price: 540, duration: '60 × 4 sessions' })}
-                        className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
-                          selectedPricing?.type === 'individual' && selectedPricing?.package === '4'
-                            ? 'bg-blue-50 border-2 border-blue-300'
-                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-semibold text-gray-800">Package of 4</p>
-                          <p className="text-sm text-gray-600">60 × 4 sessions</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-blue-600">$540</p>
-                          <p className="text-xs text-green-600 font-medium">Save $60</p>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                  
+                <div className="grid grid-cols-1 gap-6">
                   {/* Family/Child Sessions */}
                   <div>
                     <div className="text-center mb-4">
@@ -802,39 +759,47 @@ const TherapistProfileContent = () => {
                     </div>
                     
                     <div className="space-y-4">
-                      <button 
-                        onClick={() => handlePricingSelect({ type: 'family', package: 'single', price: 200, duration: '90 minutes' })}
-                        className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
-                          selectedPricing?.type === 'family' && selectedPricing?.package === 'single'
-                            ? 'bg-purple-50 border-2 border-purple-300'
-                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-semibold text-gray-800">Family Session</p>
-                          <p className="text-sm text-gray-600">90 minutes</p>
+                      {selectedDoctor.price ? (
+                        <>
+                          <button 
+                            onClick={() => handlePricingSelect({ type: 'family', package: 'single', price: selectedDoctor.price * 1.5, duration: '90 minutes' })}
+                            className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
+                              selectedPricing?.type === 'family' && selectedPricing?.package === 'single'
+                                ? 'bg-purple-50 border-2 border-purple-300'
+                                : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-semibold text-gray-800">Family Session</p>
+                              <p className="text-sm text-gray-600">90 minutes</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-purple-600">${Math.round(selectedDoctor.price * 1.5)}</p>
+                            </div>
+                          </button>
+                          
+                          <button 
+                            onClick={() => handlePricingSelect({ type: 'child', package: 'single', price: selectedDoctor.price * 0.8, duration: '45 minutes' })}
+                            className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
+                              selectedPricing?.type === 'child' && selectedPricing?.package === 'single'
+                                ? 'bg-purple-50 border-2 border-purple-300'
+                                : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-semibold text-gray-800">Child Session</p>
+                              <p className="text-sm text-gray-600">45 minutes</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-purple-600">${Math.round(selectedDoctor.price * 0.8)}</p>
+                            </div>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-gray-500">Pricing information will be available soon</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-purple-600">$200</p>
-                        </div>
-                      </button>
-                      
-                      <button 
-                        onClick={() => handlePricingSelect({ type: 'child', package: 'single', price: 120, duration: '45 minutes' })}
-                        className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
-                          selectedPricing?.type === 'child' && selectedPricing?.package === 'single'
-                            ? 'bg-purple-50 border-2 border-purple-300'
-                            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-semibold text-gray-800">Child Session</p>
-                          <p className="text-sm text-gray-600">45 minutes</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-purple-600">$120</p>
-                        </div>
-                      </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1133,14 +1098,14 @@ const TherapistProfileContent = () => {
                       onClick={() => {
                         setSelectedPackage({
                           id: 'individual',
-                          name: 'Single Session',
+                                                     name: 'Individual Session',
                           description: 'One therapy session',
                           session_count: 1,
-                          price: 100, // Default price, can be made dynamic
+                          price: selectedDoctor.price, // Dynamic price from doctor profile
                           package_type: 'individual',
                           discount_percentage: 0
                         });
-                        setSelectedPrice(100);
+                        setSelectedPrice(selectedDoctor.price);
                       }}
                       className={`p-4 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                         selectedPackage?.id === 'individual'
@@ -1150,9 +1115,9 @@ const TherapistProfileContent = () => {
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="text-left">
-                          <span className="font-semibold text-base">Single Session</span>
+                          <span className="font-semibold text-base">Individual Session</span>
                         </div>
-                        <span className="font-bold text-lg">$100</span>
+                        <span className="font-bold text-lg">${selectedDoctor.price}</span>
                       </div>
                       <div className="text-left text-gray-600 text-xs">
                         <p>One therapy session</p>
@@ -1168,7 +1133,7 @@ const TherapistProfileContent = () => {
                       </div>
                     ) : packages.length > 0 ? (
                       <div className="grid grid-cols-1 gap-3">
-                        {packages.map((pkg) => (
+                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
                           <button
                             key={pkg.id}
                             onClick={() => {
@@ -1205,7 +1170,7 @@ const TherapistProfileContent = () => {
                     ) : (
                       <div className="text-center py-4 text-gray-500 text-sm">
                         <p>No additional packages available</p>
-                        <p className="text-xs mt-1">Single session option is always available above</p>
+                        <p className="text-xs mt-1">Individual session option is always available above</p>
                       </div>
                     )}
                   </>

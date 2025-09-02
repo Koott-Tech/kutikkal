@@ -701,7 +701,7 @@ export const publicApi = {
 
   // Get psychologist packages (public)
   async getPsychologistPackages(psychologistId) {
-    return apiRequest(`/clients/psychologists/${psychologistId}/packages`);
+    return apiRequest(`/public/psychologists/${psychologistId}/packages`);
   },
 };
 

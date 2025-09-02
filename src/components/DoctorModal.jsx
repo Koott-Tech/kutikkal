@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Plus, Minus, FileText, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { publicApi } from '@/lib/backendApi';
 
 export default function DoctorModal({ 
   isOpen, 
@@ -60,6 +61,45 @@ export default function DoctorModal({
     night: ['9:00 PM', '10:00 PM']
   };
 
+  // Fetch packages for a psychologist when editing
+  const fetchPsychologistPackages = async (psychologistId) => {
+    try {
+      console.log('📦 Fetching packages for psychologist:', psychologistId);
+      const response = await publicApi.getPsychologistPackages(psychologistId);
+      if (response.success && response.data.packages) {
+        console.log('📦 Packages fetched:', response.data.packages);
+        // Filter out 1-session packages (individual sessions) and map to form format
+        const multiSessionPackages = response.data.packages
+          .filter(pkg => pkg.session_count > 1)
+          .map(pkg => ({
+            id: pkg.id,
+            name: pkg.name,
+            price: pkg.price,
+            sessions: pkg.session_count,
+            description: pkg.description,
+            discount_percentage: pkg.discount_percentage
+          }));
+        
+        console.log('📦 Multi-session packages:', multiSessionPackages);
+        
+        // Update form data with fetched packages
+        setFormData(prev => ({
+          ...prev,
+          packages: [
+            // Keep the individual session package
+            { name: 'Individual Session', price: prev.price || '', sessions: 1 },
+            // Add the fetched multi-session packages
+            ...multiSessionPackages
+          ]
+        }));
+      } else {
+        console.log('📦 No packages found or error:', response);
+      }
+    } catch (error) {
+      console.error('📦 Error fetching packages:', error);
+    }
+  };
+
   useEffect(() => {
     if (doctor && mode === 'edit') {
       setFormData({
@@ -76,19 +116,18 @@ export default function DoctorModal({
         description: doctor.description || '',
         price: doctor.price || '',
         experience_years: doctor.experience_years || '',
-        packages: (() => {
-          const packagesArray = doctor.packages || [{ name: 'Individual Session', price: doctor.price || '', sessions: 1 }];
-          console.log('Original packages:', packagesArray);
-          const mappedPackages = packagesArray.map((pkg, index) => ({
-            ...pkg,
-            id: pkg.id || `temp-${Date.now() + index}`
-          }));
-          console.log('Mapped packages with IDs:', mappedPackages);
-          return mappedPackages;
-        })(),
+        packages: [
+          // Start with individual session package
+          { name: 'Individual Session', price: doctor.price || '', sessions: 1 }
+        ],
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
         coverImage: doctor.coverImage || null
       });
+      
+      // Fetch packages for this psychologist
+      if (doctor.id) {
+        fetchPsychologistPackages(doctor.id);
+      }
       
               // Load existing availability if editing
         if (doctor.availability && Array.isArray(doctor.availability)) {
@@ -471,12 +510,12 @@ export default function DoctorModal({
     if (selectedPackage) {
       updatePackage(index, 'name', selectedPackage.name);
       updatePackage(index, 'sessions', selectedPackage.sessions);
-      // Calculate discount based on base price
+      // Calculate discount based on individual price
       if (formData.price) {
-        const basePrice = parseFloat(formData.price);
-        const totalPrice = basePrice * selectedPackage.sessions;
+        const individualPrice = parseFloat(formData.price);
+        const totalPrice = individualPrice * selectedPackage.sessions;
         const discount = Math.round((totalPrice * 0.1) / selectedPackage.sessions); // 10% discount per session
-        updatePackage(index, 'price', (basePrice - discount).toFixed(2));
+        updatePackage(index, 'price', (individualPrice - discount).toFixed(2));
         updatePackage(index, 'discount', discount);
       }
     }
@@ -579,6 +618,7 @@ export default function DoctorModal({
         phd_college: formData.education.phd,
         description: formData.description,
         experience_years: parseInt(formData.experience_years) || 0,
+        price: formData.price ? Number(formData.price) : undefined,
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
         availability: convertedAvailability,
         packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions)
@@ -873,7 +913,7 @@ export default function DoctorModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Base Price per Session ($) *
+                  Individual Price per Session ($) *
                 </label>
                 <input
                   type="number"
@@ -889,6 +929,9 @@ export default function DoctorModal({
                 {errors.price && (
                   <p className="text-red-500 text-sm mt-1">{errors.price}</p>
                 )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Price will be stored in the description field temporarily
+                </p>
               </div>
             </div>
 
@@ -911,57 +954,39 @@ export default function DoctorModal({
                   <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                     <div className="flex items-center justify-between mb-3">
                       <h5 className="font-medium text-gray-800">
-                        {index === 0 ? 'Single Session (Base)' : `Package ${index + 1}`}
+                        Package {index + 1}
                       </h5>
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => removePackage(index)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => removePackage(index)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {index === 0 ? (
-                        // Single session (fixed)
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Package Name
-                          </label>
-                          <input
-                            type="text"
-                            value={pkg.name}
-                            disabled
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                          />
-                        </div>
-                      ) : (
-                        // Package selection dropdown
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Package Type *
-                          </label>
-                          <select
-                            value={pkg.sessions}
-                            onChange={(e) => selectPackageType(index, parseInt(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">Select Package</option>
-                            {availablePackages
-                              .filter(p => !formData.packages.some((existingPkg, i) => 
-                                i !== index && existingPkg.sessions === p.sessions
-                              ))
-                              .map(p => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                      )}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Package Type *
+                        </label>
+                        <select
+                          value={pkg.sessions}
+                          onChange={(e) => selectPackageType(index, parseInt(e.target.value))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Select Package</option>
+                          {availablePackages
+                            .filter(p => !formData.packages.some((existingPkg, i) => 
+                              i !== index && existingPkg.sessions === p.sessions
+                            ))
+                            .map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1008,7 +1033,7 @@ export default function DoctorModal({
               </div>
               
               <p className="text-xs text-gray-500 mt-3">
-                * Single session is always required. Additional packages provide discounts for multiple sessions.
+                * Individual session price is set above. Additional packages provide discounts for multiple sessions.
               </p>
             </div>
           </div>
