@@ -1121,7 +1121,16 @@ export default function SuperAdminPage() {
                         <div className="font-medium text-blue-800 text-sm mb-1">{item.date}</div>
                         <div className="text-blue-600 text-xs">
                           {item.time_slots && Array.isArray(item.time_slots) ? 
-                            item.time_slots.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') : 
+                            item.time_slots.map(ts => {
+                              // Handle both string and object time slots
+                              if (typeof ts === 'string') {
+                                return ts;
+                              } else if (typeof ts === 'object' && ts !== null) {
+                                return ts.displayTime || ts.time || String(ts);
+                              } else {
+                                return String(ts);
+                              }
+                            }).join(', ') : 
                             'No slots'}
                         </div>
                       </div>
@@ -1552,7 +1561,16 @@ export default function SuperAdminPage() {
                             <div className="font-semibold text-gray-800 mb-1">{item.date}</div>
                             <div className="text-gray-600">
                               {item.time_slots && Array.isArray(item.time_slots) ? 
-                                item.time_slots.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') : 
+                                item.time_slots.map(ts => {
+                                  // Handle both string and object time slots
+                                  if (typeof ts === 'string') {
+                                    return ts;
+                                  } else if (typeof ts === 'object' && ts !== null) {
+                                    return ts.displayTime || ts.time || String(ts);
+                                  } else {
+                                    return String(ts);
+                                  }
+                                }).join(', ') : 
                                 'No slots'}
                             </div>
                           </div>

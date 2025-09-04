@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
-import { clientApi } from '../../lib/backendApi';
+import { clientApi, paymentApi } from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Separate component that uses useSearchParams
@@ -277,7 +277,7 @@ const TherapistProfileContent = () => {
     }
 
     // Check if user is authenticated and is a client
-    if (!isAuthenticated()) {
+    if (!isAuthenticated) {
       alert('Please log in to book a session. Only clients can book sessions.');
       const returnUrl = `/therapist-profile?doctor=${doctorIndex}`;
       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
@@ -291,8 +291,8 @@ const TherapistProfileContent = () => {
     }
 
     // Require client profile completion before booking
-    const profile = user?.profile || {};
-    const hasBasicContact = Boolean(profile.first_name) && Boolean(profile.last_name) && Boolean(profile.phone_number);
+    const userProfile = user?.profile || {};
+    const hasBasicContact = Boolean(userProfile.first_name) && Boolean(userProfile.last_name) && Boolean(userProfile.phone_number);
     if (!hasBasicContact) {
       alert('Please complete your contact profile before booking.');
       router.push('/profile?tab=contact');
@@ -325,9 +325,10 @@ const TherapistProfileContent = () => {
         scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
       }
 
-      let response;
+      // First, reserve the time slot and get payment details
+      let slotReservation;
       if (isBookingRemaining && clientPackage) {
-        // Book remaining session from package
+        // Book remaining session from package (no payment needed)
         const bookingData = {
           psychologist_id: selectedDoctor.id,
           scheduled_date: scheduledDate,
@@ -335,24 +336,140 @@ const TherapistProfileContent = () => {
           package_id: clientPackage.id
         };
 
-        response = await clientApi.bookRemainingSession(bookingData);
+        sessionResponse = await clientApi.bookRemainingSession(bookingData);
       } else {
-        // Regular booking with package selection
-        const bookingData = {
+        // Reserve slot for payment
+        const reservationData = {
           psychologist_id: selectedDoctor.id,
           scheduled_date: scheduledDate,
           scheduled_time: scheduledTime,
-          package_id: selectedPackage.id,
-          package_type: selectedPackage.package_type,
-          session_count: selectedPackage.session_count,
-          price: selectedPackage.price
+          package_id: selectedPackage.id
         };
 
-        response = await clientApi.bookSession(bookingData);
-        
+        slotReservation = await clientApi.reserveSlot(reservationData);
       }
 
-      if (response.success) {
+      if (isBookingRemaining && clientPackage) {
+        if (!sessionResponse.success) {
+          if (sessionResponse.statusCode === 401) {
+            alert('Session expired. Please log in again.');
+            router.push('/login');
+          } else if (sessionResponse.statusCode === 403) {
+            alert('Only clients can book sessions. Please log in with a client account.');
+            router.push('/login');
+          } else if (sessionResponse.statusCode === 404) {
+            alert('Client profile not found. Please complete your profile first.');
+            router.push('/profile');
+          } else {
+            alert(`Booking failed: ${sessionResponse.message || 'Unknown error'}`);
+          }
+          return;
+        }
+
+        setBookingSuccess(true);
+        // Reset selections
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setSelectedPackage(null);
+        setSelectedPrice(null);
+        // Show success message
+        setTimeout(() => setBookingSuccess(false), 5000);
+        return;
+      }
+
+      // Handle payment flow for new bookings
+      if (!slotReservation.success) {
+        if (slotReservation.statusCode === 401) {
+          alert('Session expired. Please log in again.');
+          router.push('/login');
+        } else if (slotReservation.statusCode === 403) {
+          alert('Only clients can book sessions. Please log in with a client account.');
+          router.push('/login');
+        } else if (slotReservation.statusCode === 404) {
+          alert('Client profile not found. Please complete your profile first.');
+          router.push('/profile');
+        } else {
+          alert(`Slot reservation failed: ${slotReservation.message || 'Unknown error'}`);
+        }
+        return;
+      }
+
+      // Create payment order for new package booking
+      const clientId = slotReservation.data.clientId;
+      const amount = slotReservation.data.price;
+      const sessionType = selectedPackage.session_count > 1 ? 'Package Session' : 'Individual Session';
+      
+      // Debug logging
+      console.log('🔍 Payment Debug Info:', {
+        scheduledDate,
+        scheduledTime,
+        psychologistId: selectedDoctor.id,
+        clientId: clientId,
+        amount,
+        packageId: selectedPackage.id,
+        sessionType,
+        clientName: `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`,
+        clientEmail: user?.email,
+        clientPhone: userProfile?.phone_number,
+        user: user,
+        userProfile: userProfile,
+        slotReservation: slotReservation.data
+      });
+      
+      const paymentData = {
+        scheduledDate: scheduledDate,
+        scheduledTime: scheduledTime,
+        psychologistId: selectedDoctor.id,
+        clientId: clientId,
+        amount: amount,
+        packageId: selectedPackage.id,
+        sessionType: sessionType,
+        clientName: `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`,
+        clientEmail: user?.email,
+        clientPhone: userProfile?.phone_number
+      };
+
+      const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
+
+      console.log('🔍 Payment Response:', paymentResponse);
+
+      if (paymentResponse.success) {
+        console.log('✅ Payment response successful, redirecting to PayU...');
+        console.log('🔗 Redirect URL:', paymentResponse.data.redirectUrl);
+        console.log('📋 PayU Params:', paymentResponse.data.payuParams);
+        
+        // Add a small delay to prevent rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Create and submit form to PayU
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = paymentResponse.data.redirectUrl;
+        form.target = '_self'; // Changed from '_blank' to '_self' to open in same window
+        form.style.display = 'none'; // Hide the form
+
+        // Add PayU parameters
+        Object.entries(paymentResponse.data.payuParams).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+
+        // Append form to body and submit
+        document.body.appendChild(form);
+        console.log('🚀 Submitting form to PayU...');
+        form.submit();
+        
+        // Don't remove the form immediately - let it submit first
+        setTimeout(() => {
+          if (document.body.contains(form)) {
+            document.body.removeChild(form);
+          }
+        }, 1000);
+
+        // Show success message for session creation
         setBookingSuccess(true);
         // Reset selections
         setSelectedDate(null);
@@ -362,18 +479,8 @@ const TherapistProfileContent = () => {
         // Show success message
         setTimeout(() => setBookingSuccess(false), 5000);
       } else {
-        if (response.statusCode === 401) {
-          alert('Session expired. Please log in again.');
-          router.push('/login');
-        } else if (response.statusCode === 403) {
-          alert('Only clients can book sessions. Please log in with a client account.');
-          router.push('/login');
-        } else if (response.statusCode === 404) {
-          alert('Client profile not found. Please complete your profile first.');
-          router.push('/profile');
-        } else {
-          alert(`Booking failed: ${response.message || 'Unknown error'}`);
-        }
+        console.error('❌ Payment response failed:', paymentResponse);
+        alert(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Booking error:', error);

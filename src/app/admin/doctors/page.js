@@ -350,7 +350,20 @@ export default function DoctorsPage() {
                         <div key={index} className="flex items-center space-x-2 text-sm">
                           <Clock className="h-4 w-4 text-gray-400" />
                           <span className="text-gray-900">
-                            {slot.date}: {slot.time_slots?.filter(ts => ts.available).map(ts => ts.displayTime).join(', ') || 'Available'}
+                            {slot.date}: {
+                              slot.time_slots && Array.isArray(slot.time_slots) 
+                                ? slot.time_slots.map(ts => {
+                                    // Handle both string and object time slots
+                                    if (typeof ts === 'string') {
+                                      return ts;
+                                    } else if (typeof ts === 'object' && ts !== null) {
+                                      return ts.displayTime || ts.time || String(ts);
+                                    } else {
+                                      return String(ts);
+                                    }
+                                  }).join(', ')
+                                : 'Available'
+                            }
                           </span>
                         </div>
                       ))}

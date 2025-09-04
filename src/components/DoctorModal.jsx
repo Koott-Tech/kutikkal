@@ -37,6 +37,7 @@ export default function DoctorModal({
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [availabilityData, setAvailabilityData] = useState({});
+  const [hasUserModifiedAvailability, setHasUserModifiedAvailability] = useState(false);
   const [step, setStep] = useState(1); // 1: select date, 2: select times, 3: next date or save
 
   const [errors, setErrors] = useState({});
@@ -102,6 +103,9 @@ export default function DoctorModal({
 
   useEffect(() => {
     if (doctor && mode === 'edit') {
+      // Reset the modification flag when opening for edit
+      setHasUserModifiedAvailability(false);
+      
       setFormData({
         firstName: doctor.first_name || doctor.firstName || '',
         lastName: doctor.last_name || doctor.lastName || '',
@@ -129,8 +133,9 @@ export default function DoctorModal({
         fetchPsychologistPackages(doctor.id);
       }
       
-              // Load existing availability if editing
-        if (doctor.availability && Array.isArray(doctor.availability)) {
+                    // Load existing availability if editing AND user hasn't modified it
+      // This prevents overwriting user changes when they've already modified availability
+      if (doctor.availability && Array.isArray(doctor.availability) && !hasUserModifiedAvailability) {
           console.log('Processing array-based availability:', doctor.availability);
           // Convert existing availability to new format
           const convertedAvailability = {};
@@ -181,30 +186,45 @@ export default function DoctorModal({
               const categorizedSlots = { morning: [], noon: [], evening: [], night: [] };
               item.time_slots.forEach(slot => {
                 try {
-                  const period = findMatchingSlot(slot);
+                  // Convert slot to string if it's an object
+                  let slotString = slot;
+                  if (typeof slot === 'object' && slot !== null) {
+                    if (slot.displayTime) {
+                      slotString = slot.displayTime;
+                    } else if (slot.time) {
+                      slotString = slot.time;
+                    } else {
+                      console.warn('Time slot object has no displayable time property:', slot);
+                      slotString = String(slot);
+                    }
+                  } else if (typeof slot !== 'string') {
+                    slotString = String(slot);
+                  }
+                  
+                  const period = findMatchingSlot(slotString);
                   if (period) {
-                    categorizedSlots[period].push(slot);
+                    categorizedSlots[period].push(slotString);
                   } else {
                     // If no match found, add to the most appropriate period based on time
-                    const hour = parseInt(String(slot).split(':')[0]);
+                    const hour = parseInt(String(slotString).split(':')[0]);
                     if (isNaN(hour)) {
-                      console.warn('Invalid time slot format:', slot);
+                      console.warn('Invalid time slot format:', slotString);
                       // Default to noon if we can't parse the hour
-                      categorizedSlots.noon.push(slot);
+                      categorizedSlots.noon.push(slotString);
                     } else if (hour >= 9 && hour < 12) {
-                      categorizedSlots.morning.push(slot);
+                      categorizedSlots.morning.push(slotString);
                     } else if (hour >= 12 && hour < 17) {
-                      categorizedSlots.noon.push(slot);
+                      categorizedSlots.noon.push(slotString);
                     } else if (hour >= 17 && hour < 21) {
-                      categorizedSlots.evening.push(slot);
+                      categorizedSlots.evening.push(slotString);
                     } else if (hour >= 21 || hour < 9) {
-                      categorizedSlots.night.push(slot);
+                      categorizedSlots.night.push(slotString);
                     }
                   }
                 } catch (error) {
                   console.error('Error processing time slot:', slot, error);
                   // Default to noon if there's an error
-                  categorizedSlots.noon.push(slot);
+                  categorizedSlots.noon.push(String(slot));
                 }
               });
               
@@ -263,30 +283,45 @@ export default function DoctorModal({
                 const categorizedSlots = { morning: [], noon: [], evening: [], night: [] };
                 item.slots.forEach(slot => {
                   try {
-                    const period = findMatchingSlot(slot);
+                    // Convert slot to string if it's an object
+                    let slotString = slot;
+                    if (typeof slot === 'object' && slot !== null) {
+                      if (slot.displayTime) {
+                        slotString = slot.displayTime;
+                      } else if (slot.time) {
+                        slotString = slot.time;
+                      } else {
+                        console.warn('Time slot object has no displayable time property:', slot);
+                        slotString = String(slot);
+                      }
+                    } else if (typeof slot !== 'string') {
+                      slotString = String(slot);
+                    }
+                    
+                    const period = findMatchingSlot(slotString);
                     if (period) {
-                      categorizedSlots[period].push(slot);
+                      categorizedSlots[period].push(slotString);
                     } else {
                       // If no match found, add to the most appropriate period based on time
-                      const hour = parseInt(String(slot).split(':')[0]);
+                      const hour = parseInt(String(slotString).split(':')[0]);
                       if (isNaN(hour)) {
-                        console.warn('Invalid time slot format:', slot);
+                        console.warn('Invalid time slot format:', slotString);
                         // Default to noon if we can't parse the hour
-                        categorizedSlots.noon.push(slot);
+                        categorizedSlots.noon.push(slotString);
                       } else if (hour >= 9 && hour < 12) {
-                        categorizedSlots.morning.push(slot);
+                        categorizedSlots.morning.push(slotString);
                       } else if (hour >= 12 && hour < 17) {
-                        categorizedSlots.noon.push(slot);
+                        categorizedSlots.noon.push(slotString);
                       } else if (hour >= 17 && hour < 21) {
-                        categorizedSlots.evening.push(slot);
+                        categorizedSlots.evening.push(slotString);
                       } else if (hour >= 21 || hour < 9) {
-                        categorizedSlots.night.push(slot);
+                        categorizedSlots.night.push(slotString);
                       }
                     }
                   } catch (error) {
                     console.error('Error processing time slot:', slot, error);
                     // Default to noon if there's an error
-                    categorizedSlots.noon.push(slot);
+                    categorizedSlots.noon.push(String(slot));
                   }
                 });
                 
@@ -358,6 +393,8 @@ export default function DoctorModal({
         return prev.concat(timeKey);
       }
     });
+    // Mark that user has modified availability
+    setHasUserModifiedAvailability(true);
   };
 
   const getNextDayOccurrence = (dayName) => {
@@ -406,6 +443,7 @@ export default function DoctorModal({
     };
     
     setAvailabilityData(newAvailability);
+    setHasUserModifiedAvailability(true);
     setSelectedDate(null);
     setSelectedTimes([]);
     setStep(1); // Back to date selection
@@ -435,6 +473,7 @@ export default function DoctorModal({
     const newAvailability = { ...availabilityData };
     delete newAvailability[dateStr];
     setAvailabilityData(newAvailability);
+    setHasUserModifiedAvailability(true);
   };
 
   const handleInputChange = (field, value) => {
@@ -632,13 +671,19 @@ export default function DoctorModal({
       }
 
       await onSave(doctorData);
-      onClose();
+      handleClose();
     } catch (error) {
       console.error('Error saving doctor:', error);
       setErrors({ submit: error.message || 'Failed to save doctor' });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleClose = () => {
+    // Reset the modification flag when closing the modal
+    setHasUserModifiedAvailability(false);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -652,7 +697,7 @@ export default function DoctorModal({
               {mode === 'add' ? 'Add New Doctor' : 'Edit Doctor'}
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="w-6 h-6" />
@@ -1414,7 +1459,7 @@ export default function DoctorModal({
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
               Cancel

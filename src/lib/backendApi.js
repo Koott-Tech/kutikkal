@@ -1,4 +1,6 @@
-const BACKEND_BASE_URL = 'https://littlecare-backend.onrender.com/api';
+const BACKEND_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5001/api'
+  : 'https://littlecare-backend.onrender.com/api';
 
 // Debug logging
 console.log('Environment variables:', {
@@ -256,6 +258,14 @@ export const clientApi = {
   // Book remaining session from package
   async bookRemainingSession(data) {
     return apiRequest('/clients/book-remaining-session', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Reserve time slot for payment
+  async reserveSlot(data) {
+    return apiRequest('/clients/reserve-slot', {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -739,6 +749,22 @@ export const messagesApi = {
       method: 'POST',
       body: JSON.stringify({ sessionId }),
     });
+  },
+};
+
+// Payment API
+export const paymentApi = {
+  // Create payment order
+  async createPaymentOrder(paymentData) {
+    return apiRequest('/payment/create-order', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  },
+
+  // Get payment status
+  async getPaymentStatus(transactionId) {
+    return apiRequest(`/payment/status/${transactionId}`);
   },
 };
 

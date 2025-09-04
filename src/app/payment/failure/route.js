@@ -1,0 +1,42 @@
+import { NextResponse } from 'next/server';
+import { setFailureData } from '../../api/payment/data/route.js';
+
+export async function POST(request) {
+  try {
+    const formData = await request.formData();
+    const txnid = formData.get('txnid') || '';
+    const status = formData.get('status') || '';
+    const amount = formData.get('amount') || '';
+    const error_code = formData.get('error_code') || '';
+    const error_Message = formData.get('error_Message') || '';
+
+    console.log('🔍 PayU Failure POST Data:', {
+      txnid,
+      status,
+      amount,
+      error_code,
+      error_Message
+    });
+
+    // Store failure data
+    const failureData = {
+      txnid,
+      status,
+      amount,
+      error_code,
+      error_Message,
+      timestamp: Date.now()
+    };
+
+    setFailureData(failureData);
+    console.log('💾 Stored failure data:', failureData);
+
+    // Redirect to a clean URL
+    const redirectUrl = 'http://localhost:3000/payment/result';
+    console.log('🔗 Redirecting to:', redirectUrl);
+    return NextResponse.redirect(redirectUrl);
+  } catch (error) {
+    console.error('❌ Error in payment failure handler:', error);
+    return NextResponse.redirect('http://localhost:3000/payment/result?error=processing');
+  }
+}
