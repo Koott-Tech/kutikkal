@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function PaymentResult() {
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPaymentData = async () => {
@@ -172,6 +174,13 @@ export default function PaymentResult() {
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Continue to Dashboard
+            </button>
+            
+            <button
+              onClick={() => router.push('/profile/receipts')}
+              className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              View Receipts
             </button>
             
             <button

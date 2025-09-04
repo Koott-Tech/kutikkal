@@ -18,7 +18,8 @@ import {
   MessageSquare,
   BarChart3,
   AlertCircle,
-  X
+  X,
+  Receipt
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -498,6 +499,16 @@ export default function ProfilePage() {
                   >
                     <FileText className="h-5 w-5 mr-3" />
                     Packages
+                  </button>
+                )}
+
+                {hasRole('client') && (
+                  <button
+                    onClick={() => router.push('/profile/receipts')}
+                    className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors text-gray-700 hover:bg-gray-50"
+                  >
+                    <Receipt className="h-5 w-5 mr-3" />
+                    Receipts
                   </button>
                 )}
               </nav>
