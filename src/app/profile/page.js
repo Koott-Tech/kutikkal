@@ -559,25 +559,27 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-8">
                     {/* Scheduled Sessions Section */}
-                    {sessions.filter(s => ['booked', 'reschedule_requested'].includes(s.status)).length > 0 && (
+                    {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
                       <div>
                         <div className="flex items-center gap-3 mb-4">
                           <Calendar className="h-6 w-6 text-blue-600" />
                           <h3 className="text-lg font-semibold text-gray-900">Scheduled Sessions</h3>
                           <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            {sessions.filter(s => ['booked', 'reschedule_requested'].includes(s.status)).length}
+                            {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length}
                           </span>
                         </div>
                         <div className="space-y-4">
                           {sessions
-                            .filter(s => ['booked', 'reschedule_requested'].includes(s.status))
+                            .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
                             .map((session) => (
                               <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-blue-50/30">
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
                                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
-                                        {session.status === 'booked' ? 'Scheduled' : 'Reschedule Requested'}
+                                        {session.status === 'booked' ? 'Scheduled' : 
+                                         session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                                         session.status === 'rescheduled' ? 'Rescheduled' : 'Scheduled'}
                                       </span>
                                       <span className="text-sm text-gray-500">
                                         {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
@@ -590,7 +592,16 @@ export default function ProfilePage() {
                                     </div>
                                     
                                     <h3 className="font-medium text-gray-900 mb-1">
-                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                      {session.session_type === 'free_assessment' ? (
+                                        <span className="flex items-center gap-2">
+                                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                            Free Assessment
+                                          </span>
+                                          Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                        </span>
+                                      ) : (
+                                        `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
+                                      )}
                                     </h3>
                                     
                                     {session.package && (
@@ -690,7 +701,16 @@ export default function ProfilePage() {
                                     </div>
                                     
                                     <h3 className="font-medium text-gray-900 mb-1">
-                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                      {session.session_type === 'free_assessment' ? (
+                                        <span className="flex items-center gap-2">
+                                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                            Free Assessment
+                                          </span>
+                                          Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                                        </span>
+                                      ) : (
+                                        `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
+                                      )}
                                     </h3>
                                     
                                     {session.package && (

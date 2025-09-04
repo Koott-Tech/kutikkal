@@ -1,0 +1,710 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Calendar, Clock, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+
+export default function FreeAssessmentPage() {
+  const { user, token, authLoading } = useAuth();
+  const [assessmentStatus, setAssessmentStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Calendar state (like therapist profile)
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [freeAssessmentAvailability, setFreeAssessmentAvailability] = useState({});
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [availableTimeslots, setAvailableTimeslots] = useState([]);
+  const [loadingTimeslots, setLoadingTimeslots] = useState(false);
+
+  // Get assessment status
+  const fetchAssessmentStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/free-assessments/status', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setAssessmentStatus(data.data);
+      } else {
+        setError(data.message || 'Failed to fetch assessment status');
+      }
+    } catch (error) {
+      console.error('Error fetching assessment status:', error);
+      setError('Failed to fetch assessment status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calendar helper functions (like therapist profile)
+  const getMonthName = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay();
+    
+    return { daysInMonth, startingDay };
+  };
+
+  const handlePrevMonth = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    setCurrentDate(newDate);
+    fetchFreeAssessmentAvailability(newDate);
+  };
+
+  const handleNextMonth = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    setCurrentDate(newDate);
+    fetchFreeAssessmentAvailability(newDate);
+  };
+
+  const handleDateSelect = (day) => {
+    const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    setSelectedDate(newSelectedDate);
+    setSelectedTime(null);
+    fetchAvailableTimeslots(newSelectedDate);
+  };
+
+  const handleTimeSelect = (time) => {
+    setSelectedTime(time);
+  };
+
+  // Fetch free assessment availability for current month
+  const fetchFreeAssessmentAvailability = async (date) => {
+    try {
+      setLoadingAvailability(true);
+      
+      // Get current month dates
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      
+      // Format start date (first day of month)
+      const startYear = year;
+      const startMonth = String(month + 1).padStart(2, '0');
+      const startDay = '01';
+      const startDate = `${startYear}-${startMonth}-${startDay}`;
+      
+      // Format end date (last day of month)
+      const endYear = year;
+      const endMonth = String(month + 1).padStart(2, '0');
+      const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
+      const endDate = `${endYear}-${endMonth}-${endDay}`;
+      
+      console.log('🔍 Fetching availability for:', startDate, 'to', endDate);
+      
+      const response = await fetch(`/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      console.log('🔍 Availability response:', data);
+      
+      if (data.success) {
+        // Convert array to object with date keys
+        const availabilityObject = {};
+        data.data.forEach(dayAvailability => {
+          availabilityObject[dayAvailability.date] = dayAvailability;
+        });
+        
+        console.log('🔍 Processed availability object:', availabilityObject);
+        setFreeAssessmentAvailability(availabilityObject);
+      } else {
+        console.error('Failed to fetch availability:', data);
+        setFreeAssessmentAvailability({});
+      }
+    } catch (error) {
+      console.error('Error fetching free assessment availability:', error);
+      setFreeAssessmentAvailability({});
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  // Fetch available timeslots for selected date
+  const fetchAvailableTimeslots = async (date) => {
+    try {
+      setLoadingTimeslots(true);
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      const response = await fetch(`/api/free-assessments/available-slots?date=${dateStr}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setAvailableTimeslots(data.data.availableSlots || []);
+      } else {
+        console.error('Failed to fetch timeslots:', data);
+        setAvailableTimeslots([]);
+      }
+    } catch (error) {
+      console.error('Error fetching timeslots:', error);
+      setAvailableTimeslots([]);
+    } finally {
+      setLoadingTimeslots(false);
+    }
+  };
+
+  // Book free assessment
+  const bookAssessment = async () => {
+    if (!selectedDate || !selectedTime) {
+      setError('Please select both date and time');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      setSuccess('');
+
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
+      const response = await fetch('/api/free-assessments/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          scheduledDate: dateStr,
+          scheduledTime: selectedTime
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('Free assessment booked successfully! Check your email for confirmation.');
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setAvailableTimeslots([]);
+        fetchAssessmentStatus(); // Refresh status
+        fetchFreeAssessmentAvailability(currentDate); // Refresh availability
+      } else {
+        setError(data.message || 'Failed to book assessment');
+      }
+    } catch (error) {
+      console.error('Error booking assessment:', error);
+      setError('Failed to book assessment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cancel assessment
+  const cancelAssessment = async (assessmentId) => {
+    if (!confirm('Are you sure you want to cancel this assessment?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/free-assessments/cancel/${assessmentId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('Assessment cancelled successfully');
+        fetchAssessmentStatus(); // Refresh status
+      } else {
+        setError(data.message || 'Failed to cancel assessment');
+      }
+    } catch (error) {
+      console.error('Error cancelling assessment:', error);
+      setError('Failed to cancel assessment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format time for display
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Format date for display
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  useEffect(() => {
+    if (!authLoading && token && user) {
+      fetchAssessmentStatus();
+      fetchFreeAssessmentAvailability(currentDate);
+    }
+  }, [authLoading, token, user]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Please login to access free assessments</h2>
+          <p className="mt-2 text-gray-600">You need to be logged in to book free assessment sessions.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Free Assessment Sessions</h1>
+          <p className="text-lg text-gray-600">
+            Get 3 free 20-minute assessment sessions with our qualified therapists
+          </p>
+        </div>
+
+        {/* Status Card */}
+        {assessmentStatus && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+              <User className="h-5 w-5 mr-2" />
+              Your Assessment Status
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{assessmentStatus.totalAssessments}</div>
+                <div className="text-sm text-blue-600">Total Assessments</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">{assessmentStatus.availableAssessments}</div>
+                <div className="text-sm text-green-600">Available</div>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">{assessmentStatus.usedAssessments}</div>
+                <div className="text-sm text-orange-600">Used</div>
+              </div>
+            </div>
+
+            {assessmentStatus.canBook && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                  <span className="text-green-800 font-medium">
+                    You can book your {assessmentStatus.nextAssessmentNumber} assessment now!
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!assessmentStatus.canBook && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                  <span className="text-yellow-800">
+                    You have used all your free assessments. Consider booking a paid session.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Existing Assessments */}
+        {assessmentStatus?.assessments && assessmentStatus.assessments.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Booked Assessments</h2>
+            <div className="space-y-4">
+              {assessmentStatus.assessments.map((assessment) => (
+                <div key={assessment.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                          Assessment #{assessment.assessment_number}
+                        </span>
+                        <span className={`ml-2 text-xs font-medium px-2.5 py-0.5 rounded ${
+                          assessment.status === 'booked' ? 'bg-green-100 text-green-800' :
+                          assessment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {assessment.status.charAt(0).toUpperCase() + assessment.status.slice(1)}
+                        </span>
+                      </div>
+                      <p className="text-gray-900 font-medium">
+                        {formatDate(assessment.scheduled_date)} at {formatTime(assessment.scheduled_time)}
+                      </p>
+                      {assessment.psychologist && (
+                        <p className="text-gray-600 text-sm">
+                          Therapist: {assessment.psychologist.first_name} {assessment.psychologist.last_name}
+                        </p>
+                      )}
+                    </div>
+                    {assessment.status === 'booked' && (
+                      <button
+                        onClick={() => cancelAssessment(assessment.id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Error and Success Messages */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <XCircle className="h-5 w-5 text-red-600 mr-2" />
+              <span className="text-red-800">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+              <span className="text-green-800">{success}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Booking Section */}
+        {assessmentStatus?.canBook && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Side - Calendar */}
+            <div className="bg-white rounded-2xl shadow-2xl p-6">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Select Your Date</h3>
+                <p className="text-gray-600 text-sm">Choose a date for your free assessment</p>
+                {loadingAvailability && (
+                  <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                    Loading availability...
+                  </div>
+                )}
+              </div>
+              
+              {/* Month Navigation */}
+              <div className="flex items-center justify-between mb-4">
+                <button 
+                  onClick={handlePrevMonth}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <h4 className="text-lg font-semibold text-gray-800">{getMonthName(currentDate)}</h4>
+                <button 
+                  onClick={handleNextMonth}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Calendar Legend */}
+              <div className="mb-3 text-xs text-gray-600">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-green-50 border border-green-200 rounded mr-1"></div>
+                    <span>Available</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-100 rounded mr-1"></div>
+                    <span>Today</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded mr-1"></div>
+                    <span>Selected</span>
+                  </div>
+                </div>
+                {/* Debug info */}
+                <div className="mt-2 text-center text-xs text-gray-500">
+                  <p>Availability loaded: {Object.keys(freeAssessmentAvailability).length > 0 ? 'Yes' : 'No'}</p>
+                  <p>Dates with availableSlots: {Object.keys(freeAssessmentAvailability).filter(date => freeAssessmentAvailability[date].availableSlots > 0).length}</p>
+                  <p>Configured dates: {Object.keys(freeAssessmentAvailability).filter(date => freeAssessmentAvailability[date].isConfigured).length}</p>
+                  <p>Highlighted dates: {Object.keys(freeAssessmentAvailability).filter(date => {
+                    const dateAvailability = freeAssessmentAvailability[date];
+                    return dateAvailability && dateAvailability.availableSlots > 0;
+                  }).length}</p>
+                  <button 
+                    onClick={() => fetchFreeAssessmentAvailability(currentDate)}
+                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                  >
+                    Reload Availability
+                  </button>
+                  {Object.keys(freeAssessmentAvailability).length > 0 && 
+                   Object.keys(freeAssessmentAvailability).filter(date => freeAssessmentAvailability[date].isConfigured).length === 0 && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                      <p className="text-yellow-800">⚠️ No dates configured. Please contact admin.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                  <div key={`header-${index}`} className="text-center text-xs font-medium text-gray-500 py-1">
+                    {day}
+                  </div>
+                ))}
+                {(() => {
+                  const { daysInMonth, startingDay } = getDaysInMonth(currentDate);
+                  const today = new Date();
+                  const isCurrentMonth = currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear();
+                  
+                  // Create array for calendar grid
+                  const calendarDays = [];
+                  
+                  // Add empty cells for days before the first day of the month
+                  for (let i = 0; i < startingDay; i++) {
+                    calendarDays.push(<div key={`empty-${i}`} className="text-center py-1 text-xs"></div>);
+                  }
+                  
+                  // Add days of the month
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const isToday = isCurrentMonth && day === today.getDate();
+                    const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear();
+                    const isAvailable = day >= today.getDate() || !isCurrentMonth;
+                    
+                    // Check if this specific date is available for free assessments
+                    const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const year = calendarDate.getFullYear();
+                    const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
+                    const dayStr = String(calendarDate.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${dayStr}`;
+                    const dateAvailability = freeAssessmentAvailability[dateStr];
+                    
+                    // Simple highlighting: highlight any date with available slots
+                    const shouldHighlight = dateAvailability && dateAvailability.availableSlots > 0;
+                    
+                    // Debug logging for first few days
+                    if (day <= 5) {
+                      console.log(`🔍 Date ${dateStr}:`, {
+                        dateAvailability,
+                        shouldHighlight,
+                        availableSlots: dateAvailability?.availableSlots,
+                        isConfigured: dateAvailability?.isConfigured
+                      });
+                    }
+                    
+                    // Only show dates as available if they actually have availability data
+                    const isActuallyAvailable = shouldHighlight && isAvailable;
+                    
+                    calendarDays.push(
+                      <div
+                        key={`day-${day}`}
+                        onClick={() => {
+                          if (isAvailable) {
+                            handleDateSelect(day);
+                          }
+                        }}
+                        className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
+                          isSelected 
+                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
+                            : isToday
+                              ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
+                              : shouldHighlight
+                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                                : isAvailable
+                                  ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                  : 'text-gray-300 cursor-not-allowed'
+                        }`}
+                        title={shouldHighlight ? 'Available for free assessment' : isAvailable ? 'Click to check availability' : 'Past date'}
+                      >
+                        {day}
+                        {shouldHighlight && (
+                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
+                        )}
+                        {!shouldHighlight && isAvailable && (
+                          <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  return calendarDays;
+                })()}
+              </div>
+            </div>
+
+            {/* Right Side - Time Selection and Booking */}
+            <div className="bg-white rounded-2xl shadow-2xl p-6">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-1">Select Your Time</h3>
+                <p className="text-gray-600 text-sm">Choose a time slot for your free assessment</p>
+              </div>
+
+              {/* Selected Date Display */}
+              {selectedDate && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800">
+                    Selected Date: {selectedDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+              )}
+
+              {/* Available Time Slots */}
+              {selectedDate && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3">Available Time Slots</h4>
+                  {loadingTimeslots ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-2 text-gray-600">Loading timeslots...</span>
+                    </div>
+                  ) : availableTimeslots.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableTimeslots.map((timeslot, index) => {
+                        const isSelected = selectedTime === timeslot.time;
+                        const isFullyBooked = timeslot.currentBookings >= timeslot.maxBookings;
+                        const remainingSlots = timeslot.maxBookings - timeslot.currentBookings;
+                        
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => !isFullyBooked && handleTimeSelect(timeslot.time)}
+                            disabled={isFullyBooked}
+                            className={`p-3 text-sm rounded-lg border transition-colors ${
+                              isSelected
+                                ? 'bg-blue-500 text-white border-blue-500'
+                                : isFullyBooked
+                                  ? 'bg-red-100 text-red-600 border-red-300 cursor-not-allowed'
+                                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                            }`}
+                            title={isFullyBooked ? 'Fully booked' : `Available: ${remainingSlots} slots left`}
+                          >
+                            <div className="text-center">
+                              <div>{timeslot.displayTime || formatTime(timeslot.time)}</div>
+                              {!isFullyBooked && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {remainingSlots} slot{remainingSlots !== 1 ? 's' : ''} left
+                                </div>
+                              )}
+                              {isFullyBooked && (
+                                <div className="text-xs text-red-500 mt-1">Fully booked</div>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm italic">No available time slots for this date</p>
+                  )}
+                </div>
+              )}
+
+              {/* Booking Button */}
+              {selectedDate && selectedTime && (
+                <div className="mt-6">
+                  <button
+                    onClick={bookAssessment}
+                    disabled={loading}
+                    className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Booking...' : 'Book Free Assessment'}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    This is a free 20-minute assessment session
+                  </p>
+                </div>
+              )}
+
+              {/* Instructions */}
+              {!selectedDate && (
+                <div className="text-center text-gray-500">
+                  <Calendar className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">Select a date from the calendar to see available time slots</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Information Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">About Free Assessments</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">What to Expect</h3>
+              <ul className="text-gray-600 space-y-1 text-sm">
+                <li>• 20-minute initial consultation</li>
+                <li>• Discussion of your concerns and goals</li>
+                <li>• Professional assessment and recommendations</li>
+                <li>• No cost or payment required</li>
+                <li>• Conducted online via Google Meet</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Important Notes</h3>
+              <ul className="text-gray-600 space-y-1 text-sm">
+                <li>• Limited to 3 free assessments per user</li>
+                <li>• Available therapists are assigned automatically</li>
+                <li>• Cancellation requires 24-hour notice</li>
+                <li>• Join meeting 5 minutes before scheduled time</li>
+                <li>• Ensure stable internet connection</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

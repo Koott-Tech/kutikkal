@@ -10,7 +10,8 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Clock
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -43,6 +44,7 @@ export default function AdminLayout({ children }) {
     { name: 'Doctors', href: '/admin/doctors', icon: UserCheck },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
+    { name: 'Free Assessment Timeslots', href: '/admin/free-assessment-timeslots', icon: Clock },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

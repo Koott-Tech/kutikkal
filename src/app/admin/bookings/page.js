@@ -253,6 +253,11 @@ export default function BookingsPage() {
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         Session #{booking.id?.slice(0, 8)}
+                        {booking.session_type === 'free_assessment' && (
+                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Free Assessment
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500">
                         {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}

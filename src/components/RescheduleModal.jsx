@@ -86,6 +86,41 @@ export default function RescheduleModal({ isOpen, onClose, session }) {
     try {
       setLoadingAvailability(true);
       
+      // Check if this is a free assessment session
+      if (session.session_type === 'free_assessment') {
+        // Fetch free assessment availability instead
+        await fetchFreeAssessmentAvailability();
+      } else {
+        // Fetch regular psychologist availability
+        await fetchRegularPsychologistAvailability();
+      }
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      setError('Failed to fetch availability');
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  // Fetch free assessment availability
+  const fetchFreeAssessmentAvailability = async () => {
+    try {
+      const response = await clientApi.getFreeAssessmentAvailabilityForReschedule(session.id);
+      
+      if (response.success && response.data) {
+        setPsychologistAvailability(response.data.availability || {});
+      } else {
+        setError('Failed to fetch free assessment availability');
+      }
+    } catch (error) {
+      console.error('Error fetching free assessment availability:', error);
+      setError('Failed to fetch free assessment availability');
+    }
+  };
+
+  // Fetch regular psychologist availability
+  const fetchRegularPsychologistAvailability = async () => {
+    try {
       // Get current month dates - EXACT same logic
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();

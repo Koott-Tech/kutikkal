@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 // Temporary storage for payment data (in production, use Redis or database)
 let paymentData = null;
+let paymentDataTimestamp = null;
 
 export async function POST(request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request) {
       error_Message
     });
 
-    // Store payment data for frontend
+    // Store payment data for frontend with timestamp
     paymentData = {
       txnid,
       status,
@@ -29,8 +30,10 @@ export async function POST(request) {
       error_Message,
       timestamp: Date.now()
     };
+    paymentDataTimestamp = Date.now();
 
     console.log('💾 Stored payment data:', paymentData);
+    console.log('⏰ Payment data timestamp:', paymentDataTimestamp);
 
     // Call backend API to process the payment
     const backendUrl = process.env.NODE_ENV === 'development' 
@@ -114,15 +117,35 @@ export async function POST(request) {
 
 export async function GET() {
   try {
-    if (paymentData) {
-      console.log('📤 Returning payment data:', paymentData);
-      const data = { ...paymentData };
-      // Keep the data for longer to ensure frontend can access it
-      setTimeout(() => {
+    console.log('📤 GET request received');
+    console.log('📤 Current payment data:', paymentData);
+    console.log('📤 Payment data timestamp:', paymentDataTimestamp);
+    
+    if (paymentData && paymentDataTimestamp) {
+      // Check if data is still fresh (within last 60 seconds)
+      const now = Date.now();
+      const dataAge = now - paymentDataTimestamp;
+      
+      console.log('📤 Data age:', dataAge, 'ms');
+      
+      if (dataAge < 60000) { // 60 seconds
+        console.log('📤 Returning payment data:', paymentData);
+        const data = { ...paymentData };
+        
+        // Keep the data for longer to ensure frontend can access it
+        setTimeout(() => {
+          paymentData = null;
+          paymentDataTimestamp = null;
+          console.log('🗑️ Cleared payment data after delay');
+        }, 60000); // Keep data for 60 seconds
+        
+        return NextResponse.json({ success: true, data });
+      } else {
+        console.log('📤 Payment data is too old, clearing it');
         paymentData = null;
-        console.log('🗑️ Cleared payment data after delay');
-      }, 30000); // Keep data for 30 seconds instead of 10
-      return NextResponse.json({ success: true, data });
+        paymentDataTimestamp = null;
+        return NextResponse.json({ success: false, message: 'Payment data expired' });
+      }
     } else {
       console.log('📤 No payment data found');
       return NextResponse.json({ success: false, message: 'No payment data found' });

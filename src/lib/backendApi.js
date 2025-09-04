@@ -240,6 +240,13 @@ export const clientApi = {
     });
   },
 
+  // Get free assessment availability for rescheduling
+  async getFreeAssessmentAvailabilityForReschedule(sessionId) {
+    return apiRequest(`/clients/sessions/${sessionId}/free-assessment-availability`, {
+      method: 'GET',
+    });
+  },
+
   // Submit session feedback
   async submitSessionFeedback(sessionId, feedbackData) {
     return apiRequest(`/clients/sessions/${sessionId}/feedback`, {

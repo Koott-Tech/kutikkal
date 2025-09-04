@@ -299,6 +299,11 @@ export default function PsychologistSessions() {
                       <div>
                         <h4 className="text-sm font-medium text-gray-900">
                           {session.client?.first_name} {session.client?.last_name}
+                          {session.session_type === 'free_assessment' && (
+                            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Free Assessment
+                            </span>
+                          )}
                         </h4>
                         <p className="text-sm text-gray-500">
                           Child: {session.client?.child_name} ({session.client?.child_age} years)
