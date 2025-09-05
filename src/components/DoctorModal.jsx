@@ -66,7 +66,11 @@ export default function DoctorModal({
   const fetchPsychologistPackages = async (psychologistId) => {
     try {
       console.log('📦 Fetching packages for psychologist:', psychologistId);
+      console.log('📦 API URL:', `/public/psychologists/${psychologistId}/packages`);
+      
       const response = await publicApi.getPsychologistPackages(psychologistId);
+      console.log('📦 API Response:', response);
+      
       if (response.success && response.data.packages) {
         console.log('📦 Packages fetched:', response.data.packages);
         // Filter out 1-session packages (individual sessions) and map to form format
@@ -88,21 +92,39 @@ export default function DoctorModal({
           ...prev,
           packages: [
             // Keep the individual session package with the current price
-            { name: 'Individual Session', price: prev.price || doctor.price || '', sessions: 1 },
+            { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 },
             // Add the fetched multi-session packages
             ...multiSessionPackages
           ]
         }));
       } else {
         console.log('📦 No packages found or error:', response);
+        // Keep only the individual session package
+        setFormData(prev => ({
+          ...prev,
+          packages: [
+            { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 }
+          ]
+        }));
       }
     } catch (error) {
       console.error('📦 Error fetching packages:', error);
+      // Keep only the individual session package on error
+      setFormData(prev => ({
+        ...prev,
+        packages: [
+          { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 }
+        ]
+      }));
     }
   };
 
   useEffect(() => {
     if (doctor && mode === 'edit') {
+      console.log('🔍 Doctor data for editing:', doctor);
+      console.log('🔍 Doctor price field:', doctor.price);
+      console.log('🔍 Doctor individual_session_price field:', doctor.individual_session_price);
+      
       // Reset the modification flag when opening for edit
       setHasUserModifiedAvailability(false);
       
@@ -118,19 +140,23 @@ export default function DoctorModal({
           phd: doctor.phd_college || doctor.education?.phd || ''
         },
         description: doctor.description || '',
-        price: doctor.price || '',
+        price: doctor.price || doctor.individual_session_price || '',
         experience_years: doctor.experience_years || '',
         packages: [
           // Start with individual session package
-          { name: 'Individual Session', price: doctor.price || '', sessions: 1 }
+          { name: 'Individual Session', price: doctor.price || doctor.individual_session_price || '', sessions: 1 }
         ],
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
         coverImage: doctor.coverImage || null
       });
       
       // Fetch packages for this psychologist
+      console.log('🔍 Doctor ID for package fetching:', doctor.id);
+      console.log('🔍 Doctor psychologist_id:', doctor.psychologist_id);
       if (doctor.id) {
         fetchPsychologistPackages(doctor.id);
+      } else {
+        console.warn('⚠️ No doctor ID found for package fetching');
       }
       
                     // Load existing availability if editing AND user hasn't modified it
@@ -544,8 +570,8 @@ export default function DoctorModal({
     }));
   };
 
-  const selectPackageType = (index, packageType) => {
-    const selectedPackage = availablePackages.find(p => p.id === packageType);
+  const selectPackageType = (index, sessionCount) => {
+    const selectedPackage = availablePackages.find(p => p.sessions === sessionCount);
     if (selectedPackage) {
       updatePackage(index, 'name', selectedPackage.name);
       updatePackage(index, 'sessions', selectedPackage.sessions);
@@ -607,6 +633,13 @@ export default function DoctorModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+          console.log('🚀 Form submission started');
+      console.log('🚀 Form data:', formData);
+      console.log('🚀 Price value:', formData.price);
+      console.log('🚀 Price type:', typeof formData.price);
+      console.log('📦 Packages being sent:', formData.packages);
+      console.log('📦 Filtered packages:', formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions));
+    
     setIsSubmitting(true);
     setErrors({});
 
@@ -1018,8 +1051,18 @@ export default function DoctorModal({
                           Package Type *
                         </label>
                         <select
-                          value={pkg.sessions}
-                          onChange={(e) => selectPackageType(index, parseInt(e.target.value))}
+                          value={pkg.sessions || ''}
+                          onChange={(e) => {
+                            const selectedId = parseInt(e.target.value);
+                            if (selectedId) {
+                              selectPackageType(index, selectedId);
+                            } else {
+                              // Reset package data when no selection
+                              updatePackage(index, 'name', '');
+                              updatePackage(index, 'sessions', '');
+                              updatePackage(index, 'price', '');
+                            }
+                          }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Select Package</option>
@@ -1028,7 +1071,7 @@ export default function DoctorModal({
                               i !== index && existingPkg.sessions === p.sessions
                             ))
                             .map(p => (
-                              <option key={p.id} value={p.id}>
+                              <option key={p.id} value={p.sessions}>
                                 {p.name}
                               </option>
                             ))}

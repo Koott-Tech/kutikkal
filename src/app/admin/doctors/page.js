@@ -332,6 +332,18 @@ export default function DoctorsPage() {
                       <label className="block text-sm font-medium text-gray-700">Role</label>
                       <p className="mt-1 text-sm text-gray-900 capitalize">{selectedDoctor.role}</p>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Individual Session Price</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Experience</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedDoctor.experience_years ? `${selectedDoctor.experience_years} years` : 'Not specified'}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -369,6 +381,34 @@ export default function DoctorsPage() {
                       <span>No availability schedule set</span>
                     </div>
                   )}
+                </div>
+
+                {/* Pricing & Packages */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Pricing & Packages</h3>
+                  
+                  {/* Individual Session Pricing */}
+                  <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h4 className="text-md font-semibold text-green-800 mb-2">Individual Session</h4>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-green-700">Price per session</span>
+                      <span className="text-lg font-bold text-green-800">
+                        {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Package Information */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="text-md font-semibold text-blue-800 mb-2">Package Information</h4>
+                    <p className="text-sm text-blue-700">
+                      Package details and pricing are managed through the packages system. 
+                      Individual session pricing is set above and used as the base rate for package calculations.
+                    </p>
+                    <div className="mt-2 text-xs text-blue-600">
+                      💡 Packages provide discounts for multiple sessions booked together
+                    </div>
+                  </div>
                 </div>
 
                 {/* Actions */}
