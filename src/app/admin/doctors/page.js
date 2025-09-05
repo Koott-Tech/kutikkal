@@ -13,8 +13,10 @@ import {
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function DoctorsPage() {
+  const { showError, showSuccess } = useNotification();
   const [doctors, setDoctors] = useState([]);
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState(null);
@@ -23,8 +25,6 @@ export default function DoctorsPage() {
   const [filterSpecialty, setFilterSpecialty] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [notificationMessage, setNotificationMessage] = useState('');
-  const [notificationType, setNotificationType] = useState('success');
 
   useEffect(() => {
     loadDoctors();
@@ -51,7 +51,7 @@ export default function DoctorsPage() {
       }
     } catch (error) {
       console.error('Failed to load doctors:', error);
-      showNotification('Failed to load doctors', 'error');
+      showError('Failed to load doctors', 'Load Error');
       setDoctors([]);
     } finally {
       setIsLoading(false);
@@ -76,11 +76,11 @@ export default function DoctorsPage() {
     try {
       const deleteId = doctor.psychologist_id || doctor.id;
       await adminApi.deletePsychologist(deleteId);
-      showNotification('Doctor deleted successfully', 'success');
+      showSuccess('Doctor deleted successfully');
       loadDoctors();
     } catch (error) {
       console.error('Error deleting doctor:', error);
-      showNotification('Failed to delete doctor', 'error');
+      showError('Failed to delete doctor', 'Delete Error');
     }
   };
 
@@ -100,11 +100,11 @@ export default function DoctorsPage() {
         // Update existing doctor
         const deleteId = editingDoctor.psychologist_id || editingDoctor.id;
         await adminApi.updatePsychologist(deleteId, doctorData);
-        showNotification('Doctor updated successfully', 'success');
+        showSuccess('Doctor updated successfully');
       } else {
         // Create new doctor
         await adminApi.createPsychologist(doctorData);
-        showNotification('Doctor added successfully', 'success');
+        showSuccess('Doctor added successfully');
       }
       
       handleDoctorModalClose();
@@ -113,15 +113,10 @@ export default function DoctorsPage() {
       console.log('Doctors data refreshed');
     } catch (error) {
       console.error('Error saving doctor:', error);
-      showNotification('Failed to save doctor', 'error');
+      showError('Failed to save doctor', 'Save Error');
     }
   };
 
-  const showNotification = (message, type = 'success') => {
-    setNotificationMessage(message);
-    setNotificationType(type);
-    setTimeout(() => setNotificationMessage(''), 3000);
-  };
 
   const filteredDoctors = doctors.filter(doctor => {
     const matchesSearch = doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -400,14 +395,6 @@ export default function DoctorsPage() {
         </div>
       )}
 
-      {/* Notification */}
-      {notificationMessage && (
-        <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-          notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
-          {notificationMessage}
-        </div>
-      )}
     </div>
   );
 }

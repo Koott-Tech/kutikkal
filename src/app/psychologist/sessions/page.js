@@ -19,11 +19,14 @@ import {
   MessageSquare
 } from "lucide-react";
 
-import CompleteSessionModal from "../../../components/CompleteSessionModal";
+import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
+import SessionNotesModal from "../../../components/SessionNotesModal";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 export default function PsychologistSessions() {
   const { user } = useAuth();
+  const { showError, showSuccess } = useNotification();
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +38,8 @@ export default function PsychologistSessions() {
   const [selectedRescheduleSession, setSelectedRescheduleSession] = useState(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedNotesSession, setSelectedNotesSession] = useState(null);
 
 
   useEffect(() => {
@@ -64,6 +69,7 @@ export default function PsychologistSessions() {
     } catch (err) {
       console.error('Error updating session:', err);
       setError(err.message);
+      showError(`Failed to update session: ${err.message}`, 'Update Error');
     }
   };
 
@@ -76,6 +82,7 @@ export default function PsychologistSessions() {
       
       // Show success feedback
       setSuccessMessage('Session finished successfully with summary and notes!');
+      showSuccess('Session completed successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
       
       // Reload sessions to update the UI
@@ -83,6 +90,7 @@ export default function PsychologistSessions() {
     } catch (err) {
       console.error('Error completing session:', err);
       setError(`Failed to finish session: ${err.message}`);
+      showError(`Failed to complete session: ${err.message}`, 'Completion Error');
       throw err; // Re-throw to let the modal handle the error
     } finally {
       setCompletingSessions(prev => {
@@ -97,11 +105,17 @@ export default function PsychologistSessions() {
     // Only allow finishing for non-completed sessions
     if (session.status === 'completed') {
       setError('This session is already completed');
+      showWarning('This session is already completed', 'Session Status');
       return;
     }
     
     setSelectedCompleteSession(session);
     setShowCompleteModal(true);
+  };
+
+  const openSessionNotesModal = (session) => {
+    setSelectedNotesSession(session);
+    setShowNotesModal(true);
   };
 
 
@@ -372,9 +386,19 @@ export default function PsychologistSessions() {
                       
                       {/* Show "Completed" badge for completed sessions */}
                       {session.status === 'completed' && (
-                        <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
-                          Completed
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                            Completed
+                          </span>
+                          <button
+                            onClick={() => openSessionNotesModal(session)}
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            title="View session notes"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            View Notes
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -481,9 +505,19 @@ export default function PsychologistSessions() {
                       
                       {/* Show "Completed" badge for completed sessions */}
                       {session.status === 'completed' && (
-                        <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
-                          Completed
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                            Completed
+                          </span>
+                          <button
+                            onClick={() => openSessionNotesModal(session)}
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            title="View session notes"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            View Notes
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -495,14 +529,24 @@ export default function PsychologistSessions() {
       </div>
 
       {/* Complete Session Modal */}
-      <CompleteSessionModal
+      <SessionCompletionModal
         session={selectedCompleteSession}
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);
           setSelectedCompleteSession(null);
         }}
-        onComplete={handleCompleteSession}
+        onSubmit={(formData) => handleCompleteSession(selectedCompleteSession?.id, formData)}
+      />
+
+      {/* Session Notes Modal */}
+      <SessionNotesModal
+        isOpen={showNotesModal}
+        onClose={() => {
+          setShowNotesModal(false);
+          setSelectedNotesSession(null);
+        }}
+        session={selectedNotesSession}
       />
 
       {/* Session Details Modal */}

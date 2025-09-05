@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Download, Receipt, Clock, User, CreditCard } from 'lucide-react';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function ReceiptsPage() {
   const { user, token, isLoading: authLoading } = useAuth();
+  const { showError } = useNotification();
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,7 +72,7 @@ export default function ReceiptsPage() {
       console.log('🔍 Downloading receipt:', receiptId);
       
       if (!token) {
-        alert('No authentication token found. Please login again.');
+        showError('No authentication token found. Please login again.', 'Authentication Required');
         return;
       }
 
@@ -111,11 +113,11 @@ export default function ReceiptsPage() {
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('❌ Download failed:', errorData);
-        alert(`Failed to download receipt: ${errorData.message || 'Unknown error'}`);
+        showError(`Failed to download receipt: ${errorData.message || 'Unknown error'}`, 'Download Failed');
       }
     } catch (err) {
       console.error('❌ Error downloading receipt:', err);
-      alert('Failed to download receipt. Please try again.');
+      showError('Failed to download receipt. Please try again.', 'Download Error');
     }
   };
 

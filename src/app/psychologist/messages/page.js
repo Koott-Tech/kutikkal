@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { messagesApi } from "../../../lib/backendApi";
+import { useNotification } from "../../../contexts/NotificationContext";
 import Messages from "../../../components/Messages";
 import { 
   MessageSquare, 
@@ -14,6 +15,7 @@ import { useRouter } from "next/navigation";
 
 export default function PsychologistMessagesPage() {
   const { user } = useAuth();
+  const { showError } = useNotification();
   const router = useRouter();
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,6 +51,7 @@ export default function PsychologistMessagesPage() {
     } catch (err) {
       console.error('Error loading conversations:', err);
       setError(err.message);
+      showError(`Failed to load conversations: ${err.message}`, 'Load Error');
     } finally {
       setIsLoading(false);
     }

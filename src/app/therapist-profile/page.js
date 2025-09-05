@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
 import { clientApi, paymentApi } from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
+import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation';
+import ContactCompletionWarning from '../../components/ContactCompletionWarning';
 
 // Separate component that uses useSearchParams
 const TherapistProfileContent = () => {
@@ -13,6 +16,7 @@ const TherapistProfileContent = () => {
   const doctorIndex = searchParams.get('doctor');
   const packageId = searchParams.get('package_id'); // Add package_id parameter
   const { user, token, isAuthenticated, hasRole } = useAuth();
+  const { showError, showWarning, showSuccess } = useNotification();
   
   // State for doctor data and UI
   const [doctors, setDoctors] = useState([]);
@@ -44,6 +48,10 @@ const TherapistProfileContent = () => {
   const [clientPackage, setClientPackage] = useState(null);
   const [isBookingRemaining, setIsBookingRemaining] = useState(false);
   const [loadingClientPackage, setLoadingClientPackage] = useState(false);
+  
+  // Contact completion warning state
+  const [showContactWarning, setShowContactWarning] = useState(false);
+  const [incompleteContactFields, setIncompleteContactFields] = useState([]);
   
   // Availability state
   const [psychologistAvailability, setPsychologistAvailability] = useState({});
@@ -261,24 +269,24 @@ const TherapistProfileContent = () => {
 
   const handleBookSession = async () => {
     if (!selectedDate || !selectedTime) {
-      alert('Please select a date and time');
+      showWarning('Please select a date and time', 'Selection Required');
       return;
     }
 
     // If booking from existing package, don't require package selection
     if (!isBookingRemaining && !selectedPackage) {
-      alert('Please select a package');
+      showWarning('Please select a package', 'Selection Required');
       return;
     }
 
     if (!selectedDoctor) {
-      alert('Doctor information not available');
+      showError('Doctor information not available', 'Booking Error');
       return;
     }
 
     // Check if user is authenticated and is a client
     if (!isAuthenticated) {
-      alert('Please log in to book a session. Only clients can book sessions.');
+      showWarning('Please log in to book a session. Only clients can book sessions.', 'Authentication Required');
       const returnUrl = `/therapist-profile?doctor=${doctorIndex}`;
       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
@@ -286,16 +294,22 @@ const TherapistProfileContent = () => {
 
     // Check if user is a client
     if (!hasRole('client')) {
-      alert('Only clients can book sessions. You are logged in as a ' + user.role);
+      showError('Only clients can book sessions. You are logged in as a ' + user.role, 'Access Denied');
       return;
     }
 
-    // Require client profile completion before booking
-    const userProfile = user?.profile || {};
-    const hasBasicContact = Boolean(userProfile.first_name) && Boolean(userProfile.last_name) && Boolean(userProfile.phone_number);
-    if (!hasBasicContact) {
-      alert('Please complete your contact profile before booking.');
-      router.push('/profile?tab=contact');
+    // Check if client contact information is complete
+    try {
+      const clientProfile = await clientApi.getProfile();
+      if (!isClientContactComplete(clientProfile)) {
+        const incompleteFields = getIncompleteContactFields(clientProfile);
+        setIncompleteContactFields(incompleteFields);
+        setShowContactWarning(true);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking client profile:', error);
+      showError('Unable to verify profile completion. Please try again.', 'Profile Error');
       return;
     }
 
@@ -352,16 +366,16 @@ const TherapistProfileContent = () => {
       if (isBookingRemaining && clientPackage) {
         if (!sessionResponse.success) {
           if (sessionResponse.statusCode === 401) {
-            alert('Session expired. Please log in again.');
+            showError('Session expired. Please log in again.', 'Authentication Error');
             router.push('/login');
           } else if (sessionResponse.statusCode === 403) {
-            alert('Only clients can book sessions. Please log in with a client account.');
+            showError('Only clients can book sessions. Please log in with a client account.', 'Access Denied');
             router.push('/login');
           } else if (sessionResponse.statusCode === 404) {
-            alert('Client profile not found. Please complete your profile first.');
+            showError('Client profile not found. Please complete your profile first.', 'Profile Not Found');
             router.push('/profile');
           } else {
-            alert(`Booking failed: ${sessionResponse.message || 'Unknown error'}`);
+            showError(`Booking failed: ${sessionResponse.message || 'Unknown error'}`, 'Booking Error');
           }
           return;
         }
@@ -380,16 +394,16 @@ const TherapistProfileContent = () => {
       // Handle payment flow for new bookings
       if (!slotReservation.success) {
         if (slotReservation.statusCode === 401) {
-          alert('Session expired. Please log in again.');
+          showError('Session expired. Please log in again.', 'Authentication Error');
           router.push('/login');
         } else if (slotReservation.statusCode === 403) {
-          alert('Only clients can book sessions. Please log in with a client account.');
+          showError('Only clients can book sessions. Please log in with a client account.', 'Access Denied');
           router.push('/login');
         } else if (slotReservation.statusCode === 404) {
-          alert('Client profile not found. Please complete your profile first.');
+          showError('Client profile not found. Please complete your profile first.', 'Profile Not Found');
           router.push('/profile');
         } else {
-          alert(`Slot reservation failed: ${slotReservation.message || 'Unknown error'}`);
+          showError(`Slot reservation failed: ${slotReservation.message || 'Unknown error'}`, 'Reservation Error');
         }
         return;
       }
@@ -480,11 +494,11 @@ const TherapistProfileContent = () => {
         setTimeout(() => setBookingSuccess(false), 5000);
       } else {
         console.error('❌ Payment response failed:', paymentResponse);
-        alert(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`);
+        showError(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`, 'Payment Error');
       }
     } catch (error) {
       console.error('Booking error:', error);
-      alert('Booking failed. Please try again.');
+      showError('Booking failed. Please try again.', 'Booking Error');
     } finally {
       setIsBooking(false);
     }
@@ -493,12 +507,12 @@ const TherapistProfileContent = () => {
   // Handle booking remaining session from package
   const handleBookRemainingSession = async () => {
     if (!selectedDate || !selectedTime || !selectedPackage) {
-      alert('Please select a date and time');
+      showWarning('Please select a date and time', 'Selection Required');
       return;
     }
 
     if (!selectedDoctor) {
-      alert('Doctor information not available');
+      showError('Doctor information not available', 'Booking Error');
       return;
     }
 
@@ -550,11 +564,11 @@ const TherapistProfileContent = () => {
         // Assuming it would refetch packages or availability if needed.
         // For now, we'll just show a success message.
       } else {
-        alert(`Booking failed: ${response.message || 'Unknown error'}`);
+        showError(`Booking failed: ${response.message || 'Unknown error'}`, 'Booking Error');
       }
     } catch (error) {
       console.error('Remaining session booking error:', error);
-      alert('Booking failed. Please try again.');
+      showError('Booking failed. Please try again.', 'Booking Error');
     } finally {
       setIsBooking(false);
     }
@@ -1468,6 +1482,17 @@ const TherapistProfileContent = () => {
           </div>
         </div>
       )}
+
+      {/* Contact Completion Warning Modal */}
+      <ContactCompletionWarning
+        isOpen={showContactWarning}
+        onClose={() => setShowContactWarning(false)}
+        incompleteFields={incompleteContactFields}
+        onCompleteProfile={() => {
+          setShowContactWarning(false);
+          router.push('/profile?tab=contact');
+        }}
+      />
     </div>
   );
 };

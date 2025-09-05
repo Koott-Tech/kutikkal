@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
+  const { showError, showSuccess } = useNotification();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,13 +33,17 @@ export default function RegisterPage() {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      const errorMessage = "Passwords do not match";
+      setError(errorMessage);
+      showError(errorMessage, 'Validation Error');
       setIsLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      const errorMessage = "Password must be at least 6 characters long";
+      setError(errorMessage);
+      showError(errorMessage, 'Validation Error');
       setIsLoading(false);
       return;
     }
@@ -53,19 +59,26 @@ export default function RegisterPage() {
       // Auto-login after successful registration
       login(data.data.user, data.data.token);
 
+      // Show success message
+      showSuccess('Account created successfully! Please complete your profile to access therapy services.');
+
       // Redirect to profile contact tab to complete setup
       router.push('/profile?tab=contact');
     } catch (error) {
       console.error('Registration error:', error);
       
       // Handle validation errors specifically
+      let errorMessage;
       if (error.message && error.message.includes('Validation Error')) {
-        setError('Please check your input. Make sure email is valid and password is at least 6 characters.');
+        errorMessage = 'Please check your input. Make sure email is valid and password is at least 6 characters.';
       } else if (error.message && error.message.includes('already exists')) {
-        setError('An account with this email already exists. Please use a different email or try logging in.');
+        errorMessage = 'An account with this email already exists. Please use a different email or try logging in.';
       } else {
-        setError(error.message || 'Registration failed. Please try again.');
+        errorMessage = error.message || 'Registration failed. Please try again.';
       }
+      
+      setError(errorMessage);
+      showError(errorMessage, 'Registration Failed');
     } finally {
       setIsLoading(false);
     }

@@ -178,6 +178,22 @@ export const authApi = {
       method: 'POST',
     });
   },
+
+  // Send password reset OTP
+  async sendPasswordResetOTP(email) {
+    return apiRequest('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  // Reset password with OTP
+  async resetPassword(email, otp, newPassword) {
+    return apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
+    });
+  },
 };
 
 // Client API
@@ -322,10 +338,10 @@ export const psychologistApi = {
     });
   },
 
-  // Complete session with summary and notes
+  // Complete session with summary, report, and notes
   async completeSession(sessionId, sessionData) {
-    return apiRequest(`/psychologists/sessions/${sessionId}/complete`, {
-      method: 'POST',
+    return apiRequest(`/sessions/${sessionId}/complete`, {
+      method: 'PUT',
       body: JSON.stringify(sessionData),
     });
   },

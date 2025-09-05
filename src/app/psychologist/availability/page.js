@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { psychologistApi } from "../../../lib/backendApi";
+import { useNotification } from "../../../contexts/NotificationContext";
 import { 
   Plus,
   Edit,
@@ -14,6 +15,7 @@ import {
 
 export default function PsychologistAvailability() {
   const { user } = useAuth();
+  const { showError, showSuccess } = useNotification();
   const [availability, setAvailability] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +52,7 @@ export default function PsychologistAvailability() {
     } catch (err) {
       console.error('Error loading availability:', err);
       setError(err.message);
+      showError(`Failed to load availability: ${err.message}`, 'Load Error');
     } finally {
       setIsLoading(false);
     }

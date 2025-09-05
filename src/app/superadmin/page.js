@@ -5,9 +5,11 @@ import { User, Calendar, Users, FileText, Plus, Edit, Trash2, Eye, Shield, Setti
 import { doctorsApi, usersApi, bookingsApi, dashboardApi } from '@/lib/api';
 import DoctorModal from '@/components/DoctorModal';
 import UserModal from '@/components/UserModal';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function SuperAdminPage() {
   const router = useRouter();
+  const { showError, showSuccess, showWarning, showConfirmDialog } = useNotification();
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -179,7 +181,7 @@ export default function SuperAdminPage() {
         break;
       case 'reschedule':
         // TODO: Implement reschedule functionality
-        alert('Reschedule functionality coming soon!');
+        showInfo('Reschedule functionality coming soon!', 'Feature Coming Soon');
         break;
       case 'mark_completed':
         handleUpdateBookingStatus(bookingId, 'completed');
@@ -198,7 +200,7 @@ export default function SuperAdminPage() {
   // Function to delete a booking
   const handleDeleteBooking = async (bookingId) => {
     if (!bookingId) {
-      alert('No booking ID provided');
+      showError('No booking ID provided', 'Invalid Request');
       return;
     }
 
@@ -214,10 +216,10 @@ export default function SuperAdminPage() {
         // Refresh bookings
         await loadBookings();
         
-        alert('Booking deleted successfully!');
+        showSuccess('Booking deleted successfully!');
       } catch (error) {
         console.error('Error deleting booking:', error);
-        alert(`Error deleting booking: ${error.message}`);
+        showError(`Error deleting booking: ${error.message}`, 'Delete Failed');
       }
     }
   };
@@ -225,7 +227,7 @@ export default function SuperAdminPage() {
   // Function to update booking status
   const handleUpdateBookingStatus = async (bookingId, newStatus) => {
     if (!bookingId) {
-      alert('No booking ID provided');
+      showError('No booking ID provided', 'Invalid Request');
       return;
     }
 
@@ -235,7 +237,7 @@ export default function SuperAdminPage() {
       // Find the current booking to get all its data
       const currentBooking = bookings.find(b => b.id === bookingId);
       if (!currentBooking) {
-        alert('Booking not found');
+        showError('Booking not found', 'Not Found');
         return;
       }
 
@@ -253,10 +255,10 @@ export default function SuperAdminPage() {
       // Refresh bookings
       await loadBookings();
       
-      alert(`Booking status updated to ${newStatus}!`);
+      showSuccess(`Booking status updated to ${newStatus}!`);
     } catch (error) {
       console.error('Error updating booking status:', error);
-      alert(`Error updating booking status: ${error.message}`);
+      showError(`Error updating booking status: ${error.message}`, 'Update Failed');
     }
   };
 
@@ -266,7 +268,7 @@ export default function SuperAdminPage() {
       console.log('Editing booking with data:', bookingData);
       
       if (!selectedBooking || !selectedBooking.id) {
-        alert('No booking selected for editing');
+        showError('No booking selected for editing', 'Invalid Selection');
         return;
       }
 
@@ -280,10 +282,10 @@ export default function SuperAdminPage() {
       setSelectedBooking(null);
       await loadBookings();
       
-      alert('Booking updated successfully!');
+      showSuccess('Booking updated successfully!');
     } catch (error) {
       console.error('Error updating booking:', error);
-      alert(`Error updating booking: ${error.message}`);
+      showError(`Error updating booking: ${error.message}`, 'Update Failed');
     }
   };
 
@@ -362,7 +364,7 @@ export default function SuperAdminPage() {
         loadDashboardData();
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Failed to delete user');
+        showError('Failed to delete user', 'Delete Failed');
       }
     }
   };
@@ -370,7 +372,7 @@ export default function SuperAdminPage() {
   const handleDeleteDoctor = async (doctorId) => {
     if (!doctorId) {
       console.error('No doctor ID provided for deletion');
-      alert('Error: No doctor ID provided');
+      showError('Error: No doctor ID provided', 'Invalid Request');
       return;
     }
 
@@ -389,7 +391,7 @@ export default function SuperAdminPage() {
         await loadDashboardData();
         await loadDoctors();
         
-        alert('Staff member deleted successfully');
+        showSuccess('Staff member deleted successfully');
       } catch (error) {
         console.error('Error deleting doctor:', error);
         
@@ -408,7 +410,7 @@ export default function SuperAdminPage() {
           errorMessage = error.message;
         }
         
-        alert(`Error: ${errorMessage}`);
+        showError(`Error: ${errorMessage}`, 'Delete Failed');
       }
     }
   };

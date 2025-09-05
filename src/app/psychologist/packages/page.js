@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { psychologistApi } from "../../../lib/backendApi";
+import { useNotification } from "../../../contexts/NotificationContext";
 import { 
   FileText,
   DollarSign,
@@ -10,6 +11,7 @@ import {
 
 export default function PsychologistPackages() {
   const { user } = useAuth();
+  const { showError } = useNotification();
   const [packages, setPackages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,6 +31,7 @@ export default function PsychologistPackages() {
     } catch (err) {
       console.error('Error loading packages:', err);
       setError(err.message);
+      showError(`Failed to load packages: ${err.message}`, 'Load Error');
     } finally {
       setIsLoading(false);
     }
@@ -184,6 +187,7 @@ export default function PsychologistPackages() {
     </div>
   );
 }
+
 
 
 

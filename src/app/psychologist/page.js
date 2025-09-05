@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { psychologistApi } from "../../lib/backendApi";
+import { useNotification } from "../../contexts/NotificationContext";
 import { 
   Calendar, 
   Clock, 
@@ -12,6 +13,7 @@ import {
 
 export default function PsychologistDashboard() {
   const { user } = useAuth();
+  const { showError } = useNotification();
   const [stats, setStats] = useState({
     totalSessions: 0,
     upcomingSessions: 0,
@@ -60,6 +62,7 @@ export default function PsychologistDashboard() {
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
       setError(err.message);
+      showError(`Failed to load dashboard data: ${err.message}`, 'Load Error');
     } finally {
       setIsLoading(false);
     }

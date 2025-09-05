@@ -101,7 +101,7 @@ export default function SessionDetailsModal({
         </div>
 
         {/* Session Summary */}
-        {session.session_summary && (
+        {session.summary && (
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-2 mb-3">
               <MessageSquare className="w-5 h-5 text-blue-600" />
@@ -109,11 +109,29 @@ export default function SessionDetailsModal({
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-gray-700 text-sm leading-relaxed">
-                {session.session_summary}
+                {session.summary}
               </p>
             </div>
             <p className="text-xs text-gray-500 mt-2">
               This summary is visible to the client
+            </p>
+          </div>
+        )}
+
+        {/* Session Report */}
+        {session.report && (
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="w-5 h-5 text-green-600" />
+              <h3 className="font-medium text-gray-800">Session Report</h3>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {session.report}
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              This report is visible to the client
             </p>
           </div>
         )}

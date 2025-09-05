@@ -21,8 +21,10 @@ import {
   MapPin
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function BookingsPage() {
+  const { showError, showSuccess } = useNotification();
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,8 +38,6 @@ export default function BookingsPage() {
     time: '',
     duration: 60
   });
-  const [notificationMessage, setNotificationMessage] = useState('');
-  const [notificationType, setNotificationType] = useState('success');
 
   useEffect(() => {
     loadBookings();
@@ -54,7 +54,7 @@ export default function BookingsPage() {
       }
     } catch (error) {
       console.error('Failed to load bookings:', error);
-      showNotification('Failed to load bookings', 'error');
+      showError('Failed to load bookings', 'Load Error');
     } finally {
       setIsLoading(false);
     }
@@ -83,12 +83,12 @@ export default function BookingsPage() {
       // Here you would call the API to reschedule the session
       // await sessionsApi.rescheduleSession(selectedSession.id, rescheduleData);
       
-      showNotification('Session rescheduled successfully', 'success');
+      showSuccess('Session rescheduled successfully');
       setIsRescheduleOpen(false);
       loadBookings();
     } catch (error) {
       console.error('Failed to reschedule session:', error);
-      showNotification('Failed to reschedule session', 'error');
+      showError('Failed to reschedule session', 'Reschedule Error');
     }
   };
 
@@ -137,11 +137,6 @@ export default function BookingsPage() {
     });
   };
 
-  const showNotification = (message, type = 'success') => {
-    setNotificationMessage(message);
-    setNotificationType(type);
-    setTimeout(() => setNotificationMessage(''), 3000);
-  };
 
   const filteredBookings = bookings.filter(booking => {
     const clientName = `${booking.client?.first_name || ''} ${booking.client?.last_name || ''}`.toLowerCase();
@@ -602,14 +597,6 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Notification */}
-      {notificationMessage && (
-        <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-          notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
-          {notificationMessage}
-        </div>
-      )}
     </div>
   );
 }

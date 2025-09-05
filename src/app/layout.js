@@ -5,6 +5,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,12 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <SocketProvider>
-            <LoadingScreen />
-            <Header />
-            {children}
-            <FooterWrapper />
+            <NotificationProvider>
+              <LoadingScreen />
+              <Header />
+              {children}
+              <FooterWrapper />
+            </NotificationProvider>
           </SocketProvider>
         </AuthProvider>
       </body>

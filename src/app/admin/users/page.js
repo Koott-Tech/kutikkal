@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import UserModal from '@/components/UserModal';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export default function UsersPage() {
+  const { showError, showSuccess } = useNotification();
   const [users, setUsers] = useState([]);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -25,8 +27,6 @@ export default function UsersPage() {
   const [filterRole, setFilterRole] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [notificationMessage, setNotificationMessage] = useState('');
-  const [notificationType, setNotificationType] = useState('success');
 
   useEffect(() => {
     loadUsers();
@@ -47,7 +47,7 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error('Failed to load users:', error);
-      showNotification('Failed to load users', 'error');
+      showError('Failed to load users', 'Load Error');
       setUsers([]);
     } finally {
       setIsLoading(false);
@@ -71,11 +71,11 @@ export default function UsersPage() {
 
     try {
       await adminApi.deleteUser(user.id);
-      showNotification('User deleted successfully', 'success');
+      showSuccess('User deleted successfully');
       loadUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      showNotification('Failed to delete user', 'error');
+      showError('Failed to delete user', 'Delete Error');
     }
   };
 
@@ -92,17 +92,11 @@ export default function UsersPage() {
   const handleUserModalSuccess = () => {
     handleUserModalClose();
     loadUsers();
-    showNotification(
-      editingUser ? 'User updated successfully' : 'User added successfully',
-      'success'
+    showSuccess(
+      editingUser ? 'User updated successfully' : 'User added successfully'
     );
   };
 
-  const showNotification = (message, type = 'success') => {
-    setNotificationMessage(message);
-    setNotificationType(type);
-    setTimeout(() => setNotificationMessage(''), 3000);
-  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -392,14 +386,6 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Notification */}
-      {notificationMessage && (
-        <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-          notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
-          {notificationMessage}
-        </div>
-      )}
     </div>
   );
 }

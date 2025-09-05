@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { XCircle, AlertTriangle } from 'lucide-react';
+import { useNotification } from '../../../contexts/NotificationContext';
 
 export default function PaymentFailure() {
   const router = useRouter();
+  const { showError, showInfo } = useNotification();
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +47,7 @@ export default function PaymentFailure() {
 
   const handleContactSupport = () => {
     // You can implement contact support functionality
-    alert('Please contact support at support@kuttikal.com');
+    showInfo('Please contact support at support@kuttikal.com', 'Contact Support');
   };
 
   if (loading) {

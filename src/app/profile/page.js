@@ -252,9 +252,10 @@ export default function ProfilePage() {
     setProfileSaveMsg("");
     try {
       setIsSavingProfile(true);
-      // Minimal validation
-      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number) {
-        setProfileSaveMsg('Please fill first name, last name and phone number.');
+      // Enhanced validation for all required fields
+      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number || 
+          !profileForm.child_name || !profileForm.child_age) {
+        setProfileSaveMsg('Please fill in all required fields: First Name, Last Name, Phone Number, Child Name, and Child Age.');
         return;
       }
 
@@ -473,7 +474,11 @@ export default function ProfilePage() {
                   }`}
                 >
                   <MessageSquare className="h-5 w-5 mr-3" />
-                  Contact
+                  <span className="flex-1">Contact</span>
+                  {hasRole('client') && (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number || 
+                   !profileForm.child_name || !profileForm.child_age) && (
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  )}
                 </button>
                 
                 <button
@@ -730,11 +735,11 @@ export default function ProfilePage() {
                                     <button
                                       onClick={() => handleViewFullReport(session)}
                                       className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                                      title="View complete session details including summary, status, and feedback"
+                                      title="View complete session details including summary, report, and feedback"
                                     >
-                                      View Full Report
+                                      View Complete Report
                                     </button>
-                                    {session.session_summary && (
+                                    {session.summary && (
                                       <button
                                         onClick={() => handleViewSummary(session)}
                                         className="text-green-600 hover:text-green-900 text-sm font-medium"
@@ -841,28 +846,43 @@ export default function ProfilePage() {
               <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
 
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">Required Information</h3>
+                  <p className="text-sm text-blue-700">
+                    All fields below are required to book therapy sessions. This information helps us provide personalized care for your child.
+                  </p>
+                </div>
+
                 <form className="space-y-6" onSubmit={handleSaveContact}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         name="first_name"
                         value={profileForm.first_name}
                         onChange={handleProfileInputChange}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !profileForm.first_name ? 'border-red-300' : 'border-gray-300'
+                        }`}
                         placeholder="Enter your first name"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         name="last_name"
                         value={profileForm.last_name}
                         onChange={handleProfileInputChange}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                        className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          !profileForm.last_name ? 'border-red-300' : 'border-gray-300'
+                        }`}
                         placeholder="Enter your last name"
                         required
                       />
@@ -870,43 +890,60 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="tel"
                       name="phone_number"
                       value={profileForm.phone_number}
                       onChange={handleProfileInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        !profileForm.phone_number ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="Enter your phone number"
                       required
                     />
                   </div>
 
                   {hasRole('client') && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Child Name (optional)</label>
-                        <input
-                          type="text"
-                          name="child_name"
-                          value={profileForm.child_name}
-                          onChange={handleProfileInputChange}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
-                          placeholder="Your child's name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Child Age (optional)</label>
-                        <input
-                          type="number"
-                          name="child_age"
-                          min="1"
-                          max="18"
-                          value={profileForm.child_age}
-                          onChange={handleProfileInputChange}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
-                          placeholder="Age"
-                        />
+                    <div className="border-t pt-6">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Child Information</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Child Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="child_name"
+                            value={profileForm.child_name}
+                            onChange={handleProfileInputChange}
+                            className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              !profileForm.child_name ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Your child's name"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Child Age <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            name="child_age"
+                            min="1"
+                            max="18"
+                            value={profileForm.child_age}
+                            onChange={handleProfileInputChange}
+                            className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              !profileForm.child_age ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Age"
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -960,14 +997,21 @@ export default function ProfilePage() {
                               onClick={() => handleViewFullReport(session)}
                               className="text-blue-600 hover:text-blue-900 text-sm font-medium"
                             >
-                              View Full Report
+                              View Complete Report
                             </button>
                           </div>
                           
-                          {session.session_summary && (
+                          {session.summary && (
                             <div className="mb-3">
                               <h4 className="text-sm font-medium text-gray-700 mb-1">Summary</h4>
-                              <p className="text-sm text-gray-600">{session.session_summary}</p>
+                              <p className="text-sm text-gray-600">{session.summary}</p>
+                            </div>
+                          )}
+                          
+                          {session.report && (
+                            <div className="mb-3">
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Report</h4>
+                              <p className="text-sm text-gray-600">{session.report}</p>
                             </div>
                           )}
                           
@@ -1094,7 +1138,7 @@ export default function ProfilePage() {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">
-                  {isSummaryView ? 'Session Summary' : 'Session Report'}
+                  {isSummaryView ? 'Session Summary' : 'Complete Session Report'}
                 </h3>
                 <button
                   onClick={handleCloseReportModal}
@@ -1113,8 +1157,8 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <h4 className="font-medium text-gray-900 mb-2">Session Summary</h4>
-                    {selectedReport.session_summary ? (
-                      <p className="text-gray-700 leading-relaxed">{selectedReport.session_summary}</p>
+                    {selectedReport.summary ? (
+                      <p className="text-gray-700 leading-relaxed">{selectedReport.summary}</p>
                     ) : (
                       <p className="text-sm text-gray-500 italic">No summary available for this session.</p>
                     )}
@@ -1143,10 +1187,17 @@ export default function ProfilePage() {
                     </span>
                   </div>
 
-                    {selectedReport.session_summary && (
+                    {selectedReport.summary && (
                       <div>
                         <h4 className="font-medium text-gray-900">Session Summary</h4>
-                        <p className="text-sm text-gray-600">{selectedReport.session_summary}</p>
+                        <p className="text-sm text-gray-600">{selectedReport.summary}</p>
+                      </div>
+                    )}
+
+                    {selectedReport.report && (
+                      <div>
+                        <h4 className="font-medium text-gray-900">Session Report</h4>
+                        <p className="text-sm text-gray-600">{selectedReport.report}</p>
                       </div>
                     )}
 

@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
+import { useNotification } from "../../contexts/NotificationContext";
+import ForgotPasswordModal from "../../components/ForgotPasswordModal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -10,8 +12,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
+  const { showError, showSuccess } = useNotification();
   
   // Get return URL from query parameters
   const [returnUrl, setReturnUrl] = useState("");
@@ -37,6 +41,9 @@ export default function LoginPage() {
       // Use the auth context to login
       login(data.data.user, data.data.token);
 
+      // Show success message
+      showSuccess('Login successful! Welcome back.');
+
       // If there's a return URL and user is a client, redirect there
       if (returnUrl && data.data.user.role === 'client') {
         router.push(returnUrl);
@@ -57,7 +64,9 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'Login failed. Please try again.');
+      const errorMessage = error.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage, 'Login Failed');
     } finally {
       setIsLoading(false);
     }
@@ -311,6 +320,7 @@ export default function LoginPage() {
               </label>
               <button
                 type="button"
+                onClick={() => setShowForgotPassword(true)}
                 style={{
                   background: "none",
                   border: "none",
@@ -446,6 +456,13 @@ export default function LoginPage() {
           </form>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        onBackToLogin={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 }
