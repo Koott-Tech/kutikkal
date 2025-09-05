@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { X, Mail, ArrowLeft, CheckCircle } from "lucide-react";
-import { authApi } from "../../lib/backendApi";
-import { useNotification } from "../../contexts/NotificationContext";
+import { authApi } from "../lib/backendApi";
+import { useNotification } from "../contexts/NotificationContext";
 
 export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) {
   const [step, setStep] = useState(1); // 1: email, 2: OTP, 3: success
