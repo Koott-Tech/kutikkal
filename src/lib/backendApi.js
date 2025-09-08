@@ -862,6 +862,99 @@ export const paymentApi = {
   },
 };
 
+// Doctors API (for superadmin)
+export const doctorsApi = {
+  async getAll() {
+    return apiRequest('/psychologists');
+  },
+
+  async getById(id) {
+    return apiRequest(`/psychologists/${id}`);
+  },
+
+  async create(doctorData) {
+    return apiRequest('/psychologists', {
+      method: 'POST',
+      body: JSON.stringify(doctorData),
+    });
+  },
+
+  async update(id, doctorData) {
+    return apiRequest(`/psychologists/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(doctorData),
+    });
+  },
+
+  async delete(id) {
+    return apiRequest(`/psychologists/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Users API (for superadmin)
+export const usersApi = {
+  async getAll() {
+    return apiRequest('/admin/users');
+  },
+
+  async getById(id) {
+    return apiRequest(`/admin/users/${id}`);
+  },
+
+  async create(userData) {
+    return apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  async update(id, userData) {
+    return apiRequest(`/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  },
+
+  async delete(id) {
+    return apiRequest(`/admin/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Bookings API (for superadmin)
+export const bookingsApi = {
+  async getAll() {
+    return apiRequest('/admin/sessions');
+  },
+
+  async getById(id) {
+    return apiRequest(`/sessions/${id}`);
+  },
+
+  async create(bookingData) {
+    return apiRequest('/sessions', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    });
+  },
+
+  async update(id, bookingData) {
+    return apiRequest(`/sessions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(bookingData),
+    });
+  },
+
+  async delete(id) {
+    return apiRequest(`/sessions/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 export default {
   auth: authApi,
   client: clientApi,
@@ -870,4 +963,7 @@ export default {
   superadmin: superadminApi,
   sessions: sessionsApi,
   dashboard: dashboardApi,
+  doctors: doctorsApi,
+  users: usersApi,
+  bookings: bookingsApi,
 };

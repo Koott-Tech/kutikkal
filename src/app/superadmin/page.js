@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Calendar, Users, FileText, Plus, Edit, Trash2, Eye, Shield, Settings, Activity } from 'lucide-react';
-import { doctorsApi, usersApi, bookingsApi, dashboardApi } from '@/lib/api';
+import { doctorsApi, usersApi, bookingsApi, dashboardApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
 import UserModal from '@/components/UserModal';
 import { useNotification } from '@/contexts/NotificationContext';
