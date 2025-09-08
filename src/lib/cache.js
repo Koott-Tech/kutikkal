@@ -1,5 +1,5 @@
-// Simple caching utility for frontend
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes for production
+// Optimized caching for Render Standard 2GB plan
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes (reduced from 10 for fresher data)
 
 export const cache = {
   // Set cache with expiration

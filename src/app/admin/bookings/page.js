@@ -72,16 +72,16 @@ export default function BookingsPage() {
 
   const loadFreshBookings = async () => {
     try {
-      // Load only recent sessions first (last 50)
-      const response = await sessionsApi.getAllSessions({ limit: 50 });
+      // Load more sessions with 2GB plan (last 100)
+      const response = await sessionsApi.getAllSessions({ limit: 100 });
       
       if (response && response.success) {
         console.log('Bookings data received:', response);
         const bookingsData = response.data?.sessions || [];
         setBookings(bookingsData);
         
-        // Cache for 3 minutes
-        cache.set('admin_bookings', bookingsData, 3 * 60 * 1000);
+        // Cache for 5 minutes (optimized for 2GB plan)
+        cache.set('admin_bookings', bookingsData, 5 * 60 * 1000);
       }
     } catch (error) {
       console.error('Failed to load fresh bookings:', error);

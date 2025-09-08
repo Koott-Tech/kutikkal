@@ -109,8 +109,8 @@ export default function AdminDashboard() {
       // Load recent data in background (non-blocking)
       console.log('Fetching recent data in background...');
       Promise.all([
-        dashboardApi.getRecentUsers(3), // Reduced from 5 to 3
-        dashboardApi.getRecentBookings(3) // Reduced from 5 to 3
+        dashboardApi.getRecentUsers(10), // Increased to 10 for better overview
+        dashboardApi.getRecentBookings(10) // Increased to 10 for better overview
       ]).then(([recentUsers, recentBookings]) => {
         console.log('Recent users response:', recentUsers);
         console.log('Recent bookings response:', recentBookings);
@@ -124,8 +124,8 @@ export default function AdminDashboard() {
 
         setStats(updatedStats);
         
-        // Cache the results for 2 minutes
-        cache.set('dashboard_stats', updatedStats, 2 * 60 * 1000);
+        // Cache the results for 3 minutes (optimized for 2GB plan)
+        cache.set('dashboard_stats', updatedStats, 3 * 60 * 1000);
       }).catch(error => {
         console.warn('Background data loading failed:', error);
         // Don't show error for background loading
@@ -134,8 +134,8 @@ export default function AdminDashboard() {
       // Set initial stats immediately
       setStats(newStats);
       
-      // Cache the initial stats
-      cache.set('dashboard_stats', newStats, 2 * 60 * 1000);
+      // Cache the initial stats for 3 minutes (optimized for 2GB plan)
+      cache.set('dashboard_stats', newStats, 3 * 60 * 1000);
 
     } catch (error) {
       console.error('Failed to load fresh data:', error);
