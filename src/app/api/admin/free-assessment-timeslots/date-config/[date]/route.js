@@ -20,11 +20,9 @@ export async function DELETE(request, { params }) {
     }
 
     // Determine backend URL based on environment
-    const backendUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://kuttikal-backend.onrender.com' 
-      : 'http://localhost:5001';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(`${backendUrl}/api/free-assessment-timeslots/date-config/${date}`, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots/date-config/${date}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`

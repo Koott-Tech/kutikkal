@@ -20,11 +20,9 @@ export async function GET(request) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? `http://localhost:5001/api/free-assessments/available-slots?date=${date}`
-      : `https://littlecare-backend.onrender.com/api/free-assessments/available-slots?date=${date}`;
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessments/available-slots?date=${date}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'

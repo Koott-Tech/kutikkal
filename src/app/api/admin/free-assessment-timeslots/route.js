@@ -11,11 +11,9 @@ export async function GET(request) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5001/api/free-assessment-timeslots'
-      : 'https://littlecare-backend.onrender.com/api/free-assessment-timeslots';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -55,11 +53,9 @@ export async function POST(request) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5001/api/free-assessment-timeslots'
-      : 'https://littlecare-backend.onrender.com/api/free-assessment-timeslots';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

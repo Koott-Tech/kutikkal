@@ -1,6 +1,4 @@
-const BACKEND_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5001/api'
-  : 'https://littlecare-backend.onrender.com/api';
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
 // Debug logging
 console.log('Environment variables:', {

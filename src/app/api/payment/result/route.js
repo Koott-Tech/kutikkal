@@ -36,14 +36,12 @@ export async function POST(request) {
     console.log('⏰ Payment data timestamp:', paymentDataTimestamp);
 
     // Call backend API to process the payment
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5001/api/payment/success'
-      : 'https://littlecare-backend.onrender.com/api/payment/success';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
     console.log('🔄 Calling backend API:', backendUrl);
 
     try {
-      const backendResponse = await fetch(backendUrl, {
+      const backendResponse = await fetch(`${backendUrl}/payment/success`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -28,11 +28,9 @@ export async function PUT(request) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5001/api/free-assessment-timeslots/bulk/update'
-      : 'https://littlecare-backend.onrender.com/api/free-assessment-timeslots/bulk/update';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots/bulk/update`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

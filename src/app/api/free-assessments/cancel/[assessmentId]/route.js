@@ -19,11 +19,9 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? `http://localhost:5001/api/free-assessments/cancel/${assessmentId}`
-      : `https://littlecare-backend.onrender.com/api/free-assessments/cancel/${assessmentId}`;
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessments/cancel/${assessmentId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

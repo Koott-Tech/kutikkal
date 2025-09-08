@@ -21,11 +21,9 @@ export async function POST(request) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:5001/api/free-assessments/book'
-      : 'https://littlecare-backend.onrender.com/api/free-assessments/book';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessments/book`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

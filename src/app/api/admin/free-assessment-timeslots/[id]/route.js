@@ -15,11 +15,9 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const { timeSlot, isActive, maxBookingsPerSlot } = body;
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? `http://localhost:5001/api/free-assessment-timeslots/${id}`
-      : `https://kuttikal-backend.onrender.com/api/free-assessment-timeslots/${id}`;
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -52,11 +50,9 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const backendUrl = process.env.NODE_ENV === 'development' 
-      ? `http://localhost:5001/api/free-assessment-timeslots/${id}`
-      : `https://kuttikal-backend.onrender.com/api/free-assessment-timeslots/${id}`;
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(backendUrl, {
+    const response = await fetch(`${backendUrl}/free-assessment-timeslots/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

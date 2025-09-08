@@ -22,11 +22,9 @@ export async function GET(request) {
     }
 
     // Determine backend URL based on environment
-    const backendUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://kuttikal-backend.onrender.com' 
-      : 'http://localhost:5001';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
-    const response = await fetch(`${backendUrl}/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`, {
+    const response = await fetch(`${backendUrl}/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
