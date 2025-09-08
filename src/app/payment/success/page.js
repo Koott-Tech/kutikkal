@@ -11,56 +11,80 @@ export default function PaymentSuccess() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    try {
-      // Check if we're in browser environment
-      if (typeof window === 'undefined') {
+    const fetchPaymentData = async () => {
+      try {
+        // Check if we're in browser environment
+        if (typeof window === 'undefined') {
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔍 Current URL:', window.location.href);
+        console.log('🔍 Search params:', window.location.search);
+        console.log('🔍 Hash:', window.location.hash);
+
+        // First, try to get payment data from the API route
+        try {
+          const response = await fetch('/api/payment/result');
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.txnid) {
+              console.log('🔍 Payment data from API:', data);
+              setPaymentDetails({
+                transactionId: data.txnid,
+                amount: data.amount,
+                status: data.status === 'success' ? 'success' : 'failed'
+              });
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (apiError) {
+          console.log('🔍 No payment data from API, checking URL params');
+        }
+
+        // If no API data, check URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let txnid = urlParams.get('txnid');
+        let status = urlParams.get('status');
+        let amount = urlParams.get('amount');
+
+        // If no query params, check hash
+        if (!txnid && window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          txnid = hashParams.get('txnid') || txnid;
+          status = hashParams.get('status') || status;
+          amount = hashParams.get('amount') || amount;
+        }
+
+        console.log('🔍 Payment Success Params:', { txnid, status, amount });
+
+        // For testing, if no params, show success anyway
+        if (!txnid && !status) {
+          console.log('🔍 No payment params found, showing success for testing');
+          setPaymentDetails({
+            transactionId: 'TEST_TXN_' + Date.now(),
+            amount: '100',
+            status: 'success'
+          });
+        } else if (txnid && status === 'success') {
+          setPaymentDetails({
+            transactionId: txnid,
+            amount: amount,
+            status: status
+          });
+        } else {
+          setError('Invalid payment response');
+        }
+      } catch (err) {
+        console.error('❌ Error parsing payment response:', err);
+        setError('Error processing payment response');
+      } finally {
         setLoading(false);
-        return;
       }
+    };
 
-      console.log('🔍 Current URL:', window.location.href);
-      console.log('🔍 Search params:', window.location.search);
-      console.log('🔍 Hash:', window.location.hash);
-
-      // Get URL parameters safely
-      const urlParams = new URLSearchParams(window.location.search);
-      let txnid = urlParams.get('txnid');
-      let status = urlParams.get('status');
-      let amount = urlParams.get('amount');
-
-      // If no query params, check hash
-      if (!txnid && window.location.hash) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        txnid = hashParams.get('txnid') || txnid;
-        status = hashParams.get('status') || status;
-        amount = hashParams.get('amount') || amount;
-      }
-
-      console.log('🔍 Payment Success Params:', { txnid, status, amount });
-
-      // For testing, if no params, show success anyway
-      if (!txnid && !status) {
-        console.log('🔍 No payment params found, showing success for testing');
-        setPaymentDetails({
-          transactionId: 'TEST_TXN_' + Date.now(),
-          amount: '100',
-          status: 'success'
-        });
-      } else if (txnid && status === 'success') {
-        setPaymentDetails({
-          transactionId: txnid,
-          amount: amount,
-          status: status
-        });
-      } else {
-        setError('Invalid payment response');
-      }
-    } catch (err) {
-      console.error('❌ Error parsing payment response:', err);
-      setError('Error processing payment response');
-    } finally {
-      setLoading(false);
-    }
+    fetchPaymentData();
   }, []);
 
   const handleContinue = () => {

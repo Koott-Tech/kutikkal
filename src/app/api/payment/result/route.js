@@ -92,9 +92,9 @@ export async function POST(request) {
             </style>
           </div>
           <script>
-            // Redirect to the result page after a short delay
+            // Redirect to the success page after a short delay
             setTimeout(function() {
-              window.location.href = '/payment/result';
+              window.location.href = '/payment/success';
             }, 3000);
           </script>
         </body>
