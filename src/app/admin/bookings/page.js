@@ -24,6 +24,7 @@ import {
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
+import { cache } from '@/lib/cache';
 
 export default function BookingsPage() {
   const { showError, showSuccess } = useNotification();
@@ -43,17 +44,48 @@ export default function BookingsPage() {
   const loadBookings = async () => {
     try {
       setIsLoading(true);
-      const response = await sessionsApi.getAllSessions();
       
-      if (response && response.success) {
-        console.log('Bookings data received:', response);
-        setBookings(response.data?.sessions || []);
+      // Check cache first
+      const cachedBookings = cache.get('admin_bookings');
+      if (cachedBookings) {
+        console.log('📦 Using cached bookings data');
+        setBookings(cachedBookings);
+        setIsLoading(false);
+        
+        // Load fresh data in background
+        setTimeout(() => {
+          loadFreshBookings();
+        }, 100);
+        return;
       }
+
+      // Load fresh data
+      await loadFreshBookings();
+      
     } catch (error) {
       console.error('Failed to load bookings:', error);
       showError('Failed to load bookings', 'Load Error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadFreshBookings = async () => {
+    try {
+      // Load only recent sessions first (last 50)
+      const response = await sessionsApi.getAllSessions({ limit: 50 });
+      
+      if (response && response.success) {
+        console.log('Bookings data received:', response);
+        const bookingsData = response.data?.sessions || [];
+        setBookings(bookingsData);
+        
+        // Cache for 3 minutes
+        cache.set('admin_bookings', bookingsData, 3 * 60 * 1000);
+      }
+    } catch (error) {
+      console.error('Failed to load fresh bookings:', error);
+      throw error;
     }
   };
 

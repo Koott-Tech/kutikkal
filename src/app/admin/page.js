@@ -8,10 +8,12 @@ import {
   Calendar, 
   TrendingUp,
   Activity,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 import { adminApi, dashboardApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { cache, withCache } from '@/lib/cache';
 
 export default function AdminDashboard() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -52,52 +54,99 @@ export default function AdminDashboard() {
 
       console.log('Loading dashboard data...');
 
-      // Load platform statistics
-      console.log('Fetching platform stats...');
-      const platformStats = await adminApi.getPlatformStats();
-      console.log('Platform stats response:', platformStats);
-      
-      if (platformStats && platformStats.success) {
-        setStats(platformStats.data);
-      } else {
-        console.warn('Platform stats response format unexpected:', platformStats);
-        // Set default stats if response format is unexpected
-        setStats(prev => ({
-          ...prev,
-          totalUsers: platformStats?.data?.totalUsers || 0,
-          totalDoctors: platformStats?.data?.totalDoctors || 0,
-          totalBookings: platformStats?.data?.totalBookings || 0
-        }));
+      // Check cache first
+      const cachedStats = cache.get('dashboard_stats');
+      if (cachedStats) {
+        console.log('📦 Using cached dashboard stats');
+        setStats(cachedStats);
+        setIsLoading(false);
+        
+        // Load fresh data in background
+        setTimeout(() => {
+          loadFreshData();
+        }, 100);
+        return;
       }
 
-      // Load recent data
-      console.log('Fetching recent data...');
-      const [recentUsers, recentBookings] = await Promise.all([
-        dashboardApi.getRecentUsers(5),
-        dashboardApi.getRecentBookings(5)
-      ]);
-
-      console.log('Recent users response:', recentUsers);
-      console.log('Recent bookings response:', recentBookings);
-
-      // Update stats with recent data counts
-      setStats(prev => ({
-        ...prev,
-        recentUsers: recentUsers?.data?.length || recentUsers?.length || 0,
-        recentBookings: recentBookings?.data?.length || recentBookings?.length || 0
-      }));
+      // Load fresh data
+      await loadFreshData();
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
       setError(`Failed to load dashboard data: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadFreshData = async () => {
+    try {
+      // Load only essential stats first (faster)
+      console.log('Fetching platform stats...');
+      const platformStats = await adminApi.getPlatformStats();
+      console.log('Platform stats response:', platformStats);
+      
+      let newStats = {
+        totalUsers: 0,
+        totalDoctors: 0,
+        totalBookings: 0,
+        recentUsers: 0,
+        recentBookings: 0
+      };
+      
+      if (platformStats && platformStats.success) {
+        newStats = { ...newStats, ...platformStats.data };
+      } else {
+        console.warn('Platform stats response format unexpected:', platformStats);
+        newStats = {
+          ...newStats,
+          totalUsers: platformStats?.data?.totalUsers || 0,
+          totalDoctors: platformStats?.data?.totalDoctors || 0,
+          totalBookings: platformStats?.data?.totalBookings || 0
+        };
+      }
+
+      // Load recent data in background (non-blocking)
+      console.log('Fetching recent data in background...');
+      Promise.all([
+        dashboardApi.getRecentUsers(3), // Reduced from 5 to 3
+        dashboardApi.getRecentBookings(3) // Reduced from 5 to 3
+      ]).then(([recentUsers, recentBookings]) => {
+        console.log('Recent users response:', recentUsers);
+        console.log('Recent bookings response:', recentBookings);
+
+        // Update stats with recent data counts
+        const updatedStats = {
+          ...newStats,
+          recentUsers: recentUsers?.data?.length || recentUsers?.length || 0,
+          recentBookings: recentBookings?.data?.length || recentBookings?.length || 0
+        };
+
+        setStats(updatedStats);
+        
+        // Cache the results for 2 minutes
+        cache.set('dashboard_stats', updatedStats, 2 * 60 * 1000);
+      }).catch(error => {
+        console.warn('Background data loading failed:', error);
+        // Don't show error for background loading
+      });
+
+      // Set initial stats immediately
+      setStats(newStats);
+      
+      // Cache the initial stats
+      cache.set('dashboard_stats', newStats, 2 * 60 * 1000);
+
+    } catch (error) {
+      console.error('Failed to load fresh data:', error);
+      throw error;
+    }
+  };
+
+  const handleRefresh = () => {
+    // Clear cache and reload
+    cache.clear('dashboard_stats');
+    loadDashboardData();
   };
 
   const statCards = [
