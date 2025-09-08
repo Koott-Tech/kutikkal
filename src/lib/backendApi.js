@@ -576,6 +576,19 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+
+  // Reschedule session
+  async rescheduleSession(sessionId, rescheduleData) {
+    return apiRequest(`/admin/sessions/${sessionId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(rescheduleData),
+    });
+  },
+
+  // Get psychologist availability for reschedule
+  async getPsychologistAvailabilityForReschedule(psychologistId, startDate, endDate) {
+    return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
+  },
 };
 
 // Superadmin API

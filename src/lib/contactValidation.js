@@ -2,28 +2,42 @@
 export const isClientContactComplete = (clientProfile) => {
   if (!clientProfile) return false;
   
-  const requiredFields = ['first_name', 'last_name', 'phone_number', 'child_name', 'child_age'];
+  console.log('🔍 Debugging client profile:', clientProfile);
   
-  return requiredFields.every(field => {
+  const requiredFields = ['first_name', 'last_name', 'phone_number'];
+  
+  const result = requiredFields.every(field => {
     const value = clientProfile[field];
-    return value && value.toString().trim() !== '' && value !== 'Pending' && value !== 'Update';
+    const isValid = value && 
+           value.toString().trim() !== '' && 
+           value !== 'Pending' && 
+           value !== 'Update' &&
+           value !== '+91'; // Default phone number
+    
+    console.log(`🔍 Field ${field}: "${value}" -> ${isValid ? 'VALID' : 'INVALID'}`);
+    return isValid;
   });
+  
+  console.log('🔍 Overall result:', result);
+  return result;
 };
 
 // Utility function to get incomplete contact fields
 export const getIncompleteContactFields = (clientProfile) => {
-  if (!clientProfile) return ['first_name', 'last_name', 'phone_number', 'child_name', 'child_age'];
+  if (!clientProfile) return ['first_name', 'last_name', 'phone_number'];
   
   const requiredFields = [
     { key: 'first_name', label: 'First Name' },
     { key: 'last_name', label: 'Last Name' },
-    { key: 'phone_number', label: 'Phone Number' },
-    { key: 'child_name', label: 'Child Name' },
-    { key: 'child_age', label: 'Child Age' }
+    { key: 'phone_number', label: 'Phone Number' }
   ];
   
   return requiredFields.filter(field => {
     const value = clientProfile[field.key];
-    return !value || value.toString().trim() === '' || value === 'Pending' || value === 'Update';
+    return !value || 
+           value.toString().trim() === '' || 
+           value === 'Pending' || 
+           value === 'Update' ||
+           value === '+91'; // Default phone number
   });
 };

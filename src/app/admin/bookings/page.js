@@ -18,10 +18,12 @@ import {
   Mail,
   Package,
   DollarSign,
-  MapPin
+  MapPin,
+  RefreshCw
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
+import AdminRescheduleModal from '@/components/AdminRescheduleModal';
 
 export default function BookingsPage() {
   const { showError, showSuccess } = useNotification();
@@ -33,11 +35,6 @@ export default function BookingsPage() {
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-  const [rescheduleData, setRescheduleData] = useState({
-    date: '',
-    time: '',
-    duration: 60
-  });
 
   useEffect(() => {
     loadBookings();
@@ -68,29 +65,19 @@ export default function BookingsPage() {
 
   const handleReschedule = (session) => {
     setSelectedSession(session);
-    setRescheduleData({
-      date: session.scheduled_date || '',
-      time: session.scheduled_time || '',
-      duration: session.duration || 60
-    });
     setIsRescheduleOpen(true);
   };
 
-  const handleRescheduleSubmit = async () => {
-    if (!selectedSession) return;
-
-    try {
-      // Here you would call the API to reschedule the session
-      // await sessionsApi.rescheduleSession(selectedSession.id, rescheduleData);
-      
-      showSuccess('Session rescheduled successfully');
-      setIsRescheduleOpen(false);
-      loadBookings();
-    } catch (error) {
-      console.error('Failed to reschedule session:', error);
-      showError('Failed to reschedule session', 'Reschedule Error');
-    }
+  const handleRescheduleSuccess = (updatedSession) => {
+    // Update the booking in the list
+    setBookings(prevBookings => 
+      prevBookings.map(booking => 
+        booking.id === updatedSession.id ? updatedSession : booking
+      )
+    );
+    showSuccess('Session rescheduled successfully!', 'Reschedule Success');
   };
+
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -308,12 +295,12 @@ export default function BookingsPage() {
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
                       </button>
-                      {booking.status === 'booked' && (
+                      {['booked', 'rescheduled', 'confirmed'].includes(booking.status) && (
                         <button
                           onClick={() => handleReschedule(booking)}
-                          className="text-green-600 hover:text-green-900 flex items-center"
+                          className="text-blue-600 hover:text-blue-900 flex items-center"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
+                          <RefreshCw className="h-4 w-4 mr-1" />
                           Reschedule
                         </button>
                       )}
@@ -529,73 +516,13 @@ export default function BookingsPage() {
         </div>
       )}
 
-      {/* Reschedule Modal */}
-      {isRescheduleOpen && selectedSession && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Reschedule Session</h2>
-              <button
-                onClick={() => setIsRescheduleOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Date</label>
-                <input
-                  type="date"
-                  value={rescheduleData.date}
-                  onChange={(e) => setRescheduleData({...rescheduleData, date: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Time</label>
-                <input
-                  type="time"
-                  value={rescheduleData.time}
-                  onChange={(e) => setRescheduleData({...rescheduleData, time: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-                <select
-                  value={rescheduleData.duration}
-                  onChange={(e) => setRescheduleData({...rescheduleData, duration: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={30}>30 minutes</option>
-                  <option value={45}>45 minutes</option>
-                  <option value={60}>60 minutes</option>
-                  <option value={90}>90 minutes</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex space-x-3 mt-6">
-              <button
-                onClick={handleRescheduleSubmit}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Confirm Reschedule
-              </button>
-              <button
-                onClick={() => setIsRescheduleOpen(false)}
-                className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Admin Reschedule Modal */}
+      <AdminRescheduleModal
+        isOpen={isRescheduleOpen}
+        onClose={() => setIsRescheduleOpen(false)}
+        session={selectedSession}
+        onRescheduleSuccess={handleRescheduleSuccess}
+      />
 
     </div>
   );

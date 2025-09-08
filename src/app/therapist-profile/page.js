@@ -298,9 +298,16 @@ const TherapistProfileContent = () => {
       return;
     }
 
+    // Declare clientProfile at function level so it's accessible throughout
+    let clientProfile = null;
+
     // Check if client contact information is complete
     try {
-      const clientProfile = await clientApi.getProfile();
+      const clientProfileResponse = await clientApi.getProfile();
+      clientProfile = clientProfileResponse.data; // Extract the actual profile data
+      console.log('🔍 Client profile response:', clientProfileResponse);
+      console.log('🔍 Client profile data:', clientProfile);
+      
       if (!isClientContactComplete(clientProfile)) {
         const incompleteFields = getIncompleteContactFields(clientProfile);
         setIncompleteContactFields(incompleteFields);
@@ -422,11 +429,11 @@ const TherapistProfileContent = () => {
         amount,
         packageId: selectedPackage.id,
         sessionType,
-        clientName: `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`,
+        clientName: `${clientProfile?.first_name || ''} ${clientProfile?.last_name || ''}`,
         clientEmail: user?.email,
-        clientPhone: userProfile?.phone_number,
+        clientPhone: clientProfile?.phone_number,
         user: user,
-        userProfile: userProfile,
+        clientProfile: clientProfile,
         slotReservation: slotReservation.data
       });
       
@@ -438,9 +445,9 @@ const TherapistProfileContent = () => {
         amount: amount,
         packageId: selectedPackage.id,
         sessionType: sessionType,
-        clientName: `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`,
+        clientName: `${clientProfile?.first_name || ''} ${clientProfile?.last_name || ''}`,
         clientEmail: user?.email,
-        clientPhone: userProfile?.phone_number
+        clientPhone: clientProfile?.phone_number
       };
 
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
