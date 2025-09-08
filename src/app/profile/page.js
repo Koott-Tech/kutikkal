@@ -30,8 +30,12 @@ export default function ProfilePage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [isSummaryView, setIsSummaryView] = useState(false); // true for summary, false for report
   const [sessions, setSessions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed to false - no auto loading
   const [error, setError] = useState(null);
+  
+  // Individual loading states for each section
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [packagesLoading, setPackagesLoading] = useState(false);
   
   // Reschedule modal state
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -61,8 +65,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      loadUserData();
-      // Prime contact form with existing values
+      // Only prime contact form with existing values - no API calls
       const p = user.profile || {};
       setProfileForm({
         first_name: p.first_name || '',
@@ -71,10 +74,13 @@ export default function ProfilePage() {
         child_name: p.child_name || '',
         child_age: p.child_age || ''
       });
-    } else {
-      setIsLoading(false);
+      
+      // Load sessions by default since it's the default tab
+      if (activeTab === 'sessions') {
+        loadSessions();
+      }
     }
-  }, [user]);
+  }, [user, activeTab]);
 
   // If query contains ?tab=contact, open Contact tab on arrival
   useEffect(() => {
@@ -89,31 +95,61 @@ export default function ProfilePage() {
 
 
 
-  const loadUserData = async () => {
+  // Lazy load sessions only when sessions tab is active
+  const loadSessions = async () => {
+    if (sessions.length > 0) return; // Already loaded
+    
     try {
-      setIsLoading(true);
+      setSessionsLoading(true);
       setError(null);
 
       if (hasRole('client')) {
-        // Load client sessions
         const sessionsData = await clientApi.getSessions();
         setSessions(sessionsData.data?.sessions || []);
+      }
+    } catch (err) {
+      console.error('Error loading sessions:', err);
+      setError(err.message);
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
 
-        // Load client packages
+  // Lazy load packages only when packages tab is active
+  const loadPackages = async () => {
+    if (clientPackages.length > 0) return; // Already loaded
+    
+    try {
+      setPackagesLoading(true);
+      setError(null);
+
+      if (hasRole('client')) {
         const packagesData = await clientApi.getClientPackages();
         setClientPackages(packagesData.data?.clientPackages || []);
       }
     } catch (err) {
-      console.error('Error loading user data:', err);
+      console.error('Error loading packages:', err);
       setError(err.message);
     } finally {
-      setIsLoading(false);
+      setPackagesLoading(false);
     }
   };
 
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  // Handle tab change with lazy loading
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    
+    // Load data only when tab is clicked
+    if (tab === 'sessions' && sessions.length === 0) {
+      loadSessions();
+    } else if (tab === 'packages' && clientPackages.length === 0) {
+      loadPackages();
+    }
   };
 
   const openFeedbackModal = (session) => {
@@ -442,7 +478,7 @@ export default function ProfilePage() {
                 )}
                 
                 <button
-                  onClick={() => setActiveTab("sessions")}
+                  onClick={() => handleTabChange("sessions")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     activeTab === "sessions"
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
@@ -454,7 +490,7 @@ export default function ProfilePage() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab("messages")}
+                  onClick={() => handleTabChange("messages")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     activeTab === "messages"
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
@@ -466,7 +502,7 @@ export default function ProfilePage() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab("contact")}
+                  onClick={() => handleTabChange("contact")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     activeTab === "contact"
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
@@ -482,7 +518,7 @@ export default function ProfilePage() {
                 </button>
                 
                 <button
-                  onClick={() => setActiveTab("report")}
+                  onClick={() => handleTabChange("report")}
                   className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                     activeTab === "report"
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
@@ -495,7 +531,7 @@ export default function ProfilePage() {
 
                 {hasRole('client') && (
                   <button
-                    onClick={() => setActiveTab("packages")}
+                    onClick={() => handleTabChange("packages")}
                     className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
                       activeTab === "packages"
                         ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
@@ -548,7 +584,12 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {sessions.length === 0 ? (
+                {sessionsLoading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading sessions...</p>
+                  </div>
+                ) : sessions.length === 0 ? (
                   <div className="text-center py-12">
                     <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions yet</h3>
@@ -1027,7 +1068,12 @@ export default function ProfilePage() {
             {activeTab === "packages" && (
               <div className="bg-white shadow rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">My Packages</h2>
-                {clientPackages.length === 0 ? (
+                {packagesLoading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading packages...</p>
+                  </div>
+                ) : clientPackages.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No packages purchased yet</h3>
