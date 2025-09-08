@@ -21,10 +21,7 @@ export default function Hero() {
                 Connect with mental health experts who specialize in you
               </h1>
               <p className="mt-6 text-[8px] sm:text-sm md:text-lg font-light opacity-95 leading-none break-words" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>
-                You deserve quality care from someone who cares.
-              </p>
-              <p className="mt-3 text-[8px] sm:text-sm md:text-lg font-light opacity-90 leading-none break-words" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>
-                Match with a licensed provider today.
+                You deserve quality care from someone who cares. Match with a licensed provider today.
               </p>
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
@@ -33,7 +30,7 @@ export default function Hero() {
                   style={{ backgroundColor: '#3e2e73' }}
                   type="button"
                 >
-                  <span style={{ fontWeight: 500 }}>Get started</span>
+                  <span style={{ fontWeight: 500 }}>Get Started</span>
                 </button>
                 <button
                   type="button"

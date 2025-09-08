@@ -85,7 +85,7 @@ export default function Header() {
                 onClick={handleHomeClick}
                 className="text-xl md:text-2xl font-semibold tracking-tight text-gray-900 hover:text-gray-700 transition-colors cursor-pointer"
               >
-                LittleMinds
+                Little Care
               </button>
             </div>
 
