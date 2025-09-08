@@ -587,6 +587,66 @@ export const adminApi = {
   async getPsychologistAvailabilityForReschedule(psychologistId, startDate, endDate) {
     return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
   },
+
+  // Free Assessment Timeslots API
+  async getFreeAssessmentTimeslots() {
+    return apiRequest('/free-assessment-timeslots');
+  },
+
+  async createFreeAssessmentTimeslot(timeslotData) {
+    return apiRequest('/free-assessment-timeslots', {
+      method: 'POST',
+      body: JSON.stringify(timeslotData),
+    });
+  },
+
+  async updateFreeAssessmentTimeslot(id, timeslotData) {
+    return apiRequest(`/free-assessment-timeslots/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(timeslotData),
+    });
+  },
+
+  async deleteFreeAssessmentTimeslot(id) {
+    return apiRequest(`/free-assessment-timeslots/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async bulkCreateFreeAssessmentTimeslots(timeslotsData) {
+    return apiRequest('/free-assessment-timeslots/bulk', {
+      method: 'POST',
+      body: JSON.stringify(timeslotsData),
+    });
+  },
+
+  async bulkUpdateFreeAssessmentTimeslots(timeslotsData) {
+    return apiRequest('/free-assessment-timeslots/bulk/update', {
+      method: 'PUT',
+      body: JSON.stringify(timeslotsData),
+    });
+  },
+
+  async getDateConfigsRange(startDate, endDate) {
+    return apiRequest(`/free-assessment-timeslots/date-configs-range?startDate=${startDate}&endDate=${endDate}`);
+  },
+
+  async createDateConfig(dateConfigData) {
+    return apiRequest('/free-assessment-timeslots/date-config', {
+      method: 'POST',
+      body: JSON.stringify(dateConfigData),
+    });
+  },
+
+  async deleteDateConfig(date) {
+    return apiRequest(`/free-assessment-timeslots/date-config/${date}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getAvailabilityRange(startDate, endDate) {
+    return apiRequest(`/free-assessment-timeslots/availability-range?startDate=${startDate}&endDate=${endDate}`);
+  },
 };
 
 // Superadmin API

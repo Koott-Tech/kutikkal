@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Clock, Plus, Edit, Trash2, Check, X, Save, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { adminApi } from '@/lib/backendApi';
 
 export default function FreeAssessmentTimeslotsPage() {
   const { user, token, authLoading } = useAuth();
@@ -57,13 +58,7 @@ export default function FreeAssessmentTimeslotsPage() {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
-      const response = await fetch(`/api/admin/free-assessment-timeslots/date-configs-range?startDate=${startDate}&endDate=${endDate}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
+      const data = await adminApi.getDateConfigsRange(startDate, endDate);
       
       if (data.success) {
         setAvailabilityData(data.data);
@@ -108,13 +103,7 @@ export default function FreeAssessmentTimeslotsPage() {
   const fetchTimeslots = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/free-assessment-timeslots', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
+      const data = await adminApi.getFreeAssessmentTimeslots();
       
       if (data.success) {
         setTimeslots(data.data);
@@ -185,22 +174,13 @@ export default function FreeAssessmentTimeslotsPage() {
       });
 
       // Save timeslots to backend
-      const response = await fetch('/api/admin/free-assessment-timeslots/bulk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          timeslots: timeslotsToSave.map(time => ({
-            time_slot: time,
-            is_active: true,
-            max_bookings_per_slot: 3
-          }))
-        })
+      const data = await adminApi.bulkCreateFreeAssessmentTimeslots({
+        timeslots: timeslotsToSave.map(time => ({
+          time_slot: time,
+          is_active: true,
+          max_bookings_per_slot: 3
+        }))
       });
-
-      const data = await response.json();
 
       if (data.success) {
         // Now save the date-specific configuration
@@ -223,19 +203,10 @@ export default function FreeAssessmentTimeslotsPage() {
         });
 
         // Save date configuration
-        const dateConfigResponse = await fetch('/api/admin/free-assessment-timeslots/date-config', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            date: dateStr,
-            timeSlots: timeSlotsByPeriod
-          })
+        const dateConfigData = await adminApi.createDateConfig({
+          date: dateStr,
+          timeSlots: timeSlotsByPeriod
         });
-
-        const dateConfigData = await dateConfigResponse.json();
 
         if (dateConfigData.success) {
           setSuccess('Timeslots saved successfully!');
@@ -291,14 +262,7 @@ export default function FreeAssessmentTimeslotsPage() {
     try {
       setLoading(true);
       
-      const response = await fetch(`/api/admin/free-assessment-timeslots/date-config/${dateStr}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
+      const data = await adminApi.deleteDateConfig(dateStr);
 
       if (data.success) {
         setSuccess('Date configuration removed successfully!');
