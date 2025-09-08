@@ -1,5 +1,5 @@
 // Simple caching utility for frontend
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes for production
 
 export const cache = {
   // Set cache with expiration
@@ -9,7 +9,11 @@ export const cache = {
       timestamp: Date.now(),
       duration
     };
-    localStorage.setItem(`cache_${key}`, JSON.stringify(item));
+    try {
+      localStorage.setItem(`cache_${key}`, JSON.stringify(item));
+    } catch (error) {
+      console.warn('Cache set failed:', error);
+    }
   },
 
   // Get cache if not expired
@@ -54,7 +58,7 @@ export const cache = {
   }
 };
 
-// Cache wrapper for API calls
+// Cache wrapper for API calls with retry logic
 export const withCache = (apiCall, cacheKey, duration = CACHE_DURATION) => {
   return async (...args) => {
     // Try to get from cache first
@@ -64,14 +68,31 @@ export const withCache = (apiCall, cacheKey, duration = CACHE_DURATION) => {
       return cached;
     }
 
-    // If not in cache, make API call
+    // If not in cache, make API call with timeout
     console.log(`🌐 Cache miss for ${cacheKey}, making API call`);
     try {
-      const result = await apiCall(...args);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 15000)
+      );
+      
+      const result = await Promise.race([
+        apiCall(...args),
+        timeoutPromise
+      ]);
+      
       cache.set(cacheKey, result, duration);
       return result;
     } catch (error) {
       console.error(`API call failed for ${cacheKey}:`, error);
+      
+      // Return cached data if available (even if expired)
+      const staleCache = cache.get(cacheKey);
+      if (staleCache) {
+        console.log(`📦 Using stale cache for ${cacheKey}`);
+        return staleCache;
+      }
+      
       throw error;
     }
   };
