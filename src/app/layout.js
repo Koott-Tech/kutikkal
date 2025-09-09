@@ -7,6 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
+// Force cache bust - latest version deployed
+console.log('Cache bust - latest version deployed at:', new Date().toISOString());
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
