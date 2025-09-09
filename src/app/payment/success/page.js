@@ -3,6 +3,9 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering to bypass cache
+export const dynamic = 'force-dynamic';
+
 function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
