@@ -34,11 +34,11 @@ export async function POST(req) {
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
-    return NextResponse.redirect(`https://kuttikal.vercel.app${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+    return NextResponse.redirect(`https://kutikkal-one.vercel.app${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
     
   } catch (error) {
     console.error('❌ Error in POST handler:', error);
-    return NextResponse.redirect('https://kuttikal.vercel.app/payment/failure?error=processing', { status: 302 });
+    return NextResponse.redirect('https://kutikkal-one.vercel.app/payment/failure?error=processing', { status: 302 });
   }
 }
 
@@ -53,10 +53,10 @@ export async function GET(req) {
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
-    return NextResponse.redirect(`https://kuttikal.vercel.app${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+    return NextResponse.redirect(`https://kutikkal-one.vercel.app${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
     
   } catch (error) {
     console.error('❌ Error in GET handler:', error);
-    return NextResponse.redirect('https://kuttikal.vercel.app/payment/failure?error=processing', { status: 302 });
+    return NextResponse.redirect('https://kutikkal-one.vercel.app/payment/failure?error=processing', { status: 302 });
   }
 }
