@@ -57,16 +57,21 @@ export async function POST(request) {
         })
       });
 
-      const backendResult = await backendResponse.json();
-      console.log('🔍 Backend API Response:', backendResult);
+      if (backendResponse.ok) {
+        const backendResult = await backendResponse.json();
+        console.log('🔍 Backend API Response:', backendResult);
 
-      if (backendResult.success) {
-        console.log('✅ Backend payment processing successful');
+        if (backendResult.success) {
+          console.log('✅ Backend payment processing successful');
+        } else {
+          console.error('❌ Backend payment processing failed:', backendResult.message);
+        }
       } else {
-        console.error('❌ Backend payment processing failed:', backendResult.message);
+        console.error('❌ Backend API returned error:', backendResponse.status, backendResponse.statusText);
       }
     } catch (backendError) {
       console.error('❌ Error calling backend API:', backendError);
+      console.log('⚠️  Backend is not available, but payment data is still processed');
     }
 
     // Return a simple HTML page that will redirect to the result page
