@@ -11,55 +11,28 @@ function PaymentSuccessContent() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const processPayment = async () => {
-      try {
-        // Get URL parameters from PayU
-        const txnid = searchParams.get('txnid');
-        const amount = searchParams.get('amount');
-        const productinfo = searchParams.get('productinfo');
-        const firstname = searchParams.get('firstname');
-        const email = searchParams.get('email');
-        const status = searchParams.get('status');
-        const hash = searchParams.get('hash');
+    // Get URL parameters from PayU
+    const txnid = searchParams.get('txnid');
+    const amount = searchParams.get('amount');
+    const productinfo = searchParams.get('productinfo');
+    const firstname = searchParams.get('firstname');
+    const email = searchParams.get('email');
+    const status = searchParams.get('status');
+    const hash = searchParams.get('hash');
 
-        if (!txnid || !status) {
-          throw new Error('Missing payment parameters');
-        }
+    console.log('Payment parameters:', { txnid, amount, status, productinfo, firstname, email });
 
-        // If payment was successful, process it
-        if (status === 'success') {
-          const formData = new FormData();
-          formData.append('txnid', txnid);
-          formData.append('amount', amount);
-          formData.append('productinfo', productinfo);
-          formData.append('firstname', firstname);
-          formData.append('email', email);
-          formData.append('status', status);
-          formData.append('hash', hash);
+    // Set payment data from URL parameters
+    setPaymentData({
+      txnid: txnid || 'N/A',
+      amount: amount || 'N/A',
+      productinfo: productinfo || 'Payment completed',
+      firstname: firstname || 'N/A',
+      email: email || 'N/A',
+      status: status || 'success'
+    });
 
-          const response = await fetch('/api/payment/result', {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to process payment');
-          }
-
-          const result = await response.json();
-          setPaymentData(result);
-        } else {
-          throw new Error('Payment was not successful');
-        }
-      } catch (err) {
-        console.error('Payment processing error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    processPayment();
+    setLoading(false);
   }, [searchParams]);
 
   if (loading) {
