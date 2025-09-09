@@ -1,160 +1,135 @@
 import { NextResponse } from 'next/server';
 
+// Force Node.js runtime for reliable SHA-512 hashing
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Temporary storage for payment data (in production, use Redis or database)
 let paymentData = null;
 let paymentDataTimestamp = null;
 
-export async function POST(request) {
-  try {
-    const formData = await request.formData();
-    const txnid = formData.get('txnid') || '';
-    const status = formData.get('status') || '';
-    const amount = formData.get('amount') || '';
-    const error_code = formData.get('error_code') || '';
-    const error_Message = formData.get('error_Message') || '';
+// Parse different content types from PayU
+async function parseBody(req) {
+  const ct = (req.headers.get("content-type") || "").toLowerCase();
 
-    console.log('🔍 PayU POST Data:', {
-      txnid,
-      status,
-      amount,
-      error_code,
-      error_Message
-    });
-
-    // Store payment data for frontend with timestamp
-    paymentData = {
-      txnid,
-      status,
-      amount,
-      error_code,
-      error_Message,
-      timestamp: Date.now()
-    };
-    paymentDataTimestamp = Date.now();
-
-    console.log('💾 Stored payment data:', paymentData);
-    console.log('⏰ Payment data timestamp:', paymentDataTimestamp);
-
-    // Call backend API to process the payment
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
-
-    console.log('🔄 Calling backend API:', backendUrl);
-
-    try {
-      const backendResponse = await fetch(`${backendUrl}/payment/success`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          txnid,
-          status,
-          amount,
-          error_code,
-          error_Message,
-          // Include all form data
-          ...Object.fromEntries(formData.entries())
-        })
-      });
-
-      if (backendResponse.ok) {
-        const backendResult = await backendResponse.json();
-        console.log('🔍 Backend API Response:', backendResult);
-
-        if (backendResult.success) {
-          console.log('✅ Backend payment processing successful');
-        } else {
-          console.error('❌ Backend payment processing failed:', backendResult.message);
-        }
-      } else {
-        console.error('❌ Backend API returned error:', backendResponse.status, backendResponse.statusText);
-      }
-    } catch (backendError) {
-      console.error('❌ Error calling backend API:', backendError);
-      console.log('⚠️  Backend is not available, but payment data is still processed');
+  if (ct.includes("application/x-www-form-urlencoded")) {
+    const text = await req.text();
+    return new URLSearchParams(text);
+  }
+  if (ct.includes("multipart/form-data")) {
+    const form = await req.formData();
+    const entries = [];
+    for (const [k, v] of form.entries()) {
+      entries.push([k, typeof v === "string" ? v : v.name || ""]);
     }
+    return new URLSearchParams(entries);
+  }
+  if (ct.includes("application/json")) {
+    const json = await req.json();
+    return new URLSearchParams(Object.entries(json).map(([k, v]) => [k, String(v ?? "")]));
+  }
+  // fallback
+  const text = await req.text();
+  return new URLSearchParams(text);
+}
 
-    // Return a simple HTML page that will redirect to the result page
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Payment Processing</title>
-          <meta charset="utf-8">
-        </head>
-        <body>
-          <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-            <h2>Payment Processing...</h2>
-            <p>Please wait while we process your payment and create your session.</p>
-            <div style="margin: 20px 0;">
-              <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-            </div>
-            <style>
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            </style>
-          </div>
-          <script>
-            // Redirect to the success page after a short delay
-            setTimeout(function() {
-              window.location.href = '/payment/success';
-            }, 3000);
-          </script>
-        </body>
-      </html>
-    `;
+// Verify PayU hash (stubbed for now - implement with your TEST key/salt)
+function verifyPayUHash(params) {
+  // TODO: implement PayU SHA-512 verification
+  // Response pattern: SALT|status|...|email|firstname|productinfo|amount|txnid|KEY
+  console.log('🔐 Hash verification (stubbed):', params.get('hash'));
+  return true; // For now, always return true
+}
 
-    return new NextResponse(html, {
-      status: 200,
+async function handlePayment(params, req) {
+  const status = (params.get("status") || "").toLowerCase();
+  const txnid = params.get("txnid") || "";
+  const amount = params.get("amount") || "";
+  const error_code = params.get("error_code") || "";
+  const error_Message = params.get("error_Message") || "";
+  
+  console.log('🔍 PayU Data:', { txnid, status, amount, error_code, error_Message });
+
+  // 1) Verify hash
+  if (!verifyPayUHash(params)) {
+    console.log('❌ Hash verification failed');
+    const base = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+    return NextResponse.redirect(`${base}/payment/failure?reason=hash&txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+  }
+
+  // 2) Store payment data for frontend
+  paymentData = {
+    txnid,
+    status,
+    amount,
+    error_code,
+    error_Message,
+    timestamp: Date.now(),
+    // Include all params
+    ...Object.fromEntries(params.entries())
+  };
+  paymentDataTimestamp = Date.now();
+
+  console.log('💾 Stored payment data:', paymentData);
+
+  // 3) Call backend API to process the payment
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+
+  try {
+    const backendResponse = await fetch(`${backendUrl}/payment/success`, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        txnid,
+        status,
+        amount,
+        error_code,
+        error_Message,
+        ...Object.fromEntries(params.entries())
+      })
     });
+
+    if (backendResponse.ok) {
+      const backendResult = await backendResponse.json();
+      console.log('✅ Backend payment processing successful:', backendResult);
+    } else {
+      console.error('❌ Backend API returned error:', backendResponse.status, backendResponse.statusText);
+    }
+  } catch (backendError) {
+    console.error('❌ Error calling backend API:', backendError);
+    console.log('⚠️  Backend is not available, but payment data is still processed');
+  }
+
+  // 4) Redirect to appropriate UI page
+  const base = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+  const dest = status === "success" ? "/payment/success" : "/payment/failure";
+  
+  console.log(`🔄 Redirecting to: ${base}${dest}?txnid=${encodeURIComponent(txnid)}`);
+  
+  return NextResponse.redirect(`${base}${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+}
+
+export async function POST(req) {
+  try {
+    const params = await parseBody(req);
+    return handlePayment(params, req);
   } catch (error) {
-    console.error('❌ Error in payment result handler:', error);
+    console.error('❌ Error in POST handler:', error);
     return new NextResponse('Error processing payment', { status: 500 });
   }
 }
 
-export async function GET() {
+// Handle GET requests (helpful in test mode)
+export async function GET(req) {
   try {
-    console.log('📤 GET request received');
-    console.log('📤 Current payment data:', paymentData);
-    console.log('📤 Payment data timestamp:', paymentDataTimestamp);
-    
-    if (paymentData && paymentDataTimestamp) {
-      // Check if data is still fresh (within last 60 seconds)
-      const now = Date.now();
-      const dataAge = now - paymentDataTimestamp;
-      
-      console.log('📤 Data age:', dataAge, 'ms');
-      
-      if (dataAge < 60000) { // 60 seconds
-        console.log('📤 Returning payment data:', paymentData);
-        const data = { ...paymentData };
-        
-        // Keep the data for longer to ensure frontend can access it
-        setTimeout(() => {
-          paymentData = null;
-          paymentDataTimestamp = null;
-          console.log('🗑️ Cleared payment data after delay');
-        }, 60000); // Keep data for 60 seconds
-        
-        return NextResponse.json({ success: true, data });
-      } else {
-        console.log('📤 Payment data is too old, clearing it');
-        paymentData = null;
-        paymentDataTimestamp = null;
-        return NextResponse.json({ success: false, message: 'Payment data expired' });
-      }
-    } else {
-      console.log('📤 No payment data found');
-      return NextResponse.json({ success: false, message: 'No payment data found' });
-    }
+    const { searchParams } = new URL(req.url);
+    return handlePayment(searchParams, req);
   } catch (error) {
-    console.error('❌ Error getting payment data:', error);
-    return NextResponse.json({ success: false, message: 'Error retrieving payment data' });
+    console.error('❌ Error in GET handler:', error);
+    return new NextResponse('Error processing payment', { status: 500 });
   }
 }
+
