@@ -59,6 +59,35 @@ export default function PaymentSuccess() {
 
         console.log('🔍 Payment Success Params:', { txnid, status, amount });
 
+        // If we have PayU data from URL, process it with backend
+        if (txnid && status) {
+          try {
+            const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+            console.log('🔄 Processing payment with backend:', backendUrl);
+            
+            const backendResponse = await fetch(`${backendUrl}/payment/success`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                txnid,
+                status,
+                amount,
+                error_code: urlParams.get('error_code') || '',
+                error_Message: urlParams.get('error_Message') || '',
+                // Include all URL params
+                ...Object.fromEntries(urlParams.entries())
+              })
+            });
+
+            const backendResult = await backendResponse.json();
+            console.log('🔍 Backend payment processing result:', backendResult);
+          } catch (backendError) {
+            console.error('❌ Error processing payment with backend:', backendError);
+          }
+        }
+
         // For testing, if no params, show success anyway
         if (!txnid && !status) {
           console.log('🔍 No payment params found, showing success for testing');
