@@ -301,6 +301,16 @@ export const clientApi = {
     
     return apiRequest(`/clients/psychologists?${queryParams}`);
   },
+
+  // Get client receipts
+  async getReceipts() {
+    return apiRequest('/clients/receipts');
+  },
+
+  // Download receipt
+  async downloadReceipt(receiptId) {
+    return apiRequest(`/clients/receipts/${receiptId}/download`);
+  },
 };
 
 // Psychologist API

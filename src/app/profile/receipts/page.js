@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Download, Receipt, Clock, User, CreditCard } from 'lucide-react';
 import { useNotification } from '@/contexts/NotificationContext';
+import { clientApi } from '@/lib/backendApi';
 
 export default function ReceiptsPage() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -28,14 +29,7 @@ export default function ReceiptsPage() {
       setLoading(true);
       console.log('🔍 Token for receipts:', token ? 'Token exists' : 'No token');
       
-      const response = await fetch('/api/clients/receipts', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
+      const data = await clientApi.getReceipts();
       console.log('🔍 Receipts API response:', data);
 
       if (data.success) {
@@ -76,44 +70,16 @@ export default function ReceiptsPage() {
         return;
       }
 
-      const response = await fetch(`/api/clients/receipts/${receiptId}/download`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Use the backend API to get the download URL
+      const data = await clientApi.downloadReceipt(receiptId);
+      console.log('🔍 Download API response:', data);
 
-      console.log('🔍 Download response status:', response.status);
-      console.log('🔍 Download response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (response.ok) {
-        // Check if it's a redirect response
-        if (response.redirected) {
-          // Follow the redirect to download the PDF
-          window.open(response.url, '_blank');
-          console.log('✅ Receipt download initiated via redirect');
-        } else {
-          // Handle direct PDF response (fallback)
-          const blob = await response.blob();
-          console.log('🔍 Blob size:', blob.size, 'bytes');
-          console.log('🔍 Blob type:', blob.type);
-          
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `receipt-${receiptId}.pdf`;
-          a.style.display = 'none';
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-          
-          console.log('✅ Receipt download initiated successfully');
-        }
+      if (data.success && data.downloadUrl) {
+        // Open the download URL in a new tab
+        window.open(data.downloadUrl, '_blank');
+        console.log('✅ Receipt download initiated via redirect');
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Download failed:', errorData);
-        showError(`Failed to download receipt: ${errorData.message || 'Unknown error'}`, 'Download Failed');
+        showError(data.message || 'Failed to get download link', 'Download Failed');
       }
     } catch (err) {
       console.error('❌ Error downloading receipt:', err);
