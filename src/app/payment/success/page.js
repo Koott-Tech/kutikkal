@@ -1,5 +1,8 @@
 'use client';
 
+// Force no caching for payment success page
+export const dynamic = 'force-dynamic';
+
 export default function PaymentSuccess() {
   return (
     <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
