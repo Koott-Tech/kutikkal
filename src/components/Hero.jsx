@@ -17,6 +17,14 @@ export default function Hero() {
           <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
             {/* Left: Text */}
             <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0 px-2 sm:px-0">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-xs font-medium text-gray-800 w-fit mx-auto md:mx-0">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                <span>Convenient, online care covered by insurance</span>
+              </div>
+              
               <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight break-words" style={{ color: '#1d1733', letterSpacing: '-0.06em', lineHeight: '1.1', fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif', fontWeight: 500 }}>
                 Connect with mental health experts who specialize in you
               </h1>
