@@ -28,20 +28,18 @@ function PaymentSuccessContent() {
 
         // If payment was successful, process it
         if (status === 'success') {
+          const formData = new FormData();
+          formData.append('txnid', txnid);
+          formData.append('amount', amount);
+          formData.append('productinfo', productinfo);
+          formData.append('firstname', firstname);
+          formData.append('email', email);
+          formData.append('status', status);
+          formData.append('hash', hash);
+
           const response = await fetch('/api/payment/result', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              txnid,
-              amount,
-              productinfo,
-              firstname,
-              email,
-              status,
-              hash
-            }),
+            body: formData,
           });
 
           if (!response.ok) {
