@@ -33,17 +33,13 @@ export default function RegisterPage() {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      const errorMessage = "Passwords do not match";
-      setError(errorMessage);
-      showError(errorMessage, 'Validation Error');
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      const errorMessage = "Password must be at least 6 characters long";
-      setError(errorMessage);
-      showError(errorMessage, 'Validation Error');
+      setError("Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
@@ -59,26 +55,24 @@ export default function RegisterPage() {
       // Auto-login after successful registration
       login(data.data.user, data.data.token);
 
-      // Show success message
-      showSuccess('Account created successfully! Please complete your profile to access therapy services.');
-
       // Redirect to profile contact tab to complete setup
       router.push('/profile?tab=contact');
     } catch (error) {
       console.error('Registration error:', error);
       
-      // Handle validation errors specifically
+      // Handle specific error messages
       let errorMessage;
-      if (error.message && error.message.includes('Validation Error')) {
+      if (error.message && error.message.includes('already exists')) {
+        errorMessage = 'Email already in use. Please use a different email or try logging in.';
+      } else if (error.message && error.message.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error.message && error.message.includes('Validation Error')) {
         errorMessage = 'Please check your input. Make sure email is valid and password is at least 6 characters.';
-      } else if (error.message && error.message.includes('already exists')) {
-        errorMessage = 'An account with this email already exists. Please use a different email or try logging in.';
       } else {
         errorMessage = error.message || 'Registration failed. Please try again.';
       }
       
       setError(errorMessage);
-      showError(errorMessage, 'Registration Failed');
     } finally {
       setIsLoading(false);
     }
