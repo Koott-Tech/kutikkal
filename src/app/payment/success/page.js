@@ -21,6 +21,7 @@ function PaymentSuccessContent() {
     const hash = searchParams.get('hash');
 
     console.log('Payment parameters:', { txnid, amount, status, productinfo, firstname, email });
+    console.log('Cache bust - latest version deployed');
 
     // Set payment data from URL parameters
     setPaymentData({
