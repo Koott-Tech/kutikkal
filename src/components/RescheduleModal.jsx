@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Clock, Calendar } from 'lucide-react';
 import { publicApi, clientApi } from '../lib/backendApi';
 
-export default function RescheduleModal({ isOpen, onClose, session }) {
+export default function RescheduleModal({ isOpen, onClose, session, onRescheduleSuccess }) {
   // Calendar state - EXACT same as therapist profile
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -199,12 +199,19 @@ export default function RescheduleModal({ isOpen, onClose, session }) {
           setError('Reschedule request sent to psychologist for approval');
           setTimeout(() => {
             onClose();
+            // Call success callback to refresh the page
+            if (onRescheduleSuccess) {
+              onRescheduleSuccess(response.data);
+            }
           }, 3000);
         } else {
           // This was a direct reschedule
           onClose();
+          // Call success callback to refresh the page
+          if (onRescheduleSuccess) {
+            onRescheduleSuccess(response.data);
+          }
         }
-        // You might want to refresh the sessions list here
       } else {
         setError(response.message || 'Failed to reschedule session');
       }
