@@ -74,12 +74,13 @@ export default function ReceiptsPage() {
       const data = await clientApi.downloadReceipt(receiptId);
       console.log('🔍 Download API response:', data);
 
-      if (data.success && data.downloadUrl) {
+      const downloadUrl = data?.data?.downloadUrl || data?.downloadUrl;
+      if (data?.success && downloadUrl) {
         // Open the download URL in a new tab
-        window.open(data.downloadUrl, '_blank');
+        window.open(downloadUrl, '_blank');
         console.log('✅ Receipt download initiated via redirect');
       } else {
-        showError(data.message || 'Failed to get download link', 'Download Failed');
+        showError(data?.message || 'Failed to get download link', 'Download Failed');
       }
     } catch (err) {
       console.error('❌ Error downloading receipt:', err);
