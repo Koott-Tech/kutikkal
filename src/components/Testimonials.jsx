@@ -6,20 +6,20 @@ import Image from "next/image";
 
 export default function Testimonials() {
     return (
-        <div className="px-[50px]">
-            <section className="w-full mt-6 md:mt-8 mb-6 md:mb-8">
+        <div className="px-4 sm:px-8 md:px-[50px]">
+            <section className="w-full mt-4 sm:mt-6 md:mt-8 mb-4 sm:mb-6 md:mb-8">
                 <div className="h-[100vh] w-full rounded-2xl overflow-hidden bg-white">
-                    <div className="h-full w-full p-8">
+                    <div className="h-full w-full p-4 sm:p-6 md:p-8">
                         {/* Header Section */}
-                        <div className="text-center mb-8">
-                            <h2 className="text-4xl font-medium lg:text-5xl mb-2">Hear from our patients</h2>
-                            <p className="text-lg text-gray-600">We're making online therapy work the way it should.</p>
+                        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+                            <h2 className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium mb-2 tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">Hear from our patients</h2>
+                            <p className="text-[1.125rem] md:text-lg text-gray-600 tracking-[-0.03375rem] md:tracking-normal leading-[154%] md:leading-normal">We're making online therapy work the way it should.</p>
                         </div>
 
                         {/* Grid Cards Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-120px)]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-120px)] overflow-x-auto md:overflow-x-visible">
                             {/* Left side - Text content card (top half) */}
-                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
                                     <span className="text-sm font-medium text-green-800">Verified Patient</span>
                                 </div>
@@ -47,7 +47,7 @@ export default function Testimonials() {
                             </div>
                             
                             {/* Content card (bottom half) */}
-                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <div className="h-6 w-fit bg-amber-200 rounded px-3 py-1 mb-4">
                                     <span className="text-sm font-medium text-amber-800">Success Story</span>
                                 </div>
@@ -75,7 +75,7 @@ export default function Testimonials() {
                             </div>
                             
                             {/* Right side - Two separate cards instead of one large video card */}
-                            <div className="md:col-span-1 rounded-2xl overflow-hidden">
+                            <div className="md:col-span-1 rounded-2xl overflow-hidden min-w-[300px] md:min-w-0">
                                 <video
                                     src="/lg-video-card-ashley-1.mp4"
                                     className="h-full w-full object-cover"
@@ -86,7 +86,7 @@ export default function Testimonials() {
                                 />
                             </div>
                             
-                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6">
+                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
                                 <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
                                     <p className="text-lg font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
 

@@ -8,8 +8,8 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "How do I become a provider with Kuttikal?",
-      answer: "To become a provider with Kuttikal, you'll need to complete our application process which includes credentialing, licensing verification, and a brief interview. Our team will guide you through each step to ensure a smooth onboarding experience."
+      question: "How do I become a provider with LittleMinds?",
+      answer: "To become a provider with LittleMinds, you'll need to complete our application process which includes credentialing, licensing verification, and a brief interview. Our team will guide you through each step to ensure a smooth onboarding experience."
     },
     {
       question: "What types of providers do you work with?",
@@ -62,7 +62,7 @@ export default function FAQ() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Find answers to common questions about becoming a provider with Kuttikal and our services.
+            Find answers to common questions about becoming a provider with LittleMinds and our services.
           </p>
         </div>
       </section>

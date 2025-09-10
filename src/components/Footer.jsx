@@ -4,18 +4,18 @@ export default function Footer() {
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             {/* New section above footer */}
-            <div className="w-full py-20 px-8 md:px-16 lg:px-24" style={{ 
-                background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)'
+            <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
+                background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
             }}>
                 <div className="text-center max-w-4xl mx-auto">
-                    <h2 className="text-4xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
-                        Ready to start your journey to mental well-being?
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-4 leading-tight">
+                        Need parenting Support?
                     </h2>
-                    <p className="text-lg md:text-xl text-gray-800 mb-8 leading-relaxed max-w-3xl mx-auto font-light">
-                        We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
+                    <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed whitespace-nowrap">
+                        Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
                     </p>
-                    <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-3 px-6 rounded-full text-base transition-colors duration-200">
-                        Get started
+                    <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm">
+                        Sign up
                     </button>
                 </div>
             </div>
@@ -31,9 +31,9 @@ export default function Footer() {
                     
                     {/* Main footer content */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16">
-                        {/* Kuttikal Column */}
+                        {/* LittleMinds Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Kuttikal</h3>
+                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">LittleMinds</h3>
                             <ul className="space-y-4 text-base leading-relaxed">
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">About us</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Insurance & pricing</a></li>

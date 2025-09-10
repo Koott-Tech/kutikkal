@@ -10,13 +10,10 @@ export default function MeetTheTeam() {
           {/* Header Section */}
           <div className="text-center mb-16">
             <h2 
-              className="text-4xl font-medium lg:text-5xl mb-4"
+              className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium mb-4 leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem]"
               style={{
                 color: '#1d1733',
-                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif',
-                fontSize: '3.75rem',
-                letterSpacing: '-0.195rem',
-                lineHeight: '106%'
+                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
               }}
             >
               Meet our dedicated team guiding<br />

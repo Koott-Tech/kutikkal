@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import Footer from "./Footer";
+
 
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -286,7 +286,7 @@ export default function Blog() {
           </div>
         )}
       </div>
-      <Footer />
+
     </section>
   );
 }

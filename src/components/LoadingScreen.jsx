@@ -87,14 +87,15 @@ export default function LoadingScreen() {
         color: "white"
       }}>
         <h1 style={{
-          fontSize: "4rem",
+          fontSize: "2.5rem",
           fontWeight: "700",
           margin: 0,
           opacity: textOpacity,
           transition: "opacity 1s ease-in-out",
-          textShadow: "0 4px 8px rgba(0, 0, 0, 0.3)"
+          textShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+          textAlign: "center"
         }}>
-          kuttikal
+          LittleMinds
         </h1>
 
       </div>

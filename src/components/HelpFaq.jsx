@@ -45,11 +45,11 @@ export default function HelpFaq() {
 
   return (
     <section className="min-h-[100vh] w-full mt-0">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-10 px-[50px] py-2 md:py-4 md:grid-cols-[0.9fr_1.1fr]">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-4 sm:px-10 md:px-[50px] py-4 md:py-8 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
-        <div className="flex flex-col">
+        <div className="flex flex-col ml-4 md:ml-0">
           <div>
-            <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:text-[48px] text-gray-900">
+                         <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:tracking-normal md:text-[48px] text-gray-900">
               Questions?
               <br />
               <span>We're here to help</span>
@@ -59,7 +59,7 @@ export default function HelpFaq() {
               commonly asked questions.
             </p>
           </div>
-          <div className="relative mt-8 w-[240px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
+                     <div className="relative mt-10 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
             <Image
               src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
               alt="Smiling people"
@@ -70,11 +70,11 @@ export default function HelpFaq() {
           </div>
         </div>
 
-        {/* Right column: Accordion FAQ */}
-        <div className=" mr-12">
-          {DATA.map((section, ci) => (
-            <div key={section.title} className="mb-10">
-              <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-6">
+                 {/* Right column: Accordion FAQ */}
+         <div className="mr-12 w-full md:max-w-2xl ml-4 md:ml-0">
+           {DATA.map((section, ci) => (
+             <div key={section.title} className="mb-12">
+               <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-8">
                 {section.title}
               </h3>
               <div className="space-y-0">
@@ -88,7 +88,7 @@ export default function HelpFaq() {
                         onClick={() => setOpenId(open ? "" : id)}
                         className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
                       >
-                        <span className="text-lg text-gray-900">
+                        <span className="text-lg text-gray-900 w-full md:w-auto pr-8 md:pr-0">
                           {item.q}
                         </span>
                         <Chevron className={`h-5 w-5 text-gray-800 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />

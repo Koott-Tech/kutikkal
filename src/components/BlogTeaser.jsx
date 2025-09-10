@@ -38,31 +38,33 @@ export default function BlogTeaser() {
 
   return (
     <section className="min-h-[100vh] w-full mt-6 md:mt-20">
-      <div className="mx-auto max-w-[1400px] px-[120px] py-10 md:py-14">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-base text-gray-700">From our blog</p>
-            <h2 className="mt-3 text-4xl md:text-5xl font-medium tracking-tight text-gray-900">
-              Tips for getting started on your journey
-            </h2>
+      <div className="mx-auto max-w-[1400px] px-3 sm:px-10 md:px-[120px] py-10 md:py-14 overflow-hidden">
+                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+           <div className="ml-3 sm:ml-6 md:ml-0">
+             <p className="text-xl md:text-base text-gray-700">From our blog</p>
+                          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
+               Tips for getting started on your journey
+             </h2>
+           </div>
+          <div className="flex justify-center md:justify-end mt-6 md:mt-0">
+            <button
+              type="button"
+              onClick={handleExploreClick}
+              className="inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-base md:text-sm font-normal text-white hover:bg-black/90"
+            >
+              Explore more articles
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleExploreClick}
-            className="mt-3 inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-sm font-normal text-white hover:bg-black/90"
-          >
-            Explore more articles
-          </button>
         </div>
 
-        <div className="mt-16 md:mt-20 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {posts.map((post) => (
-            <article key={post.title} className="group">
-              <div
-                className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl ${
-                  post.highlight ? "ring-8 ring-sky-100" : ""
-                }`}
-              >
+                 <div className="mt-16 md:mt-20 grid grid-cols-1 gap-10 md:gap-8 md:grid-cols-3">
+           {posts.map((post) => (
+                                                       <article key={post.title} className="group w-full md:w-full mx-auto md:mx-0">
+               <div
+                 className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl ${
+                   post.highlight ? "ring-8 ring-sky-100" : ""
+                 }`}
+               >
                 <Image
                   src={post.src}
                   alt={post.alt}
@@ -71,12 +73,12 @@ export default function BlogTeaser() {
                   sizes="(min-width: 1024px) 33vw, 100vw"
                 />
               </div>
-              <div className="mt-4 text-sm text-gray-600 leading-relaxed">
+              <div className="mt-6 md:mt-4 text-base md:text-sm text-gray-600 leading-relaxed">
                 <span>{post.author}</span>
                 <span className="px-2">•</span>
                 <span>{post.date}</span>
               </div>
-              <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 leading-tight">
+              <h3 className="mt-4 md:mt-3 text-xl md:text-xl font-medium text-gray-900 leading-tight">
                 {post.title}
               </h3>
             </article>

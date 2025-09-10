@@ -1,6 +1,7 @@
 "use client";
 
 import Image from 'next/image';
+import { useState } from 'react';
 
 export default function BenefitsSection({ therapyType = "individual" }) {
   // Content configuration for different therapy types
@@ -182,13 +183,14 @@ export default function BenefitsSection({ therapyType = "individual" }) {
   };
 
   const currentContent = content[therapyType] || content.individual;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <section className="w-full bg-white h-screen">
-      <div className="mx-auto max-w-[1400px] pl-8 pr-16">
+         <section className="w-full bg-white lg:h-screen">
+             <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
         {/* Header */}
         <div className="text-center mb-20 mt-24">
-          <h2 className="text-4xl md:text-5xl font-medium text-black">
+          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">
             {currentContent.title}
           </h2>
         </div>
@@ -196,7 +198,7 @@ export default function BenefitsSection({ therapyType = "individual" }) {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           {/* Left Section - Image */}
-          <div className="flex justify-start -mt-4">
+          <div className="hidden lg:flex justify-start -mt-4">
             <div className="relative w-[500px] h-[500px]">
               <Image
                 src="/rightside5th.png"
@@ -208,22 +210,42 @@ export default function BenefitsSection({ therapyType = "individual" }) {
           </div>
 
           {/* Right Section - Benefits List */}
-          <div className="grid grid-cols-2 gap-x-16 gap-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-4 w-full justify-items-start">
             {currentContent.benefits.map((benefit, index) => (
-              <div key={index} className="pt-3 border-t border-gray-200">
-                <div className="flex items-start space-x-4">
+              <div 
+                key={index} 
+                className={`pt-3 border-t border-gray-200 ${
+                  index >= 4 && !isExpanded ? 'opacity-50 lg:opacity-100' : ''
+                } ${index >= 4 && !isExpanded ? 'hidden lg:block' : ''}`}
+              >
+                <div className="flex items-start gap-4">
                   <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-2.5 h-2.5 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-black text-lg mb-2">{benefit.title}</h3>
-                    <p className="text-black">{benefit.description}</p>
+                    <p className="text-black md:font-sans" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>{benefit.description}</p>
                   </div>
                 </div>
               </div>
             ))}
+            
+            {/* View More Button - Mobile Only */}
+            {currentContent.benefits.length > 4 && (
+              <div className="lg:hidden col-span-1 sm:col-span-2 pt-4 border-t border-gray-200 text-center flex items-center justify-center h-16 w-full">
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="text-black font-medium hover:text-gray-700 transition-colors duration-200 flex flex-col items-center"
+                >
+                  <span>{isExpanded ? 'View less' : 'View more'}</span>
+                  <svg className="w-4 h-4 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ export default function InfoCards() {
       cta: "Find a psychiatric provider",
     },
     {
-      icon: "speech-bubble",
+      icon: "combination",
       iconColor: "blue",
       title: "Access the combination of care you need to maintain your wellbeing",
       description:
@@ -32,8 +32,8 @@ export default function InfoCards() {
     if (iconType === "speech-bubble") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </div>
       );
@@ -41,8 +41,18 @@ export default function InfoCards() {
     if (iconType === "pill") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      );
+    }
+    if (iconType === "combination") {
+      return (
+        <div className="w-8 h-8 flex items-center justify-center">
+          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         </div>
       );
@@ -52,11 +62,11 @@ export default function InfoCards() {
 
   return (
     <section className="mt-1">
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-[50px]">
+      <div className="mx-auto max-w-6xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
         {items.map((item) => (
           <div
             key={item.title}
-            className="flex min-h-[240px] flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm"
+            className="flex min-h-[240px] flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
           >
             {/* Icon at the left top */}
             <div className="flex flex-col items-start">
