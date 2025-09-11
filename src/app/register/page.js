@@ -110,12 +110,12 @@ export default function RegisterPage() {
       <div style={{ 
         flex: "1",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        display: "flex",
+        display: "none",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
         overflow: "hidden"
-      }}>
+      }} className="hidden md:flex">
         {/* Background Pattern */}
         <div style={{
           position: "absolute",
@@ -159,7 +159,7 @@ export default function RegisterPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2rem",
+        padding: "1rem",
         backgroundColor: "#f9fafb"
       }}>
         <div style={{

@@ -73,14 +73,19 @@ export default function LoadingScreen() {
       position: "fixed",
       top: 0,
       left: 0,
-      width: "100vw",
-      height: "100vh",
+      right: 0,
+      bottom: 0,
+      width: "100%",
+      height: "100%",
       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       zIndex: 9999,
-      fontFamily: "Arial, Helvetica, sans-serif"
+      fontFamily: "Arial, Helvetica, sans-serif",
+      overflow: "hidden",
+      margin: 0,
+      padding: 0
     }}>
       <div style={{
         textAlign: "center",
@@ -95,7 +100,7 @@ export default function LoadingScreen() {
           textShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
           textAlign: "center"
         }}>
-          LittleMinds
+          Little Care
         </h1>
 
       </div>

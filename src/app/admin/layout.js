@@ -59,7 +59,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-4 right-4 z-50">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 rounded-md bg-white shadow-lg"
@@ -68,10 +68,11 @@ export default function AdminLayout({ children }) {
         </button>
       </div>
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      {/* Sidebar: right slide-in on mobile, fixed left on desktop */}
+      <div className={`fixed inset-y-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+        right-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+        lg:left-0 lg:right-auto lg:translate-x-0`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
@@ -115,19 +116,27 @@ export default function AdminLayout({ children }) {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main content (push right for desktop left sidebar) */}
       <div className="lg:ml-64">
         {/* Top bar */}
-        <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h2>
-            <div className="flex items-center space-x-4">
-              {user && (
-                <div className="text-sm text-gray-600">
-                  Welcome, {user.email}
-                </div>
-              )}
-            </div>
+            <div />
+            <nav className="hidden lg:flex items-center space-x-2">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  >
+                    <Icon className="h-4 w-4 mr-2" />
+                    {item.name}
+                  </a>
+                );
+              })}
+            </nav>
           </div>
         </div>
 

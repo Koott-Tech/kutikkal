@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { clientApi, authApi, messagesApi } from "../../lib/backendApi";
+import LoadingScreen from "../../components/LoadingScreen";
 import RescheduleModal from "../../components/RescheduleModal";
 import SessionFeedbackModal from "../../components/SessionFeedbackModal";
-import Messages from "../../components/Messages";
+import MessagesPage from "../../components/MessagesPage";
 import { 
   Calendar, 
   Clock, 
@@ -19,19 +20,22 @@ import {
   BarChart3,
   AlertCircle,
   X,
-  Receipt
+  Receipt,
+  Menu
 } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, token, login, logout, hasRole } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("sessions");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [isSummaryView, setIsSummaryView] = useState(false); // true for summary, false for report
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // Changed to false - no auto loading
   const [error, setError] = useState(null);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   
   // Individual loading states for each section
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -45,9 +49,9 @@ export default function ProfilePage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
 
-  // Messages modal state
-  const [showMessages, setShowMessages] = useState(false);
+  // Messages state
   const [selectedSession, setSelectedSession] = useState(null);
+
 
   // Contact/profile form state for clients
   const [profileForm, setProfileForm] = useState({
@@ -112,6 +116,7 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setSessionsLoading(false);
+      setShowLoadingScreen(false); // Hide loading screen when API call completes
     }
   };
 
@@ -132,6 +137,7 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setPackagesLoading(false);
+      setShowLoadingScreen(false); // Hide loading screen when API call completes
     }
   };
 
@@ -140,15 +146,59 @@ export default function ProfilePage() {
     router.push('/login');
   };
 
+  const navigation = [
+    { name: 'Browse Therapists', href: '/guide', icon: Calendar, show: hasRole('client') },
+    { name: 'Sessions', href: '#', icon: Calendar, action: () => handleTabChange("sessions") },
+    { name: 'Messages', href: '#', icon: MessageSquare, action: () => handleTabChange("messages") },
+    { name: 'Contact', href: '#', icon: MessageSquare, action: () => handleTabChange("contact") },
+    { name: 'Report', href: '#', icon: BarChart3, action: () => handleTabChange("report") },
+    { name: 'Packages', href: '#', icon: FileText, action: () => handleTabChange("packages"), show: hasRole('client') },
+    { name: 'Receipts', href: '/profile/receipts', icon: Receipt, show: hasRole('client') },
+  ];
+
   // Handle tab change with lazy loading
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    
-    // Load data only when tab is clicked
-    if (tab === 'sessions' && sessions.length === 0) {
-      loadSessions();
-    } else if (tab === 'packages' && clientPackages.length === 0) {
-      loadPackages();
+    setSidebarOpen(false); // Close mobile menu after tab change
+
+    // Always show the refresh animation when user changes dashboard tab
+    setShowLoadingScreen(true);
+
+    // For tabs that fetch data, hide when API completes inside loaders
+    if (tab === 'sessions') {
+      if (sessions.length === 0) {
+        loadSessions();
+      } else {
+        // No fetch needed; hide animation after a short delay
+        setTimeout(() => setShowLoadingScreen(false), 700);
+      }
+      return;
+    }
+
+    if (tab === 'packages') {
+      if (clientPackages.length === 0) {
+        loadPackages();
+      } else {
+        setTimeout(() => setShowLoadingScreen(false), 700);
+      }
+      return;
+    }
+
+    // Other tabs (messages, contact, report) - brief animation
+    setTimeout(() => setShowLoadingScreen(false), 700);
+  };
+
+  // Handle navigation click
+  const handleNavigationClick = (item) => {
+    // Always show refresh animation on any dashboard menu click
+    setShowLoadingScreen(true);
+    if (item.action) {
+      item.action();
+    } else if (item.href && item.href !== '#') {
+      setSidebarOpen(false); // Close mobile menu after navigation
+      router.push(item.href);
+      // Safety: hide after a short delay in case next page also shows its own
+      setTimeout(() => setShowLoadingScreen(false), 1000);
     }
   };
 
@@ -259,11 +309,11 @@ export default function ProfilePage() {
         }
         
         if (conversationId) {
-          // Store the session info to pass to Messages component
+          // Store the session info to pass to MessagesPage component
           session.conversationId = conversationId;
           console.log('Session with conversation ID:', session);
           setSelectedSession(session);
-          setShowMessages(true);
+          setActiveTab("messages");
         } else {
           console.error('Failed to create conversation: No conversation ID found', response);
           setError('Failed to create conversation. Please try again.');
@@ -423,162 +473,166 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleBackToHome}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                ← Back to Home
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+    <>
+      {showLoadingScreen && <LoadingScreen />}
+      <div className="min-h-screen bg-gray-50">
+      {/* Mobile sidebar */}
+      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
+          <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
+            <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          
+          {/* User Profile Section */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <User className="h-8 w-8 text-blue-600" />
+              </div>
+              <h2 className="text-base font-semibold text-gray-900">
+                {user.profile?.first_name} {user.profile?.last_name}
+              </h2>
+              <p className="text-xs text-gray-600 capitalize">{user.role}</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLogout}
-                className="flex items-center px-4 py-2 text-gray-700 hover:text-gray-900"
-              >
-                <LogOut className="h-5 w-5 mr-2" />
-                Logout
-              </button>
-            </div>
+          </div>
+          
+          <nav className="flex-1 space-y-1 px-2 py-4">
+            {navigation.filter(item => item.show !== false).map((item) => {
+              const Icon = item.icon;
+              const isActive = (item.action && activeTab === item.name.toLowerCase()) || 
+                              (item.href === '/profile/receipts' && router.pathname === '/profile/receipts');
+              
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => handleNavigationClick(item)}
+                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors w-full text-left ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+                  {item.name}
+                </button>
+              );
+            })}
+          </nav>
+          
+          <div className="border-t border-gray-200 p-4">
+            <button
+              onClick={handleLogout}
+              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+              Logout
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow rounded-lg p-6">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-10 w-10 text-blue-600" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {user.profile?.first_name} {user.profile?.last_name}
-                </h2>
-                <p className="text-sm text-gray-600 capitalize">{user.role}</p>
+      {/* Desktop sidebar */}
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
+          <div className="flex h-16 items-center px-4 border-b border-gray-200">
+            <h1 className="text-lg font-semibold text-gray-900">Hi - {user.profile?.first_name} {user.profile?.last_name}</h1>
+          </div>
+          
+          {/* User Profile Section */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <User className="h-8 w-8 text-blue-600" />
               </div>
-
-              {/* Navigation Menu */}
-              <nav className="space-y-2">
-                {hasRole('client') && (
-                  <button
-                    onClick={() => router.push('/guide')}
-                    className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors text-green-700 hover:bg-green-50 border-l-4 border-green-500"
-                  >
-                    <Calendar className="h-5 w-5 mr-3" />
-                    Browse Therapists
-                  </button>
-                )}
-                
-                <button
-                  onClick={() => handleTabChange("sessions")}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                    activeTab === "sessions"
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <Calendar className="h-5 w-5 mr-3" />
-                  Sessions
-                </button>
-                
-                <button
-                  onClick={() => handleTabChange("messages")}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                    activeTab === "messages"
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <MessageSquare className="h-5 w-5 mr-3" />
-                  Messages
-                </button>
-                
-                <button
-                  onClick={() => handleTabChange("contact")}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                    activeTab === "contact"
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <MessageSquare className="h-5 w-5 mr-3" />
-                  <span className="flex-1">Contact</span>
-                  {hasRole('client') && (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number || 
-                   !profileForm.child_name || !profileForm.child_age) && (
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => handleTabChange("report")}
-                  className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                    activeTab === "report"
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <BarChart3 className="h-5 w-5 mr-3" />
-                  Report
-                </button>
-
-                {hasRole('client') && (
-                  <button
-                    onClick={() => handleTabChange("packages")}
-                    className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                      activeTab === "packages"
-                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-500"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <FileText className="h-5 w-5 mr-3" />
-                    Packages
-                  </button>
-                )}
-
-                {hasRole('client') && (
-                  <button
-                    onClick={() => router.push('/profile/receipts')}
-                    className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors text-gray-700 hover:bg-gray-50"
-                  >
-                    <Receipt className="h-5 w-5 mr-3" />
-                    Receipts
-                  </button>
-                )}
-              </nav>
+              <h2 className="text-base font-semibold text-gray-900">
+                {user.profile?.first_name} {user.profile?.last_name}
+              </h2>
+              <p className="text-xs text-gray-600 capitalize">{user.role}</p>
             </div>
           </div>
+          
+          <nav className="flex-1 space-y-1 px-2 py-4">
+            {navigation.filter(item => item.show !== false).map((item) => {
+              const Icon = item.icon;
+              const isActive = (item.action && activeTab === item.name.toLowerCase()) || 
+                              (item.href === '/profile/receipts' && router.pathname === '/profile/receipts');
+              
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => handleNavigationClick(item)}
+                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors w-full text-left ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+                  {item.name}
+                </button>
+              );
+            })}
+          </nav>
+          
+          <div className="border-t border-gray-200 p-4">
+            <button
+              onClick={handleLogout}
+              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+      {/* Main content */}
+      <div className="lg:pl-64">
+        {/* Mobile header */}
+        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-500 hover:text-gray-600"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">Hi - {user.profile?.first_name} {user.profile?.last_name}</h1>
+          <div className="w-6" />
+        </div>
+
+        {/* Page content */}
+        <main className="py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Sessions Tab */}
             {activeTab === "sessions" && (
               <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">My Sessions</h2>
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Sessions</h2>
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => router.push('/messages')}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center gap-1 cursor-pointer"
                     >
-                      <MessageSquare className="h-4 w-4" />
-                      View All Messages
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">View All Messages</span>
+                      <span className="sm:hidden">Messages</span>
                     </button>
                     <button
                       onClick={() => router.push('/guide')}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center gap-1 cursor-pointer"
                     >
-                      <Calendar className="h-4 w-4" />
-                      Book New Session
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Book New Session</span>
+                      <span className="sm:hidden">Book Session</span>
                     </button>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm text-gray-600">
                       Total: {sessions.length} sessions
                     </div>
                   </div>
@@ -590,16 +644,17 @@ export default function ProfilePage() {
                     <p className="text-gray-600">Loading sessions...</p>
                   </div>
                 ) : sessions.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions yet</h3>
-                    <p className="text-gray-600 mb-6">You haven&apos;t booked any sessions yet.</p>
+                  <div className="text-center py-8 sm:py-12">
+                    <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No sessions yet</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">You haven&apos;t booked any sessions yet.</p>
                     <button
                       onClick={() => router.push('/guide')}
-                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto"
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
                     >
-                      <Calendar className="h-5 w-5" />
-                      Browse Therapists & Book Your First Session
+                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span className="hidden sm:inline">Browse Therapists & Book Your First Session</span>
+                      <span className="sm:hidden">Browse Therapists</span>
                     </button>
                   </div>
                 ) : (
@@ -607,10 +662,10 @@ export default function ProfilePage() {
                     {/* Scheduled Sessions Section */}
                     {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
                       <div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <Calendar className="h-6 w-6 text-blue-600" />
-                          <h3 className="text-lg font-semibold text-gray-900">Scheduled Sessions</h3>
-                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                          <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Scheduled Sessions</h3>
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full">
                             {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length}
                           </span>
                         </div>
@@ -618,16 +673,16 @@ export default function ProfilePage() {
                           {sessions
                             .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
                             .map((session) => (
-                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-blue-50/30">
-                                <div className="flex justify-between items-start">
+                              <div key={session.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow bg-blue-50/30">
+                                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                                   <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-2">
+                                      <span className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
                                         {session.status === 'booked' ? 'Scheduled' : 
                                          session.status === 'reschedule_requested' ? 'Reschedule Requested' :
                                          session.status === 'rescheduled' ? 'Rescheduled' : 'Scheduled'}
                                       </span>
-                                      <span className="text-sm text-gray-500">
+                                      <span className="text-xs sm:text-sm text-gray-500">
                                         {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                                       </span>
                                       {session.reschedule_count > 0 && (
@@ -663,26 +718,26 @@ export default function ProfilePage() {
                                     )}
                                   </div>
                                   
-                                  <div className="flex gap-2">
+                                  <div className="flex flex-wrap gap-2">
                                     {session.status === 'booked' && (
                                       <>
                                         <button
                                           onClick={() => handleMessageClick(session)}
-                                          className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                                          className="text-green-600 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors flex items-center gap-1 cursor-pointer"
                                         >
-                                          <MessageSquare className="h-4 w-4 inline mr-1" />
-                                          Message
+                                          <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+                                          <span>Message</span>
                                         </button>
                                         <button
                                           onClick={() => handleRescheduleClick(session)}
-                                          className="text-blue-600 hover:text-blue-900 text-sm font-medium border border-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                                          className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm font-medium border border-blue-300 px-2 py-1 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
                                           title={session.reschedule_count > 0 ? 'Second reschedule requires psychologist approval' : 'First reschedule - direct if >24h before session'}
                                         >
                                           {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
                                         </button>
                                         <button
                                           onClick={() => handleRescheduleRequest(session)}
-                                          className="text-orange-600 hover:text-orange-900 text-sm font-medium border border-orange-300 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
+                                          className="text-orange-600 hover:text-orange-900 text-xs sm:text-sm font-medium border border-orange-300 px-2 py-1 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
                                         >
                                           Request Help
                                         </button>
@@ -716,12 +771,12 @@ export default function ProfilePage() {
                     {/* Completed Sessions Section */}
                     {sessions.filter(s => s.status === 'completed').length > 0 && (
                       <div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
-                            <div className="h-3 w-3 bg-green-600 rounded-full"></div>
+                        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                          <div className="h-5 w-5 sm:h-6 sm:w-6 bg-green-100 rounded-full flex items-center justify-center">
+                            <div className="h-2 w-2 sm:h-3 sm:w-3 bg-green-600 rounded-full"></div>
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900">Completed Sessions</h3>
-                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Completed Sessions</h3>
+                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full">
                             {sessions.filter(s => s.status === 'completed').length}
                           </span>
                         </div>
@@ -729,14 +784,14 @@ export default function ProfilePage() {
                           {sessions
                             .filter(s => s.status === 'completed')
                             .map((session) => (
-                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-green-50/30">
-                                <div className="flex justify-between items-start">
+                              <div key={session.id} className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow bg-green-50/30">
+                                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                                   <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-2">
+                                      <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         Completed
                                       </span>
-                                      <span className="text-sm text-gray-500">
+                                      <span className="text-xs sm:text-sm text-gray-500">
                                         {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                                       </span>
                                       {session.reschedule_count > 0 && (
@@ -772,10 +827,10 @@ export default function ProfilePage() {
                                     )}
                                   </div>
                                   
-                                  <div className="flex gap-2">
+                                  <div className="flex flex-wrap gap-2">
                                     <button
                                       onClick={() => handleViewFullReport(session)}
-                                      className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                                      className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm font-medium border border-blue-300 px-2 py-1 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
                                       title="View complete session details including summary, report, and feedback"
                                     >
                                       View Complete Report
@@ -783,7 +838,7 @@ export default function ProfilePage() {
                                     {session.summary && (
                                       <button
                                         onClick={() => handleViewSummary(session)}
-                                        className="text-green-600 hover:text-green-900 text-sm font-medium"
+                                        className="text-green-600 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors cursor-pointer"
                                         title="View session summary only"
                                       >
                                         View Summary Only
@@ -792,14 +847,14 @@ export default function ProfilePage() {
                                     {!session.feedback && (
                                       <button
                                         onClick={() => openFeedbackModal(session)}
-                                        className="text-purple-600 hover:text-purple-900 text-sm font-medium border border-purple-300 px-3 py-1 rounded-md hover:bg-purple-50 transition-colors"
+                                        className="text-purple-600 hover:text-purple-900 text-xs sm:text-sm font-medium border border-purple-300 px-2 py-1 rounded-md hover:bg-purple-50 transition-colors cursor-pointer"
                                         title="Provide feedback for this session"
                                       >
                                         Give Feedback
                                       </button>
                                     )}
                                     {session.feedback && (
-                                      <span className="text-green-600 bg-green-100 px-2 py-1 rounded-md text-sm">
+                                      <span className="text-green-600 bg-green-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                         ✓ Feedback Submitted
                                       </span>
                                     )}
@@ -811,72 +866,6 @@ export default function ProfilePage() {
                       </div>
                     )}
 
-                    {/* Other Status Sessions Section */}
-                    {sessions.filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status)).length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <AlertCircle className="h-6 w-6 text-gray-600" />
-                          <h3 className="text-lg font-semibold text-gray-900">Other Sessions</h3>
-                          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            {sessions.filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status)).length}
-                          </span>
-                        </div>
-                        <div className="space-y-4">
-                          {sessions
-                            .filter(s => !['booked', 'reschedule_requested', 'completed'].includes(s.status))
-                            .map((session) => (
-                              <div key={session.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50/30">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
-                                        {session.status}
-                                      </span>
-                                      <span className="text-sm text-gray-500">
-                                        {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                                      </span>
-                                      {session.reschedule_count > 0 && (
-                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                          Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
-                                        </span>
-                                      )}
-                                    </div>
-                                    
-                                    <h3 className="text-sm text-gray-600 mb-2">
-                                      Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
-                                    </h3>
-                                    
-                                    {session.package && (
-                                      <p className="text-sm text-gray-600 mb-2">
-                                        Package: {session.package.package_type?.replace('_', ' ')}
-                                      </p>
-                                    )}
-                                    
-                                    {session.price && (
-                                      <p className="text-sm text-gray-600">
-                                        Price: ${session.price}
-                                      </p>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="flex gap-2">
-                                    {/* Show summary button for any session with summary */}
-                                    {session.session_summary && (
-                                      <button
-                                        onClick={() => handleViewSummary(session)}
-                                        className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
-                                        title="View session summary only"
-                                      >
-                                        View Summary Only
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -1036,7 +1025,7 @@ export default function ProfilePage() {
                             </div>
                             <button
                               onClick={() => handleViewFullReport(session)}
-                              className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                              className="text-blue-600 hover:text-blue-900 text-sm font-medium cursor-pointer"
                             >
                               View Complete Report
                             </button>
@@ -1156,28 +1145,36 @@ export default function ProfilePage() {
 
             {/* Messages Tab */}
             {activeTab === "messages" && (
-              <div className="bg-white shadow rounded-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">My Messages</h2>
-                <div className="text-center py-12">
-                  <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Messages Dashboard</h3>
-                  <p className="text-gray-600 mb-4">
-                    View and manage your conversations with therapists.
-                  </p>
-                  <button
-                    onClick={() => router.push('/messages')}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
-                  >
-                    Open Messages
-                  </button>
-                </div>
-              </div>
+              <MessagesPage session={selectedSession} />
             )}
           </div>
-        </div>
+        </main>
       </div>
 
-            {/* Report/Summary Modal */}
+      {/* Modals */}
+      {showRescheduleModal && (
+        <RescheduleModal
+          session={sessionToReschedule}
+          onClose={() => {
+            setShowRescheduleModal(false);
+            setSessionToReschedule(null);
+          }}
+          onSuccess={handleRescheduleSuccess}
+        />
+      )}
+
+      {showFeedbackModal && (
+        <SessionFeedbackModal
+          session={sessionToFeedback}
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setSessionToFeedback(null);
+          }}
+          onSuccess={handleFeedbackSuccess}
+        />
+      )}
+
+      {/* Report Modal */}
       {showReportModal && selectedReport && (
         <div key={`${isSummaryView ? 'summary' : 'report'}-${selectedReport.id}`} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
@@ -1282,22 +1279,14 @@ export default function ProfilePage() {
       <RescheduleModal
         session={sessionToReschedule}
         isOpen={showRescheduleModal}
-        onClose={handleRescheduleModalClose}
+        onClose={() => {
+          setShowRescheduleModal(false);
+          setSessionToReschedule(null);
+        }}
         onRescheduleSuccess={handleRescheduleSuccess}
       />
 
-      {/* Messages Modal */}
-      {showMessages && (
-        <Messages 
-          isOpen={showMessages} 
-          onClose={() => {
-            console.log('Closing messages modal');
-            setShowMessages(false);
-            setSelectedSession(null);
-          }}
-          session={selectedSession}
-        />
-      )}
     </div>
+    </>
   );
 }

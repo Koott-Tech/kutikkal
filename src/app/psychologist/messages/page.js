@@ -47,7 +47,16 @@ export default function PsychologistMessagesPage() {
       }
       
       console.log('Parsed conversations:', conversationsData);
-      setConversations(conversationsData);
+      // Deduplicate conversations by ID to avoid double listing
+      const seenIds = new Set();
+      const uniqueConversations = (conversationsData || []).filter((c) => {
+        const id = c?.id;
+        if (!id) return true; // keep if id is missing to avoid dropping data
+        if (seenIds.has(id)) return false;
+        seenIds.add(id);
+        return true;
+      });
+      setConversations(uniqueConversations);
     } catch (err) {
       console.error('Error loading conversations:', err);
       setError(err.message);

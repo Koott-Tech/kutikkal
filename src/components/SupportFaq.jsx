@@ -57,7 +57,8 @@ export default function SupportFaq() {
           Support at every step, so the next one is easier.
         </h2>
 
-        <div className="mt-2 grid grid-cols-1 gap-8 md:grid-cols-2 items-start">
+        {/* Desktop Layout: Image on left, FAQ on right */}
+        <div className="hidden lg:grid mt-2 grid-cols-2 gap-8 items-start">
           {/* Left: Image that changes per selection */}
           <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
@@ -66,7 +67,7 @@ export default function SupportFaq() {
               alt={items[active >= 0 ? active : 0]?.title}
               fill
               className="object-cover"
-              sizes="(min-width: 768px) 50vw, 100vw"
+              sizes="50vw"
               priority
             />
           </div>
@@ -109,6 +110,60 @@ export default function SupportFaq() {
                 );
               })}
             </div>
+          </div>
+        </div>
+
+        {/* Mobile/Tablet Layout: FAQ centered with image below when opened */}
+        <div className="lg:hidden mt-2">
+          <div className="rounded-2xl bg-white space-y-4">
+            {items.map((item, idx) => {
+              const open = active === idx;
+              const gradient = gradients[idx % gradients.length];
+              return (
+                <div key={item.title} className="relative overflow-hidden rounded-2xl">
+                  {/* Gradient overlay to color the entire Q&A when open */}
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
+                    style={{ background: gradient, opacity: open ? 1 : 0 }}
+                  />
+
+                  <div className="relative p-6">
+                    <button
+                      type="button"
+                      onClick={() => toggle(idx)}
+                      className="flex w-full items-start justify-between gap-4 text-left"
+                      aria-expanded={open}
+                    >
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
+                      </div>
+                      <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
+                    </button>
+
+                    {/* Smoothly expanding answer with image below */}
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ${open ? "max-h-[600px] opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                    >
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-800">{item.body}</p>
+                        
+                        {/* Image appears below text when FAQ is opened on mobile/tablet */}
+                        <div className="relative aspect-[3/2] w-1/2 mx-auto overflow-hidden rounded-xl bg-gray-100">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                            sizes="100vw"
+                            priority
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

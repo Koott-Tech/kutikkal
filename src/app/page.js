@@ -20,22 +20,6 @@ export default function Home() {
       <Hero />
       {/* <LogosStrip /> */}
 
-      {/* Sister brands message under hero */}
-      <section className="mx-auto max-w-[1400px] px-1 md:px-2 mt-4 md:mt-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="text-left mb-4 md:mb-0">
-            <p className="text-xs md:text-sm text-gray-700 leading-tight">Our sister brands, united by one vision:</p>
-            <p className="text-xs md:text-sm font-semibold text-gray-900 leading-tight">Redefining care, work, and hope for a better tomorrow.</p>
-          </div>
-          <div className="flex justify-start md:justify-end gap-x-4 text-sm md:text-base text-gray-900">
-            <span className="font-bold">Koott</span>
-            <span className="font-bold">Hopelly</span>
-            <span className="font-bold">WorkMate</span>
-            <span className="font-normal text-xs md:text-sm">About us</span>
-          </div>
-        </div>
-      </section>
-      
       <ChooseOptions />
       
       {/* <FeatureCards /> */}

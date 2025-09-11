@@ -7,265 +7,120 @@ export default function Career() {
   const router = useRouter();
 
   return (
-    <div style={{ width: "100vw", minHeight: "100vh", background: "#f8fafc", overflowX: "hidden", position: "relative" }}>
-      <style>{`
-        @media (max-width: 768px) {
-          .company-name-career {
-            display: none !important;
-          }
-        }
-      `}</style>
+    <div className="w-full min-h-screen bg-gray-50 overflow-x-hidden relative">
+      <div className="relative z-10"></div>
       
-
-      
-      <div style={{ position: "relative", zIndex: 3 }}></div>
-      
-      <section style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "8rem", paddingBottom: "4rem" }}>
-        <h1 style={{ fontSize: "3.5rem", fontWeight: 700, color: "#000", textAlign: "center", letterSpacing: "-0.02em", lineHeight: 1.2, maxWidth: 900, marginBottom: "1.5rem" }}>
+      <section className="w-full min-h-screen bg-white flex flex-col items-center justify-center pt-16 pb-8 px-4">
+        <h1 className="text-4xl md:text-6xl font-bold text-black text-center tracking-tight leading-tight max-w-4xl mb-6">
           Access to better mental health<br />
           care for everyone
         </h1>
-        <p style={{ fontSize: "1.25rem", color: "#666", textAlign: "center", maxWidth: 700, fontWeight: 400, margin: 0, marginBottom: "3rem" }}>
+        <p className="text-lg md:text-xl text-gray-600 text-center max-w-2xl font-normal mb-12">
           Let&apos;s work together to make mental healthcare work the way it should.
         </p>
         
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <button 
             onClick={() => {
               const element = document.getElementById('openings');
               element?.scrollIntoView({ behavior: 'smooth' });
             }}
-            style={{
-              background: "#5B3B8D",
-              color: "#fff",
-              border: "none",
-              borderRadius: "50px",
-              padding: "16px 32px",
-              fontSize: "16px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "background 0.2s",
-              boxShadow: "0 4px 12px rgba(91, 59, 141, 0.2)"
-            }}
-            onMouseEnter={(e) => e.target.style.background = "#4A2F73"}
-            onMouseLeave={(e) => e.target.style.background = "#5B3B8D"}
+            className="bg-purple-700 hover:bg-purple-800 text-white border-none rounded-full px-8 py-4 text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg w-full sm:w-auto"
           >
             See open positions
           </button>
           <button 
             onClick={() => router.push('/guide')}
-            style={{
-              background: "#5B3B8D",
-              color: "#fff",
-              border: "none",
-              borderRadius: "50px",
-              padding: "16px 32px",
-              fontSize: "16px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "background 0.2s",
-              boxShadow: "0 4px 12px rgba(91, 59, 141, 0.2)"
-            }}
-            onMouseEnter={(e) => e.target.style.background = "#4A2F73"}
-            onMouseLeave={(e) => e.target.style.background = "#5B3B8D"}
+            className="bg-purple-700 hover:bg-purple-800 text-white border-none rounded-full px-8 py-4 text-base font-semibold cursor-pointer transition-colors duration-200 shadow-lg w-full sm:w-auto"
           >
             Join our provider network
           </button>
-                 </div>
+        </div>
          
           
          
          {/* Why We're Here Section */}
-         <div style={{ 
-           width: "100%", 
-           background: "#fff", 
-           padding: "4rem 0",
-           marginTop: "4rem"
-         }}>
-           <div style={{ 
-             maxWidth: "1200px", 
-             margin: "0 auto", 
-             display: "grid", 
-             gridTemplateColumns: "1fr 1fr", 
-             gap: "4rem", 
-             alignItems: "center",
-             padding: "0 2rem"
-           }}>
+         <div className="w-full bg-white py-16 mt-16">
+           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-8">
              {/* Left Column - Text Content */}
              <div>
-               <h2 style={{ 
-                 fontSize: "2.5rem", 
-                 fontWeight: 700, 
-                 color: "#1a1a1a", 
-                 marginBottom: "2rem",
-                 lineHeight: "1.2"
-               }}>
+               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 leading-tight">
                  Why We&apos;re Here
                </h2>
                
-               <div style={{ fontSize: "1.1rem", lineHeight: "1.7", color: "#444" }}>
-                 <p style={{ marginBottom: "1.5rem" }}>
+               <div className="text-lg leading-relaxed text-gray-700 space-y-6">
+                 <p>
                    Over 65 million Americans seek mental health help, but 2 out of 3 give up due to a broken and frustrating system.
                  </p>
                  
-                 <p style={{ marginBottom: "1.5rem" }}>
+                 <p>
                    We must do better. Our team is on a mission to transform mental healthcare and make it accessible to everyone who needs it.
                  </p>
                  
-                 <p style={{ marginBottom: "1.5rem" }}>
+                 <p>
                    We&apos;re building the future of mental healthcare - providing high-quality, affordable care from licensed professionals who truly care.
                  </p>
                  
-                 <p style={{ marginBottom: "1.5rem" }}>
+                 <p>
                    Our team comes from diverse backgrounds, but we share one passion: helping people access the mental healthcare they deserve.
                  </p>
                  
-                 <p style={{ marginBottom: "1.5rem" }}>
+                 <p>
                    We&apos;re inspired and energized by the impact we&apos;re making on the lives of those who entrust us with their care.
                  </p>
                </div>
              </div>
              
              {/* Right Column - Image with Overlay Cards */}
-             <div style={{ position: "relative" }}>
-               <div style={{ 
-                 width: "100%", 
-                 height: "500px", 
-                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                 borderRadius: "12px",
-                 position: "relative",
-                 overflow: "hidden"
-               }}>
+             <div className="relative">
+               <div className="w-full h-96 md:h-[500px] bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl relative overflow-hidden">
                  {/* Golden Logo */}
-                 <div style={{ 
-                   position: "absolute", 
-                   top: "20px", 
-                   left: "20px", 
-                   width: "60px", 
-                   height: "60px", 
-                   background: "linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)",
-                   borderRadius: "50%",
-                   display: "flex",
-                   alignItems: "center",
-                   justifyContent: "center",
-                   fontSize: "1.5rem",
-                   fontWeight: "bold",
-                   color: "#fff",
-                   zIndex: 2
-                 }}>
+                 <div className="absolute top-5 left-5 w-12 h-12 md:w-15 md:h-15 bg-gradient-to-br from-yellow-400 to-yellow-300 rounded-full flex items-center justify-center text-lg md:text-xl font-bold text-white z-10">
                    CM
                  </div>
                  
                  {/* Profile Cards Stack */}
-                 <div style={{ 
-                   position: "absolute", 
-                   top: "100px", 
-                   left: "20px", 
-                   zIndex: 2
-                 }}>
+                 <div className="absolute top-20 left-5 z-10">
                    {/* Card 1 - Isabella Parker */}
-                   <div style={{ 
-                     background: "#fff", 
-                     borderRadius: "8px", 
-                     padding: "12px", 
-                     marginBottom: "8px", 
-                     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                     display: "flex",
-                     alignItems: "center",
-                     gap: "12px",
-                     width: "200px"
-                   }}>
-                     <div style={{ 
-                       width: "40px", 
-                       height: "40px", 
-                       borderRadius: "50%", 
-                       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                       display: "flex",
-                       alignItems: "center",
-                       justifyContent: "center",
-                       color: "#fff",
-                       fontSize: "0.9rem",
-                       fontWeight: "bold"
-                     }}>
+                   <div className="bg-white rounded-lg p-3 mb-2 shadow-lg flex items-center gap-3 w-48 md:w-52">
+                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
                        IP
                      </div>
                      <div>
-                       <div style={{ fontWeight: "600", fontSize: "0.9rem", color: "#1a1a1a" }}>
+                       <div className="font-semibold text-sm text-gray-900">
                          Isabella Parker
                        </div>
-                       <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                       <div className="text-xs text-gray-600">
                          In-network • Accepting new patients
                        </div>
                      </div>
                    </div>
                    
                    {/* Card 2 - Ariyah Richards */}
-                   <div style={{ 
-                     background: "#fff", 
-                     borderRadius: "8px", 
-                     padding: "12px", 
-                     marginBottom: "8px", 
-                     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                     display: "flex",
-                     alignItems: "center",
-                     gap: "12px",
-                     width: "200px"
-                   }}>
-                     <div style={{ 
-                       width: "40px", 
-                       height: "40px", 
-                       borderRadius: "50%", 
-                       background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                       display: "flex",
-                       alignItems: "center",
-                       justifyContent: "center",
-                       color: "#fff",
-                       fontSize: "0.9rem",
-                       fontWeight: "bold"
-                     }}>
+                   <div className="bg-white rounded-lg p-3 mb-2 shadow-lg flex items-center gap-3 w-48 md:w-52">
+                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center text-white text-sm font-bold">
                        AR
                      </div>
                      <div>
-                       <div style={{ fontWeight: "600", fontSize: "0.9rem", color: "#1a1a1a" }}>
+                       <div className="font-semibold text-sm text-gray-900">
                          Ariyah Richards
                        </div>
-                       <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                       <div className="text-xs text-gray-600">
                          In-network • Accepting new patients
                        </div>
                      </div>
                    </div>
                    
                    {/* Card 3 - Kimber Bautista */}
-                   <div style={{ 
-                     background: "#fff", 
-                     borderRadius: "8px", 
-                     padding: "12px", 
-                     marginBottom: "8px", 
-                     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                     display: "flex",
-                     alignItems: "center",
-                     gap: "12px",
-                     width: "200px"
-                   }}>
-                     <div style={{ 
-                       width: "40px", 
-                       height: "40px", 
-                       borderRadius: "50%", 
-                       background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                       display: "flex",
-                       alignItems: "center",
-                       justifyContent: "center",
-                       color: "#fff",
-                       fontSize: "0.9rem",
-                       fontWeight: "bold"
-                     }}>
+                   <div className="bg-white rounded-lg p-3 mb-2 shadow-lg flex items-center gap-3 w-48 md:w-52">
+                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white text-sm font-bold">
                        KB
                      </div>
                      <div>
-                       <div style={{ fontWeight: "600", fontSize: "0.9rem", color: "#1a1a1a" }}>
+                       <div className="font-semibold text-sm text-gray-900">
                          Kimber Bautista
                        </div>
-                       <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                       <div className="text-xs text-gray-600">
                          In-network • Accepting new patients
                        </div>
                      </div>
@@ -273,19 +128,7 @@ export default function Career() {
                  </div>
                  
                  {/* Placeholder for woman image */}
-                 <div style={{ 
-                   position: "absolute", 
-                   right: "0", 
-                   bottom: "0", 
-                   width: "60%", 
-                   height: "100%", 
-                   background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-                   display: "flex",
-                   alignItems: "center",
-                   justifyContent: "center",
-                   color: "#fff",
-                   fontSize: "3rem"
-                 }}>
+                 <div className="absolute right-0 bottom-0 w-3/5 h-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white text-4xl md:text-5xl">
                    👩‍💼
                  </div>
                </div>
@@ -294,81 +137,28 @@ export default function Career() {
          </div>
          
          {/* From our CEO Section */}
-         <div style={{ 
-           width: "100%", 
-           background: "#fff", 
-           padding: "4rem 0",
-           marginTop: "2rem"
-         }}>
-           <div style={{ 
-             maxWidth: "1200px", 
-             margin: "0 auto", 
-             padding: "0 2rem"
-           }}>
-             <h2 style={{ 
-               fontSize: "2.5rem", 
-               fontWeight: 700, 
-               color: "#1a1a1a", 
-               textAlign: "center",
-               marginBottom: "3rem"
-             }}>
+         <div className="w-full bg-white py-16 mt-8">
+           <div className="max-w-6xl mx-auto px-8">
+             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
                From our CEO
              </h2>
              
-             <div style={{ 
-               display: "grid", 
-               gridTemplateColumns: "1fr 1fr", 
-               gap: "4rem", 
-               alignItems: "center"
-             }}>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                {/* Left Column - Message */}
                <div>
-                 <p style={{ 
-                   fontSize: "1.2rem", 
-                   lineHeight: "1.8", 
-                   color: "#444", 
-                   marginBottom: "2rem"
-                 }}>
+                 <p className="text-lg md:text-xl leading-relaxed text-gray-700 mb-8">
                    Our mission is to make mental healthcare work for everyone and we can only achieve this by building, and nurturing, the strongest teams. Talent is my #1 priority, and I am grateful for our employees who could work anywhere but chose to be a part of Rula. Thank you for considering joining our team!
                  </p>
                  
-                 <div style={{ 
-                   fontFamily: "cursive, serif", 
-                   fontSize: "1.5rem", 
-                   fontWeight: "600", 
-                   color: "#1a1a1a",
-                   marginTop: "2rem"
-                 }}>
+                 <div className="text-xl md:text-2xl font-semibold text-gray-900 mt-8 font-serif">
                    Josh Bruno
                  </div>
                </div>
                
                {/* Right Column - CEO Photo */}
-               <div style={{ 
-                 display: "flex", 
-                 justifyContent: "center", 
-                 alignItems: "center"
-               }}>
-                 <div style={{ 
-                   width: "300px", 
-                   height: "400px", 
-                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                   borderRadius: "12px",
-                   display: "flex",
-                   alignItems: "center",
-                   justifyContent: "center",
-                   color: "#fff",
-                   fontSize: "4rem",
-                   position: "relative",
-                   overflow: "hidden"
-                 }}>
-                   <div style={{ 
-                     position: "absolute",
-                     top: "50%",
-                     left: "50%",
-                     transform: "translate(-50%, -50%)",
-                     textAlign: "center"
-                   }}>
+               <div className="flex justify-center items-center">
+                 <div className="w-64 h-80 md:w-80 md:h-96 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-5xl md:text-6xl relative overflow-hidden">
+                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                      👨‍💼
                    </div>
                  </div>
@@ -378,207 +168,92 @@ export default function Career() {
          </div>
          
          {/* Our Values Section */}
-         <div style={{ 
-           width: "100%", 
-           background: "#fff", 
-           padding: "4rem 0",
-           marginTop: "2rem"
-         }}>
-           <div style={{ 
-             maxWidth: "1200px", 
-             margin: "0 auto", 
-             display: "grid", 
-             gridTemplateColumns: "1fr 1fr", 
-             gap: "4rem", 
-             alignItems: "center",
-             padding: "0 2rem"
-           }}>
+         <div className="w-full bg-white py-16 mt-8">
+           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center px-8">
              {/* Left Column - Visual Panel */}
-             <div style={{ 
-               background: "linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%)",
-               borderRadius: "12px 12px 0 0",
-               padding: "3rem 2rem",
-               textAlign: "center",
-               position: "relative",
-               minHeight: "400px",
-               display: "flex",
-               flexDirection: "column",
-               justifyContent: "space-between"
-             }}>
+             <div className="bg-gradient-to-br from-cyan-50 to-cyan-200 rounded-t-xl p-8 md:p-12 text-center relative min-h-96 flex flex-col justify-between">
                {/* Logo */}
-               <div style={{ 
-                 width: "60px", 
-                 height: "60px", 
-                 background: "linear-gradient(135deg, #00695c 0%, #004d40 100%)",
-                 borderRadius: "50%",
-                 margin: "0 auto 2rem",
-                 display: "flex",
-                 alignItems: "center",
-                 justifyContent: "center",
-                 fontSize: "1.5rem",
-                 color: "#fff",
-                 fontWeight: "bold"
-               }}>
+               <div className="w-12 h-12 md:w-15 md:h-15 bg-gradient-to-br from-teal-700 to-teal-900 rounded-full mx-auto mb-8 flex items-center justify-center text-xl font-bold text-white">
                  ∞
                </div>
                
                {/* Text */}
-               <div style={{ 
-                 color: "#00695c", 
-                 fontSize: "1.5rem", 
-                 fontWeight: "600",
-                 lineHeight: "1.3",
-                 marginBottom: "2rem"
-               }}>
+               <div className="text-teal-700 text-xl md:text-2xl font-semibold leading-tight mb-8">
                  We can make real<br />progress together
                </div>
                
                {/* Chart Visualization */}
-               <div style={{ 
-                 display: "flex", 
-                 alignItems: "end", 
-                 justifyContent: "center", 
-                 gap: "8px",
-                 height: "120px"
-               }}>
-                 <div style={{ width: "8px", height: "40px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "8px", height: "60px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "8px", height: "30px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "8px", height: "80px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "12px", height: "100px", background: "#00695c", borderRadius: "6px", position: "relative" }}>
-                   <div style={{ 
-                     position: "absolute", 
-                     top: "-8px", 
-                     left: "50%", 
-                     transform: "translateX(-50%)", 
-                     width: "16px", 
-                     height: "16px", 
-                     background: "#00695c", 
-                     borderRadius: "50%" 
-                   }}></div>
+               <div className="flex items-end justify-center gap-2 h-24">
+                 <div className="w-2 h-10 bg-cyan-200 rounded"></div>
+                 <div className="w-2 h-15 bg-cyan-200 rounded"></div>
+                 <div className="w-2 h-8 bg-cyan-200 rounded"></div>
+                 <div className="w-2 h-20 bg-cyan-200 rounded"></div>
+                 <div className="w-3 h-24 bg-teal-700 rounded relative">
+                   <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-teal-700 rounded-full"></div>
                  </div>
-                 <div style={{ width: "8px", height: "50px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "8px", height: "70px", background: "#b2ebf2", borderRadius: "4px" }}></div>
-                 <div style={{ width: "8px", height: "45px", background: "#b2ebf2", borderRadius: "4px" }}></div>
+                 <div className="w-2 h-12 bg-cyan-200 rounded"></div>
+                 <div className="w-2 h-18 bg-cyan-200 rounded"></div>
+                 <div className="w-2 h-11 bg-cyan-200 rounded"></div>
                </div>
              </div>
              
              {/* Right Column - Values List */}
              <div>
-               <h2 style={{ 
-                 fontSize: "2.5rem", 
-                 fontWeight: 700, 
-                 color: "#1a1a1a", 
-                 marginBottom: "2rem"
-               }}>
+               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
                  Our values
                </h2>
                
-               <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+               <div className="space-y-6">
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Bias to Action
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Nobody else is more capable of solving this problem than you are right now.
                    </p>
                  </div>
                  
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Self-care
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Put your life jacket on before helping others.
                    </p>
                  </div>
                  
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Authenticity
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Be yourself and be open to others.
                    </p>
                  </div>
                  
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Camaraderie
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Take care of one another.
                    </p>
                  </div>
                  
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Transparency
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Be honest even if it&apos;s uncomfortable.
                    </p>
                  </div>
                  
                  <div>
-                   <h3 style={{ 
-                     fontSize: "1.2rem", 
-                     fontWeight: "600", 
-                     color: "#1a1a1a", 
-                     marginBottom: "0.5rem"
-                   }}>
+                   <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                      Operational Rigor
                    </h3>
-                   <p style={{ 
-                     fontSize: "1rem", 
-                     color: "#666", 
-                     lineHeight: "1.6"
-                   }}>
+                   <p className="text-base text-gray-600 leading-relaxed">
                      Maintain high standards in everything we do.
                    </p>
                  </div>
@@ -589,141 +264,67 @@ export default function Career() {
          
          <div 
            id="openings"
-           style={{ 
-             background: "#f8f9fa", 
-             borderRadius: "20px", 
-             padding: "40px", 
-             maxWidth: "800px", 
-             width: "90%",
-             marginTop: "2rem"
-           }}
+           className="bg-gray-50 rounded-3xl p-8 md:p-10 max-w-4xl w-full mx-auto mt-8"
          >
-          <h2 style={{ fontSize: "2rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "1.5rem", textAlign: "center" }}>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
             Current Openings
           </h2>
           
-          <div style={{ display: "grid", gap: "20px" }}>
-            <div style={{ 
-              background: "#fff", 
-              borderRadius: "12px", 
-              padding: "24px", 
-              border: "1px solid #e1e5e9",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-            }}>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#1a1a1a", marginBottom: "8px" }}>
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                 Licensed Clinical Psychologist
               </h3>
-              <p style={{ color: "#666", marginBottom: "12px" }}>
+              <p className="text-gray-600 mb-3">
                 Full-time • Remote • Competitive salary
               </p>
-              <p style={{ color: "#444", lineHeight: "1.6" }}>
+              <p className="text-gray-700 leading-relaxed">
                 We&apos;re looking for experienced clinical psychologists to join our team and provide high-quality mental health care to our clients.
               </p>
-              <button style={{
-                background: "#27ae60",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "10px 20px",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                marginTop: "12px",
-                transition: "background 0.2s"
-              }}>
+              <button className="bg-green-600 hover:bg-green-700 text-white border-none rounded-lg px-5 py-2 text-sm font-semibold cursor-pointer mt-3 transition-colors duration-200">
                 Apply Now
               </button>
             </div>
             
-            <div style={{ 
-              background: "#fff", 
-              borderRadius: "12px", 
-              padding: "24px", 
-              border: "1px solid #e1e5e9",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-            }}>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#1a1a1a", marginBottom: "8px" }}>
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                 Frontend Developer
               </h3>
-              <p style={{ color: "#666", marginBottom: "12px" }}>
+              <p className="text-gray-600 mb-3">
                 Full-time • Remote • Competitive salary
               </p>
-              <p style={{ color: "#444", lineHeight: "1.6" }}>
+              <p className="text-gray-700 leading-relaxed">
                 Help us build and improve our platform to make mental health care more accessible and user-friendly.
               </p>
-              <button style={{
-                background: "#27ae60",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "10px 20px",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                marginTop: "12px",
-                transition: "background 0.2s"
-              }}>
+              <button className="bg-green-600 hover:bg-green-700 text-white border-none rounded-lg px-5 py-2 text-sm font-semibold cursor-pointer mt-3 transition-colors duration-200">
                 Apply Now
               </button>
             </div>
             
-            <div style={{ 
-              background: "#fff", 
-              borderRadius: "12px", 
-              padding: "24px", 
-              border: "1px solid #e1e5e9",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-            }}>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#1a1a1a", marginBottom: "8px" }}>
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                 Customer Success Manager
               </h3>
-              <p style={{ color: "#666", marginBottom: "12px" }}>
+              <p className="text-gray-600 mb-3">
                 Full-time • Remote • Competitive salary
               </p>
-              <p style={{ color: "#444", lineHeight: "1.6" }}>
+              <p className="text-gray-700 leading-relaxed">
                 Help our clients get the most out of our platform and ensure they have a positive experience with our services.
               </p>
-              <button style={{
-                background: "#27ae60",
-                color: "#fff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "10px 20px",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                marginTop: "12px",
-                transition: "background 0.2s"
-              }}>
+              <button className="bg-green-600 hover:bg-green-700 text-white border-none rounded-lg px-5 py-2 text-sm font-semibold cursor-pointer mt-3 transition-colors duration-200">
                 Apply Now
               </button>
             </div>
           </div>
           
-          <div style={{ 
-            textAlign: "center", 
-            marginTop: "40px", 
-            padding: "30px",
-            background: "rgba(39,174,96,0.05)",
-            borderRadius: "12px"
-          }}>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1a1a1a", marginBottom: "12px" }}>
+          <div className="text-center mt-10 p-8 bg-green-50 rounded-xl">
+            <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">
               Don&apos;t see a role that fits?
             </h3>
-            <p style={{ color: "#666", marginBottom: "20px" }}>
+            <p className="text-gray-600 mb-5">
               We&apos;re always looking for talented individuals to join our team. Send us your resume and we&apos;ll keep you in mind for future opportunities.
             </p>
-            <button style={{
-              background: "#27ae60",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              padding: "12px 24px",
-              fontSize: "16px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "background 0.2s"
-            }}>
+            <button className="bg-green-600 hover:bg-green-700 text-white border-none rounded-lg px-6 py-3 text-base font-semibold cursor-pointer transition-colors duration-200">
               Send Resume
             </button>
           </div>

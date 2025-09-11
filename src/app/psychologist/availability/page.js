@@ -244,17 +244,17 @@ export default function PsychologistAvailability() {
             Set your available time slots for client bookings.
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex space-x-3">
+        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex flex-wrap gap-2">
           <button
             onClick={cleanupDuplicates}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Clean Duplicates
           </button>
           <button
             onClick={openAddModal}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add New Availability
@@ -281,7 +281,7 @@ export default function PsychologistAvailability() {
             ) : (
               <div className="space-y-4">
                 {availability.map((day) => (
-                  <div key={day.id} className="border rounded-lg p-4">
+                  <div key={day.id} className="border rounded-lg p-3 sm:p-4">
                     {editingAvailability?.id === day.id ? (
                       // Edit Mode
                       <div>
@@ -315,7 +315,7 @@ export default function PsychologistAvailability() {
                         {/* Time Slots Editor */}
                         <div className="mb-4">
                           <label className="block text-sm font-medium text-gray-700 mb-2">Time Slots</label>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                             {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map((time) => (
                               <button
                                 key={time}
@@ -325,7 +325,7 @@ export default function PsychologistAvailability() {
                                     : [...editingAvailability.time_slots, time];
                                   setEditingAvailability({...editingAvailability, time_slots: slots});
                                 }}
-                                className={`p-2 text-sm rounded border transition-colors ${
+                                className={`p-2 text-xs sm:text-sm rounded border transition-colors ${
                                   editingAvailability.time_slots.includes(time)
                                     ? 'bg-blue-500 text-white border-blue-500'
                                     : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
@@ -370,7 +370,7 @@ export default function PsychologistAvailability() {
                           {day.time_slots.map((time, index) => (
                             <span
                               key={index}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+                              className="inline-flex items-center px-2 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800"
                             >
                               {formatTimeForDisplay(time)}
                             </span>
@@ -389,7 +389,7 @@ export default function PsychologistAvailability() {
       {/* Add Availability Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Add New Availability</h3>
               <button
@@ -421,7 +421,7 @@ export default function PsychologistAvailability() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Time Slots</label>
                 <p className="text-sm text-gray-600 mb-2">Click on time slots to select/deselect them</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map((time) => (
                     <button
                       key={time}
@@ -431,7 +431,7 @@ export default function PsychologistAvailability() {
                           : [...newAvailability.time_slots, time];
                         setNewAvailability({...newAvailability, time_slots: slots});
                       }}
-                      className={`p-2 text-sm rounded border transition-colors ${
+                      className={`p-2 text-xs sm:text-sm rounded border transition-colors ${
                         newAvailability.time_slots.includes(time)
                           ? 'bg-blue-500 text-white border-blue-500'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
@@ -444,16 +444,16 @@ export default function PsychologistAvailability() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="flex justify-end gap-2 sm:gap-3 mt-6">
               <button
                 onClick={closeAddModal}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddAvailability}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700"
               >
                 Add Availability
               </button>

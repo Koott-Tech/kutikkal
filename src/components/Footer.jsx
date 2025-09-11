@@ -1,6 +1,16 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Footer() {
+    const [openSections, setOpenSections] = useState({});
+
+    const toggleSection = (section) => {
+        setOpenSections(prev => ({
+            ...prev,
+            [section]: !prev[section]
+        }));
+    };
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             {/* New section above footer */}
@@ -12,7 +22,7 @@ export default function Footer() {
                         Need parenting Support?
                     </h2>
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed whitespace-nowrap">
-                        Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
+                        {/* Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow. */}
                     </p>
                     <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm">
                         Sign up
@@ -33,8 +43,22 @@ export default function Footer() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16">
                         {/* LittleMinds Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">LittleMinds</h3>
-                            <ul className="space-y-4 text-base leading-relaxed">
+                            <button 
+                                onClick={() => toggleSection('littleminds')}
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                            >
+                                <span>LittleMinds</span>
+                                <svg 
+                                    className={`w-5 h-5 transition-transform duration-200 ${openSections.littleminds ? 'rotate-180' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">LittleMinds</h3>
+                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.littleminds ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">About us</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Insurance & pricing</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Locations</a></li>
@@ -50,8 +74,22 @@ export default function Footer() {
 
                         {/* Resources Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Resources</h3>
-                            <ul className="space-y-4 text-base leading-relaxed">
+                            <button 
+                                onClick={() => toggleSection('resources')}
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                            >
+                                <span>Resources</span>
+                                <svg 
+                                    className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Resources</h3>
+                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Anxiety</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Depression</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Grief & loss</a></li>
@@ -64,8 +102,22 @@ export default function Footer() {
 
                         {/* Services Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Services</h3>
-                            <ul className="space-y-4 text-base leading-relaxed">
+                            <button 
+                                onClick={() => toggleSection('services')}
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                            >
+                                <span>Services</span>
+                                <svg 
+                                    className={`w-5 h-5 transition-transform duration-200 ${openSections.services ? 'rotate-180' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Services</h3>
+                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.services ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Individual therapy</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Psychiatry / medication management</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Online therapy</a></li>
@@ -80,8 +132,22 @@ export default function Footer() {
 
                         {/* Insurance Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Insurance*</h3>
-                            <ul className="space-y-4 text-base leading-relaxed">
+                            <button 
+                                onClick={() => toggleSection('insurance')}
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                            >
+                                <span>Insurance*</span>
+                                <svg 
+                                    className={`w-5 h-5 transition-transform duration-200 ${openSections.insurance ? 'rotate-180' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Insurance*</h3>
+                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.insurance ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Aetna</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Optum / UnitedHealthcare</a></li>
                                 <li><a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blue Cross Blue Shield Plans</a></li>
@@ -98,8 +164,22 @@ export default function Footer() {
 
                         {/* Reach Us Column */}
                         <div className="space-y-6">
-                            <h3 className="text-2xl font-bold leading-relaxed tracking-wide text-white">Reach Us</h3>
-                            <div className="space-y-4 text-base leading-relaxed">
+                            <button 
+                                onClick={() => toggleSection('reachus')}
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                            >
+                                <span>Reach Us</span>
+                                <svg 
+                                    className={`w-5 h-5 transition-transform duration-200 ${openSections.reachus ? 'rotate-180' : ''}`}
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Reach Us</h3>
+                            <div className={`space-y-4 text-base leading-relaxed ${openSections.reachus ? 'block' : 'hidden md:block'}`}>
                                 <p className="text-xl font-bold tracking-wide text-white">(855) 204-2767</p>
                                 <a href="#" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Contact us</a>
                             </div>

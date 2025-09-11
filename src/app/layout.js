@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
+import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import LoadingScreen from "@/components/LoadingScreen";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           <SocketProvider>
             <NotificationProvider>
               <LoadingScreen />
-              <Header />
+              <HeaderWrapper />
               {children}
               <FooterWrapper />
             </NotificationProvider>

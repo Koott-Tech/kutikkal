@@ -4,6 +4,47 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Minus, FileText, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { publicApi } from '@/lib/backendApi';
 
+// Helper to normalize possible image fields and relative URLs
+function resolveDoctorImage(doctor) {
+  const candidates = [
+    doctor?.coverImage,
+    doctor?.cover_image,
+    doctor?.cover_image_url,
+    doctor?.profile_image,
+    doctor?.profile_image_url,
+    doctor?.profile_picture_url,
+    doctor?.avatar_url,
+    doctor?.photo_url,
+    doctor?.profilePicture,
+    doctor?.image_url,
+    doctor?.image,
+    doctor?.photo,
+    doctor?.profile_pic,
+    doctor?.photoPath,
+    doctor?.picture,
+    doctor?.avatar,
+    doctor?.profile?.photo_url,
+    doctor?.profile?.image_url,
+    doctor?.profile?.avatar_url,
+  ].filter(Boolean);
+
+  if (candidates.length === 0) return null;
+  let url = String(candidates[0]);
+
+  // If it's a relative path, prefix with backend/public origin if available
+  try {
+    const isAbsolute = /^https?:\/\//i.test(url) || url.startsWith('data:');
+    if (!isAbsolute) {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (backend) {
+        url = backend.replace(/\/$/, '') + '/' + url.replace(/^\//, '');
+      }
+    }
+  } catch (_) {}
+
+  return url;
+}
+
 export default function DoctorModal({ 
   isOpen, 
   onClose, 
@@ -147,7 +188,7 @@ export default function DoctorModal({
           { name: 'Individual Session', price: doctor.price || doctor.individual_session_price || '', sessions: 1 }
         ],
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
-        coverImage: doctor.coverImage || null
+        coverImage: resolveDoctorImage(doctor)
       });
       
       // Fetch packages for this psychologist
@@ -526,16 +567,23 @@ export default function DoctorModal({
 
 
 
-  const handleImageUpload = (field, file) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
+  const handleImageUpload = async (field, file) => {
+    try {
+      if (!file) return;
+      setIsSubmitting(true);
+      const { adminApi } = await import('../lib/backendApi');
+      const uploadRes = await adminApi.uploadImage(file);
+      const imageUrl = uploadRes?.url;
+      if (imageUrl) {
         setFormData(prev => ({
           ...prev,
-          [field]: e.target.result
+          [field]: imageUrl
         }));
-      };
-      reader.readAsDataURL(file);
+      }
+    } catch (error) {
+      console.error('Image upload failed:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -680,6 +728,8 @@ export default function DoctorModal({
         };
       });
 
+      const resolvedImage = typeof formData.coverImage === 'string' ? formData.coverImage : null;
+      const safeImageUrl = resolvedImage && !resolvedImage.startsWith('data:') ? resolvedImage : undefined;
       const doctorData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -693,7 +743,9 @@ export default function DoctorModal({
         price: formData.price ? Number(formData.price) : undefined,
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
         availability: convertedAvailability,
-        packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions)
+        packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions),
+        // Use single field only
+        cover_image_url: safeImageUrl,
       };
 
       // Handle password for edit mode

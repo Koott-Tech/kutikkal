@@ -303,8 +303,8 @@ export default function PsychologistSessions() {
             ) : (
               upcomingSessions.map((session) => (
                 <div key={session.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                           <User className="h-5 w-5 text-blue-600" />
@@ -322,31 +322,31 @@ export default function PsychologistSessions() {
                         <p className="text-sm text-gray-500">
                           Child: {session.client?.child_name} ({session.client?.child_age} years)
                         </p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="flex items-center text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
+                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
                             <Calendar className="h-4 w-4 mr-1" />
                             {new Date(session.scheduled_date).toLocaleDateString()}
                           </span>
-                          <span className="flex items-center text-sm text-gray-500">
+                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
                             <Clock className="h-4 w-4 mr-1" />
                             {formatTime(session.scheduled_time)}
                           </span>
                           {session.status === 'reschedule_requested' && (
-                            <span className="flex items-center text-sm text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
+                            <span className="flex items-center text-xs sm:text-sm text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
                               <AlertCircle className="h-4 w-4 mr-1" />
                               Reschedule Requested
                             </span>
                           )}
                         </div>
                         {session.package && (
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
                             Package: {session.package.package_type} - ${session.price}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <div className="mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
                         session.status === 'booked' ? 'bg-blue-100 text-blue-800' :
                         session.status === 'rescheduled' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-800'
@@ -355,7 +355,7 @@ export default function PsychologistSessions() {
                       </span>
                       <button
                         onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         View Details
                       </button>
@@ -364,7 +364,7 @@ export default function PsychologistSessions() {
                         <button
                           onClick={() => openCompleteSessionModal(session)}
                           disabled={completingSessions.has(session.id)}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
+                          className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
                             completingSessions.has(session.id)
                               ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
                               : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
@@ -386,13 +386,13 @@ export default function PsychologistSessions() {
                       
                       {/* Show "Completed" badge for completed sessions */}
                       {session.status === 'completed' && (
-                        <div className="flex items-center space-x-2">
-                          <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-100">
                             Completed
                           </span>
                           <button
                             onClick={() => openSessionNotesModal(session)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             title="View session notes"
                           >
                             <FileText className="h-3 w-3 mr-1" />
@@ -430,8 +430,8 @@ export default function PsychologistSessions() {
             ) : (
               pastSessions.map((session) => (
                 <div key={session.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
                           <User className="h-5 w-5 text-green-600" />
@@ -444,17 +444,17 @@ export default function PsychologistSessions() {
                         <p className="text-sm text-gray-500">
                           Child: {session.client?.child_name} ({session.client?.child_age} years)
                         </p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="flex items-center text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
+                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
                             <Calendar className="h-4 w-4 mr-1" />
                             {new Date(session.scheduled_date).toLocaleDateString()}
                           </span>
-                          <span className="flex items-center text-sm text-gray-500">
+                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
                             <Clock className="h-4 w-4 mr-1" />
                             {formatTime(session.scheduled_time)}
                           </span>
                           {session.status === 'completed' && session.updated_at && (
-                            <span className="flex items-center text-sm text-green-600">
+                            <span className="flex items-center text-xs sm:text-sm text-green-600">
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Completed {new Date(session.updated_at).toLocaleDateString()}
                             </span>
@@ -462,8 +462,8 @@ export default function PsychologistSessions() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <div className="mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
                         session.status === 'completed' ? 'bg-green-100 text-green-800' :
                         session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                         session.status === 'no_show' ? 'bg-orange-100 text-orange-800' :
@@ -474,16 +474,16 @@ export default function PsychologistSessions() {
                       </span>
                       <button
                         onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         View Details
                       </button>
                       {/* Only show Finish button for non-completed sessions */}
                       {session.status !== 'completed' && (
                         <button
-                          onClick={() => handleFinishSession(session)}
+                          onClick={() => handleCompleteSession(session.id, {})}
                           disabled={completingSessions.has(session.id)}
-                          className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md transition-colors duration-200 ${
+                          className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
                             completingSessions.has(session.id)
                               ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
                               : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
@@ -505,13 +505,13 @@ export default function PsychologistSessions() {
                       
                       {/* Show "Completed" badge for completed sessions */}
                       {session.status === 'completed' && (
-                        <div className="flex items-center space-x-2">
-                          <span className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-100">
                             Completed
                           </span>
                           <button
                             onClick={() => openSessionNotesModal(session)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             title="View session notes"
                           >
                             <FileText className="h-3 w-3 mr-1" />

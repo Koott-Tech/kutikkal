@@ -547,6 +547,23 @@ export const adminApi = {
     });
   },
 
+  // Upload image (admin)
+  async uploadImage(file) {
+    const url = `${BACKEND_BASE_URL}/admin/upload/image`;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const result = await handleResponse(response);
+    return result;
+  },
+
   // Delete psychologist (admin only)
   async deletePsychologist(psychologistId) {
     return apiRequest(`/admin/psychologists/${psychologistId}`, {

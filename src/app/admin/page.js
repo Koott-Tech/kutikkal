@@ -276,55 +276,55 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Admin Dashboard</h1>
-        <p className="text-blue-100 mb-2">Manage your platform, users, and therapy sessions from one central location.</p>
-        <div className="text-blue-100 text-sm">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Welcome to Admin Dashboard</h1>
+        <p className="text-blue-100 mb-2 text-sm sm:text-base">Manage your platform, users, and therapy sessions from one central location.</p>
+        <div className="text-blue-100 text-xs sm:text-sm">
           <p>Logged in as: <span className="font-semibold">{user?.email}</span></p>
           <p>Role: <span className="font-semibold capitalize">{user?.role}</span></p>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${stat.color} text-white`}>
-                  <Icon className="h-6 w-6" />
-                  </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    </div>
-                      </div>
-              <p className="mt-4 text-sm text-gray-500">{stat.description}</p>
-    </div>
-  );
+                <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white`}>
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+              </div>
+              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">{stat.description}</p>
+            </div>
+          );
         })}
-        </div>
+      </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <a
                 key={index}
                 href={action.href}
-                className="block p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+                className="block p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
               >
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-2 sm:mb-3">
                   <div className={`p-2 rounded-lg ${action.color}`}>
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <h3 className="ml-3 font-medium text-gray-900">{action.title}</h3>
+                  <h3 className="ml-2 sm:ml-3 font-medium text-gray-900 text-sm sm:text-base">{action.title}</h3>
                 </div>
-                <p className="text-sm text-gray-600">{action.description}</p>
+                <p className="text-xs sm:text-sm text-gray-600">{action.description}</p>
               </a>
             );
           })}
@@ -332,30 +332,30 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-          <a href="/admin/bookings" className="text-sm text-blue-600 hover:text-blue-800">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Activity</h2>
+          <a href="/admin/bookings" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
             View All
           </a>
-          </div>
-        <div className="space-y-3">
-          <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <Clock className="h-4 w-4 text-gray-400 mr-3" />
+        </div>
+        <div className="space-y-2 sm:space-y-3">
+          <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+            <Clock className="h-4 w-4 text-gray-400 mr-2 sm:mr-3" />
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">Dashboard loaded successfully</p>
               <p className="text-xs text-gray-500">Just now</p>
-        </div>
-        </div>
-          <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <Users className="h-4 w-4 text-gray-400 mr-3" />
+            </div>
+          </div>
+          <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+            <Users className="h-4 w-4 text-gray-400 mr-2 sm:mr-3" />
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">Platform statistics updated</p>
               <p className="text-xs text-gray-500">A few minutes ago</p>
+            </div>
+          </div>
+        </div>
       </div>
-                </div>
-                </div>
-                </div>
     </div>
   );
 }

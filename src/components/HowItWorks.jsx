@@ -1,6 +1,10 @@
+"use client";
 import Image from "next/image";
+import { useState, useRef } from "react";
 
 export default function HowItWorks() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const scrollContainerRef = useRef(null);
   const avatars = [
     "/hero.png",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
@@ -8,6 +12,76 @@ export default function HowItWorks() {
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
     "/hero.png",
   ];
+
+  const carouselData = [
+    {
+      id: 1,
+      number: "01",
+      title: "Tell us what's important",
+      gradient: "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
+      tags: ["Anxiety and Depression", "Accepts Cigna Health Plans", "Available this week"],
+      description: "We'll use your preferences and insurance information to find providers who fit your needs."
+    },
+    {
+      id: 2,
+      number: "02", 
+      title: "Explore your matches",
+      gradient: "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
+      description: "Browse the profiles of licensed, in‑network providers who match your preferences."
+    },
+    {
+      id: 3,
+      number: "03",
+      title: "Schedule your visit", 
+      gradient: "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
+      description: "Choose your preferred time and meet with your provider as soon as tomorrow."
+    },
+    {
+      id: 4,
+      number: "04",
+      title: "Join your online session",
+      gradient: "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
+      description: "Connect with your provider over live video from wherever you feel comfortable."
+    }
+  ];
+
+  const nextSlide = () => {
+    const newSlide = (currentSlide + 1) % carouselData.length;
+    setCurrentSlide(newSlide);
+    scrollToSlide(newSlide);
+  };
+
+  const prevSlide = () => {
+    const newSlide = (currentSlide - 1 + carouselData.length) % carouselData.length;
+    setCurrentSlide(newSlide);
+    scrollToSlide(newSlide);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+    scrollToSlide(index);
+  };
+
+  // Handle scroll events to sync with navigation dots
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const cardWidth = scrollContainerRef.current.scrollWidth / carouselData.length;
+      const newSlide = Math.round(scrollLeft / cardWidth);
+      setCurrentSlide(newSlide);
+    }
+  };
+
+  // Scroll to specific slide
+  const scrollToSlide = (index) => {
+    if (scrollContainerRef.current) {
+      const cardWidth = scrollContainerRef.current.scrollWidth / carouselData.length;
+      scrollContainerRef.current.scrollTo({
+        left: index * cardWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <section className="min-h-[100vh] w-full mt-4 md:mt-8">
@@ -29,10 +103,182 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
-          {/* Card 01 */}
-          <div
-            className="rounded-2xl p-6 min-h-[360px] w-full md:w-[330px] md:flex-shrink-0"
+        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-4">
+          {/* Mobile Carousel */}
+          <div className="md:hidden w-full max-w-xs mx-auto">
+            {/* Scrollable Carousel Container */}
+            <div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll"
+            >
+              <div 
+                className="flex gap-4 pb-4"
+                style={{ 
+                  width: `${carouselData.length * 100}%`,
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
+                {carouselData.map((card, index) => (
+                  <div 
+                    key={card.id} 
+                    className="flex-shrink-0 px-2"
+                    style={{ 
+                      width: `${100 / carouselData.length}%`,
+                      scrollSnapAlign: 'start'
+                    }}
+                  >
+                    <div
+                      className="rounded-lg p-2 h-[260px] w-full flex flex-col justify-between"
+                      style={{ background: card.gradient }}
+                    >
+                      {/* Header Section */}
+                      <div className="flex-shrink-0">
+                        <div className="text-xl font-medium text-indigo-900 text-center">{card.number}</div>
+                        <h3 className="mt-1 text-sm font-medium text-gray-900 text-center">
+                          {card.title}
+                        </h3>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="flex-1 flex flex-col justify-center">
+                        {/* Card-specific content */}
+                        {card.id === 1 && (
+                          <div className="mt-2 flex flex-col gap-1 items-center">
+                            {card.tags.map((label) => (
+                              <div
+                                key={label}
+                                className="inline-flex w-fit items-center gap-1 rounded-full border border-gray-200 bg-white/90 px-1.5 py-0.5 text-xs text-gray-900"
+                              >
+                                <span className="text-indigo-700 text-xs">✓</span>
+                                <span>{label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {card.id === 2 && (
+                          <>
+                            <div className="mt-6 flex items-center justify-center gap-4">
+                              {avatars.map((src, idx) => (
+                                <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white">
+                                  <Image src={src} alt="avatar" fill className="object-cover" sizes="40px" />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-6 text-center">
+                              <p className="text-base font-semibold text-gray-900">Anne Treisman</p>
+                              <p className="text-sm text-gray-600">Licensed Psychiatric Provider</p>
+                            </div>
+                          </>
+                        )}
+
+                        {card.id === 3 && (
+                          <>
+                            <div className="mt-6 flex justify-center">
+                              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
+                                <span className="text-indigo-700">📅</span>
+                                <span>Evenings After 4pm</span>
+                              </div>
+                            </div>
+                            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-700">
+                              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
+                                <div
+                                  key={d}
+                                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${
+                                    d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
+                                  }`}
+                                >
+                                  {d}
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {card.id === 4 && (
+                          <div className="mt-6 flex items-center justify-center gap-4">
+                            <div className="relative h-14 w-14 overflow-hidden rounded-full">
+                              <Image
+                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+                                alt="participant"
+                                fill
+                                className="object-cover"
+                                sizes="56px"
+                              />
+                            </div>
+                            <div className="relative h-28 w-40 overflow-hidden rounded-md">
+                              <Image
+                                src="/hero.png"
+                                alt="provider"
+                                fill
+                                className="object-cover"
+                                sizes="160px"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer Section */}
+                      <div className="flex-shrink-0">
+                        <p className="mt-4 pt-2 text-xs leading-relaxed text-gray-700 text-center">
+                          {card.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation Dots */}
+            <div className="flex justify-center mt-6 gap-2">
+              {carouselData.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                    currentSlide === index ? 'bg-indigo-600' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Navigation Arrows */}
+            <div className="flex justify-between items-center mt-4 px-4">
+              <button
+                onClick={prevSlide}
+                className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                disabled={currentSlide === 0}
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <span className="text-sm text-gray-500">
+                {currentSlide + 1} of {carouselData.length}
+              </span>
+              
+              <button
+                onClick={nextSlide}
+                className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                disabled={currentSlide === carouselData.length - 1}
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:flex flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
+            {/* Card 01 - Desktop */}
+            <div
+              className="rounded-2xl p-6 min-h-[360px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
@@ -65,9 +311,9 @@ export default function HowItWorks() {
             </p>
           </div>
 
-          {/* Card 02 */}
+            {/* Card 02 - Desktop */}
           <div
-            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
@@ -97,9 +343,9 @@ export default function HowItWorks() {
             </p>
           </div>
 
-          {/* Card 03 */}
+            {/* Card 03 - Desktop */}
           <div
-            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
@@ -134,9 +380,9 @@ export default function HowItWorks() {
             </p>
           </div>
 
-          {/* Card 04 */}
+            {/* Card 04 - Desktop */}
           <div
-            className="rounded-2xl p-6 min-h-[320px] w-full md:w-[330px] md:flex-shrink-0"
+              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
@@ -172,6 +418,7 @@ export default function HowItWorks() {
               Connect with your provider over live video from wherever you feel
               comfortable.
             </p>
+            </div>
           </div>
         </div>
       </div>

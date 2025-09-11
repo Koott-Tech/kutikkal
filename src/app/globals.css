@@ -19,6 +19,31 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Hide scrollbars globally while keeping scroll behavior */
+html, body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Hide scrollbars for all elements */
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Carousel scrollbar hiding */
+.carousel-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 /* Hide scrollbar while keeping scroll behavior */
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
