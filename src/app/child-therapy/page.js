@@ -1,5 +1,3 @@
-"use client";
-
 import HeroSection from '@/components/HeroSection';
 import LogosStrip from '@/components/LogosStrip';
 import ProcessSteps from '@/components/ProcessSteps';

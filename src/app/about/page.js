@@ -1,5 +1,3 @@
-"use client";
-
 import Header from '@/components/Header';
 import MissionHero from '@/components/MissionHero';
 import LogosStrip from '@/components/LogosStrip';

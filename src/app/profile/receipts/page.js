@@ -122,8 +122,6 @@ export default function ReceiptsPage() {
     if (item.href) {
       setSidebarOpen(false); // Close mobile menu after navigation
       router.push(item.href);
-      // Safety timeout to hide if next page doesn't
-      setTimeout(() => setShowLoadingScreen(false), 1000);
     }
   };
 

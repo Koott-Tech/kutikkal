@@ -169,8 +169,8 @@ export default function ProfilePage() {
       if (sessions.length === 0) {
         loadSessions();
       } else {
-        // No fetch needed; hide animation after a short delay
-        setTimeout(() => setShowLoadingScreen(false), 700);
+        // No fetch needed; hide animation immediately
+        setShowLoadingScreen(false);
       }
       return;
     }
@@ -179,13 +179,13 @@ export default function ProfilePage() {
       if (clientPackages.length === 0) {
         loadPackages();
       } else {
-        setTimeout(() => setShowLoadingScreen(false), 700);
+        setShowLoadingScreen(false);
       }
       return;
     }
 
-    // Other tabs (messages, contact, report) - brief animation
-    setTimeout(() => setShowLoadingScreen(false), 700);
+    // Other tabs (messages, contact, report) - hide immediately
+    setShowLoadingScreen(false);
   };
 
   // Handle navigation click
@@ -197,8 +197,6 @@ export default function ProfilePage() {
     } else if (item.href && item.href !== '#') {
       setSidebarOpen(false); // Close mobile menu after navigation
       router.push(item.href);
-      // Safety: hide after a short delay in case next page also shows its own
-      setTimeout(() => setShowLoadingScreen(false), 1000);
     }
   };
 
