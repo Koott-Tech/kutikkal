@@ -2,10 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
-import LoadingScreen from "@/components/LoadingScreen";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { SocketProvider } from "@/contexts/SocketContext";
-import { NotificationProvider } from "@/contexts/NotificationContext";
+import ConditionalProviders from "@/components/ConditionalProviders";
 
 // Force cache bust - latest version deployed
 console.log('Cache bust - latest version deployed at:', new Date().toISOString());
@@ -31,16 +28,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <SocketProvider>
-            <NotificationProvider>
-              <LoadingScreen />
-              <HeaderWrapper />
-              {children}
-              <FooterWrapper />
-            </NotificationProvider>
-          </SocketProvider>
-        </AuthProvider>
+        <ConditionalProviders>
+          <HeaderWrapper />
+          {children}
+          <FooterWrapper />
+        </ConditionalProviders>
       </body>
     </html>
   );
