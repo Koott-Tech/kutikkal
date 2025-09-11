@@ -190,13 +190,15 @@ export default function ProfilePage() {
 
   // Handle navigation click
   const handleNavigationClick = (item) => {
-    // Always show refresh animation on any dashboard menu click
+    // Show loading screen immediately
     setShowLoadingScreen(true);
+    
     if (item.action) {
       item.action();
     } else if (item.href && item.href !== '#') {
-      setSidebarOpen(false); // Close mobile menu after navigation
+      // Redirect immediately, then close menu
       router.push(item.href);
+      setSidebarOpen(false);
     }
   };
 

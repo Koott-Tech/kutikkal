@@ -117,11 +117,13 @@ export default function ReceiptsPage() {
 
   // Handle navigation click
   const handleNavigationClick = (item) => {
-    // Always show refresh animation on dashboard menu navigation
+    // Show loading screen immediately
     setShowLoadingScreen(true);
+    
     if (item.href) {
-      setSidebarOpen(false); // Close mobile menu after navigation
+      // Redirect immediately, then close menu
       router.push(item.href);
+      setSidebarOpen(false);
     }
   };
 
