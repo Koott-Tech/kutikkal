@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Download, Receipt, Clock, User, CreditCard, MessageSquare, LogOut, FileText, BarChart3, Menu, X } from 'lucide-react';
 import { useNotification } from '@/contexts/NotificationContext';
