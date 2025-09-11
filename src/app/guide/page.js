@@ -65,6 +65,17 @@ const Guide = () => {
     setSelected(null); // Close doctor modal
   };
 
+  const handleDoctorClick = (doctor, index) => {
+    // Check if mobile view
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      // Direct redirect to profile page on mobile
+      router.push(`/therapist-profile?doctor=${index}`);
+    } else {
+      // Show modal on desktop
+      setSelected(index);
+    }
+  };
+
   const handleDateTimeConfirm = () => {
     if (selectedDate && selectedTime) {
       setShowDateTimePicker(false);
@@ -128,22 +139,6 @@ const Guide = () => {
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
         </p>
         
-        {/* Debug/Refresh Button */}
-        <button
-          onClick={fetchDoctors}
-          style={{
-            padding: "0.5rem 1rem",
-            background: "#27ae60",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            marginBottom: "2rem",
-            fontSize: "0.9rem"
-          }}
-        >
-          Refresh Doctors
-        </button>
         
         <style>{`
           .find-therapist-btn {
@@ -189,31 +184,11 @@ const Guide = () => {
         <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginTop: "2.5rem", marginBottom: "2.5rem" }}>
           <button 
             className="find-therapist-btn" 
-            style={{ padding: "12px 44px", fontSize: 28, fontWeight: 800, borderRadius: 15, letterSpacing: "-0.01em" }} 
+            style={{ padding: "10px 24px", fontSize: 18, fontWeight: 700, borderRadius: 12, letterSpacing: "-0.01em" }} 
             onClick={() => setShowOnboarding(true)}
           >
             <span>Find My Therapist</span>
           </button>
-          
-          {!loading && (
-            <button 
-              style={{ 
-                padding: "12px 24px", 
-                fontSize: 16, 
-                fontWeight: 600, 
-                borderRadius: 15, 
-                background: "#f8f9fa",
-                color: "#27ae60",
-                border: "2px solid #27ae60",
-                cursor: "pointer",
-                transition: "all 0.2s"
-              }} 
-              onClick={fetchDoctors}
-              title="Refresh doctors list"
-            >
-              🔄 Refresh
-            </button>
-          )}
         </div>
         
         <OnboardingModal 
@@ -223,17 +198,21 @@ const Guide = () => {
         />
         
         {/* Guide video cards row - Single row with real doctors only */}
-        <div style={{
-          width: "100%",
-          marginTop: "3.2rem",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          position: "relative",
-          height: 380,
-          gap: 18,
-        }}>
+        <div className="guide-cards-container">
           <style>{`
+            .guide-cards-container {
+              width: 100%;
+              margin-top: 3.2rem;
+              display: flex;
+              align-items: flex-end;
+              justify-content: center;
+              position: relative;
+              height: 380px;
+              gap: 18px;
+              overflow-x: visible;
+              padding-left: 0;
+              padding-right: 0;
+            }
             .guide-video-card {
               cursor: pointer;
               will-change: transform;
@@ -247,11 +226,30 @@ const Guide = () => {
               background: #fff;
               border: 2px solid #e0e7ef;
               position: relative;
+              flex-shrink: 0;
             }
             .guide-video-card:hover {
               transform: scale(1.13) translateY(-18px);
               z-index: 10;
               box-shadow: 0 16px 48px rgba(39,174,96,0.22), 0 4px 16px rgba(0,0,0,0.12);
+            }
+            @media (max-width: 768px) {
+              .guide-cards-container {
+                height: auto;
+                gap: 20px;
+                overflow-x: visible;
+                padding-left: 1rem;
+                padding-right: 1rem;
+                flex-direction: column;
+                align-items: center;
+              }
+              .guide-video-card {
+                width: 280px;
+                height: 300px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.05) translateY(-8px);
+              }
             }
           `}</style>
           
@@ -301,7 +299,7 @@ const Guide = () => {
                   key={doc.id || doc.name || idx}
                   style={{ zIndex: idx+1, position: "relative" }}
 
-                  onClick={() => setSelected(idx)}
+                  onClick={() => handleDoctorClick(doc, idx)}
                 >
                   {/* Doctor Profile Picture or Cover Image */}
                   {(() => {
@@ -451,9 +449,9 @@ const Guide = () => {
           )}
         </div>
 
-        {/* Modal Popup for Doctor Details */}
+        {/* Modal Popup for Doctor Details - Hidden on mobile */}
         {selected !== null && (
-          <div style={{
+          <div className="doctor-modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -468,20 +466,97 @@ const Guide = () => {
           }}
             onClick={() => setSelected(null)}
           >
-            <div
-              style={{
-                width: "80vw",
-                maxWidth: 1300,
-                height: 700,
-                background: "#fff",
-                borderRadius: 10,
-                boxShadow: "0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12)",
-                display: "flex",
-                overflow: "hidden",
-                position: "relative"
-              }}
-              onClick={e => e.stopPropagation()}
-            >
+            <style>{`
+              @media (max-width: 768px) {
+                .doctor-modal-overlay {
+                  display: none !important;
+                }
+              }
+            `}</style>
+            <div className="doctor-modal">
+              <style>{`
+                .doctor-modal {
+                  width: 80vw;
+                  max-width: 1300px;
+                  height: 700px;
+                  background: #fff;
+                  border-radius: 10px;
+                  box-shadow: 0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12);
+                  display: flex;
+                  overflow: hidden;
+                  position: relative;
+                }
+                .doctor-modal-image {
+                  flex: 1.2;
+                  background: #000;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+                .doctor-modal-content {
+                  flex: 1;
+                  padding: 40px 48px;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: flex-start;
+                  gap: 16px;
+                  position: relative;
+                  overflow-y: auto;
+                }
+                .doctor-modal-title {
+                  font-size: 32px;
+                  font-weight: 700;
+                  margin-bottom: 8px;
+                }
+                .doctor-modal-buttons {
+                  display: flex;
+                  flex-direction: row;
+                  gap: 16px;
+                  justify-content: center;
+                  align-items: center;
+                  margin-top: 32px;
+                }
+                .doctor-modal-button {
+                  padding: 12px 24px;
+                  font-size: 15px;
+                  font-weight: 600;
+                  border-radius: 12px;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                }
+                @media (max-width: 768px) {
+                  .doctor-modal {
+                    width: 95vw;
+                    max-width: none;
+                    height: 90vh;
+                    flex-direction: column;
+                  }
+                  .doctor-modal-image {
+                    flex: none;
+                    height: 40%;
+                  }
+                  .doctor-modal-content {
+                    flex: none;
+                    height: 60%;
+                    padding: 20px;
+                    gap: 12px;
+                  }
+                  .doctor-modal-title {
+                    font-size: 24px;
+                  }
+                  .doctor-modal-buttons {
+                    flex-direction: column;
+                    gap: 12px;
+                    margin-top: 20px;
+                  }
+                  .doctor-modal-button {
+                    padding: 14px 20px;
+                    font-size: 16px;
+                    width: 100%;
+                  }
+                }
+              `}</style>
+              <div onClick={e => e.stopPropagation()}>
               {/* Close X Button */}
               <button
                 style={{
@@ -517,7 +592,7 @@ const Guide = () => {
               </button>
               
               {/* Left: Doctor Profile Picture or Cover Image */}
-              <div style={{ flex: 1.2, background: "#000", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              <div className="doctor-modal-image">
                 {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
                   (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
                                              doctors[selected].name.toLowerCase().includes('marium')))) ? (
@@ -571,8 +646,8 @@ const Guide = () => {
               </div>
               
               {/* Right: Details */}
-              <div style={{ flex: 1, padding: "40px 48px", display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 16, position: "relative" }}>
-                <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8 }}>{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</h2>
+              <div className="doctor-modal-content">
+                <h2 className="doctor-modal-title">{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</h2>
                 
                 {/* Experience Years */}
                 {doctors[selected]?.experience_years && (
@@ -642,19 +717,14 @@ const Guide = () => {
                 </div>
                 
                 {/* Action Buttons */}
-                <div style={{ display: "flex", flexDirection: "row", gap: 16, justifyContent: "center", alignItems: "center", marginTop: 32 }}>
+                <div className="doctor-modal-buttons">
                   <button
+                    className="doctor-modal-button"
                     style={{
                       background: "#27ae60",
                       color: "#fff",
                       border: "none",
-                      borderRadius: 12,
-                      padding: "12px 24px",
-                      fontSize: 15,
-                      fontWeight: 600,
-                      boxShadow: "0 2px 8px rgba(39,174,96,0.15)",
-                      cursor: "pointer",
-                      transition: "all 0.2s"
+                      boxShadow: "0 2px 8px rgba(39,174,96,0.15)"
                     }}
                     onClick={() => handleBookSession(doctors[selected])}
                     onMouseEnter={(e) => {
@@ -669,16 +739,11 @@ const Guide = () => {
                     Book a Session
                   </button>
                   <button
+                    className="doctor-modal-button"
                     style={{
                       background: "transparent",
                       color: "#27ae60",
-                      border: "2px solid #27ae60",
-                      borderRadius: 12,
-                      padding: "12px 24px",
-                      fontSize: 15,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.2s"
+                      border: "2px solid #27ae60"
                     }}
                     onClick={() => {
                       router.push(`/therapist-profile?doctor=${selected}`);
@@ -769,6 +834,7 @@ const Guide = () => {
                   </svg>
                 </button>
               </div>
+              </div>
             </div>
           </div>
         )}
@@ -790,19 +856,57 @@ const Guide = () => {
           }}
             onClick={() => setShowDateTimePicker(false)}
           >
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 20,
-                padding: "30px",
-                maxWidth: "450px",
-                width: "90%",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-                textAlign: "center"
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#1a1a1a", marginBottom: "20px" }}>
+            <div className="datetime-modal">
+              <style>{`
+                .datetime-modal {
+                  background: #fff;
+                  border-radius: 20px;
+                  padding: 30px;
+                  max-width: 450px;
+                  width: 90%;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                  text-align: center;
+                }
+                .datetime-modal-title {
+                  font-size: 24px;
+                  font-weight: 700;
+                  color: #1a1a1a;
+                  margin-bottom: 20px;
+                }
+                .datetime-modal-buttons {
+                  display: flex;
+                  gap: 15px;
+                  justify-content: center;
+                }
+                .datetime-modal-button {
+                  padding: 12px 24px;
+                  font-size: 16px;
+                  font-weight: 600;
+                  border-radius: 12px;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                }
+                @media (max-width: 768px) {
+                  .datetime-modal {
+                    padding: 20px;
+                    max-width: 95%;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                  }
+                  .datetime-modal-title {
+                    font-size: 20px;
+                  }
+                  .datetime-modal-buttons {
+                    flex-direction: column;
+                  }
+                  .datetime-modal-button {
+                    padding: 14px 20px;
+                    font-size: 16px;
+                    width: 100%;
+                  }
+                }
+              `}</style>
+              <h2 className="datetime-modal-title">
                 Book Session with {selectedDoctor?.name}
               </h2>
               
@@ -904,36 +1008,27 @@ const Guide = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+              <div className="datetime-modal-buttons">
                 <button
+                  className="datetime-modal-button"
                   onClick={() => setShowDateTimePicker(false)}
                   style={{
-                    padding: "12px 24px",
                     border: "2px solid #e1e5e9",
                     background: "#fff",
-                    color: "#666",
-                    borderRadius: "12px",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s"
+                    color: "#666"
                   }}
                 >
                   Cancel
                 </button>
                 <button
+                  className="datetime-modal-button"
                   onClick={handleDateTimeConfirm}
                   disabled={!selectedDate || !selectedTime}
                   style={{
-                    padding: "12px 24px",
                     border: "none",
                     background: selectedDate && selectedTime ? "#27ae60" : "#ccc",
                     color: "#fff",
-                    borderRadius: "12px",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    cursor: selectedDate && selectedTime ? "pointer" : "not-allowed",
-                    transition: "all 0.2s"
+                    cursor: selectedDate && selectedTime ? "pointer" : "not-allowed"
                   }}
                 >
                   Continue to Payment
@@ -960,19 +1055,58 @@ const Guide = () => {
           }}
             onClick={() => setShowPaymentModal(false)}
           >
-            <div
-              style={{
-                background: "#fff",
-                borderRadius: 20,
-                padding: "40px",
-                maxWidth: "500px",
-                width: "90%",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-                textAlign: "center"
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <h2 style={{ fontSize: "28px", fontWeight: 700, color: "#1a1a1a", marginBottom: "20px" }}>
+            <div className="payment-modal">
+              <style>{`
+                .payment-modal {
+                  background: #fff;
+                  border-radius: 20px;
+                  padding: 40px;
+                  max-width: 500px;
+                  width: 90%;
+                  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                  text-align: center;
+                }
+                .payment-modal-title {
+                  font-size: 28px;
+                  font-weight: 700;
+                  color: #1a1a1a;
+                  margin-bottom: 20px;
+                }
+                .payment-modal-buttons {
+                  display: flex;
+                  gap: 15px;
+                  justify-content: center;
+                }
+                .payment-modal-button {
+                  padding: 12px 24px;
+                  font-size: 16px;
+                  font-weight: 600;
+                  border-radius: 12px;
+                  cursor: pointer;
+                  transition: all 0.2s;
+                }
+                @media (max-width: 768px) {
+                  .payment-modal {
+                    padding: 20px;
+                    max-width: 95%;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                  }
+                  .payment-modal-title {
+                    font-size: 22px;
+                  }
+                  .payment-modal-buttons {
+                    flex-direction: column;
+                  }
+                  .payment-modal-button {
+                    padding: 14px 20px;
+                    font-size: 16px;
+                    width: 100%;
+                  }
+                }
+              `}</style>
+              <div onClick={e => e.stopPropagation()}>
+              <h2 className="payment-modal-title">
                 Complete Your Booking
               </h2>
               
@@ -1014,39 +1148,30 @@ const Guide = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+              <div className="payment-modal-buttons">
                 <button
+                  className="payment-modal-button"
                   onClick={handlePaymentCancel}
                   style={{
-                    padding: "12px 24px",
                     border: "2px solid #e1e5e9",
                     background: "#fff",
-                    color: "#666",
-                    borderRadius: "12px",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s"
+                    color: "#666"
                   }}
                 >
                   Back
                 </button>
                 <button
+                  className="payment-modal-button"
                   onClick={handlePaymentSuccess}
                   style={{
-                    padding: "12px 24px",
                     border: "none",
                     background: "#27ae60",
-                    color: "#fff",
-                    borderRadius: "12px",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s"
+                    color: "#fff"
                   }}
                 >
                   Pay ₹100
                 </button>
+              </div>
               </div>
             </div>
           </div>

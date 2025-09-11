@@ -465,7 +465,7 @@ export default function Header() {
                     </div>
                   </div>
                   
-                  {/* Profile Button */}
+                  {/* Dashboard Button */}
                   <button
                     onClick={() => {
                       handleProfileClick();
@@ -473,18 +473,7 @@ export default function Header() {
                     }}
                     className="w-full py-3 px-4 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200 mt-4 text-center"
                   >
-                    Profile
-                  </button>
-                  
-                  {/* Logout Button */}
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-3 px-4 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg border border-red-200 mt-2"
-                  >
-                    Logout
+                    Dashboard
                   </button>
                 </div>
               )}
@@ -727,6 +716,21 @@ export default function Header() {
                   </button>
                 </div>
               </div>
+              
+              {/* Logout Button at Bottom for Authenticated Users */}
+              {isAuthenticated() && (
+                <div className="border-t border-gray-200 pt-4 mt-6">
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full py-3 px-4 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg border border-red-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

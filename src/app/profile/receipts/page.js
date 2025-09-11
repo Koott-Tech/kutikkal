@@ -106,6 +106,7 @@ export default function ReceiptsPage() {
   };
 
   const navigation = [
+    { name: 'Home', href: '/', icon: User, show: true },
     { name: 'Browse Therapists', href: '/guide', icon: Calendar, show: hasRole('client') },
     { name: 'Sessions', href: '/profile', icon: Calendar },
     { name: 'Messages', href: '/messages', icon: MessageSquare },
@@ -167,7 +168,7 @@ export default function ReceiptsPage() {
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
+        <div className="fixed inset-y-0 right-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
             <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
             <button
@@ -213,10 +214,11 @@ export default function ReceiptsPage() {
             })}
           </nav>
           
+          {/* Logout button at bottom of sidebar */}
           <div className="border-t border-gray-200 p-4">
             <button
               onClick={handleLogout}
-              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 cursor-pointer"
             >
               <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
               Logout
@@ -281,16 +283,15 @@ export default function ReceiptsPage() {
 
       {/* Main content */}
       <div className="lg:pl-64">
-        {/* Mobile header */}
+        {/* Mobile header - Company name left, menu right */}
         <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white">
+          <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-gray-500 hover:text-gray-600"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Payment Receipts</h1>
-          <div className="w-6" />
         </div>
 
         {/* Page content */}

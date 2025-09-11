@@ -664,7 +664,7 @@ const TherapistProfileContent = () => {
       <div className="bg-white shadow-lg">
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="relative bg-gradient-to-r from-green-50 to-green-100 p-12" style={{ minHeight: '160px', zIndex: 0 }}>
+          <div className="relative bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12" style={{ minHeight: '120px', zIndex: 0 }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
@@ -677,8 +677,76 @@ const TherapistProfileContent = () => {
               </svg>
             </div>
             
-            {/* Name and Title in Green Div */}
-            <div className="relative z-10 flex items-center ml-[28rem] h-full" style={{ paddingTop: '130px', pointerEvents: 'auto' }}>
+            {/* Mobile: Profile Picture at top */}
+            <div className="relative z-10 flex items-center justify-center md:hidden h-full" style={{ paddingTop: '60px', pointerEvents: 'auto' }}>
+              <div className="relative">
+                <div className="w-48 h-48 rounded-[20px] overflow-hidden relative bg-white">
+                  {/* Doctor Profile Picture or Fallback */}
+                  {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                    (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
+                                           selectedDoctor.name.toLowerCase().includes('marium')))) ? (
+                    <img 
+                      src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                           (() => {
+                             const name = selectedDoctor.name?.toLowerCase() || '';
+                             if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                             if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                             if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                             if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                             return null;
+                           })()}
+                      alt={selectedDoctor.name || selectedDoctor.first_name}
+                    className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Fallback: Doctor Initials Avatar */}
+                  <div 
+                    style={{
+                      display: (selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                                (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') || 
+                                                       selectedDoctor.name.toLowerCase().includes('marium') ||
+                                                       selectedDoctor.name.toLowerCase().includes('doug') ||
+                                                       selectedDoctor.name.toLowerCase().includes('ashley') ||
+                                                       selectedDoctor.name.toLowerCase().includes('child')))) ? 'none' : 'flex',
+                      width: "100%",
+                      height: "100%",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "3rem",
+                      fontWeight: "bold",
+                      color: "#fff",
+                      textShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                    }}
+                  >
+                    {selectedDoctor.name ? 
+                      selectedDoctor.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
+                      selectedDoctor.first_name ? 
+                        selectedDoctor.first_name.charAt(0).toUpperCase() : 
+                        'D'
+                    }
+                  </div>
+                </div>
+                
+                {/* Experience text - Mobile positioning */}
+                {selectedDoctor.experience_years && (
+                <div className="absolute bottom-2 -right-2 bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+                  <p className="text-gray-800 text-xs font-medium">
+                      <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
+                  </p>
+                </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop: Name and Title - Responsive positioning */}
+            <div className="hidden md:flex relative z-10 items-center justify-start md:ml-[28rem] h-full" style={{ paddingTop: '60px', pointerEvents: 'auto' }}>
               <div className="text-left">
                 <h1 className="text-3xl font-bold text-gray-800 mb-1">
                   {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
@@ -694,9 +762,19 @@ const TherapistProfileContent = () => {
       
       {/* Doctor Details Section */}
       <div className="bg-blue-50 shadow-lg">
-        <div className="w-full p-8">
-          {/* Profile Picture - Left aligned on border */}
-          <div className="flex justify-start -mt-56 mb-8 ml-32">
+        <div className="w-full p-4 md:p-8">
+          {/* Mobile: Doctor Name below image */}
+          <div className="text-center md:hidden mb-6">
+            <h1 className="text-xl font-bold text-gray-800 mb-2">
+              {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
+            </h1>
+            <p className="text-sm text-gray-600">
+              {selectedDoctor.specialization || 'Licensed Psychologist'}
+            </p>
+          </div>
+          
+          {/* Desktop: Profile Picture - Left aligned */}
+          <div className="hidden md:flex justify-start -mt-56 mb-8 ml-32">
             <div className="relative">
               <div className="w-80 h-80 rounded-[20px] overflow-hidden relative bg-white">
                 {/* Doctor Profile Picture or Fallback */}
@@ -751,10 +829,8 @@ const TherapistProfileContent = () => {
                   }
                 </div>
               </div>
-              {/* Orange-red curved shape behind profile picture */}
-              <div className="absolute -bottom-2 -left-2 w-40 h-40 bg-orange-400 rounded-full opacity-60 -z-10"></div>
               
-              {/* Experience text at right bottom of image */}
+              {/* Experience text - Desktop positioning */}
               {selectedDoctor.experience_years && (
               <div className="absolute bottom-4 -right-8 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
                 <p className="text-gray-800 text-xs font-medium">
@@ -763,7 +839,7 @@ const TherapistProfileContent = () => {
               </div>
               )}
               
-              {/* Qualifications and Pricing at bottom right of image */}
+              {/* Qualifications and Pricing - Desktop only */}
               <div className="absolute bottom-16 right-[-330px] p-3">
                 <div className="mb-1">
                   <p className="text-gray-800 font-medium text-sm">
@@ -784,17 +860,17 @@ const TherapistProfileContent = () => {
             </div>
           </div>
           
-          <div className="flex justify-end items-start mb-8" style={{ marginTop: '-120px' }}>
+          <div className="flex justify-center md:justify-end items-start mb-8 mt-0 md:-mt-32">
             {/* Action Buttons */}
-            <div className="flex gap-4">
+            <div className="flex gap-2 md:gap-4">
               <button 
                 onClick={handleBookSession}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-full transition-colors duration-200 shadow-lg"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors duration-200 shadow-lg text-sm md:text-base"
               >
                 BOOK SESSION
               </button>
-              <button className="w-12 h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+              <button className="w-10 h-10 md:w-12 md:h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
+                <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
                   <circle cx="18" cy="5" r="3"/>
                   <circle cx="6" cy="12" r="3"/>
                   <circle cx="18" cy="19" r="3"/>
@@ -808,11 +884,11 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* Calendar and About Section */}
-      <div className="w-full p-8 bg-white">
+      <div className="w-full p-4 md:p-8 bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             {/* Left Side - About Description */}
-            <div className="space-y-6 mt-[100px]">
+            <div className="space-y-6 mt-[50px] md:mt-[100px]">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 {selectedDoctor.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
@@ -861,57 +937,55 @@ const TherapistProfileContent = () => {
               ) : null}
               
               {/* Pricing Section */}
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">Session Pricing</h3>
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">Session Pricing</h3>
                 
-                <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
                   {/* Family/Child Sessions */}
                   <div>
-                    <div className="text-center mb-4">
-                      <h4 className="text-lg font-bold text-gray-800 mb-2">Family/Child Sessions</h4>
-                      <div className="w-16 h-1 bg-purple-500 mx-auto rounded-full"></div>
+                    <div className="text-center mb-2">
+                      <h4 className="text-base font-bold text-gray-800 mb-1">Family/Child Sessions</h4>
+                      <div className="w-12 h-1 bg-purple-500 mx-auto rounded-full"></div>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {selectedDoctor.price ? (
                         <>
                           <button 
                             onClick={() => handlePricingSelect({ type: 'family', package: 'single', price: selectedDoctor.price * 1.5, duration: '90 minutes' })}
-                            className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
+                            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all duration-200 ${
                               selectedPricing?.type === 'family' && selectedPricing?.package === 'single'
                                 ? 'bg-purple-50 border-2 border-purple-300'
                                 : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
                             }`}
                           >
                             <div>
-                              <p className="font-semibold text-gray-800">Family Session</p>
-                              <p className="text-sm text-gray-600">90 minutes</p>
+                              <p className="font-semibold text-gray-800 text-sm">Family Session</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 1.5)}</p>
+                              <p className="text-base font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 1.5)}</p>
                             </div>
                           </button>
                           
                           <button 
                             onClick={() => handlePricingSelect({ type: 'child', package: 'single', price: selectedDoctor.price * 0.8, duration: '45 minutes' })}
-                            className={`w-full flex justify-between items-center p-3 rounded-lg transition-all duration-200 min-h-[80px] ${
+                            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all duration-200 ${
                               selectedPricing?.type === 'child' && selectedPricing?.package === 'single'
                                 ? 'bg-purple-50 border-2 border-purple-300'
                                 : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
                             }`}
                           >
                             <div>
-                              <p className="font-semibold text-gray-800">Child Session</p>
-                              <p className="text-sm text-gray-600">45 minutes</p>
+                              <p className="font-semibold text-gray-800 text-sm">Child Session</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 0.8)}</p>
+                              <p className="text-base font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 0.8)}</p>
                             </div>
                           </button>
                         </>
                       ) : (
-                        <div className="text-center py-8">
-                          <p className="text-gray-500">Pricing information will be available soon</p>
+                        <div className="text-center py-4">
+                          <p className="text-gray-500 text-sm">Pricing information will be available soon</p>
                         </div>
                       )}
                     </div>
@@ -919,76 +993,10 @@ const TherapistProfileContent = () => {
                 </div>
               </div>
               
-              {/* FAQ Section */}
-              <div className="p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
-                
-                <div className="space-y-3">
-                  {/* FAQ 1 */}
-                  <div className="border border-gray-200 rounded-lg">
-                    <button
-                      onClick={() => toggleFAQ(0)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800">What makes your approach to therapy unique?</span>
-                      <span className="text-gray-500 text-xl font-bold">
-                        {openFAQ === 0 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 0 && (
-                      <div className="px-4 pb-4">
-                        <p className="text-gray-700 leading-relaxed text-sm">
-                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* FAQ 2 */}
-                  <div className="border border-gray-200 rounded-lg">
-                    <button
-                      onClick={() => toggleFAQ(1)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800">How do you help hesitant clients?</span>
-                      <span className="text-gray-500 text-xl font-bold">
-                        {openFAQ === 1 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 1 && (
-                      <div className="px-4 pb-4">
-                        <p className="text-gray-700 leading-relaxed text-sm">
-                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* FAQ 3 */}
-                  <div className="border border-gray-200 rounded-lg">
-                    <button
-                      onClick={() => toggleFAQ(2)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800">What&apos;s most important in successful therapy?</span>
-                      <span className="text-gray-500 text-xl font-bold">
-                        {openFAQ === 2 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 2 && (
-                      <div className="px-4 pb-4">
-                        <p className="text-gray-700 leading-relaxed text-sm">
-                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
             
             {/* Right Side - Calendar */}
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full ml-32 sticky top-4 self-start mt-[100px]">
+            <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 sticky top-4 self-start mt-[50px] md:mt-[100px]">
               {/* Calendar Header */}
               <div className="text-center mb-4">
                 <h3 className="text-lg font-bold text-gray-800 mb-1">Book Your Session</h3>
@@ -1212,30 +1220,26 @@ const TherapistProfileContent = () => {
                       onClick={() => {
                         setSelectedPackage({
                           id: 'individual',
-                                                     name: 'Individual Session',
+                          name: 'Individual Session',
                           description: 'One therapy session',
                           session_count: 1,
-                          price: selectedDoctor.price, // Dynamic price from doctor profile
+                          price: selectedDoctor.price,
                           package_type: 'individual',
                           discount_percentage: 0
                         });
                         setSelectedPrice(selectedDoctor.price);
                       }}
-                      className={`p-4 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                         selectedPackage?.id === 'individual'
                           ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
                           : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
+                      <div className="flex justify-between items-center">
                         <div className="text-left">
-                          <span className="font-semibold text-base">Individual Session</span>
+                          <span className="font-semibold text-sm">Individual Session</span>
                         </div>
-                        <span className="font-bold text-lg">₹{selectedDoctor.price}</span>
-                      </div>
-                      <div className="text-left text-gray-600 text-xs">
-                        <p>One therapy session</p>
-                        <p className="mt-1 font-medium">1 session • Single session</p>
+                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
                       </div>
                     </button>
                     
@@ -1246,7 +1250,7 @@ const TherapistProfileContent = () => {
                         <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
                       </div>
                     ) : packages.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="space-y-2">
                         {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
                           <button
                             key={pkg.id}
@@ -1254,29 +1258,22 @@ const TherapistProfileContent = () => {
                               setSelectedPackage(pkg);
                               setSelectedPrice(pkg.price);
                             }}
-                            className={`p-4 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                               selectedPackage?.id === pkg.id
                                 ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
                                 : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
                             }`}
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex justify-between items-center">
                               <div className="text-left">
-                                <span className="font-semibold text-base">{pkg.name}</span>
+                                <span className="font-semibold text-sm">{pkg.name}</span>
                                 {pkg.discount_percentage > 0 && (
-                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
                                     Save {pkg.discount_percentage}%
                                   </span>
                                 )}
                               </div>
-                              <span className="font-bold text-lg">₹{pkg.price}</span>
-                            </div>
-                            <div className="text-left text-gray-600 text-xs">
-                              <p>{pkg.description}</p>
-                              <p className="mt-1 font-medium">
-                                {pkg.session_count} session{pkg.session_count > 1 ? 's' : ''} • 
-                                {pkg.session_count > 1 ? ` ₹${(pkg.price / pkg.session_count).toFixed(0)} per session` : ' Single session'}
-                              </p>
+                              <span className="font-bold text-base">₹{pkg.price}</span>
                             </div>
                           </button>
                         ))}
@@ -1349,7 +1346,7 @@ const TherapistProfileContent = () => {
                         {availableSlots.length > 0 && (
                           <div className="space-y-2">
                             <h6 className="text-sm font-medium text-green-700">Available Times:</h6>
-                            <div className="grid grid-cols-5 gap-1">
+                            <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button
                                   key={time}
@@ -1371,7 +1368,7 @@ const TherapistProfileContent = () => {
                         {blockedSlots.length > 0 && (
                           <div className="space-y-2">
                             <h6 className="text-sm font-medium text-red-700">Blocked Times:</h6>
-                            <div className="grid grid-cols-5 gap-1">
+                            <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {blockedSlots.map((time) => (
                                 <div
                                   key={time}
@@ -1435,14 +1432,81 @@ const TherapistProfileContent = () => {
                   </p>
                 </div>
               )}
+              
+              {/* FAQ Section */}
+              <div className="mt-6 p-4 rounded-lg bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
+                
+                <div className="space-y-3">
+                  {/* FAQ 1 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(0)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 0 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 0 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* FAQ 2 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(1)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 1 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 1 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* FAQ 3 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(2)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 2 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 2 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
       
       {/* Support Contact Section */}
-      <div className="w-full h-[100px] bg-green-500 flex items-center justify-center">
-        <p className="text-white text-sm text-center px-4">
+      <div className="w-full h-auto md:h-[100px] bg-green-500 flex items-center justify-center py-4 md:py-0">
+        <p className="text-white text-xs md:text-sm text-center px-4">
           If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>
       </div>
@@ -1450,16 +1514,16 @@ const TherapistProfileContent = () => {
       {/* Treatment Method Modal */}
       {showTreatmentModal && selectedTreatment && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div className="bg-blue-50 rounded-lg shadow-xl max-w-lg w-full">
-            <div className="p-8">
+          <div className="bg-blue-50 rounded-lg shadow-xl max-w-lg w-full mx-4">
+            <div className="p-4 md:p-8">
               {/* Header with centered title and close button */}
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-800 text-center flex-1">Treatment Method</h3>
+              <div className="flex justify-between items-center mb-4 md:mb-6">
+                <h3 className="text-lg md:text-xl font-bold text-gray-800 text-center flex-1">Treatment Method</h3>
                 <button
                   onClick={closeTreatmentModal}
                   className="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4"
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -1467,12 +1531,12 @@ const TherapistProfileContent = () => {
               </div>
               
               {/* Treatment title */}
-              <h4 className="text-lg font-bold text-gray-800 mb-4">
+              <h4 className="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4">
                 {selectedTreatment}
               </h4>
               
               {/* Description */}
-              <p className="text-gray-700 leading-relaxed mb-6">
+              <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
                 This treatment method is designed to help clients achieve their mental wellness goals through evidence-based approaches and compassionate care.
               </p>
               
@@ -1480,7 +1544,7 @@ const TherapistProfileContent = () => {
               <div className="flex justify-center">
                 <button
                   onClick={closeTreatmentModal}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg transition-colors duration-200 font-semibold text-sm uppercase tracking-wide"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 md:px-8 md:py-3 rounded-lg transition-colors duration-200 font-semibold text-xs md:text-sm uppercase tracking-wide"
                 >
                   Got it, thanks
                 </button>
