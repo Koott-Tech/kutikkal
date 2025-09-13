@@ -158,77 +158,118 @@ export default function Header() {
                     onClick={() => {
                       setIsFindCareOpen(!isFindCareOpen);
                       setIsForProvidersOpen(false);
+                      setIsAboutOpen(false);
                     }}
                   >
-                  <span>Find Care</span>
+                  <span>Counselling</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                   
-                  {/* Find Care Dropdown */}
+                  {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                      {/* Top section - Types of care */}
+                    <div className="absolute top-full left-0 mt-2 w-[800px] bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                      {/* Counselling Services */}
                       <div className="px-4 pb-3 border-b border-gray-200">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Types of care</h3>
-                        <div className="space-y-2">
-                          {[
-                            "Individual therapy",
-                            "Couples therapy", 
-                            "Family therapy",
-                            "Child therapy",
-                            "Teen therapy",
-                            "Psychiatry"
-                          ].map((option) => (
-                            <div 
-                              key={option} 
-                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => handleTherapyTypeClick(option)}
-                            >
-                              <span className="text-gray-700 text-sm">{option}</span>
-                            </div>
-                          ))}
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Counselling Services</h3>
+                        <div className="grid grid-cols-3 gap-8">
+                          {/* Column 1 */}
+                          <div className="space-y-1">
+                            {[
+                              { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
+                              { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
+                              { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
+                              { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
+                              { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                  setIsFindCareOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Column 2 */}
+                          <div className="space-y-1">
+                            {[
+                              { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                              { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
+                              { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                              { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
+                              { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                  setIsFindCareOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Column 3 */}
+                          <div className="space-y-1">
+                            {[
+                              { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
+                              { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                              { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
+                              { name: "Autism Support", url: "/counselling/autism-support" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                  setIsFindCareOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
-                      {/* Bottom section - Get Started and FAQs */}
+                      {/* Other Services */}
                       <div className="px-4 pt-3">
-                        <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other Services</h3>
+                        <div className="grid grid-cols-3 gap-8">
                           <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={handleGetStartedClick}
-                          >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">Get Started</span>
-                          </div>
-                          <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
-                              router.push('/free-assessment');
+                              router.push('/assessments');
                               setIsFindCareOpen(false);
                             }}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">Free Assessment</span>
+                            <span className="text-gray-700 text-sm">Assessments</span>
                           </div>
                           <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={handleFAQClick}
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/better-parenting');
+                              setIsFindCareOpen(false);
+                            }}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">FAQs</span>
+                            <span className="text-gray-700 text-sm">Better Parenting</span>
+                          </div>
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/resources');
+                              setIsFindCareOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm">Resources</span>
                           </div>
                         </div>
                       </div>
@@ -241,64 +282,65 @@ export default function Header() {
                     onClick={() => {
                       setIsForProvidersOpen(!isForProvidersOpen);
                       setIsFindCareOpen(false);
+                      setIsAboutOpen(false);
                     }}
                   >
-                  <span>For Providers</span>
+                  <span>Assessments</span>
                     <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                   
-                  {/* For Providers Dropdown */}
+                  {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
                     <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                      {/* Top section - Main options */}
-                      <div className="px-4 pb-3 border-b border-gray-200">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                            </div>
+                                             {/* Top section - Main options */}
+                       <div className="px-4 pb-3 border-b border-gray-200">
+                         <div className="space-y-2">
+                           <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                             <div className="w-5 h-5 flex items-center justify-center">
+                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                               </svg>
+                             </div>
                             <span className="text-gray-700 text-sm">Therapy</span>
-                          </div>
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
-                            </div>
+                           </div>
+                           <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                             <div className="w-5 h-5 flex items-center justify-center">
+                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                               </svg>
+                             </div>
                             <span className="text-gray-700 text-sm">Psychiatry</span>
-                          </div>
-                          <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              handleFAQClick();
-                              setIsForProvidersOpen(false);
-                            }}
-                          >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
+                           </div>
+                           <div 
+                             className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                             onClick={() => {
+                               handleFAQClick();
+                               setIsForProvidersOpen(false);
+                             }}
+                           >
+                             <div className="w-5 h-5 flex items-center justify-center">
+                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                               </svg>
+                             </div>
                             <span className="text-gray-700 text-sm">FAQs</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Bottom section - Other services */}
-                      <div className="px-4 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other services</h3>
-                        <div className="space-y-2">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                           </div>
+                         </div>
+                       </div>
+                       
+                       {/* Bottom section - Other services */}
+                       <div className="px-4 pt-3">
+                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other services</h3>
+                         <div className="space-y-2">
+                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
                             <span className="text-gray-700 text-sm">In-person therapy</span>
-                          </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                           </div>
+                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
                             <span className="text-gray-700 text-sm">Medicare & Medicaid</span>
-                          </div>
-                        </div>
-                      </div>
+                           </div>
+                         </div>
+                       </div>
                     </div>
                   )}
                 </li>
@@ -316,28 +358,28 @@ export default function Header() {
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                   
-                  {/* About Us Dropdown */}
-                  {isAboutOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                      <div className="px-4 space-y-2">
-                        <div 
-                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                          onClick={handleCompanyClick}
-                        >
+                                     {/* About Us Dropdown */}
+                   {isAboutOpen && (
+                     <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                       <div className="px-4 space-y-2">
+                         <div 
+                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                           onClick={handleCompanyClick}
+                         >
                           <span className="text-gray-700 text-sm">Company</span>
-                        </div>
-                        <div 
-                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                          onClick={handleCareerClick}
-                        >
+                         </div>
+                         <div 
+                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                           onClick={handleCareerClick}
+                         >
                           <span className="text-gray-700 text-sm">Career</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                         </div>
+                       </div>
+                     </div>
+                   )}
                 </li>
                 <li className="relative group cursor-pointer hover:text-gray-900">
-                  <span onClick={handleBlogClick}>Blog</span>
+                  <span onClick={handleBlogClick}>Resources</span>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
                 </li>
               </ul>
@@ -348,61 +390,61 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
-              {isAuthenticated() ? (
-                /* Logged in user menu */
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
-                  >
-                    <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <span className="text-indigo-700 font-semibold text-sm">
-                        {getUserInitial()}
-                      </span>
-                    </div>
-                    <span>{getUserDisplayName()}</span>
-                    <ChevronUpIcon className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {/* User dropdown menu */}
-                  {isUserMenuOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                      <div className="px-4 pb-3 border-b border-gray-200">
-                        <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
-                        <div className="text-xs text-gray-500">{user?.email}</div>
-                        <div className="text-xs text-indigo-600 font-medium mt-1">
-                          {getRoleDisplayName(user?.role)}
-                        </div>
-                      </div>
-                      <div className="px-4 pt-3 space-y-2">
-                        <button
-                          onClick={handleProfileClick}
-                          className="w-full text-left py-2 px-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer"
-                        >
-                          Dashboard
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left py-2 px-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Login button for non-authenticated users */
+            {isAuthenticated() ? (
+              /* Logged in user menu */
+              <div className="relative">
                 <button 
-                  onClick={handleLoginClick}
-                  className="inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
                 >
-                  <span>Login</span>
+                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-indigo-700 font-semibold text-sm">
+                      {getUserInitial()}
+                    </span>
+                  </div>
+                  <span>{getUserDisplayName()}</span>
+                  <ChevronUpIcon className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
-              )}
-              <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
-                Get started
+                
+                {/* User dropdown menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="px-4 pb-3 border-b border-gray-200">
+                      <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                      <div className="text-xs text-indigo-600 font-medium mt-1">
+                        {getRoleDisplayName(user?.role)}
+                      </div>
+                    </div>
+                    <div className="px-4 pt-3 space-y-2">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full text-left py-2 px-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left py-2 px-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Login button for non-authenticated users */
+              <button 
+                onClick={handleLoginClick}
+                  className="inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+              >
+                <span>Login</span>
               </button>
+            )}
+            <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
+              Get started
+            </button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -507,89 +549,83 @@ export default function Header() {
 
               {/* Navigation Links */}
               <div className="space-y-0">
-                {/* Find Care Dropdown */}
+                {/* Counselling Dropdown */}
                 <div className="border-b border-gray-100">
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
-                    onClick={() => setIsMobileFindCareOpen(!isMobileFindCareOpen)}
+                    onClick={() => {
+                      setIsMobileFindCareOpen(!isMobileFindCareOpen);
+                      setIsMobileForProvidersOpen(false);
+                      setIsMobileAboutOpen(false);
+                    }}
                   >
-                    <span className="text-lg font-medium text-gray-900">Find Care</span>
+                    <span className="text-lg font-medium text-gray-900">Counselling</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileFindCareOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                   
-                  {/* Find Care Dropdown Content */}
+                  {/* Counselling Dropdown Content */}
                   {isMobileFindCareOpen && (
                     <div className="ml-4 space-y-2 py-2">
-                      <div className="px-4 py-2">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Types of care</h3>
-                        <div className="space-y-2">
-                          {[
-                            "Individual therapy",
-                            "Couples therapy", 
-                            "Family therapy",
-                            "Child therapy",
-                            "Teen therapy",
-                            "Psychiatry"
-                          ].map((option) => (
-                            <div 
-                              key={option} 
-                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                handleTherapyTypeClick(option);
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">{option}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="px-4 pt-3 border-t border-gray-200">
-                        <div className="space-y-2">
+                      <div className="px-4 py-2 space-y-2">
+                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Counselling Services</h4>
+                        {[
+                          { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
+                          { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
+                          { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
+                          { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
+                          { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" },
+                          { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                          { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
+                          { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                          { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
+                          { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" },
+                          { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
+                          { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                          { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
+                          { name: "Autism Support", url: "/counselling/autism-support" }
+                        ].map((service, index) => (
                           <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            key={index}
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
-                              handleGetStartedClick();
+                              router.push(service.url);
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">Get Started</span>
+                            <span className="text-gray-700 text-sm">{service.name}</span>
+                          </div>
+                        ))}
+                        
+                        <div className="border-t border-gray-200 mt-4 pt-4">
+                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Other Services</h4>
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/assessments');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm">Assessments</span>
                           </div>
                           <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
-                              router.push('/free-assessment');
+                              router.push('/better-parenting');
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">Free Assessment</span>
+                            <span className="text-gray-700 text-sm">Better Parenting</span>
                           </div>
                           <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
-                              handleFAQClick();
+                              router.push('/resources');
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">FAQs</span>
+                            <span className="text-gray-700 text-sm">Resources</span>
                           </div>
                         </div>
                       </div>
@@ -597,19 +633,23 @@ export default function Header() {
                   )}
                 </div>
 
-                {/* For Providers Dropdown */}
+                {/* Assessments Dropdown */}
                 <div className="border-b border-gray-100">
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
-                    onClick={() => setIsMobileForProvidersOpen(!isMobileForProvidersOpen)}
+                    onClick={() => {
+                      setIsMobileForProvidersOpen(!isMobileForProvidersOpen);
+                      setIsMobileFindCareOpen(false);
+                      setIsMobileAboutOpen(false);
+                    }}
                   >
-                    <span className="text-lg font-medium text-gray-900">For Providers</span>
+                    <span className="text-lg font-medium text-gray-900">Assessments</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileForProvidersOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                   
-                  {/* For Providers Dropdown Content */}
+                  {/* Assessments Dropdown Content */}
                   {isMobileForProvidersOpen && (
                     <div className="ml-4 space-y-2 py-2">
                       <div className="px-4 py-2">
@@ -666,7 +706,11 @@ export default function Header() {
                 <div className="border-b border-gray-100">
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
-                    onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
+                    onClick={() => {
+                      setIsMobileAboutOpen(!isMobileAboutOpen);
+                      setIsMobileFindCareOpen(false);
+                      setIsMobileForProvidersOpen(false);
+                    }}
                   >
                     <span className="text-lg font-medium text-gray-900">About Us</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileAboutOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -703,7 +747,7 @@ export default function Header() {
                   )}
                 </div>
 
-                {/* Blog */}
+                {/* Resources */}
                 <div className="border-b border-gray-100">
                   <button 
                     onClick={() => {
@@ -712,7 +756,7 @@ export default function Header() {
                     }}
                     className="block w-full text-left py-3 px-2 text-lg font-medium text-gray-900 hover:text-indigo-600"
                   >
-                    Blog
+                    Resources
                   </button>
                 </div>
               </div>

@@ -3,7 +3,27 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    const { searchParams } = new URL(request.url);
+    
+    // Validate request.url before using it
+    if (!request.url) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request URL' },
+        { status: 400 }
+      );
+    }
+    
+    let searchParams;
+    try {
+      const url = new URL(request.url);
+      searchParams = url.searchParams;
+    } catch (urlError) {
+      console.error('❌ Invalid URL in request:', request.url, urlError);
+      return NextResponse.json(
+        { success: false, message: 'Invalid request URL format' },
+        { status: 400 }
+      );
+    }
+    
     const date = searchParams.get('date');
     
     if (!token) {

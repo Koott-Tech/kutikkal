@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
 
 const Guide = () => {
-  const [selected, setSelected] = useState(null);
   const [showOnboarding, setShowOnboarding] = React.useState(false);
   const [showDateTimePicker, setShowDateTimePicker] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -50,30 +49,23 @@ const Guide = () => {
   // Prevent background scroll when modal is open
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
-      if (selected !== null || showDateTimePicker || showPaymentModal) {
+      if (showDateTimePicker || showPaymentModal) {
         document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = '';
       }
       return () => { document.body.style.overflow = ''; };
     }
-  }, [selected, showDateTimePicker, showPaymentModal]);
+  }, [showDateTimePicker, showPaymentModal]);
 
   const handleBookSession = (doctor) => {
     setSelectedDoctor(doctor);
     setShowDateTimePicker(true);
-    setSelected(null); // Close doctor modal
   };
 
   const handleDoctorClick = (doctor, index) => {
-    // Check if mobile view
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      // Direct redirect to profile page on mobile
-      router.push(`/therapist-profile?doctor=${index}`);
-    } else {
-      // Show modal on desktop
-      setSelected(index);
-    }
+    // Always redirect to therapist profile page
+    router.push(`/therapist-profile?doctor=${index}`);
   };
 
   const handleDateTimeConfirm = () => {
@@ -450,7 +442,7 @@ const Guide = () => {
         </div>
 
         {/* Modal Popup for Doctor Details - Hidden on mobile */}
-        {selected !== null && (
+        {false && (
           <div className="doctor-modal-overlay" style={{
             position: "fixed",
             top: 0,
@@ -477,24 +469,47 @@ const Guide = () => {
               <style>{`
                 .doctor-modal {
                   width: 80vw;
-                  max-width: 1300px;
-                  height: 700px;
+                  max-width: 1200px;
+                  height: 80vh;
+                  max-height: 700px;
                   background: #fff;
                   border-radius: 10px;
                   box-shadow: 0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12);
                   display: flex;
+                  flex-direction: row;
                   overflow: hidden;
                   position: relative;
                 }
+                
+                /* Laptop specific optimizations */
+                @media (min-width: 1024px) and (max-width: 1440px) {
+                  .doctor-modal {
+                    width: 75vw;
+                    max-width: 1000px;
+                    height: 75vh;
+                    max-height: 600px;
+                    flex-direction: row;
+                  }
+                }
+                
+                @media (min-width: 1441px) {
+                  .doctor-modal {
+                    width: 70vw;
+                    max-width: 1200px;
+                    height: 70vh;
+                    max-height: 700px;
+                    flex-direction: row;
+                  }
+                }
                 .doctor-modal-image {
-                  flex: 1.2;
+                  flex: 1;
                   background: #000;
                   display: flex;
                   align-items: center;
                   justify-content: center;
                 }
                 .doctor-modal-content {
-                  flex: 1;
+                  flex: 1.5;
                   padding: 40px 48px;
                   display: flex;
                   flex-direction: column;
@@ -502,11 +517,48 @@ const Guide = () => {
                   gap: 16px;
                   position: relative;
                   overflow-y: auto;
+                  max-height: 100%;
+                }
+                
+                /* Laptop specific content adjustments */
+                @media (min-width: 1024px) and (max-width: 1440px) {
+                  .doctor-modal-image {
+                    flex: 1;
+                  }
+                  .doctor-modal-content {
+                    flex: 1.5;
+                    padding: 32px 40px;
+                    gap: 14px;
+                  }
+                }
+                
+                @media (min-width: 1441px) {
+                  .doctor-modal-image {
+                    flex: 1;
+                  }
+                  .doctor-modal-content {
+                    flex: 1.5;
+                    padding: 40px 48px;
+                    gap: 16px;
+                  }
                 }
                 .doctor-modal-title {
                   font-size: 32px;
                   font-weight: 700;
                   margin-bottom: 8px;
+                }
+                
+                /* Laptop specific title adjustments */
+                @media (min-width: 1024px) and (max-width: 1440px) {
+                  .doctor-modal-title {
+                    font-size: 28px;
+                  }
+                }
+                
+                @media (min-width: 1441px) {
+                  .doctor-modal-title {
+                    font-size: 32px;
+                  }
                 }
                 .doctor-modal-buttons {
                   display: flex;
@@ -515,6 +567,7 @@ const Guide = () => {
                   justify-content: center;
                   align-items: center;
                   margin-top: 32px;
+                  flex-wrap: wrap;
                 }
                 .doctor-modal-button {
                   padding: 12px 24px;
@@ -523,7 +576,41 @@ const Guide = () => {
                   border-radius: 12px;
                   cursor: pointer;
                   transition: all 0.2s;
+                  min-width: 140px;
                 }
+                
+                /* Laptop specific button adjustments */
+                @media (min-width: 1024px) and (max-width: 1440px) {
+                  .doctor-modal-buttons {
+                    gap: 14px;
+                    margin-top: 28px;
+                  }
+                  .doctor-modal-button {
+                    padding: 11px 22px;
+                    font-size: 14px;
+                    min-width: 130px;
+                  }
+                }
+                
+                @media (min-width: 1441px) {
+                  .doctor-modal-buttons {
+                    gap: 16px;
+                    margin-top: 32px;
+                  }
+                  .doctor-modal-button {
+                    padding: 12px 24px;
+                    font-size: 15px;
+                    min-width: 140px;
+                  }
+                }
+                
+                /* Ensure row layout for tablet and larger screens */
+                @media (min-width: 769px) {
+                  .doctor-modal {
+                    flex-direction: row !important;
+                  }
+                }
+                
                 @media (max-width: 768px) {
                   .doctor-modal {
                     width: 95vw;

@@ -5,9 +5,23 @@ import Header from './Header';
 
 export default function HeaderWrapper() {
   const pathname = usePathname();
-  // Hide global site header on admin, superadmin, and client dashboards to avoid duplicate menus
-  const hideHeaderPaths = ['/admin', '/superadmin', '/profile'];
-  const shouldHide = hideHeaderPaths.some((p) => pathname.startsWith(p));
-  if (shouldHide) return null;
+  
+  // Hide global site header on admin and superadmin dashboards to avoid duplicate menus
+  const hideHeaderPaths = ['/admin', '/superadmin'];
+  const shouldHideCompletely = hideHeaderPaths.some((p) => pathname.startsWith(p));
+  
+  if (shouldHideCompletely) return null;
+  
+  // For client dashboard (/profile), show header only on laptop/desktop, hide on mobile
+  const isClientDashboard = pathname.startsWith('/profile');
+  
+  if (isClientDashboard) {
+    return (
+      <div className="hidden md:block">
+        <Header />
+      </div>
+    );
+  }
+  
   return <Header />;
 }

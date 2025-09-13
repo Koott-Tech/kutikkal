@@ -459,6 +459,21 @@ const TherapistProfileContent = () => {
         console.log('🔗 Redirect URL:', paymentResponse.data.redirectUrl);
         console.log('📋 PayU Params:', paymentResponse.data.payuParams);
         
+        // Validate redirect URL before using it
+        if (!paymentResponse.data.redirectUrl) {
+          console.error('❌ No redirect URL provided');
+          showError('Payment gateway error: No redirect URL');
+          return;
+        }
+        
+        try {
+          new URL(paymentResponse.data.redirectUrl);
+        } catch (urlError) {
+          console.error('❌ Invalid redirect URL:', paymentResponse.data.redirectUrl, urlError);
+          showError('Payment gateway error: Invalid URL');
+          return;
+        }
+        
         // Add a small delay to prevent rate limiting
         await new Promise(resolve => setTimeout(resolve, 1000));
         
@@ -896,15 +911,15 @@ const TherapistProfileContent = () => {
               
 
               
-              {/* Expertise */}
+              {/* Specialization */}
               {selectedDoctor.area_of_expertise && Array.isArray(selectedDoctor.area_of_expertise) && selectedDoctor.area_of_expertise.length > 0 && (
-              <div className="p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Areas of Expertise</h3>
-                <div className="flex flex-wrap gap-2">
-                    {selectedDoctor.area_of_expertise.map((exp, i) => (
-                      <div key={i} className="bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium">
-                        {exp}
-                  </div>
+                <div className="p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Specialization</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDoctor.area_of_expertise.map((spec, i) => (
+                      <div key={i} className="bg-purple-100 text-purple-800 px-3 py-2 rounded-full text-sm font-medium">
+                        {spec}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -936,59 +951,82 @@ const TherapistProfileContent = () => {
               </div>
               ) : null}
               
-              {/* Pricing Section */}
-              <div className="mb-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 text-center">Session Pricing</h3>
+              {/* Languages Section */}
+              <div className="p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Languages</h3>
+                <div className="flex flex-wrap gap-2">
+                  <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
+                    English
+                  </div>
+                  <div className="bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium">
+                    Malayalam
+                  </div>
+                </div>
+              </div>
+              
+              {/* FAQ Section - Desktop/Laptop View */}
+              <div className="mt-6 p-4 rounded-lg bg-gray-50 hidden lg:block">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
                 
-                <div className="space-y-2">
-                  {/* Family/Child Sessions */}
-                  <div>
-                    <div className="text-center mb-2">
-                      <h4 className="text-base font-bold text-gray-800 mb-1">Family/Child Sessions</h4>
-                      <div className="w-12 h-1 bg-purple-500 mx-auto rounded-full"></div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {selectedDoctor.price ? (
-                        <>
-                          <button 
-                            onClick={() => handlePricingSelect({ type: 'family', package: 'single', price: selectedDoctor.price * 1.5, duration: '90 minutes' })}
-                            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all duration-200 ${
-                              selectedPricing?.type === 'family' && selectedPricing?.package === 'single'
-                                ? 'bg-purple-50 border-2 border-purple-300'
-                                : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                            }`}
-                          >
-                            <div>
-                              <p className="font-semibold text-gray-800 text-sm">Family Session</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-base font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 1.5)}</p>
-                            </div>
-                          </button>
-                          
-                          <button 
-                            onClick={() => handlePricingSelect({ type: 'child', package: 'single', price: selectedDoctor.price * 0.8, duration: '45 minutes' })}
-                            className={`w-full flex justify-between items-center p-2 rounded-lg transition-all duration-200 ${
-                              selectedPricing?.type === 'child' && selectedPricing?.package === 'single'
-                                ? 'bg-purple-50 border-2 border-purple-300'
-                                : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                            }`}
-                          >
-                            <div>
-                              <p className="font-semibold text-gray-800 text-sm">Child Session</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-base font-bold text-purple-600">₹{Math.round(selectedDoctor.price * 0.8)}</p>
-                            </div>
-                          </button>
-                        </>
-                      ) : (
-                        <div className="text-center py-4">
-                          <p className="text-gray-500 text-sm">Pricing information will be available soon</p>
-                        </div>
-                      )}
-                    </div>
+                <div className="space-y-3">
+                  {/* FAQ 1 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(0)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 0 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 0 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* FAQ 2 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(1)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 1 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 1 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* FAQ 3 */}
+                  <div className="border border-gray-200 rounded-lg bg-white">
+                    <button
+                      onClick={() => toggleFAQ(2)}
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
+                      <span className="text-gray-500 text-lg font-bold">
+                        {openFAQ === 2 ? '−' : '+'}
+                      </span>
+                    </button>
+                    {openFAQ === 2 && (
+                      <div className="px-3 pb-3">
+                        <p className="text-gray-700 leading-relaxed text-xs">
+                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1433,71 +1471,76 @@ const TherapistProfileContent = () => {
                 </div>
               )}
               
-              {/* FAQ Section */}
-              <div className="mt-6 p-4 rounded-lg bg-gray-50">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
-                
-                <div className="space-y-3">
-                  {/* FAQ 1 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
-                    <button
-                      onClick={() => toggleFAQ(0)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 0 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 0 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
-                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
-                        </p>
-                      </div>
-                    )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* FAQ Section - Mobile View */}
+      <div className="w-full p-4 md:p-8 bg-white lg:hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="mt-6 p-4 rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
+            
+            <div className="space-y-3">
+              {/* FAQ 1 */}
+              <div className="border border-gray-200 rounded-lg bg-white">
+                <button
+                  onClick={() => toggleFAQ(0)}
+                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
+                  <span className="text-gray-500 text-lg font-bold">
+                    {openFAQ === 0 ? '−' : '+'}
+                  </span>
+                </button>
+                {openFAQ === 0 && (
+                  <div className="px-3 pb-3">
+                    <p className="text-gray-700 leading-relaxed text-xs">
+                      &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
+                    </p>
                   </div>
-                  
-                  {/* FAQ 2 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
-                    <button
-                      onClick={() => toggleFAQ(1)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 1 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 1 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
-                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
-                        </p>
-                      </div>
-                    )}
+                )}
+              </div>
+              
+              {/* FAQ 2 */}
+              <div className="border border-gray-200 rounded-lg bg-white">
+                <button
+                  onClick={() => toggleFAQ(1)}
+                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
+                  <span className="text-gray-500 text-lg font-bold">
+                    {openFAQ === 1 ? '−' : '+'}
+                  </span>
+                </button>
+                {openFAQ === 1 && (
+                  <div className="px-3 pb-3">
+                    <p className="text-gray-700 leading-relaxed text-xs">
+                      &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
+                    </p>
                   </div>
-                  
-                  {/* FAQ 3 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
-                    <button
-                      onClick={() => toggleFAQ(2)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 2 ? '−' : '+'}
-                      </span>
-                    </button>
-                    {openFAQ === 2 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
-                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
-                        </p>
-                      </div>
-                    )}
+                )}
+              </div>
+              
+              {/* FAQ 3 */}
+              <div className="border border-gray-200 rounded-lg bg-white">
+                <button
+                  onClick={() => toggleFAQ(2)}
+                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
+                  <span className="text-gray-500 text-lg font-bold">
+                    {openFAQ === 2 ? '−' : '+'}
+                  </span>
+                </button>
+                {openFAQ === 2 && (
+                  <div className="px-3 pb-3">
+                    <p className="text-gray-700 leading-relaxed text-xs">
+                      &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
+                    </p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
