@@ -12,12 +12,17 @@ export function AuthProvider({ children }) {
   const [supabaseClient, setSupabaseClient] = useState(null);
 
   useEffect(() => {
-    // Initialize Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
-    setSupabaseClient(supabase);
+    // Initialize Supabase client only if environment variables are available
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      setSupabaseClient(supabase);
+    } else {
+      console.warn('Supabase environment variables not found');
+      setSupabaseClient(null);
+    }
 
     // Check for existing token and user data on app load
     const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -28,8 +33,11 @@ export function AuthProvider({ children }) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         
-        // Check if token needs refresh
-        refreshTokenIfNeeded(supabase, storedToken);
+        // Check if token needs refresh (only if supabase is available)
+        if (supabaseUrl && supabaseAnonKey) {
+          const supabase = createClient(supabaseUrl, supabaseAnonKey);
+          refreshTokenIfNeeded(supabase, storedToken);
+        }
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('authToken');
@@ -43,6 +51,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const refreshTokenIfNeeded = async (supabase, currentToken) => {
+    if (!supabase) return;
+    
     try {
       // Try to refresh the session
       const { data, error } = await supabase.auth.refreshSession();

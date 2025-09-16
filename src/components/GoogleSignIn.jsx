@@ -9,13 +9,21 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
   const { login } = useAuth();
   const router = useRouter();
 
-  // Initialize Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  // Initialize Supabase client only if environment variables are available
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  const supabase = supabaseUrl && supabaseAnonKey 
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
   const handleGoogleSignIn = async () => {
+    if (!supabase) {
+      console.error('Supabase client not available');
+      onError?.('Supabase client not available');
+      return;
+    }
+    
     try {
       console.log('🔍 Starting Supabase Google Sign-In');
       

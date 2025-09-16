@@ -13,10 +13,17 @@ export default function AuthCallback() {
       try {
         setStatus('Processing authentication...');
         
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        );
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.error('Supabase environment variables not available');
+          setStatus('Configuration error. Redirecting...');
+          setTimeout(() => router.push('/login?error=config_error'), 2000);
+          return;
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         // Get the session from URL hash
         const { data, error } = await supabase.auth.getSession();
