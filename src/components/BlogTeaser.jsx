@@ -42,7 +42,7 @@ export default function BlogTeaser() {
                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
            <div className="text-center md:text-left ml-3 sm:ml-6 md:ml-0">
              <p className="text-xl md:text-base text-gray-700">From our blog</p>
-                          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
+                          <h2 className="mt-3 text-[32px] sm:text-[40px] md:text-[48px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
                Tips for getting started on your journey
              </h2>
            </div>

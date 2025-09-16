@@ -62,11 +62,11 @@ export default function InfoCards() {
 
   return (
     <section className="mt-1">
-      <div className="mx-auto max-w-6xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
         {items.map((item) => (
           <div
             key={item.title}
-            className="flex min-h-[240px] flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+            className="flex min-h-[220px] flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
           >
             {/* Icon at the left top */}
             <div className="flex flex-col items-start">

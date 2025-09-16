@@ -18,7 +18,26 @@ export default function Home() {
     <main >
      
       <Hero />
-      {/* <LogosStrip /> */}
+      
+      {/* Sister Brands Section */}
+      <div className="bg-white py-8">
+        <div className="mx-auto max-w-[1400px] px-1 md:px-2">
+          <div className="mx-4 sm:mx-6 md:mx-0">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="text-gray-700 text-xs md:text-sm md:text-left">
+                <div>Our sister brands, united by one vision:</div>
+                <div className="font-semibold">Redefining care, work, and hope for a better tomorrow.</div>
+              </div>
+              <div className="flex items-center gap-6 text-sm md:text-base text-gray-700 md:ml-auto">
+                <span className="hover:text-gray-900 cursor-pointer font-semibold">Koott</span>
+                <span className="hover:text-gray-900 cursor-pointer font-semibold">Hopelly</span>
+                <span className="hover:text-gray-900 cursor-pointer font-semibold">WorkMate</span>
+                <span className="hover:text-gray-900 cursor-pointer">About us</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <ChooseOptions />
       
@@ -28,9 +47,7 @@ export default function Home() {
       <ConsultationBanner />
       <HowItWorks />
       <SupportFaq />
-      <div className="hidden md:block">
-        <Testimonials />
-      </div>
+      <Testimonials />
       
       {/* <ResultsSplit /> */}
       

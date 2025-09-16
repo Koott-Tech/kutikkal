@@ -47,8 +47,8 @@ export default function ChooseOptions() {
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="text-center md:text-left mb-12 max-w-4xl mx-auto">
-          <p className="text-xs md:text-sm text-gray-600 mb-2 leading-tight">Let us guide you.</p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-gray-900 tracking-tight">
+          <p className="text-[18px] text-gray-600 mb-2 leading-tight">Let us guide you.</p>
+          <h2 className="text-[32px] md:text-[48px] font-medium text-gray-900 tracking-tight">
             Choose your options to get started
           </h2>
         </div>
@@ -84,7 +84,7 @@ export default function ChooseOptions() {
               </div>
 
               {/* Image Section */}
-              <div className="relative h-48 md:h-56 rounded-b-2xl overflow-hidden">
+              <div className="relative h-48 md:h-56 rounded-[30px] overflow-hidden">
                 <Image
                   src={card.image}
                   alt={card.title}
@@ -95,21 +95,24 @@ export default function ChooseOptions() {
                 
                 {/* Read More Button */}
                 <div className="absolute bottom-3 left-6">
-                  <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white px-3 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center gap-2 shadow-sm border border-white/20">
-                    <span>Read more.</span>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                  <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden">
+                    <span className="px-3">Read more.</span>
+                    <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="#EDE8DD"
+                        strokeOpacity="0.6"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </span>
                   </button>
                 </div>
               </div>

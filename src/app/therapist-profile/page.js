@@ -467,9 +467,14 @@ const TherapistProfileContent = () => {
         }
         
         try {
+          console.log('🔍 Attempting to validate URL:', paymentResponse.data.redirectUrl);
+          console.log('🔍 URL type:', typeof paymentResponse.data.redirectUrl);
+          console.log('🔍 URL length:', paymentResponse.data.redirectUrl?.length);
           new URL(paymentResponse.data.redirectUrl);
+          console.log('✅ URL validation successful');
         } catch (urlError) {
           console.error('❌ Invalid redirect URL:', paymentResponse.data.redirectUrl, urlError);
+          console.error('❌ URL Error details:', urlError.message);
           showError('Payment gateway error: Invalid URL');
           return;
         }

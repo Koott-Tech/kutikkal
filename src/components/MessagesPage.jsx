@@ -84,7 +84,13 @@ export default function MessagesPage({ session = null }) {
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      // Only scroll within the messages container, not the entire page
+      const messagesContainer = messagesEndRef.current.parentElement;
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }
   };
 
   const loadConversations = async () => {
@@ -343,7 +349,7 @@ export default function MessagesPage({ session = null }) {
   };
 
   return (
-    <div className="bg-white h-full flex flex-col">
+    <div className="bg-white h-[700px] md:h-[800px] lg:h-[900px] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
@@ -362,7 +368,7 @@ export default function MessagesPage({ session = null }) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Conversations List */}
-        <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 bg-gray-50`}>
+        <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 bg-gray-50 overflow-y-auto max-h-[500px] md:max-h-[600px] lg:max-h-[700px]`}>
           <div className="p-4">
             <h3 className="font-medium text-gray-900 mb-3">Conversations</h3>
             {isLoading ? (
@@ -371,8 +377,15 @@ export default function MessagesPage({ session = null }) {
               </div>
             ) : conversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                <p>No conversations yet</p>
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                <p className="text-gray-600 mb-4">Start a conversation with your booked psychologist</p>
+                <button
+                  onClick={() => window.location.href = '/profile?tab=sessions'}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  View Sessions
+                </button>
               </div>
             ) : (
               <div className="space-y-2">
@@ -439,7 +452,7 @@ export default function MessagesPage({ session = null }) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[500px] md:max-h-[600px] lg:max-h-[700px]">
                 {isLoading ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>

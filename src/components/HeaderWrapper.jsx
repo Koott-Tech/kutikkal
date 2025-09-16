@@ -17,7 +17,7 @@ export default function HeaderWrapper() {
   
   if (isClientDashboard) {
     return (
-      <div className="hidden md:block">
+      <div className="hidden md:block fixed top-0 left-64 right-0 z-50 bg-white border-b border-gray-200">
         <Header />
       </div>
     );

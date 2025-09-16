@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { clientApi, authApi, messagesApi } from "../../lib/backendApi";
-import LoadingScreen from "../../components/LoadingScreen";
 import RescheduleModal from "../../components/RescheduleModal";
 import SessionFeedbackModal from "../../components/SessionFeedbackModal";
 import MessagesPage from "../../components/MessagesPage";
@@ -25,7 +24,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { user, token, login, logout, hasRole } = useAuth();
+  const { user, token, login, logout, hasRole, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("sessions");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,7 +34,6 @@ export default function ProfilePage() {
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // Changed to false - no auto loading
   const [error, setError] = useState(null);
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false);
   
   // Individual loading states for each section
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -69,8 +67,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
-      // Only prime contact form with existing values - no API calls
-      const p = user.profile || {};
+      // Prime contact form with existing values from user object
+      const p = user.profile || user;
       setProfileForm({
         first_name: p.first_name || '',
         last_name: p.last_name || '',
@@ -80,11 +78,19 @@ export default function ProfilePage() {
       });
       
       // Load sessions by default since it's the default tab
-      if (activeTab === 'sessions') {
+      if (activeTab === 'sessions' && isAuthenticated()) {
+        console.log('🔍 User authenticated, loading sessions');
         loadSessions();
       }
     }
   }, [user, activeTab]);
+
+  // Load profile data when contact tab is active
+  useEffect(() => {
+    if (activeTab === 'contact' && user && isAuthenticated()) {
+      loadProfileData();
+    }
+  }, [activeTab, user]);
 
   // If query contains ?tab=contact, open Contact tab on arrival
   useEffect(() => {
@@ -99,15 +105,43 @@ export default function ProfilePage() {
 
 
 
+  // Load profile data for contact tab
+  const loadProfileData = async () => {
+    try {
+      console.log('🔍 Loading profile data for contact tab');
+      const profileData = await clientApi.getProfile();
+      if (profileData?.data) {
+        const profile = profileData.data;
+        setProfileForm({
+          first_name: profile.first_name || '',
+          last_name: profile.last_name || '',
+          phone_number: profile.phone_number || '',
+          child_name: profile.child_name || '',
+          child_age: profile.child_age || ''
+        });
+        console.log('🔍 Profile data loaded:', profile);
+      }
+    } catch (err) {
+      console.error('Error loading profile data:', err);
+    }
+  };
+
   // Lazy load sessions only when sessions tab is active
   const loadSessions = async () => {
     if (sessions.length > 0) return; // Already loaded
+    
+    // Check if user is authenticated before making API call
+    if (!user || !isAuthenticated()) {
+      console.log('🔍 User not authenticated, skipping sessions load');
+      return;
+    }
     
     try {
       setSessionsLoading(true);
       setError(null);
 
       if (hasRole('client')) {
+        console.log('🔍 Loading sessions for client:', user.email);
         const sessionsData = await clientApi.getSessions();
         setSessions(sessionsData.data?.sessions || []);
       }
@@ -116,7 +150,6 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setSessionsLoading(false);
-      setShowLoadingScreen(false); // Hide loading screen when API call completes
     }
   };
 
@@ -137,7 +170,6 @@ export default function ProfilePage() {
       setError(err.message);
     } finally {
       setPackagesLoading(false);
-      setShowLoadingScreen(false); // Hide loading screen when API call completes
     }
   };
 
@@ -162,16 +194,10 @@ export default function ProfilePage() {
     setActiveTab(tab);
     setSidebarOpen(false); // Close mobile menu after tab change
 
-    // Always show the refresh animation when user changes dashboard tab
-    setShowLoadingScreen(true);
-
-    // For tabs that fetch data, hide when API completes inside loaders
+    // Load data for tabs that need it, without showing loading screen
     if (tab === 'sessions') {
       if (sessions.length === 0) {
         loadSessions();
-      } else {
-        // No fetch needed; hide animation immediately
-        setShowLoadingScreen(false);
       }
       return;
     }
@@ -179,21 +205,13 @@ export default function ProfilePage() {
     if (tab === 'packages') {
       if (clientPackages.length === 0) {
         loadPackages();
-      } else {
-        setShowLoadingScreen(false);
       }
       return;
     }
-
-    // Other tabs (messages, contact, report) - hide immediately
-    setShowLoadingScreen(false);
   };
 
   // Handle navigation click
   const handleNavigationClick = (item) => {
-    // Show loading screen immediately
-    setShowLoadingScreen(true);
-    
     if (item.action) {
       item.action();
     } else if (item.href && item.href !== '#') {
@@ -359,6 +377,16 @@ export default function ProfilePage() {
       const refreshed = await authApi.getProfile();
       if (refreshed?.data?.user) {
         login(refreshed.data.user, token);
+        
+        // Update profileForm with the refreshed data
+        const refreshedProfile = refreshed.data.user.profile || {};
+        setProfileForm({
+          first_name: refreshedProfile.first_name || '',
+          last_name: refreshedProfile.last_name || '',
+          phone_number: refreshedProfile.phone_number || '',
+          child_name: refreshedProfile.child_name || '',
+          child_age: refreshedProfile.child_age || ''
+        });
       }
       setProfileSaveMsg('Contact information saved successfully.');
     } catch (err) {
@@ -437,6 +465,18 @@ export default function ProfilePage() {
     );
   }
 
+  // Show loading screen while auth is loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -474,9 +514,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      {showLoadingScreen && <LoadingScreen />}
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
@@ -607,6 +645,9 @@ export default function ProfilePage() {
             <Menu className="h-6 w-6" />
           </button>
         </div>
+
+        {/* Desktop header spacer - adds top padding for fixed header */}
+        <div className="hidden lg:block h-20"></div>
 
         {/* Page content */}
         <main className="py-6">
@@ -1288,6 +1329,5 @@ export default function ProfilePage() {
       />
 
     </div>
-    </>
   );
 }

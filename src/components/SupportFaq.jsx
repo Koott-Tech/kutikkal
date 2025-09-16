@@ -50,15 +50,15 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full min-h-screen flex items-center">
+    <section className="w-full flex items-center min-h-screen lg:h-[700px]">
       <div className="w-full px-3 sm:px-8 md:px-[50px] py-16">
         <p className="text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
-        <h2 className="text-center text-3xl md:text-5xl font-medium tracking-tight md:tracking-normal text-gray-900 mt-2 mb-10 md:mb-12">
+        <h2 className="text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.
         </h2>
 
         {/* Desktop Layout: Image on left, FAQ on right */}
-        <div className="hidden lg:grid mt-2 grid-cols-2 gap-8 items-start">
+        <div className="hidden lg:grid mt-2 grid-cols-2 gap-8 items-stretch h-full">
           {/* Left: Image that changes per selection */}
           <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
@@ -73,8 +73,8 @@ export default function SupportFaq() {
           </div>
 
           {/* Right: FAQ Accordion */}
-          <div className="w-full">
-            <div className="rounded-2xl bg-white space-y-4">
+          <div className="w-full h-full">
+            <div className="rounded-2xl bg-white space-y-4 h-full max-h-full overflow-y-auto pr-2">
               {items.map((item, idx) => {
                 const open = active === idx;
                 const gradient = gradients[idx % gradients.length];

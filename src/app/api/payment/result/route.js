@@ -6,7 +6,15 @@ export const dynamic = "force-dynamic";
 export async function POST(req) {
   try {
     console.log('🔍 PayU POST request received');
-    console.log('🔍 Request URL:', req.url);
+    
+    // Handle null URL gracefully
+    let requestUrl = req.url;
+    if (!requestUrl) {
+      console.log('⚠️ Request URL is null, using fallback');
+      requestUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payment/result`;
+    }
+    
+    console.log('🔍 Request URL:', requestUrl);
     console.log('🔍 Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Simple form data parsing
@@ -19,7 +27,8 @@ export async function POST(req) {
 
     // Call backend API
     try {
-      const backendResponse = await fetch('https://littlecare-backend.onrender.com/api/payment/success', {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      const backendResponse = await fetch(`${backendUrl}/payment/success`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ txnid, status, amount })
@@ -35,9 +44,9 @@ export async function POST(req) {
     }
 
     // Determine redirect base URL based on environment
-    const baseUrl = process.env.NODE_ENV === 'development' 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app';
+      : 'https://kutikkal-one.vercel.app');
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
@@ -47,9 +56,9 @@ export async function POST(req) {
     console.error('❌ Error in POST handler:', error);
     
     // Determine redirect base URL based on environment
-    const baseUrl = process.env.NODE_ENV === 'development' 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app';
+      : 'https://kutikkal-one.vercel.app');
       
     return NextResponse.redirect(`${baseUrl}/payment/failure?error=processing`, { status: 302 });
   }
@@ -64,9 +73,9 @@ export async function GET(req) {
       console.error('❌ No URL provided in request');
       
       // Determine redirect base URL based on environment
-      const baseUrl = process.env.NODE_ENV === 'development' 
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
-        : 'https://kutikkal-one.vercel.app';
+        : 'https://kutikkal-one.vercel.app');
         
       return NextResponse.redirect(`${baseUrl}/payment/failure?error=no_url`, { status: 302 });
     }
@@ -78,9 +87,9 @@ export async function GET(req) {
       console.error('❌ Invalid URL in request:', req.url, urlError);
       
       // Determine redirect base URL based on environment
-      const baseUrl = process.env.NODE_ENV === 'development' 
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
-        : 'https://kutikkal-one.vercel.app';
+        : 'https://kutikkal-one.vercel.app');
         
       return NextResponse.redirect(`${baseUrl}/payment/failure?error=invalid_url`, { status: 302 });
     }
@@ -91,9 +100,9 @@ export async function GET(req) {
     console.log('🔍 PayU GET Data:', { txnid, status });
 
     // Determine redirect base URL based on environment
-    const baseUrl = process.env.NODE_ENV === 'development' 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app';
+      : 'https://kutikkal-one.vercel.app');
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
@@ -103,9 +112,9 @@ export async function GET(req) {
     console.error('❌ Error in GET handler:', error);
     
     // Determine redirect base URL based on environment
-    const baseUrl = process.env.NODE_ENV === 'development' 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app';
+      : 'https://kutikkal-one.vercel.app');
       
     return NextResponse.redirect(`${baseUrl}/payment/failure?error=processing`, { status: 302 });
   }

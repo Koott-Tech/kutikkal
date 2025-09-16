@@ -1,17 +1,20 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileFindCareOpen, setIsMobileFindCareOpen] = useState(false);
   const [isMobileForProvidersOpen, setIsMobileForProvidersOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
+  const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -164,79 +167,41 @@ export default function Header() {
                   <span>Counselling</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
+                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-[800px] bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="fixed top-20 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mx-4">
                       {/* Counselling Services */}
-                      <div className="px-4 pb-3 border-b border-gray-200">
+                      <div className="px-6 pb-4 border-b border-gray-200">
                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Counselling Services</h3>
-                        <div className="grid grid-cols-3 gap-8">
-                          {/* Column 1 */}
-                          <div className="space-y-1">
-                            {[
-                              { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
-                              { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
-                              { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
-                              { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
-                              { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" }
-                            ].map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                  setIsFindCareOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Column 2 */}
-                          <div className="space-y-1">
-                            {[
-                              { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
-                              { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
-                              { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
-                              { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
-                              { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" }
-                            ].map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                  setIsFindCareOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                          
-                          {/* Column 3 */}
-                          <div className="space-y-1">
-                            {[
-                              { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
-                              { name: "Grief & Loss", url: "/counselling/grief-loss" },
-                              { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
-                              { name: "Autism Support", url: "/counselling/autism-support" }
-                            ].map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                  setIsFindCareOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
+                          {[
+                            { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
+                            { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
+                            { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
+                            { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
+                            { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" },
+                            { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                            { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
+                            { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                            { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
+                            { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" },
+                            { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
+                            { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                            { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
+                            { name: "Autism Support", url: "/counselling/autism-support" }
+                          ].map((service, index) => (
+                            <div 
+                              key={index}
+                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push(service.url);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">{service.name}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       
@@ -248,7 +213,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/assessments');
-                              setIsFindCareOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Assessments</span>
@@ -257,7 +221,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/better-parenting');
-                              setIsFindCareOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Better Parenting</span>
@@ -266,7 +229,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/resources');
-                              setIsFindCareOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Resources</span>
@@ -288,7 +250,7 @@ export default function Header() {
                   <span>Assessments</span>
                     <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
+                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
                   
                   {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
@@ -315,8 +277,7 @@ export default function Header() {
                            <div 
                              className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                              onClick={() => {
-                               handleFAQClick();
-                               setIsForProvidersOpen(false);
+                              handleFAQClick();
                              }}
                            >
                              <div className="w-5 h-5 flex items-center justify-center">
@@ -356,7 +317,7 @@ export default function Header() {
                     <span>About Us</span>
                     <ChevronUpIcon className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
+                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
                   
                                      {/* About Us Dropdown */}
                    {isAboutOpen && (
@@ -378,9 +339,37 @@ export default function Header() {
                      </div>
                    )}
                 </li>
-                <li className="relative group cursor-pointer hover:text-gray-900">
-                  <span onClick={handleBlogClick}>Resources</span>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-300 group-hover:w-20"></span>
+                <li className="relative group">
+                  <button 
+                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    onClick={() => {
+                      setIsResourcesOpen(!isResourcesOpen);
+                      setIsFindCareOpen(false);
+                      setIsForProvidersOpen(false);
+                      setIsAboutOpen(false);
+                    }}
+                  >
+                    <span>Resources</span>
+                    <ChevronUpIcon className={`transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
+                  
+                  {/* Resources Dropdown */}
+                  {isResourcesOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                      <div className="px-4 space-y-2">
+                        <div 
+                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          onClick={() => {
+                            router.push('/blog');
+                            setIsResourcesOpen(false);
+                          }}
+                        >
+                          <span className="text-gray-700 text-sm">Blog</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </li>
               </ul>
             </nav>
@@ -511,7 +500,6 @@ export default function Header() {
                   <button
                     onClick={() => {
                       handleProfileClick();
-                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full py-3 px-4 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200 mt-4 text-center"
                   >
@@ -527,7 +515,6 @@ export default function Header() {
                   <button
                     onClick={() => {
                       handleLoginClick();
-                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full text-left py-3 px-4 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200"
                   >
@@ -538,7 +525,6 @@ export default function Header() {
                   <button 
                     onClick={() => {
                       router.push('/');
-                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full py-3 px-4 text-base font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800"
                   >
@@ -591,7 +577,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push(service.url);
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">{service.name}</span>
@@ -604,7 +589,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/assessments');
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Assessments</span>
@@ -613,7 +597,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/better-parenting');
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Better Parenting</span>
@@ -622,7 +605,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               router.push('/resources');
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Resources</span>
@@ -727,7 +709,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               handleCompanyClick();
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Company</span>
@@ -736,7 +717,6 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               handleCareerClick();
-                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Career</span>
@@ -747,17 +727,41 @@ export default function Header() {
                   )}
                 </div>
 
-                {/* Resources */}
+                {/* Resources Dropdown */}
                 <div className="border-b border-gray-100">
-                  <button 
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      handleBlogClick();
-                      setIsMobileMenuOpen(false);
+                      setIsMobileResourcesOpen(!isMobileResourcesOpen);
+                      setIsMobileFindCareOpen(false);
+                      setIsMobileForProvidersOpen(false);
+                      setIsMobileAboutOpen(false);
                     }}
-                    className="block w-full text-left py-3 px-2 text-lg font-medium text-gray-900 hover:text-indigo-600"
                   >
-                    Resources
-                  </button>
+                    <span className="text-lg font-medium text-gray-900">Resources</span>
+                    <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  
+                  {/* Resources Dropdown Content */}
+                  {isMobileResourcesOpen && (
+                    <div className="ml-4 space-y-2 py-2">
+                      <div className="px-4 py-2">
+                        <div className="space-y-2">
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/blog');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm">Blog</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -767,7 +771,6 @@ export default function Header() {
                   <button
                     onClick={() => {
                       handleLogout();
-                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full py-3 px-4 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg border border-red-200"
                   >

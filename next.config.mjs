@@ -12,9 +12,23 @@ const nextConfig = {
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
-  // Disable static optimization for dynamic content
-  experimental: {
-    staticPageGenerationTimeout: 1000,
+  // Set output file tracing root to silence workspace warning
+  outputFileTracingRoot: '/Users/abhishekr/Desktop/Projects/kuttikal/frontend',
+  // Enable prefetching for better navigation performance
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Optimize bundle size
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
   },
 };
 

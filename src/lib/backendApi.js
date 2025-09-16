@@ -1,5 +1,14 @@
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
+// Global refresh token callback - will be set by AuthContext
+let globalRefreshTokenCallback = null;
+
+// Function to set the refresh token callback
+export const setRefreshTokenCallback = (callback) => {
+  console.log('🔍 Setting refresh token callback:', !!callback);
+  globalRefreshTokenCallback = callback;
+};
+
 // Debug logging
 console.log('Environment variables:', {
   NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
@@ -88,7 +97,7 @@ const handleResponse = async (response) => {
   }
 };
 
-// Helper function to make API requests
+// Helper function to make API requests with token refresh support
 async function apiRequest(endpoint, options = {}) {
   const url = `${BACKEND_BASE_URL}${endpoint}`;
   
@@ -100,19 +109,55 @@ async function apiRequest(endpoint, options = {}) {
   });
   
   // Get token from localStorage if available
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  let token = typeof window !== 'undefined' ? (localStorage.getItem('authToken') || localStorage.getItem('token')) : null;
   
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
-    },
-    ...options,
+  console.log('🔍 API Request Debug:', {
+    endpoint,
+    hasToken: !!token,
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+    url
+  });
+  
+  const makeRequest = async (authToken) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        ...options.headers,
+      },
+      ...options,
+    };
+
+    const response = await fetch(url, config);
+    
+    // If we get a 401 and have a refresh callback, try to refresh the token
+    if (response.status === 401 && globalRefreshTokenCallback && authToken) {
+      console.log('🔍 Got 401, attempting token refresh...', {
+        hasCallback: !!globalRefreshTokenCallback,
+        hasToken: !!authToken,
+        status: response.status
+      });
+      const newToken = await globalRefreshTokenCallback();
+      
+      if (newToken && newToken !== authToken) {
+        console.log('🔍 Token refreshed, retrying request...');
+        // Retry the request with the new token
+        const retryConfig = {
+          ...config,
+          headers: {
+            ...config.headers,
+            'Authorization': `Bearer ${newToken}`,
+          },
+        };
+        return await fetch(url, retryConfig);
+      }
+    }
+    
+    return response;
   };
 
   try {
-    const response = await fetch(url, config);
+    const response = await makeRequest(token);
     return await handleResponse(response);
   } catch (error) {
     console.error('API Request Failed:', {
@@ -182,6 +227,14 @@ export const authApi = {
     return apiRequest('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
+    });
+  },
+
+  // Google OAuth login
+  async googleLogin(idToken) {
+    return apiRequest('/auth/google-login', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
     });
   },
 

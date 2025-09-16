@@ -21,8 +21,8 @@ export default function Footer() {
                     <h2 className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-4 leading-tight">
                         Need parenting Support?
                     </h2>
-                    <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed whitespace-nowrap">
-                        {/* Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow. */}
+                    <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
+                        Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow
                     </p>
                     <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm">
                         Sign up

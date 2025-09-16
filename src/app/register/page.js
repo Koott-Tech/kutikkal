@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
-import { useNotification } from "../../contexts/NotificationContext";
+import GoogleSignIn from "../../components/GoogleSignIn";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -16,7 +16,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-  const { showError, showSuccess } = useNotification();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -110,7 +109,6 @@ export default function RegisterPage() {
       <div style={{ 
         flex: "1",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        display: "none",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
@@ -345,6 +343,42 @@ export default function RegisterPage() {
               </button>
             </div>
           </form>
+
+          {/* Divider */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "1.5rem 0"
+          }}>
+            <div style={{
+              flex: "1",
+              height: "1px",
+              background: "#e5e7eb"
+            }}></div>
+            <span style={{
+              padding: "0 1rem",
+              color: "#6b7280",
+              fontSize: "0.875rem"
+            }}>
+              or
+            </span>
+            <div style={{
+              flex: "1",
+              height: "1px",
+              background: "#e5e7eb"
+            }}></div>
+          </div>
+
+          {/* Google Sign-In Component */}
+          <GoogleSignIn 
+            onSuccess={(result) => {
+              console.log('Google Sign-In successful:', result);
+            }}
+            onError={(error) => {
+              console.error('Google Sign-In error:', error);
+              setError(error.message || 'Google Sign-In failed. Please try again.');
+            }}
+          />
         </div>
       </div>
     </div>

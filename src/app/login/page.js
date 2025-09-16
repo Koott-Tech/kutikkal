@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
-import { useNotification } from "../../contexts/NotificationContext";
 import ForgotPasswordModal from "../../components/ForgotPasswordModal";
+import GoogleSignIn from "../../components/GoogleSignIn";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-  const { showError, showSuccess } = useNotification();
   
   // Get return URL from query parameters
   const [returnUrl, setReturnUrl] = useState("");
@@ -112,7 +111,6 @@ export default function LoginPage() {
       <div style={{ 
         flex: "1",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        display: "none",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
@@ -404,32 +402,19 @@ export default function LoginPage() {
               }}></div>
             </div>
 
-                         {/* Continue with Google */}
-             <button
-               type="button"
-               style={{
-                 background: "white",
-                 color: "#374151",
-                 border: "1px solid #d1d5db",
-                 borderRadius: "0.5rem",
-                 padding: "0.75rem 1rem",
-                 fontSize: "1rem",
-                 fontWeight: "500",
-                 cursor: "pointer",
-                 display: "flex",
-                 alignItems: "center",
-                 justifyContent: "center",
-                 gap: "0.5rem",
-                 transition: "background-color 0.2s"
-               }}
-               onMouseEnter={(e) => e.target.style.backgroundColor = "#f9fafb"}
-               onMouseLeave={(e) => e.target.style.backgroundColor = "white"}
-             >
-               <span style={{ fontSize: "1.2rem" }}>🔍</span>
-               Continue with Google
-             </button>
+            {/* Google Sign-In Component */}
+            <GoogleSignIn 
+              returnUrl={returnUrl}
+              onSuccess={(result) => {
+                console.log('Google Sign-In successful:', result);
+              }}
+              onError={(error) => {
+                console.error('Google Sign-In error:', error);
+                setError(error.message || 'Google Sign-In failed. Please try again.');
+              }}
+            />
 
-                          {/* Sign Up Link */}
+            {/* Sign Up Link */}
               <div style={{
                 textAlign: "center",
                 marginTop: "1rem",

@@ -1,135 +1,31 @@
-import ProcessSteps from "@/components/ProcessSteps";
-import HelpFaq from "@/components/HelpFaq";
-import ConsultationBanner from "@/components/ConsultationBanner";
+import HeroSection from '@/components/HeroSection';
+import LogosStrip from '@/components/LogosStrip';
+import ProcessSteps from '@/components/ProcessSteps';
+import BenefitsSection from '@/components/BenefitsSection';
+import TherapyTypesSplit from '@/components/TherapyTypesSplit';
+import Testimonials from '@/components/Testimonials';
+import HelpFaq from '@/components/HelpFaq';
+import ResourcesTeaser from '@/components/ResourcesTeaser';
 
 export const metadata = {
   title: "Fear & Phobias Support - Little Care",
-  description: "Professional support for fears and phobias. Evidence-based therapy to help you overcome specific fears and live with confidence.",
+  description: "Professional support for children dealing with fears and phobias. Evidence-based interventions to help overcome fears and develop coping strategies.",
 };
 
 export default function FearPhobiasSupportPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-rose-50 to-pink-100 py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Fear & Phobias Support
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Overcome fears and phobias with professional support. Evidence-based therapy to help you face your fears and live with confidence and freedom.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-rose-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-rose-700 transition-colors">
-              Get Free Consultation
-            </button>
-            <button className="border border-rose-600 text-rose-600 px-8 py-3 rounded-lg font-semibold hover:bg-rose-50 transition-colors">
-              View Therapists
-            </button>
-          </div>
-        </div>
+    <div>
+      <HeroSection therapyType="fear-phobias-support" />
+      <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
+      <ProcessSteps therapyType="fear-phobias-support" />
+      <BenefitsSection therapyType="fear-phobias-support" />
+      <TherapyTypesSplit />
+      <div className="mt-8 sm:mt-12 md:mt-16">
+        <Testimonials />
       </div>
-
-      {/* What is Fear & Phobias Support Section */}
-      <div className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Understanding Fears and Phobias
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Fears and phobias can significantly limit your life and activities. Our specialized approach helps you gradually face your fears and develop confidence to overcome them.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Common Fears and Phobias</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Social anxiety and fear of judgment
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Specific phobias (heights, spiders, etc.)
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Agoraphobia and fear of open spaces
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Fear of flying or traveling
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Performance anxiety and stage fright
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-lg">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Phobia Treatment Methods</h3>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Exposure therapy (gradual and systematic)
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Cognitive Behavioral Therapy (CBT)
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Virtual reality exposure therapy
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Relaxation and breathing techniques
-                </li>
-                <li className="flex items-start">
-                  <span className="text-rose-600 mr-3">•</span>
-                  Mindfulness and grounding exercises
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+      <div className="mt-24">
+        <HelpFaq />
       </div>
-
-      {/* Process Steps */}
-      <div className="py-16 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              How Our Phobia Treatment Works
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our systematic approach helps you gradually face your fears in a safe, controlled environment, building confidence and reducing anxiety over time.
-            </p>
-          </div>
-          <ProcessSteps therapyType="phobia-treatment" />
-        </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-lg text-gray-600">
-              Common questions about fear and phobia treatment
-            </p>
-          </div>
-          <HelpFaq />
-        </div>
-      </div>
-
-      {/* Consultation Banner */}
-      <ConsultationBanner />
     </div>
   );
 }

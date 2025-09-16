@@ -19,6 +19,8 @@ body {
   overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%; /* Ensure full width */
   max-width: 100vw; /* Prevent overflow beyond viewport */
+  min-height: 100vh; /* Ensure minimum height */
+  position: relative; /* Prevent white space issues */
 }
 
 /* Hide scrollbars globally while keeping scroll behavior */
@@ -28,6 +30,8 @@ html, body {
   overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%; /* Ensure full width */
   max-width: 100vw; /* Prevent overflow beyond viewport */
+  min-height: 100vh; /* Ensure minimum height */
+  position: relative; /* Prevent white space issues */
 }
 
 html::-webkit-scrollbar, body::-webkit-scrollbar {

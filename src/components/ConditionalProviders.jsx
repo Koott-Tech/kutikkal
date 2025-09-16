@@ -4,9 +4,9 @@ import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SocketProvider } from '@/contexts/SocketContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
-import LoadingScreen from '@/components/LoadingScreen';
+import { memo } from 'react';
 
-export default function ConditionalProviders({ children }) {
+const ConditionalProviders = memo(({ children }) => {
   const pathname = usePathname();
   
   // Static pages that don't need heavy providers
@@ -39,10 +39,13 @@ export default function ConditionalProviders({ children }) {
     <AuthProvider>
       <SocketProvider>
         <NotificationProvider>
-          <LoadingScreen />
           {children}
         </NotificationProvider>
       </SocketProvider>
     </AuthProvider>
   );
-}
+});
+
+ConditionalProviders.displayName = 'ConditionalProviders';
+
+export default ConditionalProviders;

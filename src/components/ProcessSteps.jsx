@@ -199,18 +199,22 @@ export default function ProcessSteps({ therapyType = "individual" }) {
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const cardWidth = scrollContainerRef.current.scrollWidth / carouselData.length;
-      const newSlide = Math.round(scrollLeft / cardWidth);
-      setCurrentSlide(newSlide);
+      const cardWidth = 320; // Fixed card width (w-80 = 320px)
+      const gap = 16; // gap-4 = 16px
+      const totalCardWidth = cardWidth + gap;
+      const newSlide = Math.round(scrollLeft / totalCardWidth);
+      setCurrentSlide(Math.min(newSlide, carouselData.length - 1));
     }
   };
 
   // Scroll to specific slide
   const scrollToSlide = (index) => {
     if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.scrollWidth / carouselData.length;
+      const cardWidth = 320; // Fixed card width (w-80 = 320px)
+      const gap = 16; // gap-4 = 16px
+      const totalCardWidth = cardWidth + gap;
       scrollContainerRef.current.scrollTo({
-        left: index * cardWidth,
+        left: index * totalCardWidth,
         behavior: 'smooth'
       });
     }
@@ -232,32 +236,22 @@ export default function ProcessSteps({ therapyType = "individual" }) {
         {/* Process Steps - Carousel Layout */}
         <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-4">
           {/* Mobile Carousel */}
-          <div className="md:hidden w-full max-w-xs mx-auto">
+          <div className="md:hidden w-full max-w-sm mx-auto">
             {/* Scrollable Carousel Container */}
             <div 
               ref={scrollContainerRef}
               onScroll={handleScroll}
-              className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll"
+              className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
+              style={{ scrollSnapType: 'x mandatory' }}
             >
-              <div 
-                className="flex gap-4 pb-4"
-                style={{ 
-                  width: `${carouselData.length * 100}%`,
-                  scrollSnapType: 'x mandatory',
-                  WebkitOverflowScrolling: 'touch'
-                }}
-              >
+              <div className="flex gap-4 pb-4">
                 {carouselData.map((card, index) => (
                   <div 
                     key={card.id} 
-                    className="flex-shrink-0 px-2"
-                    style={{ 
-                      width: `${100 / carouselData.length}%`,
-                      scrollSnapAlign: 'start'
-                    }}
+                    className="flex-shrink-0 w-80 snap-start"
                   >
                     <div
-                      className="rounded-lg p-2 h-[260px] w-full flex flex-col justify-between"
+                      className="rounded-lg p-4 h-[280px] w-full flex flex-col justify-between"
                       style={{ background: card.gradient }}
                     >
                       {/* Header Section */}

@@ -40,6 +40,90 @@ export default function HeroSection({ therapyType = "individual" }) {
       description: "Rula makes it simple to take the first step towards better mental\nhealth. Explore licensed, in-network psychiatrists online who\nspecialise in medication management and comprehensive care.",
       image: "/kids.png",
       alt: "Psychiatric consultation session"
+    },
+    "big-emotions": {
+      title: "Take the first step,\nBig Emotions (CBT - Kids)\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better emotional\nregulation for your child. Explore licensed, in-network therapists online who\nspecialise in Cognitive Behavioral Therapy for children.",
+      image: "/kids.png",
+      alt: "Child learning emotional regulation"
+    },
+    "adhd-attention": {
+      title: "Take the first step,\nADHD or Attention struggles\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better focus\nand attention for your child. Explore licensed, in-network therapists online who\nspecialise in ADHD support and attention training.",
+      image: "/kids.png",
+      alt: "Child with ADHD support"
+    },
+    "behavioral-coaching": {
+      title: "Take the first step,\nBehavioral Coaching\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better behavior\nmanagement for your child. Explore licensed, in-network therapists online who\nspecialise in behavioral coaching and positive reinforcement.",
+      image: "/kids.png",
+      alt: "Child behavioral coaching session"
+    },
+    "communication-social-skills": {
+      title: "Take the first step,\nCommunication & Social Skills\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better communication\nand social skills for your child. Explore licensed, in-network therapists online who\nspecialise in social development and communication training.",
+      image: "/kids.png",
+      alt: "Child learning social skills"
+    },
+    "anxiety-sadness": {
+      title: "Take the first step,\nAnxiety, Sadness or Low mood\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better emotional\nwell-being for your child. Explore licensed, in-network therapists online who\nspecialise in anxiety and mood management.",
+      image: "/kids.png",
+      alt: "Child managing anxiety and sadness"
+    },
+    "overthinking-ocd": {
+      title: "Take the first step,\nOverthinking & OCD\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better mental\npatterns for your child. Explore licensed, in-network therapists online who\nspecialise in OCD treatment and thought management.",
+      image: "/kids.png",
+      alt: "Child managing OCD and overthinking"
+    },
+    "exam-fear-study-stress": {
+      title: "Take the first step,\nExam Fear & Study Stress\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better academic\nperformance and stress management for your child. Explore licensed, in-network therapists online who\nspecialise in study skills and test anxiety.",
+      image: "/kids.png",
+      alt: "Child managing exam stress"
+    },
+    "learning-difficulties": {
+      title: "Take the first step,\nLearning Difficulties (Remedial)\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards better learning\noutcomes for your child. Explore licensed, in-network therapists online who\nspecialise in remedial education and learning support.",
+      image: "/kids.png",
+      alt: "Child with learning support"
+    },
+    "trauma-abuses": {
+      title: "Take the first step,\nTrauma & Abuses\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards healing and\nrecovery for your child. Explore licensed, in-network therapists online who\nspecialise in trauma-informed care and abuse recovery.",
+      image: "/kids.png",
+      alt: "Child trauma recovery session"
+    },
+    "confidence-self-esteem": {
+      title: "Take the first step,\nConfidence & Self-esteem\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards building\nconfidence and self-esteem for your child. Explore licensed, in-network therapists online who\nspecialise in self-worth and confidence building.",
+      image: "/kids.png",
+      alt: "Child building confidence"
+    },
+    "family-conflict-recovery": {
+      title: "Take the first step,\nFamily Conflict Recovery\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards healing\nfamily relationships and resolving conflicts. Explore licensed, in-network therapists online who\nspecialise in family therapy and conflict resolution.",
+      image: "/kids.png",
+      alt: "Family conflict resolution"
+    },
+    "grief-loss": {
+      title: "Take the first step,\nGrief & Loss\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards processing\ngrief and loss for your child. Explore licensed, in-network therapists online who\nspecialise in grief counseling and loss support.",
+      image: "/kids.png",
+      alt: "Child grief counseling"
+    },
+    "fear-phobias-support": {
+      title: "Take the first step,\nFear & Phobias Support\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards overcoming\nfears and phobias for your child. Explore licensed, in-network therapists online who\nspecialise in phobia treatment and fear management.",
+      image: "/kids.png",
+      alt: "Child overcoming fears"
+    },
+    "autism-support": {
+      title: "Take the first step,\nAutism Support\nthrough Rula.",
+      description: "Rula makes it simple to take the first step towards comprehensive\nsupport for your child with autism. Explore licensed, in-network therapists online who\nspecialise in autism spectrum support and development.",
+      image: "/kids.png",
+      alt: "Child with autism support"
     }
   };
 

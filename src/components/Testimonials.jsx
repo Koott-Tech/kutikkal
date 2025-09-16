@@ -1,191 +1,170 @@
 "use client";
-
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from "next/image";
 
 export default function Testimonials() {
-    return (
-        <div className="px-4 sm:px-8 md:px-[50px]">
-            <section className="w-full mt-4 sm:mt-6 md:mt-8 mb-4 sm:mb-6 md:mb-8">
-                <div className="h-[100vh] w-full rounded-2xl overflow-hidden bg-white">
-                    <div className="h-full w-full p-4 sm:p-6 md:p-8">
-                        {/* Header Section */}
-                        <div className="text-center mb-4 sm:mb-6 md:mb-8">
-                            <h2 className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium mb-2 tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">Hear from our patients</h2>
-                            <p className="text-[1.125rem] md:text-lg text-gray-600 tracking-[-0.03375rem] md:tracking-normal leading-[154%] md:leading-normal">We're making online therapy work the way it should.</p>
-                        </div>
+  return (
+    <section className="w-full bg-white">
+      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
+        <h2 className="text-3xl md:text-[44px] font-semibold tracking-tight text-gray-900 text-center">
+          Hear from our patients
+        </h2>
+        <p className="text-gray-600 text-center mt-3 mb-10 text-base md:text-lg">
+          We’re making online therapy work the way it should.
+        </p>
 
-                        {/* Grid Cards Layout */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[calc(100%-120px)] overflow-x-auto md:overflow-x-visible">
-                            {/* Left side - Text content card (top half) */}
-                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
-                                <div className="h-6 w-fit bg-green-200 rounded px-3 py-1 mb-4">
-                                    <span className="text-sm font-medium text-green-800">Verified Patient</span>
-                                </div>
-                                <blockquote className="space-y-4">
-                                    <p className="text-lg font-medium">Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible.</p>
+        {/* Desktop: 5-column layout with images */}
+        <div className="hidden lg:grid grid-cols-5 gap-0">
+          {/* First column split vertically into two equal halves with padding and gap */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-1">
+            <div className="flex-1 rounded-[10px] bg-[#E6F5EC] border border-gray-200 p-4">
+              <p className="text-[15px] leading-relaxed text-gray-900">
+                "Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible."
+              </p>
+              <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+            </div>
+            <div className="flex-1 rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4">
+              <p className="text-[15px] leading-relaxed text-gray-900">
+                "Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance."
+              </p>
+              <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+            </div>
+          </div>
+          {/* Second column: full-length image edge-to-edge */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
+            <div className="flex-1 rounded-[10px] relative overflow-hidden">
+              <Image src="/thumb1.jpg" alt="Smiling parent and child" fill className="object-cover" />
+            </div>
+          </div>
+          {/* Third column: split 40% top (text review), 60% bottom (image) */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-1">
+            <div className="basis-[40%] rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-3 flex flex-col">
+              <p className="text-[13px] leading-snug text-gray-900">
+                "I was hesitant to go the online therapy route. But I am so glad I did. It was an easy process and I absolutely adore my therapist."
+              </p>
+              <div className="mt-2 text-[11px] text-gray-600 font-medium">Rula patient</div>
+            </div>
+            <div className="basis-[60%] rounded-[10px] p-0">
+              <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-gray-100">
+                <Image src="/thumb3.jpg" alt="Happy child" fill className="object-cover" />
+              </div>
+            </div>
+          </div>
 
-                                    <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/hero.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
+          {/* Fourth column: split 30% top (image), 70% bottom (image) */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-1">
+            <div className="basis-[30%] rounded-[10px] p-0">
+              <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-gray-100">
+                <Image src="/thumb2.jpg" alt="Family smiling" fill className="object-cover" />
+              </div>
+            </div>
+            <div className="basis-[70%] rounded-[10px] p-0">
+              <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-gray-100">
+                <Image src="/kids.png" alt="Happy family" fill className="object-cover" />
+              </div>
+            </div>
+          </div>
 
-                                        <div>
-                                            <cite className="text-sm font-medium">Rula Patient</cite>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
-                            </div>
-                            
-                            {/* Content card (bottom half) */}
-                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
-                                <div className="h-6 w-fit bg-amber-200 rounded px-3 py-1 mb-4">
-                                    <span className="text-sm font-medium text-amber-800">Success Story</span>
-                                </div>
-                                <blockquote className="space-y-4">
-                                    <p className="text-lg font-medium">Through consistent therapy sessions, I've learned valuable coping mechanisms and gained a deeper understanding of myself. The progress I've made is truly life-changing.</p>
-
-                                    <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-
-                                        <div>
-                                            <cite className="text-sm font-medium">Rula Patient</cite>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
-                            </div>
-                            
-                            {/* Right side - Two separate cards instead of one large video card */}
-                            <div className="md:col-span-1 rounded-2xl overflow-hidden min-w-[300px] md:min-w-0">
-                                <video
-                                    src="/lg-video-card-ashley-1.mp4"
-                                    className="h-full w-full object-cover"
-                                    autoPlay
-                                    muted
-                                    loop
-                                    playsInline
-                                />
-                            </div>
-                            
-                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6 min-w-[300px] md:min-w-0">
-                                <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p className="text-lg font-medium">Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance.</p>
-
-                                    <div className="grid grid-cols-[auto_1fr] items-center gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <cite className="text-sm font-medium">Rula Patient</cite>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
-                            </div>
-                            
-                            {/* Image card 1 */}
-                            <div className="rounded-2xl overflow-hidden">
-                                <Image
-                                    src="/kids.png"
-                                    alt="Children in therapy session"
-                                    width={400}
-                                    height={400}
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                />
-                            </div>
-                            
-                            {/* Image card 2 */}
-                            <div className="rounded-2xl overflow-hidden">
-                                <Image
-                                    src="/treatment-plan.webp"
-                                    alt="Therapy treatment plan"
-                                    width={400}
-                                    height={400}
-                                    className="h-full w-full object-cover"
-                                    loading="lazy"
-                                />
-                            </div>
-                            
-                            {/* Additional card 1 */}
-                            <div className="bg-pink-100 rounded-2xl p-6">
-                                <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p className="text-lg">I love how easy it is to schedule sessions and the flexibility of online therapy. My therapist is amazing and I've made significant progress in just a few months.</p>
-
-                                    <div className="grid grid-cols-[auto_1fr] gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-medium">Rula Patient</p>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
-                            </div>
-                            
-                            {/* Additional card 2 */}
-                            <div className="bg-indigo-100 rounded-2xl p-6">
-                                <blockquote className="grid h-full grid-rows-[1fr_auto] gap-6">
-                                    <p className="text-lg">The quality of care I've received through Rula has been exceptional. My therapist truly understands my needs and has helped me develop better coping strategies.</p>
-
-                                    <div className="grid grid-cols-[auto_1fr] gap-3">
-                                        <Avatar className="size-12">
-                                            <AvatarImage
-                                                src="/hero.png"
-                                                alt="Rula Patient"
-                                                height="400"
-                                                width="400"
-                                                loading="lazy"
-                                            />
-                                            <AvatarFallback>RP</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="text-sm font-medium">Rula Patient</p>
-                                            <span className="text-muted-foreground block text-sm">Verified User</span>
-                                        </div>
-                                    </div>
-                                </blockquote>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+          {/* Fifth column: split 50% image (top), 50% text (bottom) */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-1">
+            <div className="flex-1 rounded-[10px] p-0">
+              <div className="relative w-full h-full rounded-[10px] overflow-hidden bg-gray-100">
+                <Image src="/thumb4.jpg" alt="Family moment" fill className="object-cover" />
+              </div>
+            </div>
+            <div className="flex-1 rounded-[10px] bg-[#FFFBE6] border border-gray-200 p-3 flex flex-col">
+              <p className="text-[13px] leading-snug text-gray-900">
+                "Clear progress, kind support, and easy follow‑ups. Highly recommend."
+              </p>
+              <div className="mt-2 text-[11px] text-gray-600 font-medium">Rula patient</div>
+            </div>
+          </div>
         </div>
-    )
+
+        {/* Mobile: Text-only reviews in a simple grid */}
+        <div className="block lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="rounded-[10px] bg-[#E6F5EC] border border-gray-200 p-4">
+            <p className="text-[15px] leading-relaxed text-gray-900">
+              "Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible."
+            </p>
+            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+          </div>
+          
+          <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4">
+            <p className="text-[15px] leading-relaxed text-gray-900">
+              "Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance."
+            </p>
+            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+          </div>
+          
+          <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4">
+            <p className="text-[15px] leading-relaxed text-gray-900">
+              "I was hesitant to go the online therapy route. But I am so glad I did. It was an easy process and I absolutely adore my therapist."
+            </p>
+            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+          </div>
+          
+          <div className="rounded-[10px] bg-[#FFFBE6] border border-gray-200 p-4">
+            <p className="text-[15px] leading-relaxed text-gray-900">
+              "Clear progress, kind support, and easy follow‑ups. Highly recommend."
+            </p>
+            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function QuoteCard({ quote, by, tone = "mint", className = "" }) {
+  const toneClasses = {
+    mint: "bg-[#E6F5EC] text-gray-900",
+    lavender: "bg-[#ECEBFF] text-gray-900",
+    peach: "bg-[#FFF0E1] text-gray-900",
+  };
+  return (
+    <div className={`rounded-2xl p-6 md:p-7 border border-gray-200 ${toneClasses[tone]} ${className}`}>
+      <p className="text-[15px] md:text-base leading-relaxed">“{quote}”</p>
+      <div className="mt-3 text-xs md:text-sm text-gray-700 font-medium">{by}</div>
+    </div>
+  );
+}
+
+function PlayImage({ src, alt, className = "" }) {
+  return (
+    <div className={`relative w-full overflow-hidden bg-gray-100 ${className}`}>
+      <Image src={src} alt={alt} fill className="object-cover" sizes="(min-width: 1024px) 25vw, 50vw" />
+      <button
+        aria-label="Play testimonial"
+        className="absolute left-4 bottom-4 h-10 w-10 md:h-12 md:w-12 grid place-items-center rounded-full bg-white/90 shadow-md hover:bg-white transition"
+      >
+        <PlayIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-900" />
+      </button>
+    </div>
+  );
+}
+
+function ImageTile({ src, alt, className = "" }) {
+  const hasFullHeight = className?.includes('h-full');
+  const aspectClass = hasFullHeight ? '' : 'aspect-[4/3]';
+  return (
+    <div className={`relative w-full ${aspectClass} overflow-hidden rounded-2xl bg-gray-100 ${className}`}>
+      <Image src={src} alt={alt} fill className="object-cover" sizes="(min-width: 1024px) 20vw, 50vw" />
+    </div>
+  );
+}
+
+function PlayIcon({ className = "h-6 w-6" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M8 5.14v13.72c0 .79.86 1.28 1.54.86l10.37-6.86a1 1 0 000-1.72L9.54 4.28A1 1 0 008 5.14z" />
+    </svg>
+  );
 }
 
 

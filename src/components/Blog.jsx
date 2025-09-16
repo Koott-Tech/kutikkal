@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 
 export default function Blog() {
@@ -15,7 +16,8 @@ export default function Blog() {
     date: "June 27, 2025",
     image: "/kids.png",
     excerpt: "Learn practical strategies to manage stress and maintain your wellbeing while supporting your child's needs.",
-    category: "Parenting"
+    category: "Parenting",
+    slug: "five-ways-cope-burnout-parenting-adhd"
   };
 
   const blogPosts = [
@@ -25,7 +27,8 @@ export default function Blog() {
       author: "Alex Bachert",
       date: "June 27, 2025",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-      category: "Relationships"
+      category: "Relationships",
+      slug: "aroace-aromanticism-asexuality-intersect"
     },
     {
       id: 2,
@@ -33,7 +36,8 @@ export default function Blog() {
       author: "Liz Talago",
       date: "June 27, 2025",
       image: "/rightside5th.png",
-      category: "ADHD"
+      category: "ADHD",
+      slug: "four-tips-talking-psychiatrist-adhd"
     },
     {
       id: 3,
@@ -41,7 +45,8 @@ export default function Blog() {
       author: "Liz Talago",
       date: "June 27, 2025",
       image: "/hero.png",
-      category: "Autism"
+      category: "Autism",
+      slug: "getting-autism-diagnosis-psychiatrist"
     },
     {
       id: 4,
@@ -49,7 +54,8 @@ export default function Blog() {
       author: "Saya Des Marais",
       date: "June 26, 2025",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-      category: "Parenting"
+      category: "Parenting",
+      slug: "managing-postpartum-sensory-overload"
     },
     {
       id: 5,
@@ -58,7 +64,8 @@ export default function Blog() {
       date: "June 26, 2025",
       image: "/rightside5th.png",
       overlay: "Self-invalidation",
-      category: "Self-Care"
+      category: "Self-Care",
+      slug: "what-is-self-invalidation"
     },
     {
       id: 6,
@@ -66,7 +73,8 @@ export default function Blog() {
       author: "Linda Childers",
       date: "June 26, 2025",
       image: "/hero.png",
-      category: "Self-Care"
+      category: "Self-Care",
+      slug: "embracing-emotional-vulnerability"
     }
   ];
 
@@ -77,7 +85,8 @@ export default function Blog() {
       author: "Liz Talago",
       date: "June 26, 2025",
       image: "/hero.png",
-      category: "Psychiatry"
+      category: "Psychiatry",
+      slug: "how-psychiatry-help-quit-drinking-alcohol"
     },
     {
       id: 8,
@@ -85,7 +94,8 @@ export default function Blog() {
       author: "Liz Talago",
       date: "June 26, 2025",
       image: "/rightside5th.png",
-      category: "Psychiatry"
+      category: "Psychiatry",
+      slug: "psychiatrist-support-ptsd-treatment"
     },
     {
       id: 9,
@@ -93,7 +103,8 @@ export default function Blog() {
       author: "Brandy Chalmers, LPC",
       date: "June 25, 2025",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-      category: "ADHD"
+      category: "ADHD",
+      slug: "relationship-between-adhd-and-sex"
     }
   ];
 
@@ -125,41 +136,43 @@ export default function Blog() {
         </div>
 
         {/* Featured Blog Post Card */}
-        <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16">
-          {/* Image Container */}
-          <div className="relative h-[500px] md:h-[600px] w-full">
-            <Image
-              src={featuredPost.image}
-              alt={featuredPost.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            
-            {/* Category Badge */}
-            <div className="absolute top-4 left-4">
-              <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                {featuredPost.category}
-              </span>
-            </div>
-            
-            {/* Text Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-8">
-              <div className="text-white">
-                {/* Author and Date */}
-                <div className="text-sm text-gray-200 mb-3 hover:underline cursor-pointer transition-all" style={{ fontWeight: 25 }}>
-                  {featuredPost.author} • {featuredPost.date}
+        <Link href={`/blog/${featuredPost.slug}`} className="block">
+          <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16 group cursor-pointer">
+            {/* Image Container */}
+            <div className="relative h-[500px] md:h-[600px] w-full">
+              <Image
+                src={featuredPost.image}
+                alt={featuredPost.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                priority
+              />
+              
+              {/* Category Badge */}
+              <div className="absolute top-4 left-4">
+                <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {featuredPost.category}
+                </span>
+              </div>
+              
+              {/* Text Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-8">
+                <div className="text-white">
+                  {/* Author and Date */}
+                  <div className="text-sm text-gray-200 mb-3 hover:underline transition-all" style={{ fontWeight: 25 }}>
+                    {featuredPost.author} • {featuredPost.date}
+                  </div>
+                  
+                  {/* Title */}
+                  <h2 className="text-xl md:text-2xl leading-tight hover:underline transition-all" style={{ fontWeight: 25 }}>
+                    Five ways to cope with burnout when<br />
+                    parenting a child with ADHD
+                  </h2>
                 </div>
-                
-                {/* Title */}
-                <h2 className="text-xl md:text-2xl leading-tight hover:underline cursor-pointer transition-all" style={{ fontWeight: 25 }}>
-                  Five ways to cope with burnout when<br />
-                  parenting a child with ADHD
-                </h2>
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Search Bar */}
         <div className="mb-8">
@@ -204,43 +217,45 @@ export default function Blog() {
         {filteredPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
             {filteredPosts.map((post) => (
-              <div key={post.id} className="bg-white rounded-xl overflow-hidden py-4">
-                {/* Image Container */}
-                <div className="relative h-48">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                  />
-                  
-                  {/* Category Badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                      {post.category}
-                    </span>
-                  </div>
-                  
-                  {/* Overlay for Card 5 */}
-                  {post.overlay && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-purple-500/80 px-6 py-2">
-                        <span className="text-white text-sm font-medium">{post.overlay}</span>
-                      </div>
+              <Link key={post.id} href={`/blog/${post.slug}`} className="group">
+                <div className="bg-white rounded-xl overflow-hidden py-4 hover:shadow-lg transition-shadow duration-200">
+                  {/* Image Container */}
+                  <div className="relative h-48">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                    
+                    {/* Category Badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        {post.category}
+                      </span>
                     </div>
-                  )}
-                </div>
-                
-                {/* Text Content */}
-                <div className="p-6 pl-0">
-                  <div className="text-sm text-gray-500 mb-2" style={{ fontWeight: 50 }}>
-                    {post.author} • {post.date}
+                    
+                    {/* Overlay for Card 5 */}
+                    {post.overlay && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-purple-500/80 px-6 py-2">
+                          <span className="text-white text-sm font-medium">{post.overlay}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <h3 className="text-lg font-normal text-gray-900 leading-tight hover:underline cursor-pointer transition-all">
-                    {post.title}
-                  </h3>
+                  
+                  {/* Text Content */}
+                  <div className="p-6 pl-0">
+                    <div className="text-sm text-gray-500 mb-2" style={{ fontWeight: 50 }}>
+                      {post.author} • {post.date}
+                    </div>
+                    <h3 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                      {post.title}
+                    </h3>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

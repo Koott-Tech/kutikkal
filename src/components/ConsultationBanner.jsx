@@ -10,11 +10,11 @@ export default function ConsultationBanner() {
           <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center">
             {/* Left: Text and Button */}
             <div className="p-5 md:p-6 pl-8 md:pl-10 lg:pl-12 order-1 lg:order-1">
-              <h2 className="text-xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-2 leading-tight text-left">
+              <h2 className="text-xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-2 leading-tight text-left whitespace-nowrap">
                 Get a Free 20-minute Consultation
               </h2>
               
-              <p className="text-xs md:text-base text-gray-700 mb-4 leading-relaxed text-left break-words">
+              <p className="text-xs md:text-base text-gray-700 mb-4 leading-relaxed text-left whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
               </p>
               
