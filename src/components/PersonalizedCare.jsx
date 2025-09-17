@@ -6,10 +6,10 @@ export default function PersonalizedCare() {
       <div className="w-full px-3 sm:px-6 md:px-[50px] py-12">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h2 className="text-[24px] sm:text-[28px] md:text-[32px] lg:text-[48px] font-medium text-gray-900 mb-4 leading-snug mx-auto tracking-tight">
+          <h2 className="text-[24px] sm:text-[28px] md:text-[32px] lg:text-[48px] font-medium text-gray-900 mb-4 leading-tight mx-auto tracking-tighter">
             The care you need, whenever you need it
           </h2>
-          <p className="text-[16px] sm:text-[17px] md:text-[18px] text-gray-700 max-w-3xl mx-auto leading-snug">
+          <p className="text-[16px] sm:text-[17px] md:text-[18px] text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
             No matter where you start, your provider will work with you to develop a treatment plan that's tailored around you and your individual needs.
           </p>
         </div>

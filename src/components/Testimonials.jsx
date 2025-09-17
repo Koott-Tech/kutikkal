@@ -1,7 +1,133 @@
 "use client";
 import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 
 export default function Testimonials() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const scrollContainerRef = useRef(null);
+  const autoPlayRef = useRef(null);
+  
+  const photos = [
+    { src: "/thumb1.jpg", alt: "Smiling parent and child" },
+    { src: "/thumb2.jpg", alt: "Family smiling" },
+    { src: "/thumb3.jpg", alt: "Happy child" },
+    { src: "/thumb4.jpg", alt: "Family moment" },
+    { src: "/kids.png", alt: "Happy family" }
+  ];
+
+  const nextSlide = () => {
+    stopAutoPlay(); // Stop auto-play when user clicks
+    const newSlide = (currentSlide + 1) % photos.length;
+    setCurrentSlide(newSlide);
+    scrollToSlide(newSlide);
+    // Restart auto-play after delay
+    setTimeout(() => startAutoPlay(), 2000);
+  };
+
+  const prevSlide = () => {
+    stopAutoPlay(); // Stop auto-play when user clicks
+    const newSlide = (currentSlide - 1 + photos.length) % photos.length;
+    setCurrentSlide(newSlide);
+    scrollToSlide(newSlide);
+    // Restart auto-play after delay
+    setTimeout(() => startAutoPlay(), 2000);
+  };
+
+  const goToSlide = (index) => {
+    stopAutoPlay(); // Stop auto-play when user clicks
+    setCurrentSlide(index);
+    scrollToSlide(index);
+    // Restart auto-play after delay
+    setTimeout(() => startAutoPlay(), 2000);
+  };
+
+  // Handle scroll events to sync with navigation dots
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const cardWidth = 280; // Fixed card width
+      const gap = 16; // gap-4 = 16px
+      const totalCardWidth = cardWidth + gap;
+      const newSlide = Math.round(scrollLeft / totalCardWidth);
+      setCurrentSlide(Math.min(newSlide, photos.length - 1));
+    }
+  };
+
+  // Scroll to specific slide
+  const scrollToSlide = (index) => {
+    if (scrollContainerRef.current) {
+      const cardWidth = 280; // Fixed card width
+      const gap = 16; // gap-4 = 16px
+      const totalCardWidth = cardWidth + gap;
+      scrollContainerRef.current.scrollTo({
+        left: index * totalCardWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Auto-play functionality
+  const startAutoPlay = () => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+    autoPlayRef.current = setInterval(() => {
+      setCurrentSlide((prev) => {
+        const next = (prev + 1) % photos.length;
+        scrollToSlide(next);
+        return next;
+      });
+    }, 3000);
+  };
+
+  const stopAutoPlay = () => {
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+      autoPlayRef.current = null;
+    }
+  };
+
+  // Touch/swipe support
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    stopAutoPlay(); // Stop auto-play when user interacts
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+    
+    // Restart auto-play after user interaction
+    setTimeout(() => {
+      startAutoPlay();
+    }, 2000);
+  };
+
+  // Start auto-play on mount
+  useEffect(() => {
+    startAutoPlay();
+    return () => stopAutoPlay();
+  }, []);
+
   return (
     <section className="w-full bg-white">
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
@@ -80,34 +206,73 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* Mobile: Text-only reviews in a simple grid */}
-        <div className="block lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-[10px] bg-[#E6F5EC] border border-gray-200 p-4">
-            <p className="text-[15px] leading-relaxed text-gray-900">
-              "Rula was the only way I was able to find a therapist. Everywhere else I was running into barriers. At a time when I was really struggling, finding help seemed impossible. Rula made it possible."
-            </p>
-            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+        {/* Mobile: Horizontal photo carousel */}
+        <div className="block lg:hidden w-full max-w-sm mx-auto">
+          {/* Scrollable Carousel Container */}
+          <div 
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
+            <div className="flex gap-4 pb-4">
+              {photos.map((photo, index) => (
+                <div 
+                  key={index} 
+                  className="flex-shrink-0 w-[280px] snap-start"
+                >
+                  <div className="relative w-full h-[200px] rounded-[10px] overflow-hidden bg-gray-100">
+                    <Image 
+                      src={photo.src} 
+                      alt={photo.alt} 
+                      fill 
+                      className="object-cover" 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          
-          <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4">
-            <p className="text-[15px] leading-relaxed text-gray-900">
-              "Finding mental healthcare through insurance can be a daunting task, but Rula made it easy to find a therapist who meets my needs and takes my insurance."
-            </p>
-            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+
+          {/* Navigation Dots */}
+          <div className="flex justify-center mt-6 gap-2">
+            {photos.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                  currentSlide === index ? 'bg-indigo-600' : 'bg-gray-300'
+                }`}
+              />
+            ))}
           </div>
-          
-          <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4">
-            <p className="text-[15px] leading-relaxed text-gray-900">
-              "I was hesitant to go the online therapy route. But I am so glad I did. It was an easy process and I absolutely adore my therapist."
-            </p>
-            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
-          </div>
-          
-          <div className="rounded-[10px] bg-[#FFFBE6] border border-gray-200 p-4">
-            <p className="text-[15px] leading-relaxed text-gray-900">
-              "Clear progress, kind support, and easy follow‑ups. Highly recommend."
-            </p>
-            <div className="mt-3 text-xs text-gray-600 font-medium">Rula patient</div>
+
+          {/* Navigation Arrows */}
+          <div className="flex justify-between items-center mt-4 px-4">
+            <button
+              onClick={prevSlide}
+              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <span className="text-sm text-gray-500">
+              {currentSlide + 1} of {photos.length}
+            </span>
+            
+            <button
+              onClick={nextSlide}
+              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
