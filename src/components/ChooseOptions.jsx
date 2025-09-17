@@ -48,7 +48,7 @@ export default function ChooseOptions() {
         {/* Header */}
         <div className="text-center md:text-left mb-12 max-w-4xl mx-auto">
           <p className="text-[18px] text-gray-600 mb-2 leading-tight">Let us guide you.</p>
-          <h2 className="text-[32px] md:text-[48px] font-medium text-gray-900 tracking-tight">
+          <h2 className="text-[32px] md:text-[48px] font-medium text-gray-900 tracking-tight leading-[1.1] md:leading-normal">
             Choose your options to get started
           </h2>
         </div>
@@ -84,7 +84,7 @@ export default function ChooseOptions() {
               </div>
 
               {/* Image Section */}
-              <div className="relative h-48 md:h-56 rounded-[30px] overflow-hidden">
+              <div className="relative h-48 md:h-56 rounded-t-[30px] overflow-hidden">
                 <Image
                   src={card.image}
                   alt={card.title}

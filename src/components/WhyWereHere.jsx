@@ -8,7 +8,7 @@ export default function WhyWereHere() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}
           <div className="space-y-6 ml-4 md:ml-8 max-w-lg">
-            <h2 className="text-4xl md:text-5xl font-medium text-black leading-tight tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
               Why We're Here
             </h2>
             

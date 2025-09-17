@@ -190,7 +190,7 @@ export default function BenefitsSection({ therapyType = "individual" }) {
              <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
         {/* Header */}
         <div className="text-center mb-20 mt-24">
-          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">
+          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black tracking-[-0.125rem] md:tracking-normal leading-[1.1] md:leading-normal">
             {currentContent.title}
           </h2>
         </div>

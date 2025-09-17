@@ -131,7 +131,7 @@ export default function Testimonials() {
   return (
     <section className="w-full bg-white">
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
-        <h2 className="text-3xl md:text-[44px] font-semibold tracking-tight text-gray-900 text-center">
+        <h2 className="text-3xl md:text-[44px] font-semibold tracking-tight text-gray-900 text-center leading-[1.1] md:leading-normal">
           Hear from our patients
         </h2>
         <p className="text-gray-600 text-center mt-3 mb-10 text-base md:text-lg">

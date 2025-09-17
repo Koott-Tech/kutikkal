@@ -71,7 +71,7 @@ export default function HelpFaq() {
         </div>
 
                  {/* Right column: Accordion FAQ */}
-         <div className="mr-8 md:mr-12 w-full md:max-w-2xl ml-4 md:ml-0">
+         <div className="mr-8 md:mr-12 w-full md:max-w-2xl ml-1 md:ml-0">
            {DATA.map((section, ci) => (
              <div key={section.title} className="mb-12">
                <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-8 text-center md:text-left">
@@ -86,9 +86,9 @@ export default function HelpFaq() {
                       <button
                         type="button"
                         onClick={() => setOpenId(open ? "" : id)}
-                        className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors px-6 md:px-0"
+                        className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors px-3 md:px-0"
                       >
-                        <span className="text-lg text-gray-900 w-full md:w-auto pr-12 md:pr-0">
+                        <span className="text-base text-gray-900 w-full md:w-auto pr-3 md:pr-0">
                           {item.q}
                         </span>
                         <Chevron className={`h-5 w-5 text-gray-800 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />
@@ -98,7 +98,7 @@ export default function HelpFaq() {
                           open ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
                         }`}
                       >
-                        <div className="px-6 pb-4 md:px-0">
+                        <div className="px-3 pb-4 md:px-0">
                           <p className="text-sm text-gray-700 leading-relaxed">
                             {item.a}
                           </p>

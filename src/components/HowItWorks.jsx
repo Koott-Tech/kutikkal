@@ -96,7 +96,7 @@ export default function HowItWorks() {
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight tracking-tight md:tracking-normal">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-[1.1] md:leading-normal tracking-tight md:tracking-normal">
             Your journey to mental well-being gets easier<br />from here.
           </h3>
           <button

@@ -225,7 +225,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
       <div className="mx-auto max-w-[1400px] pl-8 pr-16">
         {/* Header */}
         <div className="mb-12 text-center">
-          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black mb-4 tracking-[-0.125rem] md:tracking-normal leading-[110%] md:leading-normal">
+          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black mb-4 tracking-[-0.125rem] md:tracking-normal leading-[1.1] md:leading-normal">
             {currentContent.title}
           </h2>
                      <p className="text-base md:text-xl text-black max-w-3xl mx-auto tracking-[-0.0375rem] md:tracking-normal leading-[150%] md:leading-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
