@@ -3,6 +3,7 @@ import "./globals.css";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
+import ConditionalPadding from "@/components/ConditionalPadding";
 
 // Force cache bust - latest version deployed
 console.log('Cache bust - latest version deployed at:', new Date().toISOString());
@@ -33,9 +34,9 @@ export default function RootLayout({ children }) {
       >
         <ConditionalProviders>
           <HeaderWrapper />
-          <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-24">
+          <ConditionalPadding>
             {children}
-          </div>
+          </ConditionalPadding>
           <FooterWrapper />
         </ConditionalProviders>
       </body>

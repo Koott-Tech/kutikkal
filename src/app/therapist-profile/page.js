@@ -679,12 +679,12 @@ const TherapistProfileContent = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header Section - Profile Card */}
       <div className="bg-white shadow-lg">
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="relative bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12" style={{ minHeight: '120px', zIndex: 0 }}>
+          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12" style={{ minHeight: '120px', zIndex: 0 }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
@@ -781,7 +781,7 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* Doctor Details Section */}
-      <div className="bg-blue-50 shadow-lg">
+      <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-blue-50 shadow-lg">
         <div className="w-full p-4 md:p-8">
           {/* Mobile: Doctor Name below image */}
           <div className="text-center md:hidden mb-6">
@@ -1052,21 +1052,103 @@ const TherapistProfileContent = () => {
                 )}
               </div>
               
-              {/* Session Type */}
-              <div className="mb-4">
-                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Session Type</h4>
-                {selectedPricing ? (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800">
-                      {selectedPricing.type === 'individual' ? 'Individual' : 
-                       selectedPricing.type === 'family' ? 'Family' : 'Child'} Session
-                    </p>
-                    <p className="text-xs text-green-700 mt-1">
-                      {selectedPricing.duration} - ₹{selectedPricing.price}
-                    </p>
+              {/* Package Selection or Package Information */}
+              <div className="space-y-4 mb-4">
+                {isBookingRemaining && clientPackage ? (
+                  // Show package information when booking remaining sessions
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Your Package</h4>
+                    <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="text-left">
+                          <span className="font-semibold text-base">{clientPackage.package_type}</span>
+                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                            Remaining Sessions
+                          </span>
+                        </div>
+                        <span className="font-bold text-lg">Already Paid</span>
+                      </div>
+                      <div className="text-left text-gray-600 text-xs">
+                        <p>Package purchased on {new Date(clientPackage.purchased_at).toLocaleDateString()}</p>
+                        <p className="mt-1 font-medium">
+                          {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
+                        </p>
+                        <p className="mt-1 text-green-600 font-medium">
+                          Total paid: ${clientPackage.amount_paid}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">Select a pricing option from below</p>
+                  // Show package selection for new bookings
+                  <>
+                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Package</h4>
+                    
+                    {/* Individual Session Option - Always Available */}
+                    <button
+                      onClick={() => {
+                        setSelectedPackage({
+                          id: 'individual',
+                          name: 'Individual Session',
+                          description: 'One therapy session',
+                          session_count: 1,
+                          price: selectedDoctor.price,
+                          package_type: 'individual',
+                          discount_percentage: 0
+                        });
+                        setSelectedPrice(selectedDoctor.price);
+                      }}
+                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                        selectedPackage?.id === 'individual'
+                          ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                          : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="text-left">
+                          <span className="font-semibold text-sm">Individual Session</span>
+                        </div>
+                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
+                      </div>
+                    </button>
+                    
+                    {/* Dynamic Packages from Database */}
+                    {loadingPackages ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                        <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
+                      </div>
+                    ) : packages.length > 0 ? (
+                      <div className="space-y-2">
+                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
+                          <button
+                            key={pkg.id}
+                            onClick={() => {
+                              setSelectedPackage(pkg);
+                              setSelectedPrice(pkg.price);
+                            }}
+                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                              selectedPackage?.id === pkg.id
+                                ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                                : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="text-left">
+                                <span className="font-semibold text-sm">{pkg.name}</span>
+                                {pkg.discount_percentage > 0 && (
+                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
+                                    Save {pkg.discount_percentage}%
+                                  </span>
+                                )}
+                              </div>
+                              <span className="font-bold text-base">₹{pkg.price}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
                 )}
               </div>
               
@@ -1224,111 +1306,6 @@ const TherapistProfileContent = () => {
                     <span>Past date</span>
                   </div>
                 </div>
-              </div>
-              
-                            {/* Package Selection or Package Information */}
-              <div className="space-y-4">
-                {isBookingRemaining && clientPackage ? (
-                  // Show package information when booking remaining sessions
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Your Package</h4>
-                    <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="text-left">
-                          <span className="font-semibold text-base">{clientPackage.package_type}</span>
-                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                            Remaining Sessions
-                          </span>
-                        </div>
-                        <span className="font-bold text-lg">Already Paid</span>
-                      </div>
-                      <div className="text-left text-gray-600 text-xs">
-                        <p>Package purchased on {new Date(clientPackage.purchased_at).toLocaleDateString()}</p>
-                        <p className="mt-1 font-medium">
-                          {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
-                        </p>
-                        <p className="mt-1 text-green-600 font-medium">
-                          Total paid: ${clientPackage.amount_paid}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  // Show package selection for new bookings
-                  <>
-                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Package</h4>
-                    
-                    {/* Individual Session Option - Always Available */}
-                    <button
-                      onClick={() => {
-                        setSelectedPackage({
-                          id: 'individual',
-                          name: 'Individual Session',
-                          description: 'One therapy session',
-                          session_count: 1,
-                          price: selectedDoctor.price,
-                          package_type: 'individual',
-                          discount_percentage: 0
-                        });
-                        setSelectedPrice(selectedDoctor.price);
-                      }}
-                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                        selectedPackage?.id === 'individual'
-                          ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                          : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="text-left">
-                          <span className="font-semibold text-sm">Individual Session</span>
-                        </div>
-                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
-                      </div>
-                    </button>
-                    
-                    {/* Dynamic Packages from Database */}
-                    {loadingPackages ? (
-                      <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
-                        <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
-                      </div>
-                    ) : packages.length > 0 ? (
-                      <div className="space-y-2">
-                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
-                          <button
-                            key={pkg.id}
-                            onClick={() => {
-                              setSelectedPackage(pkg);
-                              setSelectedPrice(pkg.price);
-                            }}
-                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                              selectedPackage?.id === pkg.id
-                                ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                                : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
-                            }`}
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="text-left">
-                                <span className="font-semibold text-sm">{pkg.name}</span>
-                                {pkg.discount_percentage > 0 && (
-                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
-                                    Save {pkg.discount_percentage}%
-                                  </span>
-                                )}
-                              </div>
-                              <span className="font-bold text-base">₹{pkg.price}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500 text-sm">
-                        <p>No additional packages available</p>
-                        <p className="text-xs mt-1">Individual session option is always available above</p>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
 
               {/* Time Slots */}
@@ -1553,7 +1530,7 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* Support Contact Section */}
-      <div className="w-full h-auto md:h-[100px] bg-green-500 flex items-center justify-center py-4 md:py-0">
+      <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-auto md:h-[100px] bg-green-500 flex items-center justify-center py-4 md:py-0">
         <p className="text-white text-xs md:text-sm text-center px-4">
           If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>

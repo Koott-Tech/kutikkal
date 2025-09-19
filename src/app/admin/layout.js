@@ -119,9 +119,9 @@ export default function AdminLayout({ children }) {
       {/* Main content (push right for desktop left sidebar) */}
       <div className="lg:ml-64">
         {/* Top bar */}
-        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 w-full">
           <div className="flex items-center justify-between">
-            <div />
+            <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
             <nav className="hidden lg:flex items-center space-x-2">
               {navigation.map((item) => {
                 const Icon = item.icon;

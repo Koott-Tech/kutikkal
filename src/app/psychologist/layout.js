@@ -147,15 +147,31 @@ export default function PsychologistLayout({ children }) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Mobile header */}
-        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white">
+        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white w-full">
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-gray-500 hover:text-gray-600"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Psychologist Dashboard</h1>
+          <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
           <div className="w-6" />
+        </div>
+
+        {/* Desktop header - full width */}
+        <div className="hidden lg:block bg-white border-b border-gray-200 w-full">
+          <div className="flex h-16 items-center justify-between px-4">
+            <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">{user?.email}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                Get started
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Page content */}
