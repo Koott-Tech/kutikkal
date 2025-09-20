@@ -139,7 +139,7 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white sticky top-0 z-50">
+    <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
       <div className="w-full pl-[50px] pr-[50px]">
         <div className="flex h-20 items-center justify-between">
           {/* Left group: Brand + Nav */}
@@ -162,6 +162,7 @@ export default function Header() {
                       setIsFindCareOpen(!isFindCareOpen);
                       setIsForProvidersOpen(false);
                       setIsAboutOpen(false);
+                      setIsResourcesOpen(false);
                     }}
                   >
                   <span>Counselling</span>
@@ -174,7 +175,6 @@ export default function Header() {
                     <div className="fixed top-20 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mx-4">
                       {/* Counselling Services */}
                       <div className="px-6 pb-4 border-b border-gray-200">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Counselling Services</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
                           {[
                             { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
@@ -207,7 +207,6 @@ export default function Header() {
                       
                       {/* Other Services */}
                       <div className="px-4 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other Services</h3>
                         <div className="grid grid-cols-3 gap-8">
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -245,6 +244,7 @@ export default function Header() {
                       setIsForProvidersOpen(!isForProvidersOpen);
                       setIsFindCareOpen(false);
                       setIsAboutOpen(false);
+                      setIsResourcesOpen(false);
                     }}
                   >
                   <span>Assessments</span>
@@ -254,54 +254,123 @@ export default function Header() {
                   
                   {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                                             {/* Top section - Main options */}
-                       <div className="px-4 pb-3 border-b border-gray-200">
-                         <div className="space-y-2">
-                           <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                             <div className="w-5 h-5 flex items-center justify-center">
-                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                               </svg>
-                             </div>
-                            <span className="text-gray-700 text-sm">Therapy</span>
-                           </div>
-                           <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                             <div className="w-5 h-5 flex items-center justify-center">
-                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                               </svg>
-                             </div>
-                            <span className="text-gray-700 text-sm">Psychiatry</span>
-                           </div>
-                           <div 
-                             className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                             onClick={() => {
+                    <div className="fixed top-20 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mx-4">
+                      <div className="px-6 pb-4 border-b border-gray-200">
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
+                          {/* ADHD Section */}
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ADHD</h4>
+                            <div className="space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/adhd-vanderbilt');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/adhd-conners-3');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">ADHD Conners 3</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Emotional & Behavioral Screening Section */}
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">EMOTIONAL & BEHAVIORAL SCREENING</h4>
+                            <div className="space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/basc-3');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/child-depression-inventory');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Child Depression Inventory</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/spence-anxiety-scale');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Intelligence Test Section */}
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">INTELLIGENCE TEST</h4>
+                            <div className="space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/vsms');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">VSMS</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Projective Tests Section */}
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">PROJECTIVE TESTS</h4>
+                            <div className="space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/cat');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/child-sentence-completion');
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Bottom Actions */}
+                      <div className="px-4 pt-3">
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h3>
+                        <div className="grid grid-cols-3 gap-8">
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                            <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
+                          </div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                            <span className="text-gray-700 text-sm font-medium">View Therapists</span>
+                          </div>
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
                               handleFAQClick();
-                             }}
-                           >
-                             <div className="w-5 h-5 flex items-center justify-center">
-                               <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                               </svg>
-                             </div>
-                            <span className="text-gray-700 text-sm">FAQs</span>
-                           </div>
-                         </div>
-                       </div>
-                       
-                       {/* Bottom section - Other services */}
-                       <div className="px-4 pt-3">
-                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other services</h3>
-                         <div className="space-y-2">
-                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm">In-person therapy</span>
-                           </div>
-                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm">Medicare & Medicaid</span>
-                           </div>
-                         </div>
-                       </div>
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm font-medium">FAQ</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </li>
@@ -312,6 +381,7 @@ export default function Header() {
                       setIsAboutOpen(!isAboutOpen);
                       setIsFindCareOpen(false);
                       setIsForProvidersOpen(false);
+                      setIsResourcesOpen(false);
                     }}
                   >
                     <span>About Us</span>
@@ -543,6 +613,7 @@ export default function Header() {
                       setIsMobileFindCareOpen(!isMobileFindCareOpen);
                       setIsMobileForProvidersOpen(false);
                       setIsMobileAboutOpen(false);
+                      setIsMobileResourcesOpen(false);
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900">Counselling</span>
@@ -555,7 +626,6 @@ export default function Header() {
                   {isMobileFindCareOpen && (
                     <div className="ml-4 space-y-2 py-2">
                       <div className="px-4 py-2 space-y-2">
-                        <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Counselling Services</h4>
                         {[
                           { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
                           { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
@@ -584,7 +654,6 @@ export default function Header() {
                         ))}
                         
                         <div className="border-t border-gray-200 mt-4 pt-4">
-                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Other Services</h4>
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
@@ -623,6 +692,7 @@ export default function Header() {
                       setIsMobileForProvidersOpen(!isMobileForProvidersOpen);
                       setIsMobileFindCareOpen(false);
                       setIsMobileAboutOpen(false);
+                      setIsMobileResourcesOpen(false);
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900">Assessments</span>
@@ -633,50 +703,126 @@ export default function Header() {
                   
                   {/* Assessments Dropdown Content */}
                   {isMobileForProvidersOpen && (
-                    <div className="ml-4 space-y-2 py-2">
-                      <div className="px-4 py-2">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
+                    <div className="ml-4 space-y-4 py-2">
+                      <div className="px-4">
+                        {/* ADHD Section */}
+                        <div className="mb-4">
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">ADHD</h3>
+                          <div className="space-y-1 ml-2">
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/adhd-vanderbilt');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
                             </div>
-                            <span className="text-gray-700 text-sm">Therapy</span>
-                          </div>
-                          <div className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/adhd-conners-3');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">ADHD Conners 3</span>
                             </div>
-                            <span className="text-gray-700 text-sm">Psychiatry</span>
-                          </div>
-                          <div 
-                            className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              handleFAQClick();
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-700 text-sm">FAQs</span>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="px-4 pt-3 border-t border-gray-200">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Other services</h3>
-                        <div className="space-y-2">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm">In-person therapy</span>
+
+                        {/* Emotional & Behavioral Screening Section */}
+                        <div className="mb-4">
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">EMOTIONAL & BEHAVIORAL SCREENING</h3>
+                          <div className="space-y-1 ml-2">
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/basc-3');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
+                            </div>
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/child-depression-inventory');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">Child Depression Inventory</span>
+                            </div>
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/spence-anxiety-scale');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
+                            </div>
                           </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm">Medicare & Medicaid</span>
+                        </div>
+
+                        {/* Intelligence Test Section */}
+                        <div className="mb-4">
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">INTELLIGENCE TEST</h3>
+                          <div className="space-y-1 ml-2">
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/vsms');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">VSMS</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Projective Tests Section */}
+                        <div className="mb-4">
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">PROJECTIVE TESTS</h3>
+                          <div className="space-y-1 ml-2">
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/cat');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
+                            </div>
+                            <div 
+                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                router.push('/assessments/child-sentence-completion');
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-200 pt-3">
+                          <div className="space-y-2">
+                            <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                              <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
+                            </div>
+                            <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                              <span className="text-gray-700 text-sm font-medium">View Therapists</span>
+                            </div>
+                            <div 
+                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => {
+                                handleFAQClick();
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              <span className="text-gray-700 text-sm font-medium">FAQ</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -692,6 +838,7 @@ export default function Header() {
                       setIsMobileAboutOpen(!isMobileAboutOpen);
                       setIsMobileFindCareOpen(false);
                       setIsMobileForProvidersOpen(false);
+                      setIsMobileResourcesOpen(false);
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900">About Us</span>

@@ -634,7 +634,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Desktop header - full width, overlaps sidebar */}
-      <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 w-full">
+      <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 w-full shadow-sm">
         <div className="flex h-16 items-center justify-end px-4">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">{user?.email}</span>
@@ -651,7 +651,7 @@ export default function ProfilePage() {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Mobile header - Company name left, menu right */}
-        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white w-full">
+        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white w-full sticky top-0 z-40">
           <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
           <button
             onClick={() => setSidebarOpen(true)}

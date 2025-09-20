@@ -228,10 +228,10 @@ export default function ReceiptsPage() {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+      <div className="hidden lg:fixed lg:top-4 lg:bottom-0 lg:flex lg:w-64 lg:flex-col z-30">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
           <div className="flex h-16 items-center px-4 border-b border-gray-200">
-            <h1 className="text-lg font-semibold text-gray-900">Hi - {user.profile?.first_name} {user.profile?.last_name}</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
           </div>
           
           {/* User Profile Section */}
@@ -269,7 +269,7 @@ export default function ReceiptsPage() {
             })}
           </nav>
           
-          <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 p-4 mb-8">
             <button
               onClick={handleLogout}
               className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -284,7 +284,7 @@ export default function ReceiptsPage() {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Mobile header - Company name left, menu right */}
-        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white">
+        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white w-full sticky top-0 z-40">
           <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
           <button
             onClick={() => setSidebarOpen(true)}
@@ -294,9 +294,24 @@ export default function ReceiptsPage() {
           </button>
         </div>
 
+        {/* Desktop header - full width, overlaps sidebar */}
+        <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 w-full shadow-sm">
+          <div className="flex h-16 items-center justify-end px-4">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">{user?.email}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                Get started
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Page content */}
-        <main className="py-6">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="py-6 lg:pt-24">
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="bg-white shadow rounded-lg p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
                 <div>

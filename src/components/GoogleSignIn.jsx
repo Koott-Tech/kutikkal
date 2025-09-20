@@ -1,21 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { getSupabaseClient } from '../lib/supabaseClient';
 
 export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
   const { login } = useAuth();
   const router = useRouter();
 
-  // Initialize Supabase client only if environment variables are available
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  const supabase = supabaseUrl && supabaseAnonKey 
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+  // Get singleton Supabase client
+  const supabase = getSupabaseClient();
 
   const handleGoogleSignIn = async () => {
     if (!supabase) {

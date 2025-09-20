@@ -12,11 +12,11 @@ export default function Hero() {
   
   return (
     <div className="w-full overflow-hidden">
-      <div className="mx-auto max-w-[1400px] px-1 md:px-2">
-                 <section className="text-black rounded-[10px] p-4 sm:p-8 md:p-[50px] min-h-[80vh] md:h-[80vh] mx-4 sm:mx-6 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)' }}>
+      <div className="mx-auto max-w-[1400px] px-0 md:px-2">
+                 <section className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] min-h-[80vh] md:h-[80vh] mx-0 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)' }}>
           <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
             {/* Left: Text */}
-            <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0 px-2 sm:px-0">
+            <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0 px-4 sm:px-0">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-xs font-medium text-gray-800 w-fit mx-auto md:mx-0">
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

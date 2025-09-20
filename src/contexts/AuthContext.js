@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { setRefreshTokenCallback } from '../lib/backendApi';
+import { getSupabaseClient } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -12,17 +12,9 @@ export function AuthProvider({ children }) {
   const [supabaseClient, setSupabaseClient] = useState(null);
 
   useEffect(() => {
-    // Initialize Supabase client only if environment variables are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    if (supabaseUrl && supabaseAnonKey) {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      setSupabaseClient(supabase);
-    } else {
-      console.warn('Supabase environment variables not found');
-      setSupabaseClient(null);
-    }
+    // Get singleton Supabase client
+    const supabase = getSupabaseClient();
+    setSupabaseClient(supabase);
 
     // Check for existing token and user data on app load
     const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -33,11 +25,9 @@ export function AuthProvider({ children }) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         
-        // Check if token needs refresh (only if supabase is available)
-        if (supabaseUrl && supabaseAnonKey) {
-          const supabase = createClient(supabaseUrl, supabaseAnonKey);
-          refreshTokenIfNeeded(supabase, storedToken);
-        }
+        // Skip Supabase token refresh since we're using backend JWT tokens
+        // The backend handles token validation and refresh
+        console.log('🔍 Using backend JWT token, skipping Supabase session refresh');
       } catch (error) {
         console.error('Error parsing stored user data:', error);
         localStorage.removeItem('authToken');
@@ -51,14 +41,38 @@ export function AuthProvider({ children }) {
   }, []);
 
   const refreshTokenIfNeeded = async (supabase, currentToken) => {
-    if (!supabase) return;
+    if (!supabase) {
+      console.log('🔍 No Supabase client available for token refresh');
+      return;
+    }
     
     try {
+      console.log('🔍 Attempting token refresh with Supabase client');
+      
+      // First check if we have an existing session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.log('🔍 No existing session found, skipping refresh:', sessionError.message);
+        return;
+      }
+      
+      if (!sessionData.session) {
+        console.log('🔍 No active session found, skipping refresh');
+        return;
+      }
+      
+      console.log('🔍 Found existing session, attempting refresh');
       // Try to refresh the session
       const { data, error } = await supabase.auth.refreshSession();
       
       if (error) {
         console.error('Token refresh failed:', error);
+        console.log('🔍 Token refresh error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         // If refresh fails, clear auth data
         logout();
         return;
@@ -73,42 +87,36 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
+      console.log('🔍 Token refresh exception details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
     }
   };
 
   const refreshToken = async () => {
-    if (!supabaseClient) return null;
+    // For backend JWT tokens, we don't need Supabase session refresh
+    // The backend API handles token validation and refresh
+    console.log('🔍 Using backend JWT token system, no Supabase refresh needed');
     
-    try {
-      const { data, error } = await supabaseClient.auth.refreshSession();
-      
-      if (error) {
-        console.error('Token refresh failed:', error);
-        logout();
-        return null;
-      }
-      
-      if (data.session) {
-        console.log('🔍 Token refreshed successfully');
-        localStorage.setItem('token', data.session.access_token);
-        localStorage.setItem('authToken', data.session.access_token);
-        setToken(data.session.access_token);
-        return data.session.access_token;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      logout();
-      return null;
+    // Return the current token if available
+    const currentToken = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (currentToken) {
+      console.log('🔍 Returning current backend JWT token');
+      return currentToken;
     }
+    
+    console.log('🔍 No token available, user needs to login');
+    logout();
+    return null;
   };
 
   // Set the refresh token callback for API requests after refreshToken is defined
   useEffect(() => {
     console.log('🔍 Setting refresh token callback in AuthContext');
     setRefreshTokenCallback(refreshToken);
-  }, [supabaseClient]);
+  }, []);
 
   const login = (userData, authToken) => {
     setUser(userData);

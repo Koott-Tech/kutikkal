@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   UserCheck, 
   Plus, 
@@ -14,9 +15,12 @@ import {
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function DoctorsPage() {
   const { showError, showSuccess } = useNotification();
+  const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [doctors, setDoctors] = useState([]);
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState(null);
@@ -27,8 +31,24 @@ export default function DoctorsPage() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
 
   useEffect(() => {
-    loadDoctors();
-  }, []);
+    // Check authentication and role
+    if (!authLoading) {
+      if (!isAuthenticated()) {
+        console.log('User not authenticated, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      
+      if (!hasRole('admin') && !hasRole('superadmin')) {
+        console.log('User does not have admin privileges, redirecting to profile');
+        router.push('/profile');
+        return;
+      }
+      
+      // User is authenticated and has admin role, load doctors data
+      loadDoctors();
+    }
+  }, [authLoading, isAuthenticated, hasRole, router]);
 
   const loadDoctors = async () => {
     try {
@@ -51,6 +71,14 @@ export default function DoctorsPage() {
       }
     } catch (error) {
       console.error('Failed to load doctors:', error);
+      
+      // Check if it's an authentication error
+      if (error.message && (error.message.includes('401') || error.message.includes('unauthorized') || error.message.includes('token'))) {
+        console.log('Authentication error detected, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      
       showError('Failed to load doctors', 'Load Error');
       setDoctors([]);
     } finally {
@@ -139,6 +167,16 @@ export default function DoctorsPage() {
 
   const specialties = [...new Set(doctors.flatMap(d => d.area_of_expertise || []).filter(Boolean))];
 
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Show loading while checking authentication or loading data
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

@@ -6,6 +6,7 @@ export default function ConditionalPadding({ children }) {
   
   // Pages that should have full width (no padding)
   const fullWidthPages = [
+    '/',
     '/login',
     '/register',
     '/profile',

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -13,17 +13,14 @@ export default function AuthCallback() {
       try {
         setStatus('Processing authentication...');
         
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const supabase = getSupabaseClient();
         
-        if (!supabaseUrl || !supabaseAnonKey) {
-          console.error('Supabase environment variables not available');
+        if (!supabase) {
+          console.error('Supabase client not available');
           setStatus('Configuration error. Redirecting...');
           setTimeout(() => router.push('/login?error=config_error'), 2000);
           return;
         }
-        
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         // Get the session from URL hash
         const { data, error } = await supabase.auth.getSession();
