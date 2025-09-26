@@ -19,7 +19,7 @@ export default function BigEmotionsPage() {
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
       <ProcessSteps therapyType="big-emotions" />
       <BenefitsSection therapyType="big-emotions" />
-      <TherapyTypesSplit />
+      <TherapyTypesSplit therapyType="big-emotions" />
       <div className="mt-8 sm:mt-12 md:mt-16">
         <Testimonials />
       </div>

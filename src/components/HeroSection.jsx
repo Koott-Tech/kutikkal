@@ -9,7 +9,12 @@ export default function HeroSection({ therapyType = "individual" }) {
       title: "Take the first step, individual therapy through Rula.",
       description: "Rula makes it simple to take the first step towards better mental\nhealth. Explore licensed, in-network therapists online who\nspecialise in your unique needs.",
       image: "/kids.png",
-      alt: "Individual in therapy session"
+      alt: "Individual in therapy session",
+      features: [
+        "15,000+ licensed providers to match your unique needs",
+        "Meet with a therapist via live video as soon as tomorrow",
+        "Rula patients pay an average of $15 per session using insurance"
+      ]
     },
     couples: {
       title: "Take the first step,\ncouples therapy\nthrough Rula.",
@@ -66,10 +71,15 @@ export default function HeroSection({ therapyType = "individual" }) {
       alt: "Child learning social skills"
     },
     "anxiety-sadness": {
-      title: "Take the first step,\nAnxiety, Sadness or Low mood\nthrough Rula.",
-      description: "Rula makes it simple to take the first step towards better emotional\nwell-being for your child. Explore licensed, in-network therapists online who\nspecialise in anxiety and mood management.",
+      title: "Helping Kids Find Calm: Child Anxiety Counselling Online",
+      description: "Our licensed child therapists specialize in child anxiety counselling online, offering personalized care to help kids manage their worries and feel safe. Parents also receive meaningful support for child anxiety, so the whole family feels stronger.",
       image: "/kids.png",
-      alt: "Child managing anxiety and sadness"
+      alt: "Child managing anxiety and sadness",
+      features: [
+        "Licensed Child Therapists Who Understand Kids",
+        "Online Sessions From the Comfort of Home",
+        "Affordable & Accessible Care"
+      ]
     },
     "overthinking-ocd": {
       title: "Take the first step,\nOverthinking & OCD\nthrough Rula.",
@@ -162,33 +172,30 @@ export default function HeroSection({ therapyType = "individual" }) {
               
               {/* Feature List */}
               <div className="space-y-3 pt-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+                {(currentContent.features || [
+                  "15,000+ licensed providers to match your unique needs",
+                  "Meet with a therapist via live video as soon as tomorrow",
+                  "Rula patients pay an average of $15 per session using insurance"
+                ]).map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-black font-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>{feature}</span>
                   </div>
-                                     <span className="text-black font-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>15,000+ licensed providers to match your unique needs</span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                                     <span className="text-black font-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>Meet with a therapist via live video as soon as tomorrow</span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                                     <span className="text-black font-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>Rula patients pay an average of $15 per session using insurance</span>
-                </div>
+                ))}
               </div>
+              
+              {/* Additional Text for Anxiety-Sadness */}
+              {therapyType === "anxiety-sadness" && (
+                <div className="pt-6">
+                  <p className="text-lg md:text-xl font-medium text-[#123331] text-center md:text-left">
+                    Start Child Anxiety Counselling Online Today
+                  </p>
+                </div>
+              )}
             </div>
             
                          {/* Image Area - Below content on mobile, right side on desktop */}

@@ -28,6 +28,11 @@ const Guide = () => {
       const psychologists = response?.data?.psychologists || [];
       console.log('Psychologists data:', psychologists);
       
+      // Debug image URLs
+      psychologists.forEach(psych => {
+        console.log(`🔍 Frontend - Image URL for ${psych.name || psych.first_name}:`, psych.cover_image_url);
+      });
+      
 
       
       setDoctors(psychologists);
@@ -118,7 +123,7 @@ const Guide = () => {
         onClick={() => router.push('/')}
         title="Go to homepage"
       >
-        Kuttikal
+        
       </div>
       
       <div style={{ position: "relative", zIndex: 3 }}></div>
@@ -313,6 +318,8 @@ const Guide = () => {
                     }
                     
                     console.log(`Doctor ${doc.name || doc.first_name}: imageSrc = ${imageSrc}`);
+                    console.log(`Doctor ${doc.name || doc.first_name}: cover_image_url = ${doc.cover_image_url}`);
+                    console.log(`Doctor ${doc.name || doc.first_name}: profile_picture_url = ${doc.profile_picture_url}`);
                     
                     if (imageSrc) {
                       return (

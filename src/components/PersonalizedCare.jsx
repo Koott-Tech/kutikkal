@@ -10,7 +10,7 @@ export default function PersonalizedCare() {
             The care you need, whenever you need it
           </h2>
           <p className="text-[16px] sm:text-[17px] md:text-[18px] text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
-            No matter where you start, your provider will work with you to develop a treatment plan that's tailored around you and your individual needs.
+            We know parenting can be challenging, so we’re here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
           </p>
         </div>
 

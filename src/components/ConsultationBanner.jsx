@@ -10,11 +10,11 @@ export default function ConsultationBanner() {
           <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center">
             {/* Left: Text and Button */}
             <div className="p-5 md:p-6 pl-8 md:pl-10 lg:pl-12 order-1 lg:order-1">
-              <h2 className="text-xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-2 leading-tight text-left">
+              <h2 className="text-xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-2 leading-tight text-left max-w-2xl lg:max-w-none lg:whitespace-nowrap">
                 Get a Free 20-minute Consultation
               </h2>
               
-              <p className="text-xs md:text-base text-gray-700 mb-4 leading-relaxed text-left">
+              <p className="text-xs md:text-base text-gray-700 mb-4 leading-relaxed text-left max-w-2xl lg:max-w-none lg:whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
               </p>
               
@@ -32,7 +32,7 @@ export default function ConsultationBanner() {
             <div className="relative h-40 md:h-52 lg:h-60 order-2 lg:order-2 flex justify-center lg:justify-end items-center pr-6 pb-6 pt-6">
               <div className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-2xl overflow-hidden">
                 <Image
-                  src="/kids.png"
+                  src="/consultation.png"
                   alt="Consultation"
                   fill
                   className="object-cover"
@@ -53,7 +53,7 @@ export default function ConsultationBanner() {
                   </div>
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55 0 1 .45 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
                     </svg>
                   </div>
                 </div>

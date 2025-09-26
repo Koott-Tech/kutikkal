@@ -1,6 +1,111 @@
 import Image from "next/image";
 
-export default function TherapyTypesSplit() {
+export default function TherapyTypesSplit({ therapyType = "individual" }) {
+  // Content configuration for different therapy types
+  const content = {
+    individual: {
+      title: "Types of individual therapy",
+      types: [
+        {
+          title: "Cognitive behavioral therapy (CBT)",
+          description: "Cognitive behavioral therapy focuses on the connection between people's thoughts, feelings, and behaviors to interrupt anxiety and other mental health challenges."
+        },
+        {
+          title: "Dialectic behavioral therapy (DBT)",
+          description: "Focuses on building emotional regulation skills and encouraging participants to fully accept all parts of themselves — even their anxiety."
+        },
+        {
+          title: "Eye movement desensitization and reprocessing (EMDR)",
+          description: "EMDR is a therapeutic technique that uses specific eye movements or tapping to help people process traumatic memories."
+        },
+        {
+          title: "Acceptance and commitment therapy (ACT)",
+          description: "ACT is a mindfulness-based form of behavioral therapy. It can effectively treat depression, anxiety, psychosis, OCD, and health conditions like chronic pain."
+        }
+      ],
+      buttonText: "Get started"
+    },
+    "anxiety-sadness": {
+      title: "Common Types of Anxiety in Kids",
+      types: [
+        {
+          title: "Generalized Anxiety",
+          description: "Worrying about lots of different things—school, friendships, safety, or family. Kids with this type of anxiety often feel nervous most of the time."
+        },
+        {
+          title: "Separation Anxiety",
+          description: "Fear of being away from parents or caregivers. This is common in younger children but can affect older kids too."
+        },
+        {
+          title: "Social Anxiety",
+          description: "Feeling very shy or nervous about talking to others, being in groups, or being the center of attention."
+        },
+        {
+          title: "Specific Phobias",
+          description: "Strong fears of certain things or situations, like animals, heights, storms, or doctors' visits."
+        },
+        {
+          title: "School Anxiety",
+          description: "Worrying a lot about going to school, tests, or being away from home, leading to resistance or refusal."
+        },
+        {
+          title: "Panic Anxiety",
+          description: "Sudden, intense feelings of fear that can cause a racing heart, dizziness, or feeling like something bad is about to happen."
+        },
+        {
+          title: "Performance Anxiety",
+          description: "Fear of making mistakes or being judged, especially during tests, sports, or presentations."
+        }
+      ],
+      buttonText: "Get Started"
+    },
+    "big-emotions": {
+      title: "Types of Big Emotions Therapy",
+      types: [
+        {
+          title: "Cognitive Behavioral Therapy (CBT)",
+          description: "Helps children identify and change negative thought patterns that contribute to emotional outbursts."
+        },
+        {
+          title: "Emotion Regulation Training",
+          description: "Teaches children strategies to manage and express their feelings in healthy ways."
+        },
+        {
+          title: "Mindfulness Techniques",
+          description: "Introduces calming practices to help children stay present and manage overwhelming emotions."
+        },
+        {
+          title: "Parent-Child Interaction Therapy",
+          description: "Involves parents in the therapeutic process to create consistent emotional support at home."
+        }
+      ],
+      buttonText: "Get Started with Big Emotions Therapy"
+    },
+    "adhd-attention": {
+      title: "Types of ADHD & Attention Support",
+      types: [
+        {
+          title: "Behavioral Interventions",
+          description: "Structured approaches to improve focus, organization, and task completion."
+        },
+        {
+          title: "Executive Function Training",
+          description: "Develops planning, organization, and time management skills."
+        },
+        {
+          title: "Attention Training Programs",
+          description: "Specific exercises to improve sustained attention and concentration."
+        },
+        {
+          title: "Parent Coaching",
+          description: "Guidance for parents on managing ADHD symptoms and supporting their child's success."
+        }
+      ],
+      buttonText: "Start ADHD Support Today"
+    }
+  };
+
+  const currentContent = content[therapyType] || content.individual;
   return (
     <div className="px-4 sm:px-8 md:px-[50px]">
              <section className="w-full mt-16 md:mt-20 mb-6 md:mb-8">
@@ -20,49 +125,24 @@ export default function TherapyTypesSplit() {
                      marginBottom: '0.5rem'
                    }}
                  >
-                  Types of individual therapy
+                  {currentContent.title}
                 </h2>
                
                <div className="mt-12 space-y-8">
-                                                                       <div>
+                 {currentContent.types.map((type, index) => (
+                   <div key={index}>
                      <h3 className="text-base md:text-lg font-normal mb-3">
-                       Cognitive behavioral therapy (CBT)
+                       {type.title}
                      </h3>
                      <p className="text-sm md:text-base leading-relaxed font-normal">
-                       Cognitive behavioral therapy focuses on the connection between people's thoughts, feelings, and behaviors to interrupt anxiety and other mental health challenges.
+                       {type.description}
                      </p>
                    </div>
-                   
-                   <div>
-                     <h3 className="text-base md:text-lg font-normal mb-3">
-                       Dialectic behavioral therapy (DBT)
-                     </h3>
-                     <p className="text-sm md:text-base leading-relaxed font-normal">
-                       Focuses on building emotional regulation skills and encouraging participants to fully accept all parts of themselves — even their anxiety.
-                     </p>
-                   </div>
-                   
-                                      <div>
-                      <h3 className="text-base md:text-lg font-normal mb-3">
-                        Eye movement desensitization and reprocessing (EMDR)
-                      </h3>
-                      <p className="text-sm md:text-base leading-relaxed font-normal">
-                        EMDR is a therapeutic technique that uses specific eye movements or tapping to help people process traumatic memories.
-                      </p>
-                    </div>
-                    
-                                                                                <div>
-                        <h3 className="text-base md:text-lg font-normal mb-3">
-                          Acceptance and commitment therapy (ACT)
-                        </h3>
-                        <p className="text-sm md:text-base leading-relaxed font-normal">
-                          ACT is a mindfulness-based form of behavioral therapy. It can effectively treat depression, anxiety, psychosis, OCD, and health conditions like chronic pain.
-                        </p>
-                      </div>
-                   </div>
+                 ))}
+               </div>
                    
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 <button className="mt-8 inline-flex items-center rounded-full bg-[#38663a] px-12 sm:px-10 md:px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#2d4f2e] w-fit mx-auto md:mx-0">
-                           Get started
+                           {currentContent.buttonText}
                          </button>
                          
                          {/* Mobile Image Section - Hidden on Desktop */}

@@ -15,7 +15,7 @@ export default function IndividualTherapy() {
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
       <ProcessSteps therapyType="individual" />
       <BenefitsSection therapyType="individual" />
-      <TherapyTypesSplit />
+      <TherapyTypesSplit therapyType="individual" />
       {/* <TherapyTypes />
       <ResourcesTeaser /> */}
       <div className="mt-8 sm:mt-12 md:mt-16">

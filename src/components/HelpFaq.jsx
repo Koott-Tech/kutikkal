@@ -7,33 +7,33 @@ const DATA = [
     title: "Getting started",
     items: [
       {
-        q: "How do I know if therapy is right for me?",
-        a: "Therapy can help with stress, anxiety, relationships, and personal growth. If you're curious, a first session is a great low‑pressure way to explore fit.",
+        q: "How do I know if my child needs counselling?",
+        a: "Look out for changes in behavior, emotions, or daily routines — such as frequent sadness, anxiety, anger, withdrawal, or school difficulties. Counselling can help even if challenges seem small.",
       },
       {
-        q: "What should I consider when choosing a therapist?",
-        a: "Consider experience, identity preferences, specialties, and availability. We'll help you match on these preferences.",
+        q: "Are your sessions online or in-person?",
+        a: "We currently provide online sessions to make support accessible and convenient for families anywhere.",
       },
       {
-        q: "Can I combine therapy and psychiatry?",
-        a: "Many people benefit from both. Your providers can coordinate care to support your goals.",
+        q: "How long is a counselling session?",
+        a: "Each session is typically 45–50 minutes, depending on the child's age and comfort level.",
       },
     ],
   },
   {
-    title: "Understanding costs",
+    title: "Understanding assessments",
     items: [
       {
-        q: "Which insurance does Rula accept?",
-        a: "We work with major plans and are expanding coverage regularly. Check your specific plan during signup.",
+        q: "What kind of assessments do you offer?",
+        a: "We offer emotional, intelligence, projective, ADHD and behavioral assessments to understand your child's strengths, challenges, and needs.",
       },
       {
-        q: "What will my cost per session be if I'm using insurance?",
-        a: "Your cost depends on your benefits (copay, coinsurance, or deductible). We'll verify and show transparent pricing before you book.",
+        q: "Will I be involved in my child's therapy?",
+        a: "Yes! We believe parents play a key role. We'll share progress updates and provide parenting strategies to support your child at home.",
       },
       {
-        q: "What if I don't have insurance or my insurance doesn't cover sessions?",
-        a: "We offer out‑of‑pocket options and can provide superbills for reimbursement when available.",
+        q: "Is therapy confidential?",
+        a: "Yes, your child's privacy is very important to us. We share updates with parents only in ways that are helpful and supportive.",
       },
     ],
   },

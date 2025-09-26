@@ -15,7 +15,7 @@ import SupportFaq from "../components/SupportFaq";
 
 export default function Home() {
   return (
-    <main >
+    <main className="pt-20">
      
       <Hero />
       

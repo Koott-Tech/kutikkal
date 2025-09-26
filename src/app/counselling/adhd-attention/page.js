@@ -19,7 +19,7 @@ export default function AdhdAttentionPage() {
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
       <ProcessSteps therapyType="adhd-attention" />
       <BenefitsSection therapyType="adhd-attention" />
-      <TherapyTypesSplit />
+      <TherapyTypesSplit therapyType="adhd-attention" />
       <div className="mt-8 sm:mt-12 md:mt-16">
         <Testimonials />
       </div>

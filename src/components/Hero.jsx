@@ -11,9 +11,9 @@ export default function Hero() {
   };
   
   return (
-    <div className="w-full overflow-hidden">
+    <div className="w-full overflow-hidden mt-8 md:mt-12">
       <div className="mx-auto max-w-[1400px] px-0 md:px-2">
-                 <section className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] min-h-[80vh] md:h-[80vh] mx-0 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)' }}>
+        <section className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] min-h-[65vh] md:h-[65vh] mx-0 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)' }}>
           <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
             {/* Left: Text */}
             <div className="flex flex-col justify-center order-1 md:order-1 md:pl-10 text-center md:text-left mt-8 md:mt-0 px-4 sm:px-0">
@@ -26,10 +26,10 @@ export default function Hero() {
               </div>
               
               <h1 className="mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-tight break-words" style={{ color: '#1d1733', letterSpacing: '-0.06em', lineHeight: '1.1', fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif', fontWeight: 500 }}>
-                Connect with mental health experts who specialize in you
+                Your partner in Child Counselling & Parent Support
               </h1>
               <p className="mt-6 text-[8px] sm:text-sm md:text-lg font-light opacity-95 leading-none break-words" style={{ color: '#15171a', fontFamily: 'Scto Grotesk A Regular, Recife Text, Roboto, Arial, sans-serif', fontSize: '1.125rem', fontStyle: 'normal', fontWeight: 500 }}>
-                You deserve quality care from someone who cares. Match with a licensed provider today.
+                Expert Child Counselling & Parent Support to help your whole family grow.
               </p>
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
@@ -42,22 +42,27 @@ export default function Hero() {
                 </button>
                 <button
                   type="button"
-                  className="w-full sm:w-fit inline-flex items-center justify-center gap-2 text-sm font-normal text-black hover:text-gray-800"
+                  className="w-full sm:w-fit inline-flex items-center justify-center gap-3 text-sm font-normal text-black hover:text-gray-800 group relative"
                 >
-                  <span>How does it work?</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.192l3.71-2.96a.75.75 0 0 1 .94 1.17l-4.24 3.38a.75.75 0 0 1-.94 0l-4.24-3.38a.75.75 0 0 1 .02-1.06Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <span className="relative">
+                    How does it work?
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
+                  </span>
+                  <div className="w-5 h-5 border border-gray-800 rounded-full flex items-center justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-2.5 w-2.5 text-gray-800"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 5v14M19 12l-7 7-7-7"/>
+                    </svg>
+                  </div>
                 </button>
               </div>
             </div>
@@ -65,10 +70,10 @@ export default function Hero() {
             {/* Right: Image */}
             <div className="relative flex items-center justify-center order-2 md:order-2 min-h-[300px] md:min-h-0">
               <Image
-                src="/hero.png"
+                src="/heroo.png"
                 alt="Hero"
                 fill
-                className="object-contain"
+                className="object-contain object-bottom scale-110 md:scale-125 translate-y-6 md:translate-y-10"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />

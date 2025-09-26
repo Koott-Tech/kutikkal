@@ -17,17 +17,17 @@ export default function HowItWorks() {
     {
       id: 1,
       number: "01",
-      title: "Tell us what's important",
+      title: "Explore Your Matches",
       gradient: "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
       tags: ["Anxiety and Depression", "Accepts Cigna Health Plans", "Available this week"],
-      description: "We'll use your preferences and insurance information to find providers who fit your needs."
+      description: "Browse profiles of ADHD specialists who fit your child's needs."
     },
     {
       id: 2,
       number: "02", 
       title: "Explore your matches",
       gradient: "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
-      description: "Browse the profiles of licensed, in‑network providers who match your preferences."
+      description: "Browse the profiles of licensed providers who match your preferences."
     },
     {
       id: 3,
@@ -130,7 +130,7 @@ export default function HowItWorks() {
                       {/* Header Section */}
                       <div className="flex-shrink-0">
                         <div className="text-xl font-medium text-indigo-900 text-center">{card.number}</div>
-                        <h3 className="mt-1 text-sm font-medium text-gray-900 text-center">
+                        <h3 className="mt-0 text-sm font-medium text-gray-900 text-center">
                           {card.title}
                         </h3>
                       </div>
@@ -153,25 +153,17 @@ export default function HowItWorks() {
                         )}
 
                         {card.id === 2 && (
-                          <>
-                            <div className="mt-6 flex items-center justify-center gap-4">
-                              {avatars.map((src, idx) => (
-                                <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white">
-                                  <Image src={src} alt="avatar" fill className="object-cover" sizes="40px" />
-                                </div>
-                              ))}
+                          <div className="flex items-center justify-center">
+                            <div className="relative h-40 w-full overflow-hidden rounded-lg -mx-2">
+                              <Image src="/howitworks2.png" alt="How it works" fill className="object-cover scale-110" sizes="100vw" />
                             </div>
-                            <div className="mt-6 text-center">
-                              <p className="text-base font-semibold text-gray-900">Anne Treisman</p>
-                              <p className="text-sm text-gray-600">Licensed Psychiatric Provider</p>
-                            </div>
-                          </>
+                          </div>
                         )}
 
                         {card.id === 3 && (
                           <>
-                            <div className="mt-6 flex justify-center">
-                              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
+                          <div className="mt-6 flex justify-center">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
                                 <span className="text-indigo-700">📅</span>
                                 <span>Evenings After 4pm</span>
                               </div>
@@ -192,22 +184,13 @@ export default function HowItWorks() {
                         )}
 
                         {card.id === 4 && (
-                          <div className="mt-6 flex items-center justify-center gap-4">
-                            <div className="relative h-14 w-14 overflow-hidden rounded-full">
+                          <div className="mt-6 w-full flex items-center justify-center">
+                            <div className="relative h-28 w-40 overflow-hidden rounded-md mx-auto">
                               <Image
-                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
-                                alt="participant"
-                                fill
-                                className="object-cover"
-                                sizes="56px"
-                              />
-                            </div>
-                            <div className="relative h-28 w-40 overflow-hidden rounded-md">
-                              <Image
-                                src="/hero.png"
+                                src="/howitworks4.png"
                                 alt="provider"
                                 fill
-                                className="object-cover"
+                                className="object-cover object-center"
                                 sizes="160px"
                               />
                             </div>
@@ -217,7 +200,7 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-4 pt-2 text-xs leading-relaxed text-gray-700 text-center">
+                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-center">
                           {card.description}
                         </p>
                       </div>
@@ -272,7 +255,7 @@ export default function HowItWorks() {
           <div className="hidden md:flex flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
             <div
-              className="rounded-2xl p-6 min-h-[360px] w-[330px] flex-shrink-0"
+              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
@@ -280,7 +263,7 @@ export default function HowItWorks() {
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">01</div>
             <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
-              Tell us what's important
+              Explore Your Matches
             </h3>
 
             <div className="mt-4 flex flex-col gap-3">
@@ -299,47 +282,39 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
-              We'll use your preferences and insurance information to find
-              providers who fit your needs.
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
+              Browse profiles of ADHD specialists who fit your child's needs.
             </p>
           </div>
 
             {/* Card 02 - Desktop */}
           <div
-              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
+              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">02</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
               Explore your matches
             </h3>
 
-            <div className="mt-6 flex items-center gap-4">
-              {avatars.map((src, idx) => (
-                <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white">
-                  <Image src={src} alt="avatar" fill className="object-cover" sizes="40px" />
-                </div>
-              ))}
+            <div className="flex items-center justify-center">
+              <div className="relative h-40 w-full overflow-hidden rounded-lg -mx-3">
+                <Image src="/howitworks2.png" alt="How it works" fill className="object-cover scale-110" sizes="100vw" />
+              </div>
             </div>
 
-            <div className="mt-6">
-              <p className="text-base font-semibold text-gray-900">Anne Treisman</p>
-              <p className="text-sm text-gray-600">Licensed Psychiatric Provider</p>
-            </div>
-
-            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
-              Browse the profiles of licensed, in‑network providers who match
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
+              Browse the profiles of licensed providers who match
               your preferences.
             </p>
           </div>
 
             {/* Card 03 - Desktop */}
           <div
-              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
+              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
@@ -350,9 +325,11 @@ export default function HowItWorks() {
               Schedule your visit
             </h3>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
-              <span className="text-indigo-700">📅</span>
-              <span>Evenings After 4pm</span>
+            <div className="mt-6 flex justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
+                <span className="text-indigo-700">📅</span>
+                <span>Evenings After 4pm</span>
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-700">
@@ -368,7 +345,7 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
               Choose your preferred time and meet with your provider as soon as
               tomorrow.
             </p>
@@ -376,7 +353,7 @@ export default function HowItWorks() {
 
             {/* Card 04 - Desktop */}
           <div
-              className="rounded-2xl p-6 min-h-[320px] w-[330px] flex-shrink-0"
+              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
             style={{
               background:
                 "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
@@ -387,30 +364,20 @@ export default function HowItWorks() {
               Join your online session
             </h3>
 
-            <div className="mt-6 flex items-center gap-4">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full">
+            <div className="mt-6 w-full flex items-center justify-center">
+              <div className="relative h-28 w-40 overflow-hidden rounded-md mx-auto">
                 <Image
-                  src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
-                  alt="participant"
-                  fill
-                  className="object-cover"
-                  sizes="56px"
-                />
-              </div>
-              <div className="relative h-28 w-40 overflow-hidden rounded-md">
-                <Image
-                  src="/hero.png"
+                  src="/howitworks4.png"
                   alt="provider"
                   fill
-                  className="object-cover"
+                  className="object-cover object-center"
                   sizes="160px"
                 />
               </div>
             </div>
 
-            <p className="mt-6 pt-2 text-sm leading-relaxed text-gray-700">
-              Connect with your provider over live video from wherever you feel
-              comfortable.
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
+              Connect with your provider over live video from wherever you are.
             </p>
             </div>
           </div>

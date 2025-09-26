@@ -5,26 +5,26 @@ export default function InfoCards() {
     {
       icon: "speech-bubble",
       iconColor: "purple",
-      title: "Find support and build healthier habits with guidance from a licensed therapist",
+      title: "Find emotional support and guidance for your child with a licensed therapist",
       description:
-        "Talk therapy offers a safe space where you can build healthier habits, navigate challenging situations, and improve your overall well-being. With the support of a licensed therapist, work together to make progress towards your treatment goals.",
+        "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress. With the support of a trained child therapist, your child can learn healthier ways to grow and thrive.",
       cta: "Find a therapist",
     },
     {
       icon: "pill",
       iconColor: "green",
-      title: "Meet with a licensed psychiatric expert to discuss medication options",
+      title: "Get clarity with expert assessments for your child's needs",
       description:
-        "If your symptoms are making it difficult to get through your daily routine, meeting with a psychiatric provider can help determine whether you would benefit from prescription medication as part of your treatment plan.",
-      cta: "Find a psychiatric provider",
+        "Understanding your child's unique strengths and challenges is the first step to meaningful support. Professional assessments can identify learning difficulties, ADHD, autism spectrum concerns, or emotional struggles, helping you create a tailored plan for success at school and home.",
+      cta: "Book an assessment",
     },
     {
       icon: "combination",
       iconColor: "blue",
-      title: "Access the combination of care you need to maintain your wellbeing",
+      title: "Learn strategies and tools to build stronger parent-child relationships",
       description:
-        "Research shows that the combination of talk therapy and prescription medication can result in better outcomes in the treatment of many common conditions — including anxiety disorders, depression, ADHD, and others.",
-      cta: "Get started",
+        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotional growth. Build confidence as a parent and create a calmer, happier home environment.",
+      cta: "Start parent coaching",
     },
   ];
 
@@ -92,7 +92,7 @@ export default function InfoCards() {
                 className="flex items-center justify-between text-sm font-normal text-gray-900 hover:text-gray-700"
               >
                 <span>{item.cta}</span>
-                <span className="text-lg underline">→</span>
+                <span className="text-lg">→</span>
               </a>
             </div>
           </div>

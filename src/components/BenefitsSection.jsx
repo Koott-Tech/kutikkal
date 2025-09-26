@@ -179,6 +179,31 @@ export default function BenefitsSection({ therapyType = "individual" }) {
           description: "Get immediate support during mental health emergencies or acute episodes."
         }
       ]
+    },
+    "anxiety-sadness": {
+      title: "Understanding Worry and Anxiety in Kids",
+      benefits: [
+        {
+          title: "Anxiety doesn't mean something is wrong with your child",
+          description: "It means their brain is working extra hard to keep them safe."
+        },
+        {
+          title: "Anxiety in children is common and not a weakness",
+          description: "It signals that they may need extra emotional care."
+        },
+        {
+          title: "Kids learn tools to manage fears",
+          description: "With child anxiety counselling online, children develop coping strategies."
+        },
+        {
+          title: "Parents receive guidance through support",
+          description: "Support for child anxiety helps parents understand and assist their children."
+        },
+        {
+          title: "Get Child Anxiety Counselling Online With Parent Support",
+          description: "Comprehensive care that addresses both child and family needs."
+        }
+      ]
     }
   };
 

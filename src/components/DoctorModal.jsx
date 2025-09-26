@@ -681,12 +681,14 @@ export default function DoctorModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-          console.log('🚀 Form submission started');
-      console.log('🚀 Form data:', formData);
-      console.log('🚀 Price value:', formData.price);
-      console.log('🚀 Price type:', typeof formData.price);
-      console.log('📦 Packages being sent:', formData.packages);
-      console.log('📦 Filtered packages:', formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions));
+    console.log('🚀 Form submission started');
+    console.log('🚀 Form data:', formData);
+    console.log('🚀 Availability data:', availabilityData);
+    console.log('🚀 Availability keys:', Object.keys(availabilityData));
+    console.log('🚀 Price value:', formData.price);
+    console.log('🚀 Price type:', typeof formData.price);
+    console.log('📦 Packages being sent:', formData.packages);
+    console.log('📦 Filtered packages:', formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions));
     
     setIsSubmitting(true);
     setErrors({});
@@ -700,7 +702,7 @@ export default function DoctorModal({
     if (mode === 'add' && !formData.password.trim()) newErrors.password = 'Password is required';
     if (!formData.experience_years || formData.experience_years < 0) newErrors.experience_years = 'Years of experience is required and must be 0 or greater';
     if (Object.keys(availabilityData).length === 0) {
-      newErrors.availability = 'Please set at least one availability slot';
+      newErrors.availability = 'Please set at least one availability slot. Click on "Set Availability" below to add your available times.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -1248,7 +1250,12 @@ export default function DoctorModal({
 
           {/* Simple Step-by-Step Availability */}
           <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Set Doctor Availability</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-800">Set Doctor Availability</h3>
+              {Object.keys(availabilityData).length === 0 && (
+                <span className="text-red-500 text-sm font-medium">⚠️ Required</span>
+              )}
+            </div>
             
             {/* Step Indicator */}
             <div className="flex items-center justify-center mb-6">
@@ -1461,7 +1468,17 @@ export default function DoctorModal({
                     </button>
                   </div>
                 ) : (
-                  <p className="text-gray-600">No availability set yet. Go back to step 1.</p>
+                  <div className="text-center py-4">
+                    <p className="text-red-600 font-medium mb-2">⚠️ No availability set yet</p>
+                    <p className="text-gray-600 mb-4">You must set at least one availability slot to add this doctor.</p>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Set Availability Now
+                    </button>
+                  </div>
                 )}
               </div>
             )}

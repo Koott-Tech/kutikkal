@@ -19,13 +19,13 @@ export default function Footer() {
             }}>
                 <div className="text-center max-w-4xl mx-auto">
                     <h2 className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-4 leading-tight">
-                        Need parenting Support?
+                        Ready to start yout journeyto mental well-being?
                     </h2>
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                        Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow
+                        We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
                     <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm">
-                        Sign up
+                        Get started
                     </button>
                 </div>
             </div>

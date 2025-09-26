@@ -1,11 +1,13 @@
 import HeroSection from '@/components/HeroSection';
 import LogosStrip from '@/components/LogosStrip';
-import ProcessSteps from '@/components/ProcessSteps';
+import HowItWorks from '@/components/HowItWorks';
+import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
-import Testimonials from '@/components/Testimonials';
+import AnxietyTestimonials from '@/components/AnxietyTestimonials';
 import HelpFaq from '@/components/HelpFaq';
 import ResourcesTeaser from '@/components/ResourcesTeaser';
+import AnxietyInfoCards from '@/components/AnxietyInfoCards';
 
 export const metadata = {
   title: "Anxiety, Sadness or Low mood - Little Care",
@@ -17,11 +19,13 @@ export default function AnxietySadnessPage() {
     <div>
       <HeroSection therapyType="anxiety-sadness" />
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
-      <ProcessSteps therapyType="anxiety-sadness" />
+      <HowItWorks />
+      <ConsultationBanner />
       <BenefitsSection therapyType="anxiety-sadness" />
-      <TherapyTypesSplit />
+      <TherapyTypesSplit therapyType="anxiety-sadness" />
+      <AnxietyInfoCards />
       <div className="mt-8 sm:mt-12 md:mt-16">
-        <Testimonials />
+        <AnxietyTestimonials />
       </div>
       <div className="mt-24">
         <HelpFaq />
