@@ -5,34 +5,28 @@ import { useState } from "react";
 export default function SupportFaq() {
   const items = [
     {
-      title: "The right match, without the wait",
+      title: "Care that feels safe",
       body:
-        "Feeling better starts with finding the right provider. We make that connection easy, helping you find providers who fit your unique needs and preferences — and can meet as soon as tomorrow.",
+        "Every child deserves a space where their feelings matter. We promise to create a gentle, non-judgmental environment where kids can express themselves freely.",
       image: "/hero.png",
     },
     {
-      title: "Insurance made easy",
+      title: "Guidance parents can trust",
       body:
-        "Use your insurance benefits with transparent pricing and support every step of the way.",
+        "We walk alongside parents with practical tools, clear communication, and expert guidance—so you never feel alone in supporting your child's well-being.",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
     },
     {
-      title: "Clinical expertise you can trust",
+      title: "Expertise made simple",
       body:
-        "Licensed professionals with diverse specialties, evidence‑based care, and clear outcomes.",
+        "Our child specialists bring evidence-based care to your doorstep, designed to be easy, accessible, and tailored to each child's unique needs.",
       image: "/hero.png",
     },
     {
-      title: "Flexible scheduling",
+      title: "Support at every stage",
       body:
-        "Evening and weekend availability with virtual sessions so care fits your routine.",
+        "Whether it's early struggles, school challenges, or big transitions, we promise to be there at every step—making the next one easier.",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    },
-    {
-      title: "Private and secure",
-      body:
-        "Your information is protected with industry‑leading privacy and security practices.",
-      image: "/hero.png",
     },
   ];
 
