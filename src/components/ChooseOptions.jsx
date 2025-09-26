@@ -6,9 +6,9 @@ export default function ChooseOptions() {
   const cards = [
     {
       id: 1,
-      tags: ["Children", "Emotions"],
-      title: "Child Counselling",
-      description: "Support your child from the big emotion struggle",
+      tags: ["Counselling", "Emotions"],
+      title: "Counselling",
+      description: "We provide a safe space for children to share, heal, and grow.",
       image: "/girl1.png",
       gradient: "from-green-100 to-white",
       tagColors: {
@@ -19,9 +19,9 @@ export default function ChooseOptions() {
     },
     {
       id: 2,
-      tags: ["Children", "Tests"],
-      title: "Child Assessment", 
-      description: "Support your child from the big emotion struggle",
+      tags: ["Assessments", "Tests"],
+      title: "Assessments", 
+      description: "Our assessments reveal your child's strengths and needs to support growth.",
       image: "/boy1.png",
       gradient: "from-purple-100 to-white",
       tagColors: {
@@ -33,7 +33,7 @@ export default function ChooseOptions() {
       id: 3,
       tags: ["Parents", "Workshops"],
       title: "Better Parenting",
-      description: "Support your child from the big emotion struggle", 
+      description: "We help parents build stronger bonds and a nurturing home.", 
       image: "/fam1.png",
       gradient: "from-orange-100 to-white",
       tagColors: {
@@ -85,17 +85,17 @@ export default function ChooseOptions() {
               </div>
 
               {/* Image Section */}
-              <div className="relative h-60 md:h-72 overflow-hidden mt-1 w-full rounded-t-[50px] rounded-b-[40px]">
+              <div className="relative h-72 md:h-72 overflow-hidden mt-2 md:mt-1 w-full rounded-t-[50px] rounded-b-[40px]">
                 <Image
                   src={card.image}
                   alt={card.title}
                   fill
-                  className={card.imageClass ? `${card.imageClass} rounded-t-[50px] rounded-b-[40px]` : "object-cover object-[50%_100%] rounded-t-[50px] rounded-b-[40px]"}
+                  className={`${card.imageClass ? `${card.imageClass}` : "object-cover object-center md:object-[50%_100%]"} rounded-t-[50px] rounded-b-[40px]`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 
                 {/* Read More Button */}
-                <div className="absolute bottom-12 left-6">
+                <div className="absolute bottom-8 left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden">
                     <span className="px-3">Read more.</span>
                     <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
