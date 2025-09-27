@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../contexts/AuthContext";
@@ -15,8 +15,24 @@ export default function Header() {
   const [isMobileForProvidersOpen, setIsMobileForProvidersOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
+  const [clickedSubmenu, setClickedSubmenu] = useState(null);
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+
+  // Close submenu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
+        setClickedSubmenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [clickedSubmenu]);
 
   const handleBlogClick = () => {
     router.push('/blog');
@@ -172,42 +188,205 @@ export default function Header() {
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="fixed top-20 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mx-4">
+                    <div className="counselling-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
                       {/* Counselling Services */}
                       <div className="px-6 pb-4 border-b border-gray-200">
-                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
-                          {[
-                            { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
-                            { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
-                            { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
-                            { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
-                            { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" },
-                            { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
-                            { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
-                            { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
-                            { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
-                            { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" },
-                            { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
-                            { name: "Grief & Loss", url: "/counselling/grief-loss" },
-                            { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
-                            { name: "Autism Support", url: "/counselling/autism-support" }
-                          ].map((service, index) => (
+                        <div className="space-y-3">
+                          {/* Emotional & Mental Health */}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('emotional')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
                             <div 
-                              key={index}
-                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push(service.url);
-                              }}
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
                             >
-                              <span className="text-gray-700 text-sm">{service.name}</span>
+                              <h3 className="text-sm font-semibold text-gray-900">🔹 Emotional & Mental Health</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
-                          ))}
+                            {/* Hover/Click dropdown */}
+                            {(activeSubmenu === 'emotional' || clickedSubmenu === 'emotional') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                              {[
+                                { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
+                                { name: "Depression Counselling", url: "/counselling/depression" },
+                                { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
+                                { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                                { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
+                              ].map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setClickedSubmenu(null);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Child Development & Learning */}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('development')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div 
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'development' ? null : 'development')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900">🔹 Child Development & Learning</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            {/* Hover/Click dropdown */}
+                            {(activeSubmenu === 'development' || clickedSubmenu === 'development') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                              {[
+                                { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
+                                { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                                { name: "Autism Support", url: "/counselling/autism-support" },
+                                { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
+                              ].map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setClickedSubmenu(null);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Behaviour & Confidence Building */}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('behaviour')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div 
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'behaviour' ? null : 'behaviour')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900">🔹 Behaviour & Confidence Building</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            {/* Hover/Click dropdown */}
+                            {(activeSubmenu === 'behaviour' || clickedSubmenu === 'behaviour') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                              {[
+                                { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
+                                { name: "Confidence & Self-Esteem", url: "/counselling/confidence-self-esteem" }
+                              ].map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setClickedSubmenu(null);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Stress & Academic Support */}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('stress')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div 
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'stress' ? null : 'stress')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900">🔹 Stress & Academic Support</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            {/* Hover/Click dropdown */}
+                            {(activeSubmenu === 'stress' || clickedSubmenu === 'stress') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                              {[
+                                { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" }
+                              ].map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setClickedSubmenu(null);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Trauma & Healing */}
+                          <div 
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('trauma')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div 
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'trauma' ? null : 'trauma')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900">🔹 Trauma & Healing</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                            {/* Hover/Click dropdown */}
+                            {(activeSubmenu === 'trauma' || clickedSubmenu === 'trauma') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                              {[
+                                { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
+                                { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                                { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
+                              ].map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setClickedSubmenu(null);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
                       {/* Other Services */}
                       <div className="px-4 pt-3">
-                        <div className="grid grid-cols-3 gap-8">
+                        <div className="space-y-2">
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
@@ -624,36 +803,119 @@ export default function Header() {
                   
                   {/* Counselling Dropdown Content */}
                   {isMobileFindCareOpen && (
-                    <div className="ml-4 space-y-2 py-2">
-                      <div className="px-4 py-2 space-y-2">
-                        {[
-                          { name: "Big Emotions (CBT - Kids)", url: "/counselling/big-emotions" },
-                          { name: "ADHD or Attention struggles", url: "/counselling/adhd-attention" },
-                          { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
-                          { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" },
-                          { name: "Anxiety, Sadness or Low mood", url: "/counselling/anxiety-sadness" },
-                          { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
-                          { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" },
-                          { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
-                          { name: "Trauma & Abuses", url: "/counselling/trauma-abuses" },
-                          { name: "Confidence & Self-esteem", url: "/counselling/confidence-self-esteem" },
-                          { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" },
-                          { name: "Grief & Loss", url: "/counselling/grief-loss" },
-                          { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" },
-                          { name: "Autism Support", url: "/counselling/autism-support" }
-                        ].map((service, index) => (
-                          <div 
-                            key={index}
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              router.push(service.url);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm">{service.name}</span>
+                    <div className="ml-4 space-y-4 py-2">
+                      <div className="px-4 py-2 space-y-4">
+                        {/* Emotional & Mental Health */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">🔹 Emotional & Mental Health</h3>
+                          <div className="space-y-1 ml-2">
+                            {[
+                              { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
+                              { name: "Depression Counselling", url: "/counselling/depression" },
+                              { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
+                              { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                              { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+
+                        {/* Child Development & Learning */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">🔹 Child Development & Learning</h3>
+                          <div className="space-y-1 ml-2">
+                            {[
+                              { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
+                              { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                              { name: "Autism Support", url: "/counselling/autism-support" },
+                              { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Behaviour & Confidence Building */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">🔹 Behaviour & Confidence Building</h3>
+                          <div className="space-y-1 ml-2">
+                            {[
+                              { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
+                              { name: "Confidence & Self-Esteem", url: "/counselling/confidence-self-esteem" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Stress & Academic Support */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">🔹 Stress & Academic Support</h3>
+                          <div className="space-y-1 ml-2">
+                            {[
+                              { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Trauma & Healing */}
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">🔹 Trauma & Healing</h3>
+                          <div className="space-y-1 ml-2">
+                            {[
+                              { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
+                              { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                              { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
+                            ].map((service, index) => (
+                              <div 
+                                key={index}
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                         
-                        <div className="border-t border-gray-200 mt-4 pt-4">
+                        <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
