@@ -158,7 +158,7 @@ export default function Testimonials() {
           {/* Second column: full-length image edge-to-edge */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
             <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/testimonial5.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial5.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
@@ -170,24 +170,24 @@ export default function Testimonials() {
               <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '391px', marginTop: '0'}}>
-              <Image src="/testimonial4.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fourth column: split 30% top (image), 70% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 px-1 gap-3">
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '184px'}}>
-              <Image src="/testimonial1.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial1.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '444px'}}>
-              <Image src="/testimonial3.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial3.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 px-1 gap-3">
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '314px'}}>
-              <Image src="/testimonial2.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="rounded-[10px] bg-[#FFFBE6] border border-gray-200 p-3 flex flex-col" style={{height: '314px'}}>
               <p className="text-[13px] leading-snug text-gray-900">
