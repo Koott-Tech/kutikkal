@@ -12,8 +12,7 @@ export default function MeetTheTeam() {
             <h2 
               className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium mb-4 leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem]"
               style={{
-                color: '#1d1733',
-                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
+                color: '#1d1733'
               }}
             >
               Meet our dedicated team guiding<br />

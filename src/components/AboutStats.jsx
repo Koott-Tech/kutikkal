@@ -14,8 +14,7 @@ export default function AboutStats() {
               <h2 
                 className="text-[2.5rem] md:text-[3.75rem] font-medium leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem]"
                 style={{
-                  color: '#1c331d',
-                  fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
+                  color: '#1c331d'
                 }}
               >
                 Our impact<br />by the numbers

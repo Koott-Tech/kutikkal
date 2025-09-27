@@ -31,7 +31,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                  {/* Insurance Coverage Text - Left on desktop, top on mobile */}
          <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
                       <div className="text-center md:text-left relative">
-              <p className={`text-base font-medium ${textColor} leading-[1.5] block md:hidden`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>
+              <p className={`text-base font-medium ${textColor} leading-[1.5] block md:hidden`}>
                 120M+ individuals are covered by insurance
               </p>
               <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
@@ -114,7 +114,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
               </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
             <div className="md:hidden mt-4">
-              <span className={`text-base font-medium ${textColor} leading-[1.5]`} style={{ fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif' }}>More partners →</span>
+              <span className={`text-base font-medium ${textColor} leading-[1.5]`}>More partners →</span>
             </div>
          </div>
         

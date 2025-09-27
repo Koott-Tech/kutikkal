@@ -251,7 +251,7 @@ export default function BenefitsSection({ therapyType = "individual" }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-black text-lg mb-2">{benefit.title}</h3>
-                    <p className="text-black md:font-sans" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>{benefit.description}</p>
+                    <p className="text-black md:font-sans">{benefit.description}</p>
                   </div>
                 </div>
               </div>

@@ -37,8 +37,8 @@ export default function BlogTeaser() {
   ];
 
   return (
-    <section className="min-h-[100vh] w-full mt-6 md:mt-20">
-      <div className="mx-auto max-w-[1400px] px-3 sm:px-10 md:px-[120px] py-10 md:py-14 overflow-hidden">
+    <section className="min-h-[100vh] w-full mt-40">
+      <div className="mx-auto max-w-[1400px] px-3 sm:px-6 md:px-8 py-10 md:py-14 overflow-hidden">
                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
            <div className="text-center md:text-left ml-3 sm:ml-6 md:ml-0">
              <p className="text-xl md:text-base text-gray-700">From our blog</p>

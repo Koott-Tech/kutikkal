@@ -6,11 +6,11 @@ export default function PersonalizedCare() {
       <div className="w-full px-3 sm:px-6 md:px-[50px] py-12">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h2 className="text-[24px] sm:text-[28px] md:text-[32px] lg:text-[48px] font-medium text-gray-900 mb-4 leading-tight mx-auto tracking-tighter">
+          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4 leading-none mx-auto tracking-tighter">
             The care you need, whenever you need it
           </h2>
-          <p className="text-[16px] sm:text-[17px] md:text-[18px] text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
-            We know parenting can be challenging, so we’re here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
+            We know parenting can be challenging, so we're here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
           </p>
         </div>
 

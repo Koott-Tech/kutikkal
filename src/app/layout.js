@@ -1,4 +1,3 @@
-import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
@@ -7,12 +6,6 @@ import ConditionalPadding from "@/components/ConditionalPadding";
 
 // Force cache bust - latest version deployed
 console.log('Cache bust - latest version deployed at:', new Date().toISOString());
-
-const workSans = Work_Sans({
-  variable: "--font-work-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 export const metadata = {
   title: "Create Next App",
@@ -30,7 +23,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${workSans.variable} antialiased`}
+        className="antialiased"
       >
         <ConditionalProviders>
           <HeaderWrapper />

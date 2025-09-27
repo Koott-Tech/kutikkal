@@ -7,7 +7,7 @@ export default function ChooseOptions() {
     {
       id: 1,
       tags: ["Counselling", "Emotions"],
-      title: "Counselling",
+      title: "Child\nCounselling",
       description: "We provide a safe space for children to share, heal, and grow.",
       image: "/girl1.png",
       gradient: "from-green-100 to-white",
@@ -20,8 +20,8 @@ export default function ChooseOptions() {
     {
       id: 2,
       tags: ["Assessments", "Tests"],
-      title: "Assessments", 
-      description: "Our assessments reveal your child's strengths and needs to support growth.",
+      title: "Child\nAssessment", 
+      description: "Reveal your child's strengths and needs to support growth.",
       image: "/boy1.png",
       gradient: "from-purple-100 to-white",
       tagColors: {
@@ -32,8 +32,8 @@ export default function ChooseOptions() {
     {
       id: 3,
       tags: ["Parents", "Workshops"],
-      title: "Better Parenting",
-      description: "We help parents build stronger bonds and a nurturing home.", 
+      title: "Better\nParenting",
+      description: "Build stronger bonds and a nurturing home.", 
       image: "/fam1.png",
       gradient: "from-orange-100 to-white",
       tagColors: {
@@ -44,12 +44,12 @@ export default function ChooseOptions() {
   ];
 
   return (
-    <section className="w-full py-16 px-4 md:px-6 mt-8 md:mt-12">
+    <section className="w-full py-16 px-4 md:px-6 mt-30">
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="text-center md:text-left mb-12 max-w-4xl mx-auto">
-          <p className="text-[18px] text-gray-600 mb-2 leading-tight">Let us guide you.</p>
-          <h2 className="text-[32px] md:text-[48px] font-medium text-gray-900 tracking-tight leading-[1.1] md:leading-normal">
+          <p className="text-lg text-gray-600 mb-2 leading-tight">Let us guide you.</p>
+          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 tracking-tight leading-none">
             Choose your options to get started
           </h2>
         </div>
@@ -59,33 +59,33 @@ export default function ChooseOptions() {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`bg-gradient-to-b ${card.gradient} rounded-none rounded-t-[20px] rounded-b-[40px] overflow-hidden flex flex-col`}
+              className={`bg-gradient-to-b ${card.gradient} rounded-none md:rounded-t-[10px] rounded-b-[40px] overflow-hidden flex flex-col h-[600px]`}
             >
               {/* Card Content */}
-              <div className="p-6 pb-0 mb-0">
+              <div className="p-6 pb-0 mb-0 px-8">
                 {/* Tags */}
                 <div className="flex gap-2 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${card.tagColors.primary}`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${card.tagColors.primary}`}>
                     {card.tags[0]}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${card.tagColors.secondary}`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${card.tagColors.secondary}`}>
                     {card.tags[1]}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 whitespace-pre-line">
+                <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none" style={{ fontWeight: 500 }}>
                   {card.title}
-                </h3>
+                </h2>
 
                 {/* Description */}
-                <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-0">
+                <p className="text-sm text-gray-600 leading-tight mb-0">
                   {card.description}
                 </p>
               </div>
 
               {/* Image Section */}
-              <div className="relative h-72 md:h-72 overflow-hidden mt-2 md:mt-1 w-full rounded-t-[50px] rounded-b-[40px]">
+              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full rounded-t-[50px] rounded-b-[40px]">
                 <Image
                   src={card.image}
                   alt={card.title}
@@ -96,11 +96,11 @@ export default function ChooseOptions() {
                 
                 {/* Read More Button */}
                 <div className="absolute bottom-8 left-6">
-                  <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden">
+                  <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-base font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
                     <span className="px-3">Read more.</span>
-                    <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#3e2e73] transition-colors duration-200">
                       <svg
-                        className="w-3.5 h-3.5"
+                        className="w-3.5 h-3.5 group-hover:stroke-white group-hover:scale-110 transition-all duration-200"
                         fill="none"
                         stroke="#000000"
                         strokeOpacity="0.6"

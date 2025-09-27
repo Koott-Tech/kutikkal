@@ -12,8 +12,7 @@ export default function LeadershipTeam() {
             <h2 
               className="text-[2.5rem] md:text-[3.75rem] font-medium md:font-[500] leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem] mb-4"
               style={{
-                color: '#1d1733',
-                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
+                color: '#1d1733'
               }}
             >
               Advisory board

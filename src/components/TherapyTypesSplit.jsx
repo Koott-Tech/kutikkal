@@ -120,7 +120,6 @@ export default function TherapyTypesSplit({ therapyType = "individual" }) {
                    className="mb-2 text-[2.5rem] md:text-[4rem] tracking-[-0.125rem] md:tracking-[-0.195rem] leading-[110%] md:leading-[106%]"
                    style={{
                      color: '#15171a',
-                     fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif',
                      fontWeight: 500,
                      marginBottom: '0.5rem'
                    }}

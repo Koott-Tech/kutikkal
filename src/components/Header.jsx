@@ -23,16 +23,42 @@ export default function Header() {
   // Close submenu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
+      // Close submenus
+      if (clickedSubmenu && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
         setClickedSubmenu(null);
+      }
+      
+      // Close main dropdowns
+      if (!event.target.closest('.header-dropdown') && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+        setIsFindCareOpen(false);
+        setIsForProvidersOpen(false);
+        setIsAboutOpen(false);
+        setIsResourcesOpen(false);
+      }
+    };
+
+    const handleTouchOutside = (event) => {
+      // Close submenus
+      if (clickedSubmenu && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+        setClickedSubmenu(null);
+      }
+      
+      // Close main dropdowns
+      if (!event.target.closest('.header-dropdown') && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+        setIsFindCareOpen(false);
+        setIsForProvidersOpen(false);
+        setIsAboutOpen(false);
+        setIsResourcesOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleTouchOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchOutside);
     };
-  }, [clickedSubmenu]);
+  }, [clickedSubmenu, isFindCareOpen, isForProvidersOpen, isAboutOpen, isResourcesOpen]);
 
   const handleBlogClick = () => {
     router.push('/blog');
@@ -188,7 +214,7 @@ export default function Header() {
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="counselling-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
+                    <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
                       {/* Counselling Services */}
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-3">
@@ -198,11 +224,11 @@ export default function Header() {
                             onMouseEnter={() => setActiveSubmenu('emotional')}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
-                            <div 
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
-                            >
-                              <h3 className="text-sm font-semibold text-gray-900">🔹 Emotional & Mental Health</h3>
+                              <div 
+                                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                                onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
+                              >
+                                <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Mental Health</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -219,13 +245,13 @@ export default function Header() {
                               ].map((service, index) => (
                                 <div 
                                   key={index}
-                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
                                   }}
                                 >
-                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                  <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
                                 </div>
                               ))}
                               </div>
@@ -238,11 +264,11 @@ export default function Header() {
                             onMouseEnter={() => setActiveSubmenu('development')}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
-                            <div 
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'development' ? null : 'development')}
-                            >
-                              <h3 className="text-sm font-semibold text-gray-900">🔹 Child Development & Learning</h3>
+                              <div 
+                                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                                onClick={() => setClickedSubmenu(clickedSubmenu === 'development' ? null : 'development')}
+                              >
+                                <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Child Development & Learning</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -258,13 +284,13 @@ export default function Header() {
                               ].map((service, index) => (
                                 <div 
                                   key={index}
-                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
                                   }}
                                 >
-                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                  <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
                                 </div>
                               ))}
                               </div>
@@ -277,11 +303,11 @@ export default function Header() {
                             onMouseEnter={() => setActiveSubmenu('behaviour')}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
-                            <div 
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'behaviour' ? null : 'behaviour')}
-                            >
-                              <h3 className="text-sm font-semibold text-gray-900">🔹 Behaviour & Confidence Building</h3>
+                              <div 
+                                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                                onClick={() => setClickedSubmenu(clickedSubmenu === 'behaviour' ? null : 'behaviour')}
+                              >
+                                <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Behaviour & Confidence Building</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -295,13 +321,13 @@ export default function Header() {
                               ].map((service, index) => (
                                 <div 
                                   key={index}
-                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
                                   }}
                                 >
-                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                  <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
                                 </div>
                               ))}
                               </div>
@@ -314,11 +340,11 @@ export default function Header() {
                             onMouseEnter={() => setActiveSubmenu('stress')}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
-                            <div 
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'stress' ? null : 'stress')}
-                            >
-                              <h3 className="text-sm font-semibold text-gray-900">🔹 Stress & Academic Support</h3>
+                              <div 
+                                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                                onClick={() => setClickedSubmenu(clickedSubmenu === 'stress' ? null : 'stress')}
+                              >
+                                <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Stress & Academic Support</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -331,13 +357,13 @@ export default function Header() {
                               ].map((service, index) => (
                                 <div 
                                   key={index}
-                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
                                   }}
                                 >
-                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                  <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
                                 </div>
                               ))}
                               </div>
@@ -350,11 +376,11 @@ export default function Header() {
                             onMouseEnter={() => setActiveSubmenu('trauma')}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
-                            <div 
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'trauma' ? null : 'trauma')}
-                            >
-                              <h3 className="text-sm font-semibold text-gray-900">🔹 Trauma & Healing</h3>
+                              <div 
+                                className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                                onClick={() => setClickedSubmenu(clickedSubmenu === 'trauma' ? null : 'trauma')}
+                              >
+                                <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Trauma & Healing</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -369,13 +395,13 @@ export default function Header() {
                               ].map((service, index) => (
                                 <div 
                                   key={index}
-                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                  className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
                                   }}
                                 >
-                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                  <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
                                 </div>
                               ))}
                               </div>
@@ -387,29 +413,38 @@ export default function Header() {
                       {/* Other Services */}
                       <div className="px-4 pt-3">
                         <div className="space-y-2">
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          <div
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
                               router.push('/assessments');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Assessments</span>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Assessments</span>
                           </div>
                           <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
                               router.push('/better-parenting');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Better Parenting</span>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Better Parenting</span>
                           </div>
                           <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
                               router.push('/resources');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Resources</span>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Resources</span>
                           </div>
                         </div>
                       </div>
@@ -433,120 +468,190 @@ export default function Header() {
                   
                   {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
-                    <div className="fixed top-20 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mx-4">
+                    <div className="assessments-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
                       <div className="px-6 pb-4 border-b border-gray-200">
-                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3">
-                          {/* ADHD Section */}
-                          <div className="space-y-1">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ADHD</h4>
-                            <div className="space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/adhd-vanderbilt');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/adhd-conners-3');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">ADHD Conners 3</span>
-                              </div>
+                        <div className="space-y-3">
+                          {/* ADHD Assessments */}
+                          <div
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('adhd')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'adhd' ? null : 'adhd')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
+                            {(activeSubmenu === 'adhd' || clickedSubmenu === 'adhd') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                                {[
+                                  { name: "ADHD Vanderbilt", url: "/assessments/adhd-vanderbilt" },
+                                  { name: "ADHD Conners 3", url: "/assessments/adhd-conners-3" }
+                                ].map((assessment, index) => (
+                                  <div
+                                    key={index}
+                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                    onClick={() => {
+                                      router.push(assessment.url);
+                                      setClickedSubmenu(null);
+                                    }}
+                                  >
+                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
-                          {/* Emotional & Behavioral Screening Section */}
-                          <div className="space-y-1">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">EMOTIONAL & BEHAVIORAL SCREENING</h4>
-                            <div className="space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/basc-3');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/child-depression-inventory');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Child Depression Inventory</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/spence-anxiety-scale');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
-                              </div>
+                          {/* Emotional & Behavioral Screening */}
+                          <div
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('emotional')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
+                            {(activeSubmenu === 'emotional' || clickedSubmenu === 'emotional') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                                {[
+                                  { name: "BASC-3", url: "/assessments/basc-3" },
+                                  { name: "Child Depression Inventory", url: "/assessments/child-depression-inventory" },
+                                  { name: "Spence Anxiety Scale", url: "/assessments/spence-anxiety-scale" }
+                                ].map((assessment, index) => (
+                                  <div
+                                    key={index}
+                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                    onClick={() => {
+                                      router.push(assessment.url);
+                                      setClickedSubmenu(null);
+                                    }}
+                                  >
+                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
-                          {/* Intelligence Test Section */}
-                          <div className="space-y-1">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">INTELLIGENCE TEST</h4>
-                            <div className="space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/vsms');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">VSMS</span>
-                              </div>
+                          {/* Intelligence Tests */}
+                          <div
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('intelligence')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'intelligence' ? null : 'intelligence')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
+                            {(activeSubmenu === 'intelligence' || clickedSubmenu === 'intelligence') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                                {[
+                                  { name: "VSMS", url: "/assessments/vsms" }
+                                ].map((assessment, index) => (
+                                  <div
+                                    key={index}
+                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                    onClick={() => {
+                                      router.push(assessment.url);
+                                      setClickedSubmenu(null);
+                                    }}
+                                  >
+                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
-                          {/* Projective Tests Section */}
-                          <div className="space-y-1">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">PROJECTIVE TESTS</h4>
-                            <div className="space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/cat');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/child-sentence-completion');
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
-                              </div>
+                          {/* Projective Tests */}
+                          <div
+                            className="relative"
+                            onMouseEnter={() => setActiveSubmenu('projective')}
+                            onMouseLeave={() => setActiveSubmenu(null)}
+                          >
+                            <div
+                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => setClickedSubmenu(clickedSubmenu === 'projective' ? null : 'projective')}
+                            >
+                              <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h3>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
+                            {(activeSubmenu === 'projective' || clickedSubmenu === 'projective') && (
+                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
+                                {[
+                                  { name: "CAT (Child Apperception Test)", url: "/assessments/cat" },
+                                  { name: "Child Sentence Completion Test", url: "/assessments/child-sentence-completion" }
+                                ].map((assessment, index) => (
+                                  <div
+                                    key={index}
+                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
+                                    onClick={() => {
+                                      router.push(assessment.url);
+                                      setClickedSubmenu(null);
+                                    }}
+                                  >
+                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
                       
-                      {/* Bottom Actions */}
+                      {/* Quick Actions */}
                       <div className="px-4 pt-3">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h3>
-                        <div className="grid grid-cols-3 gap-8">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
+                        <div className="space-y-2">
+                          <div
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
+                            onClick={() => {
+                              router.push('/free-assessment');
+                            }}
+                          >
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Get a Free Consultation</span>
                           </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                            <span className="text-gray-700 text-sm font-medium">View Therapists</span>
+                          <div
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
+                            onClick={() => {
+                              router.push('/assessments');
+                            }}
+                          >
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">View All Assessments</span>
                           </div>
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          <div
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
                               handleFAQClick();
                             }}
                           >
-                            <span className="text-gray-700 text-sm font-medium">FAQ</span>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">FAQ</span>
                           </div>
                         </div>
                       </div>
@@ -570,18 +675,24 @@ export default function Header() {
                   
                                      {/* About Us Dropdown */}
                    {isAboutOpen && (
-                     <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                     <div className="header-dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                        <div className="px-4 space-y-2">
                          <div 
-                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
                            onClick={handleCompanyClick}
                          >
+                          <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
                           <span className="text-gray-700 text-sm">Company</span>
                          </div>
                          <div 
-                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
                            onClick={handleCareerClick}
                          >
+                          <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                          </svg>
                           <span className="text-gray-700 text-sm">Career</span>
                          </div>
                        </div>
@@ -605,15 +716,18 @@ export default function Header() {
                   
                   {/* Resources Dropdown */}
                   {isResourcesOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="header-dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                       <div className="px-4 space-y-2">
                         <div 
-                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
                           onClick={() => {
                             router.push('/blog');
                             setIsResourcesOpen(false);
                           }}
                         >
+                          <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                          </svg>
                           <span className="text-gray-700 text-sm">Blog</span>
                         </div>
                       </div>
@@ -675,12 +789,15 @@ export default function Header() {
               /* Login button for non-authenticated users */
               <button 
                 onClick={handleLoginClick}
-                  className="inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+                className="inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer group relative mr-2"
               >
-                <span>Login</span>
+                <span className="relative">
+                  Login
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
+                </span>
               </button>
             )}
-            <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
+            <button className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm hover:opacity-90" style={{ backgroundColor: '#3e2e73' }}>
               Get started
             </button>
             </div>
@@ -916,29 +1033,29 @@ export default function Header() {
                         </div>
                         
                         <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                          <div
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/assessments');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Assessments</span>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Assessments</span>
                           </div>
                           <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/better-parenting');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Better Parenting</span>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Better Parenting</span>
                           </div>
                           <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/resources');
                             }}
                           >
-                            <span className="text-gray-700 text-sm">Resources</span>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Resources</span>
                           </div>
                         </div>
                       </div>
@@ -967,9 +1084,9 @@ export default function Header() {
                   {isMobileForProvidersOpen && (
                     <div className="ml-4 space-y-4 py-2">
                       <div className="px-4">
-                        {/* ADHD Section */}
+                        {/* ADHD Assessments */}
                         <div className="mb-4">
-                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">ADHD</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">ADHD Assessments</h3>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -992,9 +1109,9 @@ export default function Header() {
                           </div>
                         </div>
 
-                        {/* Emotional & Behavioral Screening Section */}
+                        {/* Emotional & Behavioral Screening */}
                         <div className="mb-4">
-                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">EMOTIONAL & BEHAVIORAL SCREENING</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Emotional & Behavioral Screening</h3>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1026,9 +1143,9 @@ export default function Header() {
                           </div>
                         </div>
 
-                        {/* Intelligence Test Section */}
+                        {/* Intelligence Tests */}
                         <div className="mb-4">
-                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">INTELLIGENCE TEST</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Intelligence Tests</h3>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1042,9 +1159,9 @@ export default function Header() {
                           </div>
                         </div>
 
-                        {/* Projective Tests Section */}
+                        {/* Projective Tests */}
                         <div className="mb-4">
-                          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">PROJECTIVE TESTS</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-2">Projective Tests</h3>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"

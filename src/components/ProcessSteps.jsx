@@ -228,7 +228,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
           <h2 className="text-[2.5rem] md:text-5xl font-medium text-black mb-4 tracking-[-0.125rem] md:tracking-normal leading-[1.1] md:leading-normal">
             {currentContent.title}
           </h2>
-                     <p className="text-base md:text-xl text-black max-w-3xl mx-auto tracking-[-0.0375rem] md:tracking-normal leading-[150%] md:leading-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+                     <p className="text-base md:text-xl text-black max-w-3xl mx-auto tracking-[-0.0375rem] md:tracking-normal leading-[150%] md:leading-normal">
              {currentContent.subtitle}
            </p>
         </div>
@@ -409,7 +409,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                 </div>
               </div>
               <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step1.title}</h3>
-              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]">
                 {currentContent.step1.description}
               </p>
             </div>
@@ -426,7 +426,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                 </div>
               </div>
               <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step2.title}</h3>
-              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]">
                 {currentContent.step2.description}
               </p>
             </div>
@@ -451,7 +451,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                 </div>
               </div>
               <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step3.title}</h3>
-              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]">
                 {currentContent.step3.description}
               </p>
             </div>
@@ -474,7 +474,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                 </div>
               </div>
               <h3 className="text-xl font-medium text-black mb-3 text-left">{currentContent.step4.title}</h3>
-              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+              <p className="text-base text-black text-left font-normal tracking-[-0.0375rem] leading-[150%]">
                 {currentContent.step4.description}
               </p>
             </div>

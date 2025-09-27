@@ -129,14 +129,8 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white">
+    <section className="w-full bg-white mt-40">
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
-        <h2 className="text-3xl md:text-[44px] font-semibold tracking-tight text-gray-900 text-center leading-[1.1] md:leading-normal">
-          Hear from our patients
-        </h2>
-        <p className="text-gray-600 text-center mt-3 mb-10 text-base md:text-lg">
-          We’re making online therapy work the way it should.
-        </p>
 
         {/* Desktop: 5-column layout with images */}
         <div className="hidden lg:grid grid-cols-5 gap-1 px-2.5">
@@ -177,7 +171,7 @@ export default function Testimonials() {
           {/* Fourth column: split 30% top (image), 70% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 px-1 gap-3">
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '184px'}}>
-              <Image src="/testimonial1.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial1.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '444px'}}>
               <Image src="/testimonial3.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />

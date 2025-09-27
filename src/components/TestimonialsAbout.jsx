@@ -14,9 +14,6 @@ export default function TestimonialsAbout() {
                         <div className="text-center mb-8">
                             <h2 
                               className="text-[2.5rem] md:text-[3.75rem] font-medium md:font-[500] leading-[110%] md:leading-[3.975rem] tracking-[-0.125rem] md:tracking-[-0.195rem] mb-2 md:mb-4 text-center"
-                              style={{
-                                fontFamily: 'Scto Grotesk A Medium, Roboto, Arial, sans-serif'
-                              }}
                             >
                               We take pride in connecting patients and providers.
                             </h2>

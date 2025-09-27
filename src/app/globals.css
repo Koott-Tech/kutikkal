@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+/* Marble Font Family */
+@font-face {
+  font-family: 'Marble';
+  src: url('/TTF/Marble Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Marble';
+  src: url('/TTF/Marble Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Marble';
+  src: url('/TTF/Marble SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Marble';
+  src: url('/TTF/Marble Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Marble';
+  src: url('/TTF/Marble Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -8,14 +49,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-work-sans);
+  --font-sans: 'Marble', Arial, Helvetica, sans-serif;
 }
 
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-work-sans), 'Work Sans', Arial, Helvetica, sans-serif;
+  font-family: 'Marble', Arial, Helvetica, sans-serif;
   overflow-x: hidden; /* Prevent horizontal scrolling */
   width: 100%; /* Ensure full width */
   max-width: 100vw; /* Prevent overflow beyond viewport */

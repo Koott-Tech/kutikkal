@@ -150,7 +150,7 @@ export default function HeroSection({ therapyType = "individual" }) {
                  {currentContent.title}
                </h1>
               
-                             <p className="text-base md:text-xl text-black leading-[150%] md:leading-tight font-normal md:font-normal tracking-[-0.0375rem] md:tracking-normal md:whitespace-pre-line" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>
+                             <p className="text-base md:text-xl text-black leading-[150%] md:leading-tight font-normal md:font-normal tracking-[-0.0375rem] md:tracking-normal md:whitespace-pre-line">
                 {currentContent.description}
               </p>
               
@@ -183,7 +183,7 @@ export default function HeroSection({ therapyType = "individual" }) {
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <span className="text-black font-normal" style={{ fontFamily: 'Scto Grotesk A Regular, Roboto, Arial, sans-serif' }}>{feature}</span>
+                    <span className="text-black font-normal">{feature}</span>
                   </div>
                 ))}
               </div>

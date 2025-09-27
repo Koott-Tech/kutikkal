@@ -7,7 +7,7 @@ export default function InfoCards() {
       iconColor: "purple",
       title: "Find emotional support and guidance for your child with a licensed therapist",
       description:
-        "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress. With the support of a trained child therapist, your child can learn healthier ways to grow and thrive.",
+        "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.",
       cta: "Find a therapist",
     },
     {
@@ -15,7 +15,7 @@ export default function InfoCards() {
       iconColor: "green",
       title: "Get clarity with expert assessments for your child's needs",
       description:
-        "Understanding your child's unique strengths and challenges is the first step to meaningful support. Professional assessments can identify learning difficulties, ADHD, autism spectrum concerns, or emotional struggles, helping you create a tailored plan for success at school and home.",
+        "Understanding your child's unique strengths and challenges is the first step to meaningful support. Professional assessments can identify learning difficulties, ADHD, autism spectrum concerns, or emotional struggles.",
       cta: "Book an assessment",
     },
     {
@@ -23,7 +23,7 @@ export default function InfoCards() {
       iconColor: "blue",
       title: "Learn strategies and tools to build stronger parent-child relationships",
       description:
-        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotional growth. Build confidence as a parent and create a calmer, happier home environment.",
+        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotional growth.",
       cta: "Start parent coaching",
     },
   ];
@@ -66,7 +66,7 @@ export default function InfoCards() {
         {items.map((item) => (
           <div
             key={item.title}
-            className="flex min-h-[220px] flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+            className="flex min-h-[220px] flex-col rounded-[10px] border border-gray-200 bg-white p-6"
           >
             {/* Icon at the left top */}
             <div className="flex flex-col items-start">
@@ -75,13 +75,13 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h3 className="text-lg font-medium leading-tight text-gray-900 text-center md:text-left">
+              <h3 className="text-xl font-medium leading-tight text-gray-900 text-center md:text-left leading-none">
                 {item.title}
               </h3>
             </div>
             
             {/* Description */}
-            <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+            <p className="mt-4 text-sm text-gray-700 leading-tight">
               {item.description}
             </p>
 
@@ -89,10 +89,10 @@ export default function InfoCards() {
             <div className="mt-auto pt-6">
               <a
                 href="#"
-                className="flex items-center justify-between text-sm font-normal text-gray-900 hover:text-gray-700"
+                className="flex items-center justify-between text-base font-normal text-gray-900 hover:text-gray-700 group"
               >
                 <span>{item.cta}</span>
-                <span className="text-lg">→</span>
+                <span className="text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
               </a>
             </div>
           </div>

@@ -44,15 +44,15 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center min-h-screen lg:h-[700px]">
+    <section className="w-full flex items-center min-h-screen lg:h-[700px] mt-30">
       <div className="w-full px-3 sm:px-8 md:px-[50px] py-16">
         <p className="text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.
         </h2>
 
-        {/* Desktop Layout: Image on left, FAQ on right */}
-        <div className="hidden lg:grid mt-2 grid-cols-2 gap-8 items-stretch h-full">
+        {/* Desktop Layout: Image on left (60%), FAQ on right (40%) */}
+        <div className="hidden lg:grid mt-2 grid-cols-[6fr_4fr] gap-8 items-stretch h-full">
           {/* Left: Image that changes per selection */}
           <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
@@ -68,18 +68,12 @@ export default function SupportFaq() {
 
           {/* Right: FAQ Accordion */}
           <div className="w-full h-full">
-            <div className="rounded-2xl bg-white space-y-4 h-full max-h-full overflow-y-auto pr-2">
+            <div className="rounded-2xl bg-white space-y-4 h-full max-h-full overflow-y-auto pr-2 shadow-none">
               {items.map((item, idx) => {
                 const open = active === idx;
                 const gradient = gradients[idx % gradients.length];
                 return (
-                  <div key={item.title} className="relative overflow-hidden rounded-2xl">
-                    {/* Gradient overlay to color the entire Q&A when open */}
-                    <div
-                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
-                      style={{ background: gradient, opacity: open ? 1 : 0 }}
-                    />
-
+                  <div key={item.title} className="relative overflow-hidden rounded-2xl hover:bg-white hover:shadow-none">
                     <div className="relative p-6">
                       <button
                         type="button"
@@ -95,9 +89,20 @@ export default function SupportFaq() {
 
                       {/* Smoothly expanding answer */}
                       <div
-                        className={`overflow-hidden transition-all duration-500 ${open ? "max-h-40 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                        className={`overflow-hidden transition-all duration-500 ${open ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
                       >
-                        <p className="text-sm text-gray-800">{item.body}</p>
+                        <p className="text-sm text-gray-800 mb-4">{item.body}</p>
+                        {open && (
+                          <button className="inline-flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-gray-900 cursor-pointer group relative">
+                            <span className="relative">
+                              Get started
+                              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
+                            </span>
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

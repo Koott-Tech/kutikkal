@@ -88,15 +88,15 @@ export default function HowItWorks() {
   };
 
   return (
-    <section className="min-h-[100vh] w-full mt-4 md:mt-8">
+    <section id="how-it-works" className="min-h-[100vh] w-full mt-20">
       <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-10 md:py-12">
-        <h2 className="text-center text-[18px] font-medium tracking-tight text-gray-900 leading-tight mt-8">
+        <h2 className="text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-8">
           How it works
         </h2>
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-[1.1] md:leading-normal tracking-tight md:tracking-normal">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-none tracking-tight md:tracking-normal">
             Your journey to mental well-being gets easier<br />from here.
           </h3>
           <button
@@ -262,7 +262,7 @@ export default function HowItWorks() {
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">01</div>
-            <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore Your Matches
             </h3>
 
@@ -296,7 +296,7 @@ export default function HowItWorks() {
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">02</div>
-            <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore your matches
             </h3>
 
@@ -321,7 +321,7 @@ export default function HowItWorks() {
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">03</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Schedule your visit
             </h3>
 
@@ -360,7 +360,7 @@ export default function HowItWorks() {
             }}
           >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">04</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate">
+            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Join your online session
             </h3>
 

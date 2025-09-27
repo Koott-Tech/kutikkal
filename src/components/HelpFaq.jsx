@@ -86,7 +86,7 @@ export default function HelpFaq() {
                       <button
                         type="button"
                         onClick={() => setOpenId(open ? "" : id)}
-                        className="flex w-full items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors px-3 md:px-0"
+                        className="flex w-full items-center justify-between py-4 text-left hover:bg-white transition-colors px-3 md:px-0 cursor-pointer"
                       >
                         <span className="text-base text-gray-900 w-full md:w-auto pr-3 md:pr-0">
                           {item.q}
