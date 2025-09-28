@@ -8,7 +8,7 @@ export default function ChooseOptions() {
       id: 1,
       tags: ["Counselling", "Emotions"],
       title: "Child\nCounselling",
-      description: "We provide a safe space for children to share, heal, and grow.",
+      description: "We provide a safe space for children to share and grow.",
       image: "/girl1.png",
       gradient: "from-green-100 to-white",
       tagColors: {
@@ -21,7 +21,7 @@ export default function ChooseOptions() {
       id: 2,
       tags: ["Assessments", "Tests"],
       title: "Child\nAssessment", 
-      description: "Reveal your child's strengths and needs to support growth.",
+      description: "Reveal your child's strengths and needs for growth.",
       image: "/boy1.png",
       gradient: "from-purple-100 to-white",
       tagColors: {
@@ -33,7 +33,7 @@ export default function ChooseOptions() {
       id: 3,
       tags: ["Parents", "Workshops"],
       title: "Better\nParenting",
-      description: "Build stronger bonds and a nurturing home.", 
+      description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
       gradient: "from-orange-100 to-white",
       tagColors: {
@@ -44,7 +44,7 @@ export default function ChooseOptions() {
   ];
 
   return (
-    <section className="w-full py-16 px-4 md:px-6 mt-30">
+    <section className="w-full py-16 px-4 md:px-6 mt-20">
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="text-center md:text-left mb-12 max-w-4xl mx-auto">

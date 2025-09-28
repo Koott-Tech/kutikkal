@@ -44,7 +44,7 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center min-h-screen lg:h-[700px] mt-30">
+    <section className="w-full flex items-center min-h-screen lg:h-[700px] mt-20">
       <div className="w-full px-3 sm:px-8 md:px-[50px] py-16">
         <p className="text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal text-gray-900 mt-2 mb-10 md:mb-12">
@@ -74,11 +74,17 @@ export default function SupportFaq() {
                 const gradient = gradients[idx % gradients.length];
                 return (
                   <div key={item.title} className="relative overflow-hidden rounded-2xl hover:bg-white hover:shadow-none">
+                    {/* Gradient overlay to color the entire Q&A when open */}
+                    <div
+                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
+                      style={{ background: gradient, opacity: open ? 1 : 0 }}
+                    />
+
                     <div className="relative p-6">
                       <button
                         type="button"
                         onClick={() => toggle(idx)}
-                        className="flex w-full items-start justify-between gap-4 text-left"
+                        className="flex w-full items-start justify-between gap-4 text-left cursor-pointer"
                         aria-expanded={open}
                       >
                         <div>

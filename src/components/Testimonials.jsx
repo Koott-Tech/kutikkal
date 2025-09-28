@@ -129,7 +129,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white mt-40">
+    <section className="w-full bg-white mt-20">
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
 
         {/* Desktop: 5-column layout with images */}

@@ -44,7 +44,7 @@ export default function HelpFaq() {
   const [openId, setOpenId] = useState("");
 
   return (
-    <section className="min-h-[100vh] w-full mt-0">
+    <section className="min-h-[100vh] w-full mt-20">
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-4 sm:px-10 md:px-[50px] py-4 md:py-8 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-4 md:ml-0">

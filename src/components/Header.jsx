@@ -221,12 +221,18 @@ export default function Header() {
                           {/* Emotional & Mental Health */}
                           <div 
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('emotional')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('emotional');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                                onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
+                                onClick={() => {
+                                  setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional');
+                                  setActiveSubmenu(null);
+                                }}
                               >
                                 <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Mental Health</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -261,12 +267,18 @@ export default function Header() {
                           {/* Child Development & Learning */}
                           <div 
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('development')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('development');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                                onClick={() => setClickedSubmenu(clickedSubmenu === 'development' ? null : 'development')}
+                                onClick={() => {
+                                  setClickedSubmenu(clickedSubmenu === 'development' ? null : 'development');
+                                  setActiveSubmenu(null);
+                                }}
                               >
                                 <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Child Development & Learning</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -300,12 +312,18 @@ export default function Header() {
                           {/* Behaviour & Confidence Building */}
                           <div 
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('behaviour')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('behaviour');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                                onClick={() => setClickedSubmenu(clickedSubmenu === 'behaviour' ? null : 'behaviour')}
+                                onClick={() => {
+                                  setClickedSubmenu(clickedSubmenu === 'behaviour' ? null : 'behaviour');
+                                  setActiveSubmenu(null);
+                                }}
                               >
                                 <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Behaviour & Confidence Building</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,12 +355,18 @@ export default function Header() {
                           {/* Stress & Academic Support */}
                           <div 
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('stress')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('stress');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                                onClick={() => setClickedSubmenu(clickedSubmenu === 'stress' ? null : 'stress')}
+                                onClick={() => {
+                                  setClickedSubmenu(clickedSubmenu === 'stress' ? null : 'stress');
+                                  setActiveSubmenu(null);
+                                }}
                               >
                                 <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Stress & Academic Support</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -373,12 +397,18 @@ export default function Header() {
                           {/* Trauma & Healing */}
                           <div 
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('trauma')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('trauma');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                                onClick={() => setClickedSubmenu(clickedSubmenu === 'trauma' ? null : 'trauma')}
+                                onClick={() => {
+                                  setClickedSubmenu(clickedSubmenu === 'trauma' ? null : 'trauma');
+                                  setActiveSubmenu(null);
+                                }}
                               >
                                 <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Trauma & Healing</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -474,12 +504,18 @@ export default function Header() {
                           {/* ADHD Assessments */}
                           <div
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('adhd')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('adhd');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                             <div
                               className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'adhd' ? null : 'adhd')}
+                              onClick={() => {
+                                setClickedSubmenu(clickedSubmenu === 'adhd' ? null : 'adhd');
+                                setActiveSubmenu(null);
+                              }}
                             >
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -510,12 +546,18 @@ export default function Header() {
                           {/* Emotional & Behavioral Screening */}
                           <div
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('emotional')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('emotional');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                             <div
                               className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional')}
+                              onClick={() => {
+                                setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional');
+                                setActiveSubmenu(null);
+                              }}
                             >
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -547,12 +589,18 @@ export default function Header() {
                           {/* Intelligence Tests */}
                           <div
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('intelligence')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('intelligence');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                             <div
                               className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'intelligence' ? null : 'intelligence')}
+                              onClick={() => {
+                                setClickedSubmenu(clickedSubmenu === 'intelligence' ? null : 'intelligence');
+                                setActiveSubmenu(null);
+                              }}
                             >
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -582,12 +630,18 @@ export default function Header() {
                           {/* Projective Tests */}
                           <div
                             className="relative"
-                            onMouseEnter={() => setActiveSubmenu('projective')}
+                            onMouseEnter={() => {
+                              setActiveSubmenu('projective');
+                              setClickedSubmenu(null);
+                            }}
                             onMouseLeave={() => setActiveSubmenu(null)}
                           >
                             <div
                               className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => setClickedSubmenu(clickedSubmenu === 'projective' ? null : 'projective')}
+                              onClick={() => {
+                                setClickedSubmenu(clickedSubmenu === 'projective' ? null : 'projective');
+                                setActiveSubmenu(null);
+                              }}
                             >
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -41,7 +41,7 @@ export default function Hero() {
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}
-                  className="w-full sm:w-fit inline-flex items-center justify-center rounded-[20px] px-6 py-3 text-base font-normal text-white shadow-sm hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3e2e73]/40"
+                  className="w-full sm:w-fit inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3e2e73]/40"
                   style={{ backgroundColor: '#3e2e73' }}
                   type="button"
                 >
@@ -50,7 +50,7 @@ export default function Hero() {
                 <button
                   type="button"
                   onClick={handleHowItWorksClick}
-                  className="w-full sm:w-fit inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative"
+                  className="w-full sm:w-fit inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative cursor-pointer"
                 >
                   <span className="relative">
                     How does it work?
