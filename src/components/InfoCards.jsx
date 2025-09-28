@@ -75,7 +75,7 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h3 className="text-xl font-medium leading-tight text-gray-900 text-center md:text-left leading-none">
+              <h3 className="text-xl font-medium leading-tight text-gray-900 text-left leading-none">
                 {item.title}
               </h3>
             </div>
