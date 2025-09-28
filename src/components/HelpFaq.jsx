@@ -44,8 +44,8 @@ export default function HelpFaq() {
   const [openId, setOpenId] = useState("");
 
   return (
-    <section className="min-h-[100vh] w-full mt-20">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-4 sm:px-10 md:px-[50px] py-4 md:py-8 md:grid-cols-[0.9fr_1.1fr]">
+    <section className="w-full mt-10">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 px-4 sm:px-10 md:px-[50px] py-4 md:py-6 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-4 md:ml-0">
           <div>
@@ -95,7 +95,7 @@ export default function HelpFaq() {
                       </button>
                       <div
                         className={`overflow-hidden transition-all duration-300 ease-out ${
-                          open ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+                          open ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
                         }`}
                       >
                         <div className="px-3 pb-4 md:px-0">

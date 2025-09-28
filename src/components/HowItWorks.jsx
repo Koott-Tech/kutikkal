@@ -88,8 +88,8 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="min-h-[100vh] w-full mt-20">
-      <div className="mx-auto flex min-h-[100vh] max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-10 md:py-12">
+    <section id="how-it-works" className="w-full mt-10">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-6 md:py-8">
         <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-8">
           How it works
         </h2>

@@ -18,9 +18,9 @@ export default function Hero() {
   };
   
   return (
-    <div className="w-full overflow-hidden mt-8 md:mt-12" style={{ minHeight: '88vh' }}>
+    <div className="w-full overflow-hidden mt-10" style={{ minHeight: '75vh' }}>
       <div className="mx-auto max-w-[1400px] px-0 md:px-2">
-        <section className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] mx-0 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)', minHeight: '88vh', height: '88vh' }}>
+        <section className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] mx-0 md:mx-0" style={{ background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)', minHeight: '75vh', height: '75vh' }}>
           <div className="grid h-full grid-cols-1 gap-6 md:gap-8 md:grid-cols-2">
             {/* Left: Text */}
             <div className="flex flex-col justify-center order-1 md:order-1 md:pl-2 text-left mt-8 md:mt-0 px-4 sm:px-0">
@@ -38,7 +38,7 @@ export default function Hero() {
               <p className="mt-10 text-lg font-normal opacity-95 leading-relaxed break-words" style={{ color: '#15171a' }}>
                 Expert Child Counselling & Parent Support to help your whole family grow.
               </p>
-              <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:gap-6 sm:justify-start">
+              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}
                   className="w-full sm:w-fit inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3e2e73]/40"

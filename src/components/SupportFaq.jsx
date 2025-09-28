@@ -44,8 +44,8 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center min-h-screen lg:h-[700px] mt-20">
-      <div className="w-full px-3 sm:px-8 md:px-[50px] py-16">
+    <section className="w-full flex items-center mt-10">
+      <div className="w-full px-3 sm:px-8 md:px-[50px] py-8">
         <p className="text-center md:text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.

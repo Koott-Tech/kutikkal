@@ -129,8 +129,8 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white mt-20">
-      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-12 md:py-16">
+    <section className="w-full bg-white mt-10">
+      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-6 md:py-8">
 
         {/* Desktop: 5-column layout with images */}
         <div className="hidden lg:grid grid-cols-5 gap-1 px-2.5">

@@ -20,7 +20,7 @@ export default function Home() {
       <Hero />
       
       {/* Sister Brands Section */}
-      <div className="bg-white py-8">
+      <div className="bg-white py-8 mt-0">
         <div className="mx-auto max-w-[1400px] px-1 md:px-2">
           <div className="mx-4 sm:mx-6 md:mx-0">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">

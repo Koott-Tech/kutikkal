@@ -44,10 +44,10 @@ export default function ChooseOptions() {
   ];
 
   return (
-    <section className="w-full py-16 px-4 md:px-6 mt-20">
+    <section className="w-full py-2 px-4 md:px-6 mt-10">
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
-        <div className="text-center md:text-left mb-12 max-w-4xl mx-auto">
+        <div className="text-center md:text-left mb-6 max-w-4xl mx-auto">
           <p className="text-lg text-gray-600 mb-2 leading-tight">Let us guide you.</p>
           <h2 className="text-3xl md:text-4xl font-medium text-gray-900 tracking-tight leading-none">
             Choose your options to get started

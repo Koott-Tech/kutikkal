@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function ConsultationBanner() {
   return (
-    <section className="w-full py-8 px-4 md:px-6 mt-20">
+    <section className="w-full py-4 px-4 md:px-6 mt-10">
       <div className="mx-auto max-w-7xl">
         <div className="bg-gradient-to-r from-green-100 to-green-200 rounded-[10px] overflow-hidden relative">
           {/* White gradient overlay */}
