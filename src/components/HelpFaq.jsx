@@ -95,7 +95,7 @@ export default function HelpFaq() {
                       </button>
                       <div
                         className={`overflow-hidden transition-all duration-300 ease-out ${
-                          open ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                          open ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
                         }`}
                       >
                         <div className="px-3 pb-4 md:px-0">

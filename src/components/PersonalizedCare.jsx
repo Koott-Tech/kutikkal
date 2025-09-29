@@ -5,8 +5,8 @@ export default function PersonalizedCare() {
     <section className="w-full flex items-center mt-10">
       <div className="w-full px-3 sm:px-6 md:px-0 py-4">
         {/* Header Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-4 leading-none mx-auto tracking-tighter">
+        <div className="text-center mb-0">
+          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-0 leading-none mx-auto tracking-tighter">
             The care you need, whenever you need it
           </h2>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
@@ -15,7 +15,7 @@ export default function PersonalizedCare() {
         </div>
 
         {/* Main Content with Central Image */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center -mt-4">
           {/* Central Large Image - Mobile optimized */}
           <div className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] h-[200px] sm:h-[250px] md:h-[400px] lg:h-[450px] xl:h-[500px] rounded-2xl overflow-hidden">
             <Image

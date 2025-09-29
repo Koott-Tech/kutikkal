@@ -45,6 +45,25 @@ export default function SupportFaq() {
 
   return (
     <section className="w-full flex items-center mt-10">
+      <style jsx>{`
+        .faq-background {
+          height: 100% !important;
+          min-height: calc(100% - 48px) !important;
+        }
+        .faq-mobile-content {
+          position: relative;
+          z-index: 10;
+        }
+        @media (max-width: 1023px) {
+          .faq-background {
+            height: auto !important;
+            min-height: 100% !important;
+            transform: rotate(90deg) scale(1.8) !important;
+            transform-origin: center !important;
+            background-size: 180% auto !important;
+          }
+        }
+      `}</style>
       <div className="w-full px-3 sm:px-8 md:px-[50px] py-8">
         <p className="text-center md:text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
@@ -68,17 +87,41 @@ export default function SupportFaq() {
 
           {/* Right: FAQ Accordion */}
           <div className="w-full h-full">
-            <div className="rounded-2xl bg-white space-y-4 h-full max-h-full overflow-y-auto pr-2 shadow-none">
+            <div className="rounded-2xl bg-white space-y-2 h-full max-h-full overflow-y-auto pr-2 shadow-none">
               {items.map((item, idx) => {
                 const open = active === idx;
                 const gradient = gradients[idx % gradients.length];
                 return (
-                  <div key={item.title} className="relative overflow-hidden rounded-2xl hover:bg-white hover:shadow-none">
-                    {/* Gradient overlay to color the entire Q&A when open */}
-                    <div
-                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
-                      style={{ background: gradient, opacity: open ? 1 : 0 }}
-                    />
+                  <div key={item.title}>
+                    <div className={`relative overflow-hidden hover:bg-white hover:shadow-none pb-2 ${idx < items.length - 1 && !open ? 'border-b border-gray-200 pb-4 rounded-none' : 'rounded-2xl'}`}>
+                    {/* Background image for first FAQ when open */}
+                    {idx === 0 && open && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
+                        style={{ backgroundImage: "url('/faq1.png')" }}
+                      />
+                    )}
+                    {/* Background image for second FAQ when open */}
+                    {idx === 1 && open && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
+                        style={{ backgroundImage: "url('/6.png')" }}
+                      />
+                    )}
+                    {/* Background image for third FAQ when open */}
+                    {idx === 2 && open && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
+                        style={{ backgroundImage: "url('/7.png')" }}
+                      />
+                    )}
+                    {/* Background image for fourth FAQ when open */}
+                    {idx === 3 && open && (
+                      <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
+                        style={{ backgroundImage: "url('/8.png')" }}
+                      />
+                    )}
 
                     <div className="relative p-6">
                       <button
@@ -112,6 +155,7 @@ export default function SupportFaq() {
                       </div>
                     </div>
                   </div>
+                </div>
                 );
               })}
             </div>
@@ -120,19 +164,42 @@ export default function SupportFaq() {
 
         {/* Mobile/Tablet Layout: FAQ centered with image below when opened */}
         <div className="lg:hidden mt-2">
-          <div className="rounded-2xl bg-white space-y-4">
+          <div className="rounded-2xl bg-white space-y-2">
             {items.map((item, idx) => {
               const open = active === idx;
               const gradient = gradients[idx % gradients.length];
               return (
-                <div key={item.title} className="relative overflow-hidden rounded-2xl">
-                  {/* Gradient overlay to color the entire Q&A when open */}
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500"
-                    style={{ background: gradient, opacity: open ? 1 : 0 }}
-                  />
+                <div key={item.title} className={`relative overflow-hidden pb-2 ${idx < items.length - 1 && !open ? 'border-b border-gray-200 pb-4 rounded-none' : 'rounded-2xl'}`}>
+                  {/* Background image for first FAQ when open */}
+                  {idx === 0 && open && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
+                      style={{ backgroundImage: "url('/faq1.png')" }}
+                    />
+                  )}
+                  {/* Background image for second FAQ when open */}
+                  {idx === 1 && open && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
+                      style={{ backgroundImage: "url('/6.png')" }}
+                    />
+                  )}
+                  {/* Background image for third FAQ when open */}
+                  {idx === 2 && open && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
+                      style={{ backgroundImage: "url('/7.png')" }}
+                    />
+                  )}
+                  {/* Background image for fourth FAQ when open */}
+                  {idx === 3 && open && (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
+                      style={{ backgroundImage: "url('/8.png')" }}
+                    />
+                  )}
 
-                  <div className="relative p-6">
+                  <div className="relative p-6 z-10 faq-mobile-content">
                     <button
                       type="button"
                       onClick={() => toggle(idx)}

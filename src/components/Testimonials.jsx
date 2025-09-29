@@ -136,17 +136,29 @@ export default function Testimonials() {
         <div className="hidden lg:grid grid-cols-5 gap-1 px-2.5">
           {/* First column split vertically into two equal halves with padding and gap */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-3">
-            <div className="rounded-[10px] bg-[#E6F5EC] border border-gray-200 p-4" style={{height: '312px'}}>
-              <p className="text-[15px] leading-relaxed text-gray-900">
-                "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
-              </p>
-              <div className="mt-3 text-xs text-gray-600 font-medium">Arjun M., Parent of a 7-year-old</div>
+            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '312px'}}>
+              <div
+                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
+                style={{ backgroundImage: "url('/faq1.png')" }}
+              />
+              <div className="relative z-10">
+                <p className="text-[15px] leading-relaxed text-gray-900">
+                  "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
+                </p>
+                <div className="mt-3 text-xs text-gray-600 font-medium">Arjun M., Parent of a 7-year-old</div>
+              </div>
             </div>
-            <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-4" style={{height: '312px'}}>
-              <p className="text-[15px] leading-relaxed text-gray-900">
-                "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
-              </p>
-              <div className="mt-3 text-xs text-gray-600 font-medium">Priya L., Parent of a 11-year-old</div>
+            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '312px'}}>
+              <div
+                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
+                style={{ backgroundImage: "url('/6.png')" }}
+              />
+              <div className="relative z-10">
+                <p className="text-[15px] leading-relaxed text-gray-900">
+                  "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
+                </p>
+                <div className="mt-3 text-xs text-gray-600 font-medium">Priya L., Parent of a 11-year-old</div>
+              </div>
             </div>
           </div>
           {/* Second column: full-length image edge-to-edge */}
@@ -157,11 +169,17 @@ export default function Testimonials() {
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-3">
-            <div className="rounded-[10px] bg-[#ECEBFF] border border-gray-200 p-3 flex flex-col" style={{height: '231px', marginBottom: '0'}}>
-              <p className="text-[13px] leading-snug text-gray-900">
-                "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. It feels like I have a friend who listens."
-              </p>
-              <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '231px', marginBottom: '0'}}>
+              <div
+                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
+                style={{ backgroundImage: "url('/7.png')" }}
+              />
+              <div className="relative z-10">
+                <p className="text-[13px] leading-snug text-gray-900">
+                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. It feels like I have a friend who listens."
+                </p>
+                <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
+              </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '391px', marginTop: '0'}}>
               <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
@@ -183,14 +201,47 @@ export default function Testimonials() {
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '314px'}}>
               <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
-            <div className="rounded-[10px] bg-[#FFFBE6] border border-gray-200 p-3 flex flex-col" style={{height: '314px'}}>
-              <p className="text-[13px] leading-snug text-gray-900">
-                "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore."
-              </p>
-              <div className="mt-2 text-[11px] text-gray-600 font-medium">6-year-old</div>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '314px'}}>
+              <div
+                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
+                style={{ backgroundImage: "url('/8.png')" }}
+              />
+              <div className="relative z-10">
+                <p className="text-[13px] leading-snug text-gray-900">
+                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore."
+                </p>
+                <div className="mt-2 text-[11px] text-gray-600 font-medium">6-year-old</div>
+              </div>
             </div>
           </div>
         </div>
+
+        <style jsx>{`
+          .testimonial-faq-bg {
+            position: absolute;
+            inset: 0;
+            transform: rotate(90deg) scale(2.0);
+            transform-origin: center;
+            /* Stretch the overlay wider than the container and center it */
+            width: 220%;
+            height: 120%;
+            left: -60%;
+            top: -10%;
+            background-size: cover !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+          }
+
+          @media (max-width: 1023px) {
+            .testimonial-faq-bg {
+              transform: rotate(90deg) scale(2.3);
+              width: 240%;
+              height: 140%;
+              left: -70%;
+              top: -20%;
+            }
+          }
+        `}</style>
 
         {/* Mobile: Horizontal photo carousel */}
         <div className="block lg:hidden w-full max-w-sm mx-auto">

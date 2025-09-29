@@ -183,7 +183,7 @@ export default function Header() {
   return (
     <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
       <div className="w-full pl-[50px] pr-[50px]">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Left group: Brand + Nav */}
           <div className="flex items-center gap-8">
             <div className="flex items-center">
@@ -246,7 +246,7 @@ export default function Header() {
                                 { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
                                 { name: "Depression Counselling", url: "/counselling/depression" },
                                 { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
-                                { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                            { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
                                 { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
                               ].map((service, index) => (
                                 <div 
@@ -290,7 +290,7 @@ export default function Header() {
                               <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                               {[
                                 { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
-                                { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                            { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
                                 { name: "Autism Support", url: "/counselling/autism-support" },
                                 { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
                               ].map((service, index) => (
@@ -420,20 +420,20 @@ export default function Header() {
                               <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                               {[
                                 { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
-                                { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                            { name: "Grief & Loss", url: "/counselling/grief-loss" },
                                 { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
-                              ].map((service, index) => (
-                                <div 
-                                  key={index}
+                          ].map((service, index) => (
+                            <div 
+                              key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
-                                  onClick={() => {
-                                    router.push(service.url);
+                              onClick={() => {
+                                router.push(service.url);
                                     setClickedSubmenu(null);
-                                  }}
-                                >
+                              }}
+                            >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
-                                </div>
-                              ))}
+                            </div>
+                          ))}
                               </div>
                             )}
                           </div>
@@ -443,7 +443,7 @@ export default function Header() {
                       {/* Other Services */}
                       <div className="px-4 pt-3">
                         <div className="space-y-2">
-                          <div
+                          <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
                               router.push('/assessments');
@@ -520,8 +520,8 @@ export default function Header() {
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </div>
+                               </svg>
+                             </div>
                             {(activeSubmenu === 'adhd' || clickedSubmenu === 'adhd') && (
                               <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                                 {[
@@ -537,7 +537,7 @@ export default function Header() {
                                     }}
                                   >
                                     <span className="text-gray-700 text-sm">{assessment.name}</span>
-                                  </div>
+                           </div>
                                 ))}
                               </div>
                             )}
@@ -562,8 +562,8 @@ export default function Header() {
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </div>
+                               </svg>
+                             </div>
                             {(activeSubmenu === 'emotional' || clickedSubmenu === 'emotional') && (
                               <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                                 {[
@@ -580,7 +580,7 @@ export default function Header() {
                                     }}
                                   >
                                     <span className="text-gray-700 text-sm">{assessment.name}</span>
-                                  </div>
+                           </div>
                                 ))}
                               </div>
                             )}
@@ -597,7 +597,7 @@ export default function Header() {
                           >
                             <div
                               className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => {
+                             onClick={() => {
                                 setClickedSubmenu(clickedSubmenu === 'intelligence' ? null : 'intelligence');
                                 setActiveSubmenu(null);
                               }}
@@ -605,8 +605,8 @@ export default function Header() {
                               <h3 className="text-sm font-semibold text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h3>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </div>
+                               </svg>
+                             </div>
                             {(activeSubmenu === 'intelligence' || clickedSubmenu === 'intelligence') && (
                               <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
                                 {[
@@ -621,12 +621,12 @@ export default function Header() {
                                     }}
                                   >
                                     <span className="text-gray-700 text-sm">{assessment.name}</span>
-                                  </div>
+                           </div>
                                 ))}
-                              </div>
+                         </div>
                             )}
-                          </div>
-
+                       </div>
+                       
                           {/* Projective Tests */}
                           <div
                             className="relative"
@@ -672,8 +672,8 @@ export default function Header() {
                       </div>
                       
                       {/* Quick Actions */}
-                      <div className="px-4 pt-3">
-                        <div className="space-y-2">
+                       <div className="px-4 pt-3">
+                         <div className="space-y-2">
                           <div
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
@@ -684,7 +684,7 @@ export default function Header() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Get a Free Consultation</span>
-                          </div>
+                           </div>
                           <div
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
@@ -706,9 +706,9 @@ export default function Header() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">FAQ</span>
-                          </div>
-                        </div>
-                      </div>
+                           </div>
+                         </div>
+                       </div>
                     </div>
                   )}
                 </li>
@@ -984,7 +984,7 @@ export default function Header() {
                               { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
                               { name: "Depression Counselling", url: "/counselling/depression" },
                               { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
-                              { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
+                          { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
                               { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
                             ].map((service, index) => (
                               <div 
@@ -1006,7 +1006,7 @@ export default function Header() {
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
-                              { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
+                          { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
                               { name: "Autism Support", url: "/counselling/autism-support" },
                               { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
                             ].map((service, index) => (
@@ -1070,24 +1070,24 @@ export default function Header() {
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
-                              { name: "Grief & Loss", url: "/counselling/grief-loss" },
+                          { name: "Grief & Loss", url: "/counselling/grief-loss" },
                               { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
-                            ].map((service, index) => (
-                              <div 
-                                key={index}
+                        ].map((service, index) => (
+                          <div 
+                            key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                            onClick={() => {
+                              router.push(service.url);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm">{service.name}</span>
+                          </div>
+                        ))}
                           </div>
                         </div>
                         
                         <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
-                          <div
+                          <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/assessments');
@@ -1159,21 +1159,21 @@ export default function Header() {
                               }}
                             >
                               <span className="text-gray-700 text-sm">ADHD Conners 3</span>
+                          </div>
                             </div>
                           </div>
-                        </div>
 
                         {/* Emotional & Behavioral Screening */}
                         <div className="mb-4">
                           <h3 className="text-sm font-semibold text-gray-900 mb-2">Emotional & Behavioral Screening</h3>
                           <div className="space-y-1 ml-2">
-                            <div 
+                          <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
+                            onClick={() => {
                                 router.push('/assessments/basc-3');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
                               <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
                             </div>
                             <div 
@@ -1193,10 +1193,10 @@ export default function Header() {
                               }}
                             >
                               <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
-                            </div>
                           </div>
                         </div>
-
+                      </div>
+                      
                         {/* Intelligence Tests */}
                         <div className="mb-4">
                           <h3 className="text-sm font-semibold text-gray-900 mb-2">Intelligence Tests</h3>
@@ -1240,11 +1240,11 @@ export default function Header() {
 
                         {/* Divider */}
                         <div className="border-t border-gray-200 pt-3">
-                          <div className="space-y-2">
-                            <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                        <div className="space-y-2">
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
                               <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
-                            </div>
-                            <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                          </div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
                               <span className="text-gray-700 text-sm font-medium">View Therapists</span>
                             </div>
                             <div 

@@ -27,14 +27,14 @@ export default function HowItWorks() {
       number: "02", 
       title: "Explore your matches",
       gradient: "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
-      description: "Browse the profiles of licensed providers who match your preferences."
+      description: "Browse profiles of licensed providers who match your preferences."
     },
     {
       id: 3,
       number: "03",
       title: "Schedule your visit", 
       gradient: "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
-      description: "Choose your preferred time and meet with your provider as soon as tomorrow."
+      description: "Choose your preferred time and meet with provider as soon as tomorrow."
     },
     {
       id: 4,
@@ -88,7 +88,26 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="w-full mt-10">
+    <section id="how-it-works" className="w-full mt-10 mobile-section">
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .mobile-section {
+            margin-top: 8px !important;
+          }
+        }
+        .card-bg-mobile {
+          background-size: cover !important;
+          background-position: center !important;
+          background-repeat: no-repeat !important;
+          background-attachment: initial !important;
+        }
+        @media (max-width: 768px) {
+          .card-bg-mobile {
+            background-size: 100% 100% !important;
+            background-position: center top !important;
+          }
+        }
+      `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-6 md:py-8">
         <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-8">
           How it works
@@ -121,14 +140,20 @@ export default function HowItWorks() {
                 {carouselData.map((card, index) => (
                   <div 
                     key={card.id} 
-                    className="flex-shrink-0 w-80 snap-start"
+                    className="flex-shrink-0 snap-start"
                   >
                     <div
-                      className="rounded-lg p-4 h-[280px] w-full flex flex-col justify-between"
-                      style={{ background: card.gradient }}
-                    >
-                      {/* Header Section */}
-                      <div className="flex-shrink-0">
+                      className="rounded-lg p-4 h-[280px] w-[380px] flex flex-col justify-between card-bg-mobile"
+                      style={{ 
+                        backgroundImage: card.id === 1 ? "url('/1.png')" : card.id === 2 ? "url('/2.png')" : card.id === 3 ? "url('/3.png')" : card.id === 4 ? "url('/4.png')" : card.gradient,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center top",
+                        backgroundRepeat: "no-repeat",
+                        backgroundAttachment: "scroll"
+              }}
+            >
+              {/* Header Section */}
+              <div className="flex-shrink-0">
                         <div className="text-xl font-medium text-indigo-900 text-center">{card.number}</div>
                         <h3 className="mt-0 text-sm font-medium text-gray-900 text-center">
                           {card.title}
@@ -152,13 +177,6 @@ export default function HowItWorks() {
                           </div>
                         )}
 
-                        {card.id === 2 && (
-                          <div className="flex items-center justify-center">
-                            <div className="relative h-40 w-full overflow-hidden rounded-lg -mx-2">
-                              <Image src="/howitworks2.png" alt="How it works" fill className="object-cover scale-110" sizes="100vw" />
-                            </div>
-                          </div>
-                        )}
 
                         {card.id === 3 && (
                           <>
@@ -168,7 +186,7 @@ export default function HowItWorks() {
                                 <span>Evenings After 4pm</span>
                               </div>
                             </div>
-                            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-700">
+                            <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-700">
                               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                                 <div
                                   key={d}
@@ -183,24 +201,11 @@ export default function HowItWorks() {
                           </>
                         )}
 
-                        {card.id === 4 && (
-                          <div className="mt-6 w-full flex items-center justify-center">
-                            <div className="relative h-28 w-40 overflow-hidden rounded-md mx-auto">
-                              <Image
-                                src="/howitworks4.png"
-                                alt="provider"
-                                fill
-                                className="object-cover object-center"
-                                sizes="160px"
-                              />
-                            </div>
-                          </div>
-                        )}
                       </div>
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-center">
+                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-center px-6">
                           {card.description}
                         </p>
                       </div>
@@ -252,15 +257,14 @@ export default function HowItWorks() {
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden md:flex flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
+          <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
             <div
-              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
-            style={{
-              background:
-                "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
-            }}
-          >
+              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/1.png')",
+              }}
+            >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">01</div>
             <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore Your Matches
@@ -289,37 +293,30 @@ export default function HowItWorks() {
 
             {/* Card 02 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
-            style={{
-              background:
-                "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
-            }}
-          >
+              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/2.png')",
+              }}
+            >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">02</div>
             <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore your matches
             </h3>
 
-            <div className="flex items-center justify-center">
-              <div className="relative h-40 w-full overflow-hidden rounded-lg -mx-3">
-                <Image src="/howitworks2.png" alt="How it works" fill className="object-cover scale-110" sizes="100vw" />
-              </div>
-            </div>
 
             <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
-              Browse the profiles of licensed providers who match
+              Browse profiles of licensed providers who match
               your preferences.
             </p>
           </div>
 
             {/* Card 03 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
-            style={{
-              background:
-                "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
-            }}
-          >
+              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/3.png')",
+              }}
+            >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">03</div>
             <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Schedule your visit
@@ -332,7 +329,7 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-700">
+            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-700">
               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                 <div
                   key={d}
@@ -346,35 +343,23 @@ export default function HowItWorks() {
             </div>
 
             <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
-              Choose your preferred time and meet with your provider as soon as
+              Choose your preferred time and meet with provider as soon as
               tomorrow.
             </p>
           </div>
 
             {/* Card 04 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[360px] w-[330px] flex-shrink-0 flex flex-col"
-            style={{
-              background:
-                "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
-            }}
-          >
+              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/4.png')",
+              }}
+            >
             <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">04</div>
             <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Join your online session
             </h3>
 
-            <div className="mt-6 w-full flex items-center justify-center">
-              <div className="relative h-28 w-40 overflow-hidden rounded-md mx-auto">
-                <Image
-                  src="/howitworks4.png"
-                  alt="provider"
-                  fill
-                  className="object-cover object-center"
-                  sizes="160px"
-                />
-              </div>
-            </div>
 
             <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
               Connect with your provider over live video from wherever you are.

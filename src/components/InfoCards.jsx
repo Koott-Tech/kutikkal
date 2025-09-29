@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 
 export default function InfoCards() {
@@ -32,28 +34,21 @@ export default function InfoCards() {
     if (iconType === "speech-bubble") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
+          <Image src="/therapy-icon.webp" alt="Therapy icon" width={24} height={24} className="w-6 h-6" />
         </div>
       );
     }
     if (iconType === "pill") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Image src="/medication-mgmt-icon.webp" alt="Medication management icon" width={24} height={24} className="w-6 h-6" />
         </div>
       );
     }
     if (iconType === "combination") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+          <Image src="/therapy-med-mgmt-icon.webp" alt="Therapy + Medication icon" width={24} height={24} className="w-6 h-6" />
         </div>
       );
     }
@@ -61,7 +56,14 @@ export default function InfoCards() {
   };
 
   return (
-    <section className="mt-10">
+    <section className="mt-10 mobile-section">
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .mobile-section {
+            margin-top: 8px !important;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
         {items.map((item) => (
           <div
@@ -81,7 +83,7 @@ export default function InfoCards() {
             </div>
             
             {/* Description */}
-            <p className="mt-4 text-sm text-gray-700 leading-tight">
+            <p className="mt-4 text-sm text-gray-700 leading-relaxed">
               {item.description}
             </p>
 
