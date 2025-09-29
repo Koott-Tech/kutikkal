@@ -49,7 +49,7 @@ export default function Hero() {
               </div>
               
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium leading-none break-words" style={{ color: '#1d1733', letterSpacing: '0.010em', lineHeight: '1.0' }}>
-                Your Partner in Child Counselling and Parent Support
+                Your Partner in Child Counselling & Parent Support
               </h1>
               <p className="mt-10 text-lg font-normal opacity-95 leading-relaxed break-words" style={{ color: '#15171a' }}>
                 Expert Child Counselling & Parent Support to help your whole family grow.
