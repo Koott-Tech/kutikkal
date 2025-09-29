@@ -108,8 +108,8 @@ export default function HowItWorks() {
           }
         }
       `}</style>
-      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-8 lg:px-12 py-6 md:py-8">
-        <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-8">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-8 lg:px-12 pt-2 md:pt-4 pb-6 md:pb-8">
+        <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-2">
           How it works
         </h2>
 
@@ -260,7 +260,7 @@ export default function HowItWorks() {
           <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              className="rounded-2xl p-6 h-[355px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/1.png')",
               }}
