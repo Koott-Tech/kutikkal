@@ -129,7 +129,32 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white mt-10">
+    <section className="w-full bg-white pt-24 md:pt-32 mb-24 md:mb-32 testimonials-section">
+      <style jsx>{`
+        .testimonial-faq-bg {
+          position: absolute;
+          inset: 0;
+          transform: rotate(90deg) scale(2.0);
+          transform-origin: center;
+          /* Stretch the overlay wider than the container and center it */
+          width: 220%;
+          height: 120%;
+          left: -60%;
+          top: -10%;
+          background-size: cover !important;
+          background-position: center center !important;
+          background-repeat: no-repeat !important;
+        }
+        @media (max-width: 1023px) {
+          .testimonial-faq-bg {
+            transform: rotate(90deg) scale(2.3);
+            width: 240%;
+            height: 140%;
+            left: -70%;
+            top: -20%;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-6 md:py-8">
 
         {/* Desktop: 5-column layout with images */}
@@ -216,32 +241,6 @@ export default function Testimonials() {
           </div>
         </div>
 
-        <style jsx>{`
-          .testimonial-faq-bg {
-            position: absolute;
-            inset: 0;
-            transform: rotate(90deg) scale(2.0);
-            transform-origin: center;
-            /* Stretch the overlay wider than the container and center it */
-            width: 220%;
-            height: 120%;
-            left: -60%;
-            top: -10%;
-            background-size: cover !important;
-            background-position: center center !important;
-            background-repeat: no-repeat !important;
-          }
-
-          @media (max-width: 1023px) {
-            .testimonial-faq-bg {
-              transform: rotate(90deg) scale(2.3);
-              width: 240%;
-              height: 140%;
-              left: -70%;
-              top: -20%;
-            }
-          }
-        `}</style>
 
         {/* Mobile: Horizontal photo carousel */}
         <div className="block lg:hidden w-full max-w-sm mx-auto">

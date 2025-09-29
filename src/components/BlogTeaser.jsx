@@ -37,7 +37,7 @@ export default function BlogTeaser() {
   ];
 
   return (
-    <section className="w-full mt-10">
+    <section className="w-full mb-12 md:mb-16">
       <div className="mx-auto max-w-[1400px] px-3 sm:px-6 md:px-8 py-6 md:py-8 overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left ml-3 sm:ml-6 md:ml-0">

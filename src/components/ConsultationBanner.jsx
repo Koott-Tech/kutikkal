@@ -91,14 +91,14 @@ export default function ConsultationBanner() {
             </div>
 
             {/* Right: Image */}
-            <div className="relative h-32 md:h-52 lg:h-60 col-span-1 flex justify-end items-center pr-0 pb-0 pt-0 min-h-[600px] md:min-h-[600px]">
-              <div className="relative w-24 h-24 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-[10px] overflow-hidden">
-                <Image
+            <div className="relative h-32 md:h-52 lg:h-60 col-span-1 flex justify-end items-center md:items-end pr-0 pb-0 pt-0 min-h-[600px] md:min-h-[600px]">
+              <div className="absolute right-0 w-24 h-24 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-[10px] overflow-hidden mb-0" style={{ top: '50%', transform: 'translateY(-50%)', bottom: 'auto' }}>
+                <img
                   src="/consultation.png"
                   alt="Consultation"
-                  fill
-                  className="object-cover rounded-[10px]"
-                  sizes="(max-width: 768px) 100vw, 200px"
+                  className="w-full h-full object-cover rounded-[10px]"
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
             </div>

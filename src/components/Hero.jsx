@@ -21,24 +21,25 @@ export default function Hero() {
     <div className="w-full overflow-hidden mt-10">
       <div className="mx-auto max-w-[1400px] px-0 md:px-0">
         <section 
-          className="text-black rounded-none md:rounded-[10px] p-0 sm:p-8 md:p-[50px] mx-0 md:mx-0" 
+          className="text-black rounded-none md:rounded-[10px] p-0 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] mx-0 md:mx-0 overflow-visible relative"
           style={{ 
-            background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)', 
-            minHeight: '90vh',
-            height: '90vh'
+            background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)'
           }}
         >
           <style jsx>{`
+            @media (max-width: 767px) {
+              section { min-height: 100vh; }
+              .hero-image-box { height: 55vh; }
+            }
             @media (min-width: 768px) {
-              section {
-                min-height: 70vh !important;
-                height: 70vh !important;
-              }
+              /* Tighten desktop min-height so zoom-out doesn't leave bottom gap */
+              section { min-height: clamp(520px, 58vh, 780px); }
+              .hero-image-box { height: 100%; }
             }
           `}</style>
-          <div className="grid h-full grid-cols-1 gap-2 md:gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 items-stretch gap-2 md:gap-8" style={{ minHeight: 'inherit' }}>
             {/* Left: Text */}
-            <div className="flex flex-col justify-center order-1 md:order-1 md:pl-2 text-left mt-2 md:mt-0 px-4 sm:px-0">
+            <div className="flex flex-col justify-center order-1 md:order-1 md:pl-2 text-left mt-0 px-4 sm:px-0">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-xs md:text-sm font-medium text-gray-800 w-fit mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -91,15 +92,18 @@ export default function Hero() {
             </div>
 
             {/* Right: Image */}
-            <div className="relative flex items-center justify-center order-2 md:order-2 min-h-[400px] sm:min-h-[450px] md:min-h-0 -mt-8 md:mt-0">
-              <Image
-                src="/heroo.png"
-                alt="Hero"
-                fill
-                className="object-contain object-center scale-[0.75] md:scale-150 translate-y-0 md:translate-y-10"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+            <div className="hidden md:block order-2 md:order-2 -mt-8 md:mt-0 md:h-full">
+              {/* Responsive image box aligned to bottom of column */}
+              <div className="relative w-full md:w-1/2 hero-image-box md:absolute md:bottom-[-60px] md:right-0">
+                <Image
+                  src="/heroo.png"
+                  alt="Hero"
+                  fill
+                  className="object-cover md:object-bottom"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </section>

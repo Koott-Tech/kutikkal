@@ -44,7 +44,7 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center mt-10">
+    <section className="w-full flex items-center mb-12 md:mb-16 our-promise-section" style={{ height: 'auto' }}>
       <style jsx>{`
         .faq-background {
           height: 100% !important;
@@ -58,22 +58,33 @@ export default function SupportFaq() {
           .faq-background {
             height: auto !important;
             min-height: 100% !important;
-            transform: rotate(90deg) scale(1.8) !important;
+            transform: rotate(90deg) scale(1.2) !important;
             transform-origin: center !important;
-            background-size: 180% auto !important;
+            background-size: 120% auto !important;
+          }
+        }
+        .our-promise-section {
+          min-height: clamp(420px, 54vh, 760px) !important;
+          height: clamp(420px, 54vh, 760px) !important;
+          padding-top: 80px !important;
+        }
+        @media (min-width: 1024px) {
+          .our-promise-section {
+            min-height: clamp(520px, 60vh, 820px) !important;
+            height: clamp(520px, 60vh, 820px) !important;
           }
         }
       `}</style>
-      <div className="w-full px-3 sm:px-8 md:px-[50px] py-8">
+      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px] py-8">
         <p className="text-center md:text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.
         </h2>
 
         {/* Desktop Layout: Image on left (60%), FAQ on right (40%) */}
-        <div className="hidden lg:grid mt-2 grid-cols-[6fr_4fr] gap-8 items-stretch h-full">
+        <div className="hidden lg:grid mt-2 grid-cols-[1fr_1fr] xl:grid-cols-[6fr_4fr] gap-4 xl:gap-8 items-stretch" style={{ minHeight: 'inherit', height: '100%' }}>
           {/* Left: Image that changes per selection */}
-          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gray-100">
+          <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
               key={items[active >= 0 ? active : 0]?.image}
               src={items[active >= 0 ? active : 0]?.image}
@@ -214,7 +225,7 @@ export default function SupportFaq() {
 
                     {/* Smoothly expanding answer with image below */}
                     <div
-                      className={`overflow-hidden transition-all duration-500 ${open ? "max-h-[600px] opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                      className={`overflow-hidden transition-all duration-500 ${open ? "max-h-[400px] md:max-h-[500px] opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
                     >
                       <div className="space-y-4">
                         <p className="text-sm text-gray-800">{item.body}</p>

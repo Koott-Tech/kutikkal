@@ -88,7 +88,7 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="w-full mt-10 mobile-section">
+    <section id="how-it-works" className="w-full mobile-section mb-12 md:mb-16">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
@@ -108,7 +108,7 @@ export default function HowItWorks() {
           }
         }
       `}</style>
-      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 sm:px-10 md:px-[50px] py-6 md:py-8">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-8 lg:px-12 py-6 md:py-8">
         <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-8">
           How it works
         </h2>
@@ -126,7 +126,7 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-4">
+        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Mobile Carousel */}
           <div className="md:hidden w-full max-w-sm mx-auto">
             {/* Scrollable Carousel Container */}
@@ -259,8 +259,8 @@ export default function HowItWorks() {
           {/* Desktop Layout */}
           <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
-            <div
-              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+          <div
+              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/1.png')",
               }}
@@ -270,7 +270,7 @@ export default function HowItWorks() {
               Explore Your Matches
             </h3>
 
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-4 flex-1 flex flex-col gap-3 items-center justify-center">
               {[
                 "Anxiety and Depression",
                 "Accepts Cigna Health Plans",
@@ -293,7 +293,7 @@ export default function HowItWorks() {
 
             {/* Card 02 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/2.png')",
               }}
@@ -312,7 +312,7 @@ export default function HowItWorks() {
 
             {/* Card 03 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/3.png')",
               }}
@@ -322,24 +322,25 @@ export default function HowItWorks() {
               Schedule your visit
             </h3>
 
-            <div className="mt-6 flex justify-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
-                <span className="text-indigo-700">📅</span>
-                <span>Evenings After 4pm</span>
-              </div>
-            </div>
-
-            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-700">
-              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-                <div
-                  key={d}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${
-                    d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
-                  }`}
-                >
-                  {d}
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="mt-6 flex justify-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
+                  <span className="text-indigo-700">📅</span>
+                  <span>Evenings After 4pm</span>
                 </div>
-              ))}
+              </div>
+              <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-700">
+                {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
+                  <div
+                    key={d}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${
+                      d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
+                    }`}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
@@ -350,7 +351,7 @@ export default function HowItWorks() {
 
             {/* Card 04 - Desktop */}
           <div
-              className="rounded-2xl p-6 h-[390px] w-[330px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/4.png')",
               }}
