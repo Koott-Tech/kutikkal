@@ -276,12 +276,12 @@ export default function Footer() {
                         </div>
                         <div className="w-full h-px my-10 bg-white/40"></div>
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
-                            <div className="text-center md:text-left">© 2025 Path CCM, Inc. d/b/a Little Care. All rights reserved.</div>
+                            <div className="text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</div>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
-                                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                                <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
-                                <a href="#" className="hover:text-white transition-colors">Therapy Agreement</a>
-                                <a href="#" className="hover:text-white transition-colors">Refund Policy</a>
+                                <a href="#" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
+                                <a href="#" className="hover:text-white transition-colors">PRIVACY POLICY</a>
+                                <a href="#" className="hover:text-white transition-colors">THERAPY AGREEMENT</a>
+                                <a href="#" className="hover:text-white transition-colors">REFUND POLICY</a>
                             </div>
                         </div>
                     </div>
