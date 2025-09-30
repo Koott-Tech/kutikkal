@@ -10,7 +10,9 @@ export default function ChooseOptions() {
       title: "Child\nCounselling",
       description: "We provide a safe space for children to share and grow.",
       image: "/girl1.png",
-      gradient: "from-green-100 to-white",
+      // gradient removed in favor of background image
+      gradient: "",
+      bgImage: "/6.png", // Our promise second FAQ background image
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black",
@@ -23,7 +25,8 @@ export default function ChooseOptions() {
       title: "Child\nAssessment",
       description: "Reveal your child's strengths and needs for growth.",
       image: "/boy1.png",
-      gradient: "from-purple-100 to-white",
+      gradient: "",
+      bgImage: "/faq1.png",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black",
@@ -35,7 +38,8 @@ export default function ChooseOptions() {
       title: "Better\nParenting",
       description: "Build stronger bonds and nurturing home.",
       image: "/fam1.png",
-      gradient: "from-orange-100 to-white",
+      gradient: "",
+      bgImage: "/7.png",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black",
@@ -59,10 +63,50 @@ export default function ChooseOptions() {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`bg-gradient-to-b ${card.gradient} overflow-hidden flex flex-col h-[600px] rounded-[10px]`}
+              className={`${card.bgImage ? "relative" : ""} ${card.bgImage ? "" : `bg-gradient-to-b ${card.gradient}`} overflow-hidden flex flex-col h-[600px] rounded-[10px]`}
             >
+              {/* Stretched, rotated background for first card */}
+              {card.bgImage && (
+                <>
+                  <style jsx>{`
+                    .choose-stretched-bg {
+                      position: absolute;
+                      inset: 0;
+                      transform: rotate(90deg) scale(2.0);
+                      transform-origin: center;
+                      width: 220%;
+                      height: 120%;
+                      left: -60%;
+                      top: -10%;
+                      background-size: cover !important;
+                      background-position: center center !important;
+                      background-repeat: no-repeat !important;
+                      z-index: 0;
+                    }
+                    @media (max-width: 1023px) {
+                      .choose-stretched-bg {
+                        transform: rotate(90deg) scale(2.3);
+                        width: 240%;
+                        height: 140%;
+                        left: -70%;
+                        top: -20%;
+                      }
+                    }
+                  `}</style>
+                  <div
+                    className="choose-stretched-bg"
+                    style={{ backgroundImage: `url('${card.bgImage}')` }}
+                  />
+                  {/* Bottom mask to hide overflow under inner image */}
+                  <div
+                    className="absolute left-0 right-0 bottom-0 z-0"
+                    style={{ height: 'calc(20rem + 16px)', background: '#ffffff' }}
+                  />
+                </>
+              )}
+
               {/* Card Content */}
-              <div className="p-6 pb-0 mb-0 px-8">
+              <div className="p-6 pb-0 mb-0 px-8 relative z-10">
                 {/* Tags */}
                 <div className="flex gap-2 mb-4">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${card.tagColors.primary}`}>
@@ -86,7 +130,7 @@ export default function ChooseOptions() {
               </div>
 
               {/* Image Section */}
-              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full max-w-[260px] md:max-w-[300px] mx-auto rounded-[20px]">
+              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full max-w-[260px] md:max-w-[300px] mx-auto rounded-[20px] z-10">
                 <Image
                   src={card.image}
                   alt={card.title}
