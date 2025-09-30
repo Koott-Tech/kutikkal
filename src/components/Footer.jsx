@@ -44,7 +44,7 @@ export default function Footer() {
                         <div className="space-y-4">
                             <button
                                 onClick={() => toggleSection('counselling')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
                             >
                                 <span>Counselling</span>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ export default function Footer() {
                                 <div className="space-y-2">
                                     <button
                                         onClick={() => toggleSection('c_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Emotional & Mental Health</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@ export default function Footer() {
                                 <div className="space-y-2 mt-4">
                                     <button
                                         onClick={() => toggleSection('c_development')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Child Development & Learning</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_development ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,13 +90,13 @@ export default function Footer() {
                                         <li><a href="/counselling/communication-social-skills" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Communication & Social Skills</a></li>
                                     </ul>
                                 </div>
-                                {/* Category: Behaviour & Confidence Building */}
+                                {/* Category: Behaviour & Confidence */}
                                 <div className="space-y-2 mt-4">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
-                                        <span>Behaviour & Confidence Building</span>
+                                        <span>Behaviour & Confidence</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_behaviour ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -110,7 +110,7 @@ export default function Footer() {
                                 <div className="space-y-2 mt-4">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Stress & Academic Support</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_stress ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@ export default function Footer() {
                                 <div className="space-y-2 mt-4">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Trauma & Healing</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_trauma ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +144,7 @@ export default function Footer() {
                         <div className="space-y-6">
                             <button
                                 onClick={() => toggleSection('assessments')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
                             >
                                 <span>Assessments</span>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@ export default function Footer() {
                                 <div className="space-y-2">
                                     <button
                                         onClick={() => toggleSection('a_adhd')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>ADHD Assessments</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,9 +173,9 @@ export default function Footer() {
                                 <div className="space-y-2">
                                     <button
                                         onClick={() => toggleSection('a_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 text-left"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 text-left cursor-pointer gap-2"
                                     >
-                                        <span className="text-left">Emotional & Behavioral Screening</span>
+                                        <span className="text-left">Emotional & Behavioral</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -190,7 +190,7 @@ export default function Footer() {
                                 <div className="space-y-2">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Intelligence Tests</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +205,7 @@ export default function Footer() {
                                 <div className="space-y-2">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90"
+                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
                                     >
                                         <span>Projective Tests</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +223,7 @@ export default function Footer() {
                         <div className="space-y-6">
                             <button
                                 onClick={() => toggleSection('about')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
                             >
                                 <span>About Us</span>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,7 +242,7 @@ export default function Footer() {
                         <div className="space-y-6">
                             <button
                                 onClick={() => toggleSection('resources')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white"
+                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
                             >
                                 <span>Resources</span>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,11 +279,9 @@ export default function Footer() {
                             <div className="text-center md:text-left">© 2025 Path CCM, Inc. d/b/a Little Care. All rights reserved.</div>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                                <a href="#" className="hover:text-white transition-colors">Notice of Privacy Practice</a>
-                                <a href="#" className="hover:text-white transition-colors">No Surprises Act</a>
                                 <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
-                                <a href="#" className="hover:text-white transition-colors">Patient Rights</a>
-                                <a href="#" className="hover:text-white transition-colors">Provider Positions</a>
+                                <a href="#" className="hover:text-white transition-colors">Therapy Agreement</a>
+                                <a href="#" className="hover:text-white transition-colors">Refund Policy</a>
                             </div>
                         </div>
                     </div>
