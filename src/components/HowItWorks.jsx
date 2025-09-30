@@ -108,7 +108,7 @@ export default function HowItWorks() {
           }
         }
       `}</style>
-      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-8 lg:px-12 pt-2 md:pt-4 pb-6 md:pb-8">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
         <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-2">
           How it works
         </h2>
@@ -205,7 +205,7 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-center px-6">
+                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-left px-4">
                           {card.description}
                         </p>
                       </div>
@@ -286,7 +286,7 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
               Browse profiles of ADHD specialists who fit your child's needs.
             </p>
           </div>
@@ -303,9 +303,16 @@ export default function HowItWorks() {
               Explore your matches
             </h3>
 
+            <div className="flex-1"></div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
-              Browse profiles of licensed providers who match
+            {/* Doctor Information */}
+            <div className="mb-3 text-center">
+              <div className="text-sm font-bold text-gray-900">Dr. Aswathy Sampath</div>
+              <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
+            </div>
+
+            <p className="mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+              Browse licensed providers who match
               your preferences.
             </p>
           </div>
@@ -343,8 +350,8 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
-              Choose your preferred time and meet with provider as soon as
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+              Choose your time and meet with provider as soon as
               tomorrow.
             </p>
           </div>
@@ -362,7 +369,7 @@ export default function HowItWorks() {
             </h3>
 
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
               Connect with your provider over live video from wherever you are.
             </p>
             </div>
