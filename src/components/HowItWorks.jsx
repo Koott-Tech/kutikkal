@@ -154,7 +154,7 @@ export default function HowItWorks() {
             >
               {/* Header Section */}
               <div className="flex-shrink-0">
-                        <div className="text-xl font-medium text-indigo-900 text-center">{card.number}</div>
+                        <div className="text-xl font-medium text-gray-900 text-center">{card.number}</div>
                         <h3 className="mt-0 text-sm font-medium text-gray-900 text-center">
                           {card.title}
                         </h3>
@@ -265,7 +265,7 @@ export default function HowItWorks() {
                 backgroundImage: "url('/1.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">01</div>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">01</div>
             <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore Your Matches
             </h3>
@@ -286,7 +286,7 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
               Browse profiles of ADHD specialists who fit your child's needs.
             </p>
           </div>
@@ -298,7 +298,7 @@ export default function HowItWorks() {
                 backgroundImage: "url('/2.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">02</div>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">02</div>
             <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Explore your matches
             </h3>
@@ -311,7 +311,7 @@ export default function HowItWorks() {
               <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
             </div>
 
-            <p className="mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+            <p className="mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
               Browse licensed providers who match
               your preferences.
             </p>
@@ -324,7 +324,7 @@ export default function HowItWorks() {
                 backgroundImage: "url('/3.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">03</div>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">03</div>
             <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Schedule your visit
             </h3>
@@ -350,7 +350,7 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
               Choose your time and meet with provider as soon as
               tomorrow.
             </p>
@@ -363,13 +363,13 @@ export default function HowItWorks() {
                 backgroundImage: "url('/4.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-indigo-900 text-center">04</div>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">04</div>
             <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
               Join your online session
             </h3>
 
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-left">
+            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
               Connect with your provider over live video from wherever you are.
             </p>
             </div>

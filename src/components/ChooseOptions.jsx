@@ -13,34 +13,34 @@ export default function ChooseOptions() {
       gradient: "from-green-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black"
+        secondary: "bg-white text-black",
       },
-      imageClass: "object-cover object-[50%_100%]"
+      imageClass: "object-cover object-[50%_100%]",
     },
     {
       id: 2,
       tags: ["Assessments", "Tests"],
-      title: "Child\nAssessment", 
+      title: "Child\nAssessment",
       description: "Reveal your child's strengths and needs for growth.",
       image: "/boy1.png",
       gradient: "from-purple-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black"
-      }
+        secondary: "bg-white text-black",
+      },
     },
     {
       id: 3,
       tags: ["Parents", "Workshops"],
       title: "Better\nParenting",
-      description: "Build stronger bonds and nurturing home.", 
+      description: "Build stronger bonds and nurturing home.",
       image: "/fam1.png",
       gradient: "from-orange-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black"
-      }
-    }
+        secondary: "bg-white text-black",
+      },
+    },
   ];
 
   return (
@@ -59,7 +59,7 @@ export default function ChooseOptions() {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`bg-gradient-to-b ${card.gradient} rounded-none md:rounded-t-[10px] rounded-b-[40px] overflow-hidden flex flex-col h-[600px]`}
+              className={`bg-gradient-to-b ${card.gradient} overflow-hidden flex flex-col h-[600px] rounded-[10px]`}
             >
               {/* Card Content */}
               <div className="p-6 pb-0 mb-0 px-8">
@@ -74,26 +74,27 @@ export default function ChooseOptions() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none" style={{ fontWeight: 500 }}>
+                <h2
+                  className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none"
+                  style={{ fontWeight: 500 }}
+                >
                   {card.title}
                 </h2>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 leading-tight mb-0">
-                  {card.description}
-                </p>
+                <p className="text-sm text-gray-600 leading-tight mb-0">{card.description}</p>
               </div>
 
               {/* Image Section */}
-              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full rounded-t-[50px] rounded-b-[40px]">
+              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full max-w-[260px] md:max-w-[300px] mx-auto rounded-[20px]">
                 <Image
                   src={card.image}
                   alt={card.title}
                   fill
-                  className={`${card.imageClass ? `${card.imageClass}` : "object-cover object-center md:object-[50%_100%]"} rounded-t-[50px] rounded-b-[40px]`}
+                  className={`${card.imageClass ? `${card.imageClass}` : "object-cover object-center md:object-[50%_100%]"} rounded-[20px]`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                
+
                 {/* Read More Button */}
                 <div className="absolute bottom-8 left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-base font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">

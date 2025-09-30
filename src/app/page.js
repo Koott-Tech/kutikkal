@@ -60,9 +60,7 @@ export default function Home() {
       {/* <FeatureCards /> */}
       <PersonalizedCare />
       <InfoCards />
-      <div className="mt-16 mb-8 md:my-0">
-        <ConsultationBanner />
-      </div>
+      <ConsultationBanner />
       <HowItWorks />
       <SupportFaq />
       <Testimonials />

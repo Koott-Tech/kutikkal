@@ -201,13 +201,18 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p className="text-[13px] leading-snug text-gray-900">
-                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. It feels like I have a friend who listens."
+                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. It feels like I have a friend who listens. When I get big feelings, we use a color chart to name them, and that helps me calm down. I learned small steps for tricky moments at school, and I can share what I need without getting upset. I’m proud that I’m braver now."
                 </p>
                 <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '391px', marginTop: '0'}}>
               <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <button aria-label="Play video" className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                <span className="h-12 w-12 md:h-14 md:w-14 grid place-items-center rounded-full bg-white/90 shadow-md">
+                  <PlayIcon className="h-6 w-6 text-gray-900" />
+                </span>
+              </button>
             </div>
           </div>
 
@@ -233,7 +238,7 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p className="text-[13px] leading-snug text-gray-900">
-                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore."
+                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing and drawing my feelings. Now I look forward to our sessions every week! I even taught my parents the tricks I learned, like the balloon-breath and the ‘pause and count to five’ game. School feels easier, and I make friends faster because I know how to share my feelings without getting stuck."
                 </p>
                 <div className="mt-2 text-[11px] text-gray-600 font-medium">6-year-old</div>
               </div>

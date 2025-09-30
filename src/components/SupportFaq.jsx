@@ -76,8 +76,8 @@ export default function SupportFaq() {
         }
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px] py-8">
-        <p className="text-center md:text-center text-base md:text-lg font-medium text-gray-700 mb-2">Our promise</p>
-        <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-medium tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
+        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 mb-2">Our promise</p>
+        <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-normal tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.
         </h2>
 
@@ -142,7 +142,7 @@ export default function SupportFaq() {
                         aria-expanded={open}
                       >
                         <div>
-                          <h3 className="text-lg md:text-xl font-medium text-gray-900">{item.title}</h3>
+                          <h3 className="text-lg md:text-xl font-normal text-gray-900">{item.title}</h3>
                         </div>
                         <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
@@ -153,7 +153,7 @@ export default function SupportFaq() {
                       >
                         <p className="text-sm text-gray-800 mb-4">{item.body}</p>
                         {open && (
-                          <button className="inline-flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-gray-900 cursor-pointer group relative">
+                          <button className="inline-flex items-center gap-2 text-sm font-normal text-gray-800 hover:text-gray-900 cursor-pointer group relative">
                             <span className="relative">
                               Get started
                               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
@@ -218,7 +218,7 @@ export default function SupportFaq() {
                       aria-expanded={open}
                     >
                       <div>
-                        <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
+                        <h3 className="text-lg font-normal text-gray-900">{item.title}</h3>
                       </div>
                       <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                     </button>

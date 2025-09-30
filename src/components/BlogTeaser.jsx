@@ -37,16 +37,16 @@ export default function BlogTeaser() {
   ];
 
   return (
-    <section className="w-full mb-12 md:mb-16">
-      <div className="mx-auto max-w-[1400px] px-3 sm:px-6 md:px-8 py-6 md:py-8 overflow-hidden">
+    <section className="w-full mb-12 md:mb-16 px-4 lg:px-6">
+      <div className="mx-auto max-w-[1100px] px-0 py-6 md:py-8 overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div className="text-center md:text-left ml-3 sm:ml-6 md:ml-0">
-             <p className="text-xl md:text-base text-gray-700">From our blog</p>
-                          <h2 className="mt-3 text-[32px] sm:text-[40px] md:text-[48px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
+          <div className="text-center md:text-left">
+             <p className="text-lg md:text-base text-gray-700">From our blog</p>
+                          <h2 className="mt-3 text-[28px] sm:text-[36px] md:text-[42px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
                Tips for getting started on your journey
              </h2>
            </div>
-          <div className="flex justify-center md:justify-end mt-6 md:mt-0">
+          <div className="flex justify-center md:justify-end mt-6 md:mt-2">
             <button
               type="button"
               onClick={handleExploreClick}
@@ -57,9 +57,9 @@ export default function BlogTeaser() {
           </div>
         </div>
 
-                 <div className="mt-16 md:mt-20 grid grid-cols-1 gap-10 md:gap-8 md:grid-cols-3">
+                 <div className="mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-1">
            {posts.map((post) => (
-                                                       <article key={post.title} className="group w-full md:w-full mx-auto md:mx-0">
+                                                       <article key={post.title} className="group w-full md:max-w-[340px] mx-auto md:mx-0">
                <div
                  className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl ${
                    post.highlight ? "ring-8 ring-sky-100" : ""
@@ -73,12 +73,12 @@ export default function BlogTeaser() {
                   sizes="(min-width: 1024px) 33vw, 100vw"
                 />
               </div>
-              <div className="mt-6 md:mt-4 text-base md:text-sm text-gray-600 leading-relaxed">
+              <div className="mt-5 md:mt-3 text-sm md:text-xs text-gray-600 leading-relaxed">
                 <span>{post.author}</span>
                 <span className="px-2">•</span>
                 <span>{post.date}</span>
               </div>
-              <h3 className="mt-4 md:mt-3 text-xl md:text-xl font-medium text-gray-900 leading-tight">
+              <h3 className="mt-3 md:mt-2 text-lg md:text-base font-medium text-gray-900 leading-tight">
                 {post.title}
               </h3>
             </article>
