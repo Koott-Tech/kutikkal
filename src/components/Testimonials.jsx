@@ -129,7 +129,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white pt-24 md:pt-32 mb-24 md:mb-32 testimonials-section">
+    <section className="w-full bg-white pt-2 md:pt-32 mb-8 md:mb-32 testimonials-section">
       <style jsx>{`
         .testimonial-faq-bg {
           position: absolute;
@@ -155,7 +155,12 @@ export default function Testimonials() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-6 md:py-8">
+      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-4 md:py-8">
+        {/* Heading */}
+        <div className="text-center mb-4 md:mb-8 px-4">
+          <h2 className="text-2xl md:text-4xl font-medium text-gray-900 leading-none tracking-tight">Testimonials</h2>
+          <p className="mt-2 text-sm md:text-base text-gray-600">What families are saying</p>
+        </div>
 
         {/* Desktop: 5-column layout with images */}
         <div className="hidden lg:grid grid-cols-5 gap-1 px-2.5">

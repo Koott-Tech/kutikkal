@@ -7,7 +7,7 @@ export default function ConsultationBanner() {
     <div className="section-mobile mt-20 mb-12 md:my-24">
       <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
         <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
-          <div className="overflow-hidden relative rounded-[10px] main-container min-h-[220px] md:min-h-[240px]" style={{ borderRadius: "10px", minHeight: "240px" }}>
+          <div className="overflow-hidden relative rounded-[10px] main-container min-h-[320px] md:min-h-[240px]" style={{ borderRadius: "10px", minHeight: "240px" }}>
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150" style={{ backgroundImage: "url('/6.png')" }}></div>
           <style jsx>{`
             .main-container {
@@ -28,14 +28,14 @@ export default function ConsultationBanner() {
               }
               .mobile-container {
                 padding: 0 !important;
-                min-height: auto !important;
+                min-height: 320px !important;
               }
               .mobile-container > div:last-child {
-                min-height: auto !important;
-                height: auto !important;
+                min-height: 320px !important;
+                height: 320px !important;
               }
               .mobile-text {
-                padding: 0 !important;
+                padding: 0 0 0 20px !important;
               }
               .mobile-text h2 {
                 margin-bottom: 4px !important;
@@ -44,10 +44,8 @@ export default function ConsultationBanner() {
                 margin-bottom: 4px !important;
               }
               .main-container {
-                min-height: auto !important;
-                height: auto !important;
-                background-image: none !important;
-                background-color: transparent !important;
+                min-height: 320px !important;
+                height: 320px !important;
                 padding: 0 !important;
                 margin-top: 0 !important;
                 margin-bottom: 0 !important;
@@ -75,9 +73,9 @@ export default function ConsultationBanner() {
               }
             }
           `}</style>
-          <div className="grid grid-cols-2 items-center min-h-[220px] md:min-h-[240px] gap-0 lg:gap-0 mobile-container rounded-[10px] overflow-hidden relative z-10">
+          <div className="grid grid-cols-5 md:grid-cols-2 items-center min-h-[320px] md:min-h-[240px] gap-0 lg:gap-0 mobile-container rounded-[10px] overflow-hidden relative z-10">
             {/* Left: Text and Button */}
-            <div className="p-2 md:p-6 pl-4 md:pl-10 lg:pl-12 col-span-1 flex flex-col justify-center mobile-text">
+            <div className="p-2 md:p-6 pl-5 md:pl-14 lg:pl-6 ml-0 md:ml-6 lg:ml-8 col-span-3 md:col-span-1 flex flex-col justify-center mobile-text max-w-[360px] md:max-w-[560px]">
               <h2 className="text-sm md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 leading-none text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Get a Free 20-minute Consultation
               </h2>
@@ -97,8 +95,8 @@ export default function ConsultationBanner() {
             </div>
 
             {/* Right: Image */}
-            <div className="relative h-full col-span-1 flex justify-end items-center md:items-center pr-0 pb-0 pt-0">
-              <div className="absolute right-0 w-20 h-20 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-[10px] overflow-hidden mb-0" style={{ top: '50%', transform: 'translateY(-50%)', bottom: 'auto' }}>
+            <div className="relative h-full col-span-2 md:col-span-1 flex justify-end items-center md:items-center pr-0 pb-0 pt-0">
+              <div className="absolute right-6 md:right-0 w-20 h-20 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-[10px] overflow-hidden mb-0" style={{ top: '50%', transform: 'translateY(-50%)', bottom: 'auto' }}>
                 <img
                   src="/consultation.png"
                   alt="Consultation"

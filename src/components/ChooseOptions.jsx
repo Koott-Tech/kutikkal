@@ -10,41 +10,37 @@ export default function ChooseOptions() {
       title: "Child\nCounselling",
       description: "We provide a safe space for children to share and grow.",
       image: "/girl1.png",
-      // gradient removed in favor of background image
-      gradient: "",
-      bgImage: "/6.png", // Our promise second FAQ background image
+      gradient: "from-green-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black",
+        secondary: "bg-white text-black"
       },
-      imageClass: "object-cover object-[50%_100%]",
+      imageClass: "object-cover object-[50%_100%]"
     },
     {
       id: 2,
       tags: ["Assessments", "Tests"],
-      title: "Child\nAssessment",
+      title: "Child\nAssessment", 
       description: "Reveal your child's strengths and needs for growth.",
       image: "/boy1.png",
-      gradient: "",
-      bgImage: "/faq1.png",
+      gradient: "from-purple-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black",
-      },
+        secondary: "bg-white text-black"
+      }
     },
     {
       id: 3,
       tags: ["Parents", "Workshops"],
       title: "Better\nParenting",
-      description: "Build stronger bonds and nurturing home.",
+      description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
-      gradient: "",
-      bgImage: "/7.png",
+      gradient: "from-orange-100 to-white",
       tagColors: {
         primary: "bg-white text-black",
-        secondary: "bg-white text-black",
-      },
-    },
+        secondary: "bg-white text-black"
+      }
+    }
   ];
 
   return (
@@ -63,48 +59,10 @@ export default function ChooseOptions() {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`${card.bgImage ? "relative" : ""} ${card.bgImage ? "" : `bg-gradient-to-b ${card.gradient}`} overflow-hidden flex flex-col h-[600px] rounded-[10px]`}
+              className={`relative bg-gradient-to-b ${card.gradient} rounded-[10px] overflow-hidden flex flex-col h-[600px]`}
             >
-              {/* Stretched, rotated background for first card */}
-              {card.bgImage && (
-                <>
-                  <style jsx>{`
-                    .choose-stretched-bg {
-                      position: absolute;
-                      inset: 0;
-                      transform: rotate(90deg) scale(2.0);
-                      transform-origin: center;
-                      width: 220%;
-                      height: 120%;
-                      left: -60%;
-                      top: -10%;
-                      background-size: cover !important;
-                      background-position: center center !important;
-                      background-repeat: no-repeat !important;
-                      z-index: 0;
-                    }
-                    @media (max-width: 1023px) {
-                      .choose-stretched-bg {
-                        transform: rotate(90deg) scale(2.3);
-                        width: 240%;
-                        height: 140%;
-                        left: -70%;
-                        top: -20%;
-                      }
-                    }
-                  `}</style>
-                  <div
-                    className="choose-stretched-bg"
-                    style={{ backgroundImage: `url('${card.bgImage}')` }}
-                  />
-                  {/* Bottom mask to hide overflow under inner image */}
-                  <div
-                    className="absolute left-0 right-0 bottom-0 z-0"
-                    style={{ height: 'calc(20rem + 16px)', background: '#ffffff' }}
-                  />
-                </>
-              )}
-
+              {/* White gradient overlay from half to bottom */}
+              <div className="absolute top-1/2 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-0" />
               {/* Card Content */}
               <div className="p-6 pb-0 mb-0 px-8 relative z-10">
                 {/* Tags */}
@@ -118,19 +76,18 @@ export default function ChooseOptions() {
                 </div>
 
                 {/* Title */}
-                <h2
-                  className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none"
-                  style={{ fontWeight: 500 }}
-                >
+                <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none" style={{ fontWeight: 500 }}>
                   {card.title}
                 </h2>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 leading-tight mb-0">{card.description}</p>
+                <p className="text-sm text-gray-600 leading-tight mb-0">
+                  {card.description}
+                </p>
               </div>
 
               {/* Image Section */}
-              <div className="relative h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full max-w-[260px] md:max-w-[300px] mx-auto rounded-[20px] z-10">
+              <div className="relative z-10 h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full rounded-[10px]">
                 <Image
                   src={card.image}
                   alt={card.title}
@@ -138,7 +95,7 @@ export default function ChooseOptions() {
                   className={`${card.imageClass ? `${card.imageClass}` : "object-cover object-center md:object-[50%_100%]"} rounded-[20px]`}
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
-
+                
                 {/* Read More Button */}
                 <div className="absolute bottom-8 left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-base font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">

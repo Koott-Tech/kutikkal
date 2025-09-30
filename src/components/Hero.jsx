@@ -28,8 +28,8 @@ export default function Hero() {
         >
           <style jsx>{`
             @media (max-width: 767px) {
-              section { min-height: 100vh; }
-              .hero-image-box { height: 55vh; }
+              section { min-height: 78vh; }
+              .hero-image-box { height: 42vh; }
             }
             @media (min-width: 768px) {
               /* Tighten desktop min-height so zoom-out doesn't leave bottom gap */

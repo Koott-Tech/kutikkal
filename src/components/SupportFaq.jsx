@@ -33,10 +33,10 @@ export default function SupportFaq() {
   const [active, setActive] = useState(0);
 
   const gradients = [
-    "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
-    "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
-    "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
-    "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
+    "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 50%, #ffffff 100%)",
+    "linear-gradient(180deg, #ecfdf5 0%, #d1fae5 50%, #ffffff 100%)",
+    "linear-gradient(180deg, #fff7ed 0%, #ffedd5 50%, #ffffff 100%)",
+    "linear-gradient(180deg, #ecfeff 0%, #cffafe 50%, #ffffff 100%)",
   ];
 
   function toggle(idx) {
@@ -44,7 +44,7 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center mb-12 md:mb-16 our-promise-section" style={{ height: 'auto' }}>
+    <section className="w-full flex items-center mt-6 mb-4 md:mb-16 our-promise-section" style={{ height: 'auto' }}>
       <style jsx>{`
         .faq-background {
           height: 100% !important;
@@ -52,30 +52,40 @@ export default function SupportFaq() {
         }
         .faq-mobile-content {
           position: relative;
-          z-index: 10;
+          z-index: 1;
         }
         @media (max-width: 1023px) {
           .faq-background {
-            height: auto !important;
-            min-height: 100% !important;
-            transform: rotate(90deg) scale(1.2) !important;
-            transform-origin: center !important;
-            background-size: 120% auto !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 170% !important; /* stretch beyond container width */
+            height: 120% !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+            transform-origin: center center !important;
+            background-size: cover !important;
+            background-position: center center !important;
           }
         }
         .our-promise-section {
-          min-height: clamp(420px, 54vh, 760px) !important;
-          height: clamp(420px, 54vh, 760px) !important;
-          padding-top: 80px !important;
+          min-height: auto !important;
+          height: auto !important;
+          padding-top: 72px !important;
+          padding-bottom: 72px !important;
+          position: relative;
+          z-index: 0;
+          isolation: isolate;
         }
         @media (min-width: 1024px) {
           .our-promise-section {
             min-height: clamp(520px, 60vh, 820px) !important;
             height: clamp(520px, 60vh, 820px) !important;
+            padding-top: 80px !important;
+            padding-bottom: 80px !important;
           }
         }
       `}</style>
-      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px] py-8">
+      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px] py-4 md:py-8">
         <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 mb-2">Our promise</p>
         <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-normal tracking-tight md:tracking-normal leading-none text-gray-900 mt-2 mb-10 md:mb-12">
           Support at every step, so the next one is easier.
@@ -181,35 +191,12 @@ export default function SupportFaq() {
               const gradient = gradients[idx % gradients.length];
               return (
                 <div key={item.title} className={`relative overflow-hidden pb-2 ${idx < items.length - 1 && !open ? 'border-b border-gray-200 pb-4 rounded-none' : 'rounded-2xl'}`}>
-                  {/* Background image for first FAQ when open */}
-                  {idx === 0 && open && (
+                  {open && (
                     <div
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
-                      style={{ backgroundImage: "url('/faq1.png')" }}
+                      className="absolute inset-0 z-0"
+                      style={{ background: gradient, opacity: 0.9 }}
                     />
                   )}
-                  {/* Background image for second FAQ when open */}
-                  {idx === 1 && open && (
-                    <div
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
-                      style={{ backgroundImage: "url('/6.png')" }}
-                    />
-                  )}
-                  {/* Background image for third FAQ when open */}
-                  {idx === 2 && open && (
-                    <div
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
-                      style={{ backgroundImage: "url('/7.png')" }}
-                    />
-                  )}
-                  {/* Background image for fourth FAQ when open */}
-                  {idx === 3 && open && (
-                    <div
-                      className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150 z-0 faq-background"
-                      style={{ backgroundImage: "url('/8.png')" }}
-                    />
-                  )}
-
                   <div className="relative p-6 z-10 faq-mobile-content">
                     <button
                       type="button"

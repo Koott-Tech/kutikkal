@@ -54,7 +54,7 @@ export default function HelpFaq() {
               <br />
               <span>We're here to help</span>
             </h2>
-            <p className="mt-5 text-lg text-gray-700">
+            <p className="mt-5 text-base md:text-lg text-gray-700 text-center md:text-left">
               Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br />
               commonly asked questions.
             </p>

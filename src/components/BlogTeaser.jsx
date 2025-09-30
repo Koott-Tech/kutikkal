@@ -57,11 +57,11 @@ export default function BlogTeaser() {
           </div>
         </div>
 
-                 <div className="mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-1">
+        <div className="mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-1">
            {posts.map((post) => (
-                                                       <article key={post.title} className="group w-full md:max-w-[340px] mx-auto md:mx-0">
+            <article key={post.title} className="group w-[260px] sm:w-[280px] md:w-full md:max-w-[340px] mx-auto md:mx-0">
                <div
-                 className={`relative aspect-[16/9] w-full overflow-hidden rounded-2xl ${
+                className={`relative w-full h-[150px] sm:h-[160px] md:aspect-[16/9] overflow-hidden rounded-2xl ${
                    post.highlight ? "ring-8 ring-sky-100" : ""
                  }`}
                >
@@ -70,7 +70,7 @@ export default function BlogTeaser() {
                   alt={post.alt}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  sizes="(min-width: 1024px) 33vw, 100vw"
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 260px"
                 />
               </div>
               <div className="mt-5 md:mt-3 text-sm md:text-xs text-gray-600 leading-relaxed">

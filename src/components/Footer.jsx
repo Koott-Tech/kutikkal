@@ -259,6 +259,35 @@ export default function Footer() {
                         </div>
                     </div>
                 </div>
+
+                {/* Help/Emergency section and bottom bar */}
+                <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
+                    <div className="w-full h-px mb-8 bg-white/40"></div>
+                    <div className="mt-12 text-white">
+                        <h3 className="text-2xl md:text-3xl font-medium mb-6 text-left md:text-left">Here to help</h3>
+                        <div className="space-y-4 text-left md:text-left">
+                            <div className="text-lg md:text-xl font-semibold">Emergency</div>
+                            <p className="text-base md:text-lg text-white/90 leading-relaxed">
+                                The 9152987821 Suicide and Crisis Lifeline provides 24/7, confidential support with trained crisis counselors.
+                            </p>
+                            <p className="text-base md:text-lg text-white/90 leading-relaxed">
+                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text 9152987821.
+                            </p>
+                        </div>
+                        <div className="w-full h-px my-10 bg-white/40"></div>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
+                            <div className="text-center md:text-left">© 2025 Path CCM, Inc. d/b/a Little Care. All rights reserved.</div>
+                            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
+                                <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                                <a href="#" className="hover:text-white transition-colors">Notice of Privacy Practice</a>
+                                <a href="#" className="hover:text-white transition-colors">No Surprises Act</a>
+                                <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
+                                <a href="#" className="hover:text-white transition-colors">Patient Rights</a>
+                                <a href="#" className="hover:text-white transition-colors">Provider Positions</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </footer>
     );

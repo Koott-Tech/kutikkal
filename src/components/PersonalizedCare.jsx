@@ -9,7 +9,7 @@ export default function PersonalizedCare() {
           <h2 className="text-3xl md:text-4xl font-medium text-gray-900 mb-0 leading-none mx-auto tracking-tighter">
             The care you need, whenever you need it
           </h2>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-tight tracking-tight">
+          <p className="text-sm md:text-lg text-gray-700 max-w-3xl mx-auto leading-tight md:leading-tight tracking-tight mt-2 md:mt-3">
             We know parenting can be challenging, so we're here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
           </p>
         </div>

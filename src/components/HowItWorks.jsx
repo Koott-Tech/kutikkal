@@ -143,7 +143,7 @@ export default function HowItWorks() {
                     className="flex-shrink-0 snap-start"
                   >
                     <div
-                      className="rounded-lg p-4 h-[280px] w-[380px] flex flex-col justify-between card-bg-mobile"
+                      className="rounded-lg p-4 h-[320px] w-[380px] flex flex-col justify-between card-bg-mobile"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/1.png')" : card.id === 2 ? "url('/2.png')" : card.id === 3 ? "url('/3.png')" : card.id === 4 ? "url('/4.png')" : card.gradient,
                         backgroundSize: "cover",
@@ -154,8 +154,8 @@ export default function HowItWorks() {
             >
               {/* Header Section */}
               <div className="flex-shrink-0">
-                        <div className="text-xl font-medium text-gray-900 text-center">{card.number}</div>
-                        <h3 className="mt-0 text-sm font-medium text-gray-900 text-center">
+                        <div className="text-2xl font-medium text-gray-900 text-center">{card.number}</div>
+                        <h3 className="mt-0 text-base font-medium text-gray-900 text-center">
                           {card.title}
                         </h3>
                       </div>
@@ -168,9 +168,9 @@ export default function HowItWorks() {
                             {card.tags.map((label) => (
                               <div
                                 key={label}
-                                className="inline-flex w-fit items-center gap-1 rounded-full border border-gray-200 bg-white/90 px-1.5 py-0.5 text-xs text-gray-900"
+                                className="inline-flex w-fit items-center gap-1 rounded-full border border-gray-200 bg-white/90 px-2 py-1 text-sm text-gray-900"
                               >
-                                <span className="text-indigo-700 text-xs">✓</span>
+                                <span className="text-indigo-700 text-sm">✓</span>
                                 <span>{label}</span>
                               </div>
                             ))}
@@ -181,7 +181,7 @@ export default function HowItWorks() {
                         {card.id === 3 && (
                           <>
                           <div className="mt-6 flex justify-center">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-base text-gray-900">
                                 <span className="text-indigo-700">📅</span>
                                 <span>Evenings After 4pm</span>
                               </div>
@@ -190,7 +190,7 @@ export default function HowItWorks() {
                               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                                 <div
                                   key={d}
-                                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs ${
+                                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${
                                     d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
                                   }`}
                                 >
@@ -205,7 +205,7 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-1 pt-2 text-xs leading-relaxed text-gray-700 text-left px-4">
+                        <p className="mt-1 pt-2 text-sm leading-relaxed text-gray-700 text-center px-6">
                           {card.description}
                         </p>
                       </div>
