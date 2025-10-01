@@ -24,7 +24,7 @@ export default function Footer() {
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
-                    <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm">
+                    <button className="text-white px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#3e2e73' }}>
                         Get started
                     </button>
                 </div>
@@ -35,13 +35,11 @@ export default function Footer() {
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3 bg-white"></div>
                 
-                <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-12">
-                    {/* Top horizontal line */}
-                    <div className="w-full h-px mb-16 bg-white"></div>
+                <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     {/* Main footer content - header-like FAQ dropdowns */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
                         {/* Counselling (mirrors header nested submenu) */}
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('counselling')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -51,10 +49,10 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Counselling</h3>
-                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-6`}>
+                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Counselling</h3>
+                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: Emotional & Mental Health */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('c_emotional')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -73,7 +71,7 @@ export default function Footer() {
                                     </ul>
                                 </div>
                                 {/* Category: Child Development & Learning */}
-                                <div className="space-y-2 mt-4">
+                                <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_development')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -91,7 +89,7 @@ export default function Footer() {
                                     </ul>
                                 </div>
                                 {/* Category: Behaviour & Confidence */}
-                                <div className="space-y-2 mt-4">
+                                <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -107,7 +105,7 @@ export default function Footer() {
                                     </ul>
                                 </div>
                                 {/* Category: Stress & Academic Support */}
-                                <div className="space-y-2 mt-4">
+                                <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -122,7 +120,7 @@ export default function Footer() {
                                     </ul>
                                 </div>
                                 {/* Category: Trauma & Healing */}
-                                <div className="space-y-2 mt-4">
+                                <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -141,7 +139,7 @@ export default function Footer() {
                             </div>
                         </div>
                         {/* Assessments */}
-                        <div className="space-y-6">
+                        <div className="space-y-5 ml-8">
                             <button
                                 onClick={() => toggleSection('assessments')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -151,10 +149,10 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Assessments</h3>
-                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-6`}>
+                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Assessments</h3>
+                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: ADHD Assessments */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_adhd')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -164,13 +162,13 @@ export default function Footer() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_adhd ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_adhd ? 'block' : 'hidden'}`}>
                                         <li><a href="/assessments/adhd-vanderbilt" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">ADHD Vanderbilt</a></li>
                                         <li><a href="/assessments/adhd-conners-3" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">ADHD Conners 3</a></li>
                                     </ul>
                                 </div>
                                 {/* Category: Emotional & Behavioral Screening */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_emotional')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 text-left cursor-pointer gap-2"
@@ -180,14 +178,14 @@ export default function Footer() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_emotional ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 text-left ${openSections.a_emotional ? 'block' : 'hidden'}`}>
                                         <li><a href="/assessments/basc-3" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">BASC-3</a></li>
                                         <li><a href="/assessments/child-depression-inventory" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Child Depression Inventory</a></li>
                                         <li><a href="/assessments/spence-anxiety-scale" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Spence Anxiety Scale</a></li>
                                     </ul>
                                 </div>
                                 {/* Category: Intelligence Tests */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -197,12 +195,12 @@ export default function Footer() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
                                         <li><a href="/assessments/vsms" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">VSMS</a></li>
                                     </ul>
                                 </div>
                                 {/* Category: Projective Tests */}
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
                                         className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
@@ -212,7 +210,7 @@ export default function Footer() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_projective ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_projective ? 'block' : 'hidden'}`}>
                                         <li><a href="/assessments/cat" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">CAT (Child Apperception Test)</a></li>
                                         <li><a href="/assessments/child-sentence-completion" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Child Sentence Completion Test</a></li>
                                     </ul>
@@ -220,7 +218,7 @@ export default function Footer() {
                             </div>
                         </div>
                         {/* About Us */}
-                        <div className="space-y-6">
+                        <div className="space-y-5 ml-16">
                             <button
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -230,8 +228,8 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">About Us</h3>
-                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
+                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">About Us</h3>
+                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Our story</a></li>
                                 <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
                                 <li><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Careers</a></li>
@@ -239,7 +237,7 @@ export default function Footer() {
                             </ul>
                         </div>
                         {/* Resources */}
-                        <div className="space-y-6">
+                        <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('resources')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -249,8 +247,8 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-2xl font-bold leading-relaxed tracking-wide text-white">Resources</h3>
-                            <ul className={`space-y-4 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
+                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Resources</h3>
+                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
                                 <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
                                 <li><a href="/free-assessment" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Free assessment</a></li>
@@ -262,19 +260,19 @@ export default function Footer() {
 
                 {/* Help/Emergency section and bottom bar */}
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
-                    <div className="w-full h-px mb-8 bg-white/40"></div>
-                    <div className="mt-12 text-white">
+                    <div className="w-full h-px my-8 bg-white/40"></div>
+                    <div className="mt-0 text-white">
                         <h3 className="text-2xl md:text-3xl font-medium mb-6 text-left md:text-left">Here to help</h3>
                         <div className="space-y-4 text-left md:text-left">
-                            <div className="text-lg md:text-xl font-semibold">Emergency</div>
-                            <p className="text-base md:text-lg text-white/90 leading-relaxed">
-                                The 9152987821 Suicide and Crisis Lifeline provides 24/7, confidential support with trained crisis counselors.
+                            <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Emergency</div>
+                            <p className="text-base md:text-lg text-white/90 leading-[1]">
+                                The <span className="font-bold">9152987821</span> Suicide and Crisis Lifeline provides <span className="font-bold">24/7</span>, confidential support with trained crisis counselors.
                             </p>
-                            <p className="text-base md:text-lg text-white/90 leading-relaxed">
-                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text 9152987821.
+                            <p className="text-base md:text-lg text-white/90 leading-[1]">
+                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text <span className="font-bold">9152987821</span>.
                             </p>
                         </div>
-                        <div className="w-full h-px my-10 bg-white/40"></div>
+                        <div className="w-full h-px my-8 bg-white/40"></div>
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
                             <div className="text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</div>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">

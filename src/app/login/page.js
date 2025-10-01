@@ -26,6 +26,13 @@ export default function LoginPage() {
     if (returnUrlParam) {
       setReturnUrl(returnUrlParam);
     }
+    
+    // Check for auth error message from automatic logout
+    const authError = localStorage.getItem('auth_error');
+    if (authError) {
+      setError(authError);
+      localStorage.removeItem('auth_error');
+    }
   }, []);
 
   const handleSubmit = async (e) => {

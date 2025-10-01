@@ -49,12 +49,13 @@ export default function HelpFaq() {
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-4 md:ml-0">
           <div>
-                         <h2 className="text-[32px] leading-[1.1] font-medium tracking-tight md:tracking-normal md:text-[48px] text-gray-900 text-center md:text-left">
+                          <h3 className="text-[24px] leading-[1.2] font-medium tracking-tight md:tracking-normal md:text-[48px] text-gray-900 text-center md:text-left">
               Questions?
-              <br />
-              <span>We're here to help</span>
-            </h2>
-            <p className="mt-5 text-base md:text-lg text-gray-700 text-center md:text-left">
+            </h3>
+            <h3 className="text-[32px] leading-[1.2] font-medium tracking-tight md:tracking-normal text-gray-900 text-center md:text-left">
+              We're here to help
+            </h3>
+            <p className="mt-5 text-base md:text-lg text-gray-700 text-center md:text-left leading-[1.3]">
               Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br />
               commonly asked questions.
             </p>
@@ -73,8 +74,8 @@ export default function HelpFaq() {
                  {/* Right column: Accordion FAQ */}
          <div className="mr-8 md:mr-12 w-full md:max-w-2xl ml-1 md:ml-0">
            {DATA.map((section, ci) => (
-             <div key={section.title} className="mb-12">
-               <h3 className="text-2xl md:text-3xl font-medium text-gray-900 mb-8 text-center md:text-left">
+             <div key={section.title} className="mb-10 mt-3">
+               <h3 className={`text-2xl md:text-3xl font-medium text-gray-900 ${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left`}>
                 {section.title}
               </h3>
               <div className="space-y-0">

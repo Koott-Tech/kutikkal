@@ -158,8 +158,8 @@ export default function Testimonials() {
       <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-4 md:py-8">
         {/* Heading */}
         <div className="text-center mb-4 md:mb-8 px-4">
-          <h2 className="text-2xl md:text-4xl font-medium text-gray-900 leading-none tracking-tight">Testimonials</h2>
-          <p className="mt-2 text-sm md:text-base text-gray-600">What families are saying</p>
+          <h2 className="text-2xl md:text-4xl font-medium text-gray-900 leading-tight tracking-tight">Testimonials</h2>
+          <p className="mt-2 text-sm md:text-base text-gray-600 leading-tight">What families are saying</p>
         </div>
 
         {/* Desktop: 5-column layout with images */}
@@ -172,7 +172,7 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/faq1.png')" }}
               />
               <div className="relative z-10">
-                <p className="text-[15px] leading-relaxed text-gray-900">
+                <p className="text-[15px] leading-[1.5] text-gray-900">
                   "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
                 </p>
                 <div className="mt-3 text-xs text-gray-600 font-medium">Arjun M., Parent of a 7-year-old</div>
@@ -184,7 +184,7 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/6.png')" }}
               />
               <div className="relative z-10">
-                <p className="text-[15px] leading-relaxed text-gray-900">
+                <p className="text-[15px] leading-[1.5] text-gray-900">
                   "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
                 </p>
                 <div className="mt-3 text-xs text-gray-600 font-medium">Priya L., Parent of a 11-year-old</div>
@@ -205,8 +205,8 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/7.png')" }}
               />
               <div className="relative z-10">
-                <p className="text-[13px] leading-snug text-gray-900">
-                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. It feels like I have a friend who listens. When I get big feelings, we use a color chart to name them, and that helps me calm down. I learned small steps for tricky moments at school, and I can share what I need without getting upset. I’m proud that I’m braver now."
+                <p className="text-[13px] leading-[1.5] text-gray-900">
+                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. When I get big feelings, we use a color chart to name them, and that helps me calm down. I'm proud that I'm braver now."
                 </p>
                 <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
               </div>
@@ -242,8 +242,8 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/8.png')" }}
               />
               <div className="relative z-10">
-                <p className="text-[13px] leading-snug text-gray-900">
-                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing and drawing my feelings. Now I look forward to our sessions every week! I even taught my parents the tricks I learned, like the balloon-breath and the ‘pause and count to five’ game. School feels easier, and I make friends faster because I know how to share my feelings without getting stuck."
+                <p className="text-[13px] leading-[1.5] text-gray-900">
+                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing and drawing my feelings. Now I look forward to our sessions every week! I even taught my parents the tricks I learned, like the balloon-breath and the 'pause and count to five' game. School feels easier, and I make friends faster because I know how to share my feelings without getting stuck."
                 </p>
                 <div className="mt-2 text-[11px] text-gray-600 font-medium">6-year-old</div>
               </div>

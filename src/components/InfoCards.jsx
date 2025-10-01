@@ -77,9 +77,9 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h3 className="text-xl font-medium leading-tight text-gray-900 text-left leading-none">
+              <h2 className="text-xl font-medium text-gray-900 text-left leading-[1.3]">
                 {item.title}
-              </h3>
+              </h2>
             </div>
             
             {/* Description */}
@@ -91,7 +91,7 @@ export default function InfoCards() {
             <div className="mt-auto pt-6">
               <a
                 href="#"
-                className="flex items-center justify-between text-base font-normal text-gray-900 hover:text-gray-700 group"
+                className="flex items-center justify-between text-base font-bold text-gray-900 hover:text-gray-700 group"
               >
                 <span>{item.cta}</span>
                 <span className="text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>

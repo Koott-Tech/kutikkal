@@ -28,6 +28,40 @@ const handleResponse = async (response) => {
         headers: Object.fromEntries(response.headers.entries())
       });
       
+      // Handle authentication/authorization errors - auto logout
+      if (response.status === 401 || response.status === 403) {
+        // Check if it's a token expiration error
+        const isTokenExpired = error.error === 'Token expired' || 
+                              error.error === 'bad_jwt' || 
+                              error.message?.includes('expired') ||
+                              error.message?.includes('token is expired');
+        
+        console.log('🔒 Auth Error Detected:', {
+          status: response.status,
+          isTokenExpired,
+          error: error
+        });
+        
+        // Clear auth data
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userData');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          
+          // Store error message for login page to display
+          const errorMsg = isTokenExpired 
+            ? 'Your session has expired. Please log in again to continue.' 
+            : 'Authentication failed. Please log in again.';
+          localStorage.setItem('auth_error', errorMsg);
+          
+          // Redirect to login
+          window.location.href = '/login';
+        }
+        
+        throw new Error(isTokenExpired ? 'Session expired' : 'Authentication failed');
+      }
+      
       // Handle empty error responses
       if (!error || Object.keys(error).length === 0) {
         if (response.status === 404) {
@@ -59,10 +93,17 @@ const handleResponse = async (response) => {
           errorMessage = 'Please check your input and try again.';
           break;
         case 401:
-          errorMessage = 'Authentication required. Please log in again.';
-          break;
         case 403:
-          errorMessage = 'Access denied. You do not have permission to perform this action.';
+          // Auto logout on auth errors even if parsing fails
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
+            window.location.href = '/login';
+          }
+          errorMessage = 'Authentication required. Please log in again.';
           break;
         case 404:
           errorMessage = 'Resource not found. The requested endpoint does not exist.';
@@ -482,6 +523,16 @@ export const psychologistApi = {
     return apiRequest(`/psychologists/packages/${packageId}`, {
       method: 'DELETE',
     });
+  },
+
+  // Get Google Calendar events
+  async getGoogleCalendarEvents(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/psychologists/google-calendar/events?${queryParams}`);
   },
 
   // Get notifications

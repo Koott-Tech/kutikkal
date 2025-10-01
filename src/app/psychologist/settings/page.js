@@ -1,17 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
+import { psychologistApi } from "../../../lib/backendApi";
 import { 
   User,
   Mail,
   GraduationCap,
   BookOpen,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  RefreshCw
 } from "lucide-react";
 
 export default function PsychologistSettings() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -25,6 +28,16 @@ export default function PsychologistSettings() {
     area_of_expertise: '',
     description: ''
   });
+  
+  // Google Calendar states
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [calendarError, setCalendarError] = useState(null);
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   useEffect(() => {
     if (user && user.profile) {
@@ -40,8 +53,276 @@ export default function PsychologistSettings() {
           : user.profile.area_of_expertise || '',
         description: user.profile.description || ''
       });
+      
+      // Check if Google Calendar is connected
+      checkCalendarStatus();
     }
   }, [user]);
+  
+  const checkCalendarStatus = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      const url = backendUrl.endsWith('/api') 
+        ? `${backendUrl}/psychologists/google-calendar/status`
+        : `${backendUrl}/api/psychologists/google-calendar/status`;
+        
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setIsCalendarConnected(data.connected || false);
+        setLastSyncTime(data.lastSync ? new Date(data.lastSync) : null);
+        
+        // Fetch calendar events if connected
+        if (data.connected) {
+          fetchCalendarEvents();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking calendar status:', error);
+    }
+  };
+  
+  const fetchCalendarEvents = async () => {
+    try {
+      setIsLoadingEvents(true);
+      
+      // Fetch next 60 days of events
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 60);
+      
+      // 1. Fetch Google Calendar events (ALL events from their Gmail calendar)
+      let googleEvents = [];
+      try {
+        const googleData = await psychologistApi.getGoogleCalendarEvents({
+          timeMin: startDate.toISOString(),
+          timeMax: endDate.toISOString()
+        });
+        
+        if (googleData.success) {
+          googleEvents = (googleData.events || []).map(event => ({
+            ...event,
+            source: 'google_calendar',
+            isExternal: true
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching Google events:', error);
+      }
+      
+      // 2. Fetch Little Care sessions (your platform bookings)
+      let littleCareEvents = [];
+      try {
+        const sessionsData = await psychologistApi.getSessions();
+        const sessions = sessionsData.data?.sessions || sessionsData.data || [];
+        
+        console.log('🔍 Raw sessions data:', sessions);
+        
+        // Convert sessions to calendar event format
+        littleCareEvents = sessions
+          .filter(session => session.status !== 'cancelled')
+          .map(session => {
+            // Parse time to add 1 hour for end time
+            const [hours, minutes] = session.scheduled_time.split(':');
+            const startDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+            const endDateTime = new Date(startDateTime);
+            endDateTime.setHours(endDateTime.getHours() + 1);
+            
+            return {
+              summary: `Little Care - ${session.client_name || 'Client'}`,
+              start: {
+                dateTime: `${session.scheduled_date}T${session.scheduled_time}`
+              },
+              end: {
+                dateTime: endDateTime.toISOString()
+              },
+              description: `Status: ${session.status}${session.meeting_link ? '\n📹 Online Session' : ''}`,
+              source: 'little_care',
+              isExternal: false,
+              sessionId: session.id,
+              status: session.status,
+              clientName: session.client_name
+            };
+          });
+      } catch (error) {
+        console.error('Error fetching Little Care sessions:', error);
+      }
+      
+      // Combine both sources
+      const allEvents = [...googleEvents, ...littleCareEvents];
+      setCalendarEvents(allEvents);
+      
+      console.log('📅 Calendar Events Loaded:', {
+        googleEvents: googleEvents.length,
+        littleCareEvents: littleCareEvents.length,
+        total: allEvents.length,
+        sample: allEvents.slice(0, 2)
+      });
+      
+    } catch (error) {
+      console.error('Error fetching calendar events:', error);
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
+  
+  const handleConnectGoogleCalendar = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/auth/google-calendar/callback`;
+    const scope = 'https://www.googleapis.com/auth/calendar.readonly';
+    
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=code` +
+      `&scope=${encodeURIComponent(scope)}` +
+      `&access_type=offline` +
+      `&prompt=consent`;
+    
+    window.location.href = authUrl;
+  };
+  
+  const handleDisconnectGoogleCalendar = async () => {
+    try {
+      setIsSyncing(true);
+      setCalendarError(null);
+      
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      const url = backendUrl.endsWith('/api') 
+        ? `${backendUrl}/psychologists/google-calendar/disconnect`
+        : `${backendUrl}/api/psychologists/google-calendar/disconnect`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        setIsCalendarConnected(false);
+        setLastSyncTime(null);
+        setSuccess('Google Calendar disconnected successfully');
+      } else {
+        const data = await response.json();
+        setCalendarError(data.message || 'Failed to disconnect calendar');
+      }
+    } catch (error) {
+      console.error('Error disconnecting calendar:', error);
+      setCalendarError('Failed to disconnect Google Calendar');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
+  const handleSyncNow = async () => {
+    try {
+      setIsSyncing(true);
+      setCalendarError(null);
+      
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      const url = backendUrl.endsWith('/api') 
+        ? `${backendUrl}/availability/sync-google-calendar`
+        : `${backendUrl}/api/availability/sync-google-calendar`;
+      
+      // Set date range for sync (next 30 days)
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          psychologist_id: user.id,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0]
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLastSyncTime(new Date());
+        setSuccess(`Synced successfully! Processed ${data.data?.blockedSlots?.length || 0} external bookings.`);
+        // Refresh calendar events after sync
+        fetchCalendarEvents();
+      } else {
+        const data = await response.json();
+        setCalendarError(data.message || 'Failed to sync calendar');
+      }
+    } catch (error) {
+      console.error('Error syncing calendar:', error);
+      setCalendarError('Failed to sync with Google Calendar');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
+  const formatEventTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+  
+  const getEventColor = (summary, source) => {
+    // Little Care events are always green
+    if (source === 'little_care') {
+      return 'bg-green-100 border-green-400 text-green-900';
+    }
+    
+    // External events colored by type
+    const lower = summary?.toLowerCase() || '';
+    if (lower.includes('betterhelp') || lower.includes('therapy') || lower.includes('session')) {
+      return 'bg-purple-100 border-purple-300 text-purple-800';
+    }
+    if (lower.includes('talkspace') || lower.includes('counseling')) {
+      return 'bg-blue-100 border-blue-300 text-blue-800';
+    }
+    if (lower.includes('meeting') || lower.includes('call')) {
+      return 'bg-orange-100 border-orange-300 text-orange-800';
+    }
+    return 'bg-gray-100 border-gray-300 text-gray-800';
+  };
+  
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    return { daysInMonth, startingDayOfWeek, year, month };
+  };
+  
+  const getEventsForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return calendarEvents.filter(event => {
+      const eventDate = (event.start.dateTime || event.start.date).split('T')[0];
+      return eventDate === dateStr;
+    });
+  };
+  
+  const navigateMonth = (direction) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + direction);
+    setCurrentMonth(newMonth);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -242,6 +523,255 @@ export default function PsychologistSettings() {
                 />
                 <p className="mt-1 text-xs text-gray-500">This will be visible to potential clients</p>
               </div>
+            </div>
+          </div>
+
+          {/* Google Calendar Integration */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                Google Calendar Integration
+              </h3>
+            </div>
+            <div className="px-6 py-6 space-y-4">
+              <div className="flex items-start">
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 mb-4">
+                    Connect your Google Calendar to automatically prevent double bookings. When you have sessions booked on other platforms (BetterHelp, Talkspace, etc.), those time slots will be automatically blocked on Little Care.
+                  </p>
+                  
+                  {isCalendarConnected ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                        <span className="text-sm text-green-700 font-medium">Google Calendar Connected</span>
+                      </div>
+                      
+                      {lastSyncTime && (
+                        <p className="text-xs text-gray-500">
+                          Last synced: {lastSyncTime.toLocaleString()}
+                        </p>
+                      )}
+                      
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={handleSyncNow}
+                          disabled={isSyncing}
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                        >
+                          {isSyncing ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                              Syncing...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-2" />
+                              Sync Now
+                            </>
+                          )}
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={handleDisconnectGoogleCalendar}
+                          disabled={isSyncing}
+                          className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                        >
+                          Disconnect Calendar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleConnectGoogleCalendar}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Connect Google Calendar
+                    </button>
+                  )}
+                  
+                  {calendarError && (
+                    <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-3">
+                      <p className="text-sm text-red-700">{calendarError}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
+                <h4 className="text-sm font-medium text-blue-900 mb-2">How it works:</h4>
+                <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
+                  <li>System syncs your calendar every 30 minutes automatically</li>
+                  <li>Bookings from other platforms are detected and blocked here</li>
+                  <li>Prevents double bookings across all your therapy platforms</li>
+                  <li>Read-only access - we never modify your calendar</li>
+                </ul>
+              </div>
+              
+              {/* Calendar Events Display */}
+              {isCalendarConnected && (
+                <div className="mt-6">
+                  {/* Month Calendar View */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-semibold text-gray-900">Calendar View - Bookings from Other Platforms</h4>
+                      <button
+                        onClick={fetchCalendarEvents}
+                        disabled={isLoadingEvents}
+                        className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      >
+                        {isLoadingEvents ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="h-3 w-3" />
+                            Refresh
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    
+                    {/* Calendar Header */}
+                    <div className="bg-white border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <button
+                          onClick={() => navigateMonth(-1)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <h3 className="text-lg font-semibold">
+                          {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </h3>
+                        <button
+                          onClick={() => navigateMonth(1)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      {/* Calendar Grid */}
+                      <div className="grid grid-cols-7 gap-1">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                          <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
+                            {day}
+                          </div>
+                        ))}
+                        
+                        {(() => {
+                          const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
+                          const days = [];
+                          
+                          // Empty cells before first day
+                          for (let i = 0; i < startingDayOfWeek; i++) {
+                            days.push(
+                              <div key={`empty-${i}`} className="aspect-square p-1"></div>
+                            );
+                          }
+                          
+                          // Days of month
+                          for (let day = 1; day <= daysInMonth; day++) {
+                            const date = new Date(year, month, day);
+                            const eventsForDay = getEventsForDate(date);
+                            const isToday = date.toDateString() === new Date().toDateString();
+                            const isSelected = date.toDateString() === selectedDate.toDateString();
+                            
+                            days.push(
+                              <button
+                                key={day}
+                                onClick={() => setSelectedDate(date)}
+                                className={`aspect-square p-1 text-sm rounded-lg transition-colors ${
+                                  isToday ? 'bg-blue-100 font-bold' : ''
+                                } ${
+                                  isSelected ? 'ring-2 ring-blue-500' : ''
+                                } ${
+                                  eventsForDay.length > 0 ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
+                                }`}
+                              >
+                                <div className="flex flex-col items-center justify-center h-full">
+                                  <span className={eventsForDay.length > 0 ? 'text-red-700 font-semibold' : ''}>{day}</span>
+                                  {eventsForDay.length > 0 && (
+                                    <div className="flex gap-0.5 mt-0.5">
+                                      {eventsForDay.slice(0, 3).map((_, i) => (
+                                        <div key={i} className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          }
+                          
+                          return days;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Selected Date Events */}
+                  <div className="bg-white border rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                      Events for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                    </h4>
+                    
+                    {(() => {
+                      const dayEvents = getEventsForDate(selectedDate);
+                      return dayEvents.length > 0 ? (
+                        <div className="space-y-2">
+                          {dayEvents.map((event, index) => (
+                            <div
+                              key={index}
+                              className={`p-3 rounded-lg border ${getEventColor(event.summary, event.source)}`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h5 className="font-medium text-sm">{event.summary || 'Untitled Event'}</h5>
+                                  <p className="text-xs mt-1 opacity-80">
+                                    {new Date(event.start.dateTime || event.start.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                    {event.end && ` - ${new Date(event.end.dateTime || event.end.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`}
+                                  </p>
+                                  {event.location && (
+                                    <p className="text-xs mt-1 opacity-70">📍 {event.location}</p>
+                                  )}
+                                  {event.description && (
+                                    <p className="text-xs mt-2 opacity-60">{event.description}</p>
+                                  )}
+                                </div>
+                                <div className="ml-3">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                    event.source === 'little_care' 
+                                      ? 'bg-green-200 text-green-900' 
+                                      : 'bg-white/50'
+                                  }`}>
+                                    {event.source === 'little_care' ? 'Little Care' : 'External'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">No events on this date</p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

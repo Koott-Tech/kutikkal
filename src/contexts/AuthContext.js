@@ -22,6 +22,37 @@ export function AuthProvider({ children }) {
     
     if (storedToken && storedUser) {
       try {
+        // Decode JWT to check expiration
+        const tokenParts = storedToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const expirationDate = new Date(payload.exp * 1000);
+          const now = new Date();
+          const daysUntilExpiry = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
+          
+          console.log('🔍 JWT Token Info:', {
+            expiresAt: expirationDate.toLocaleString(),
+            isExpired: now > expirationDate,
+            daysUntilExpiry: daysUntilExpiry,
+            configuredExpiry: '30 days (from .env)'
+          });
+          
+          // If token is expired, clear auth and redirect to login
+          if (now > expirationDate) {
+            console.log('⚠️ Token is expired, clearing auth data');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            setIsLoading(false);
+            return;
+          }
+        }
+        
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         

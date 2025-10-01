@@ -41,16 +41,17 @@ export default function BlogTeaser() {
       <div className="mx-auto max-w-[1100px] px-0 py-6 md:py-8 overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
-             <p className="text-lg md:text-base text-gray-700">From our blog</p>
-                          <h2 className="mt-3 text-[28px] sm:text-[36px] md:text-[42px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words">
+             <p className="text-lg md:text-base text-gray-700 leading-tight">From our blog</p>
+                          <h2 className="mt-3 text-[28px] sm:text-[36px] md:text-[42px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words leading-tight">
                Tips for getting started on your journey
              </h2>
            </div>
-          <div className="flex justify-center md:justify-end mt-6 md:mt-2">
+          <div className="flex justify-center md:justify-end mt-6 md:mt-9">
             <button
               type="button"
               onClick={handleExploreClick}
-              className="inline-flex items-center rounded-full bg-gray-900 px-5 py-3 text-base md:text-sm font-normal text-white hover:bg-black/90"
+              className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-normal text-white hover:opacity-90"
+              style={{ backgroundColor: '#3e2e73' }}
             >
               Explore more articles
             </button>

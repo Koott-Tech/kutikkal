@@ -109,18 +109,19 @@ export default function HowItWorks() {
         }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
-        <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-none mt-2">
+        <h2 className="text-center md:text-center text-[18px] font-medium tracking-tight text-gray-900 leading-tight mt-2">
           How it works
         </h2>
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center md:text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-none tracking-tight md:tracking-normal">
+          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight tracking-tight md:tracking-normal">
             Your journey to mental well-being gets easier<br />from here.
           </h3>
           <button
             type="button"
-            className="mt-5 inline-flex items-center rounded-full bg-black px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:bg-black/85 shadow-sm"
+            className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:opacity-90 shadow-sm"
+            style={{ backgroundColor: '#3e2e73' }}
           >
             Get started
           </button>
