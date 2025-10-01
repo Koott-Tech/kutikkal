@@ -228,8 +228,8 @@ export default function PsychologistSettings() {
       
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       const url = backendUrl.endsWith('/api') 
-        ? `${backendUrl}/availability/sync-google-calendar`
-        : `${backendUrl}/api/availability/sync-google-calendar`;
+        ? `${backendUrl}/availability-controller/sync-google-calendar`
+        : `${backendUrl}/api/availability-controller/sync-google-calendar`;
       
       // Set date range for sync (next 30 days)
       const startDate = new Date();
@@ -311,10 +311,18 @@ export default function PsychologistSettings() {
   };
   
   const getEventsForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const toYmdLocal = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    const dateStr = toYmdLocal(date);
     return calendarEvents.filter(event => {
-      const eventDate = (event.start.dateTime || event.start.date).split('T')[0];
-      return eventDate === dateStr;
+      const startStr = event.start?.dateTime || event.start?.date;
+      if (!startStr) return false;
+      const evDateStr = toYmdLocal(new Date(startStr));
+      return evDateStr === dateStr;
     });
   };
   

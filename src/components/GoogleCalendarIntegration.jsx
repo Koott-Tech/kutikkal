@@ -34,7 +34,7 @@ const GoogleCalendarIntegration = ({ psychologistId, onAvailabilityUpdate }) => 
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/availability/sync-google-calendar`, {
+      const response = await fetch(`/api/availability-controller/sync-google-calendar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
