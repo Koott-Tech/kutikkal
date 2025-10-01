@@ -139,7 +139,7 @@ export default function Footer() {
                             </div>
                         </div>
                         {/* Assessments */}
-                        <div className="space-y-5 ml-8">
+                        <div className="space-y-5 lg:ml-4 xl:ml-8">
                             <button
                                 onClick={() => toggleSection('assessments')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -218,7 +218,7 @@ export default function Footer() {
                             </div>
                         </div>
                         {/* About Us */}
-                        <div className="space-y-5 ml-16">
+                        <div className="space-y-5 lg:ml-8 xl:ml-16">
                             <button
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
@@ -262,8 +262,8 @@ export default function Footer() {
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     <div className="w-full h-px my-8 bg-white/40"></div>
                     <div className="mt-0 text-white">
-                        <h3 className="text-2xl md:text-3xl font-medium mb-6 text-left md:text-left">Here to help</h3>
-                        <div className="space-y-4 text-left md:text-left">
+                        <h3 className="text-2xl md:text-3xl font-medium mb-6 text-center md:text-left">Here to help</h3>
+                        <div className="space-y-4 text-center md:text-left">
                             <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Emergency</div>
                             <p className="text-base md:text-lg text-white/90 leading-[1]">
                                 The <span className="font-bold">9152987821</span> Suicide and Crisis Lifeline provides <span className="font-bold">24/7</span>, confidential support with trained crisis counselors.

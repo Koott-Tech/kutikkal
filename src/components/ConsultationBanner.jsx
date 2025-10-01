@@ -41,7 +41,7 @@ export default function ConsultationBanner() {
                 margin-bottom: 4px !important;
               }
               .mobile-text p {
-                margin-bottom: 4px !important;
+                margin-bottom: 15px !important;
               }
               .main-container {
                 min-height: 320px !important;
@@ -80,7 +80,7 @@ export default function ConsultationBanner() {
                 Get a Free 20-minute Consultation
               </h2>
               
-              <p className="text-[10px] md:text-base text-gray-700 mb-6 md:mb-8 leading-tight text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <p className="text-[10px] md:text-base text-gray-700 mb-10 md:mb-8 leading-tight text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
               </p>
               

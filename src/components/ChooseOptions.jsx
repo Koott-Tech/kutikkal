@@ -45,6 +45,20 @@ export default function ChooseOptions() {
 
   return (
     <section className="w-full py-2 px-4 md:px-6 mt-20">
+      <style jsx>{`
+        @media (min-width: 768px) {
+          .card-container {
+            height: 600px !important;
+            min-height: 600px !important;
+            max-height: 600px !important;
+            align-self: stretch !important;
+          }
+          .cards-grid {
+            grid-template-rows: 600px !important;
+            align-items: stretch !important;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="text-center md:text-left mb-6 max-w-4xl mx-auto">
@@ -55,16 +69,19 @@ export default function ChooseOptions() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
+        <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto items-stretch">
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`relative bg-gradient-to-b ${card.gradient} rounded-[10px] overflow-hidden flex flex-col h-[600px]`}
+              className={`card-container relative bg-white rounded-[10px] overflow-hidden flex flex-col h-[600px] min-h-[600px] max-h-[600px] flex-shrink-0`}
+              style={{ height: '600px' }}
             >
-              {/* White gradient overlay from half to bottom */}
-              <div className="absolute top-1/2 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-0" />
+              {/* Colored background that matches image width */}
+              <div className={`absolute top-0 left-6 right-6 md:left-0 md:right-0 bottom-0 bg-gradient-to-b ${card.gradient} pointer-events-none z-0 rounded-[10px]`} />
+              {/* White gradient overlay from half to bottom - matches image width on mobile */}
+              <div className="absolute top-1/2 left-6 right-6 md:left-0 md:right-0 bottom-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-0 rounded-b-[10px]" />
               {/* Card Content */}
-              <div className="p-6 pb-0 mb-0 px-8 relative z-10">
+              <div className="p-6 pb-0 mb-0 px-14 md:px-8 relative z-10">
                 {/* Tags */}
                 <div className="flex gap-2 mb-4">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${card.tagColors.primary}`}>
@@ -87,7 +104,7 @@ export default function ChooseOptions() {
               </div>
 
               {/* Image Section */}
-              <div className="relative z-10 h-80 md:h-80 overflow-hidden mt-6 md:mt-4 w-full rounded-[10px]">
+              <div className="relative z-10 h-80 min-h-80 max-h-80 overflow-hidden mt-6 md:mt-4 w-auto mx-6 md:w-full md:mx-0 rounded-[10px]" style={{ height: '320px' }}>
                 <Image
                   src={card.image}
                   alt={card.title}
@@ -97,7 +114,7 @@ export default function ChooseOptions() {
                 />
                 
                 {/* Read More Button */}
-                <div className="absolute bottom-8 left-6">
+                <div className="absolute bottom-8 left-4 md:left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-base font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
                     <span className="px-3">Read more.</span>
                     <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#3e2e73] transition-colors duration-200">
