@@ -129,7 +129,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white pt-2 md:pt-32 mb-8 md:mb-32 testimonials-section">
+    <section className="w-full bg-white mt-48 testimonials-section">
       <style jsx>{`
         .testimonial-faq-bg {
           position: absolute;
@@ -155,18 +155,18 @@ export default function Testimonials() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-[1600px] px-0 md:px-1 py-4 md:py-8">
+      <div className="mx-auto max-w-[1600px] px-0 md:px-1">
         {/* Heading */}
-        <div className="text-center mb-4 md:mb-8 px-4">
-          <h2 className="text-2xl md:text-4xl font-medium text-gray-900 leading-tight tracking-tight">Testimonials</h2>
-          <p className="mt-2 text-sm md:text-base text-gray-600 leading-tight">What families are saying</p>
+        <div className="text-center px-4">
+          <p className="text-sm md:text-base text-gray-600 leading-tight">Testimonials</p>
+          <h2 className="mt-2 text-[32px] md:text-[48px] font-normal text-gray-900 leading-tight tracking-tight md:tracking-normal">What families are saying</h2>
         </div>
 
         {/* Desktop: 5-column layout with images */}
-        <div className="hidden lg:grid grid-cols-5 gap-1 px-2.5">
+        <div className="hidden lg:grid grid-cols-5 gap-2 px-2.5 mt-10 items-start">
           {/* First column split vertically into two equal halves with padding and gap */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-3">
-            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '312px'}}>
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
+            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/faq1.png')" }}
@@ -178,7 +178,7 @@ export default function Testimonials() {
                 <div className="mt-3 text-xs text-gray-600 font-medium">Arjun M., Parent of a 7-year-old</div>
               </div>
             </div>
-            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '312px'}}>
+            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/6.png')" }}
@@ -198,8 +198,8 @@ export default function Testimonials() {
             </div>
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-3">
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '231px', marginBottom: '0'}}>
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '236px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/7.png')" }}
@@ -211,7 +211,7 @@ export default function Testimonials() {
                 <div className="mt-2 text-[11px] text-gray-600 font-medium">8-year-old</div>
               </div>
             </div>
-            <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '391px', marginTop: '0'}}>
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
               <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
               <button aria-label="Play video" className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                 <span className="h-12 w-12 md:h-14 md:w-14 grid place-items-center rounded-full bg-white/90 shadow-md">
@@ -222,21 +222,21 @@ export default function Testimonials() {
           </div>
 
           {/* Fourth column: split 30% top (image), 70% bottom (image) */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 px-1 gap-3">
-            <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '184px'}}>
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
               <Image src="/testimonial1.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
-            <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '444px'}}>
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
               <Image src="/testimonial3.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 px-1 gap-3">
-            <div className="rounded-[10px] relative overflow-hidden mb-0" style={{height: '314px'}}>
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '316px'}}>
               <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '314px'}}>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/8.png')" }}
@@ -253,7 +253,7 @@ export default function Testimonials() {
 
 
         {/* Mobile: Horizontal photo carousel */}
-        <div className="block lg:hidden w-full max-w-sm mx-auto">
+        <div className="block lg:hidden w-full max-w-sm mx-auto mt-8">
           {/* Scrollable Carousel Container */}
           <div 
             ref={scrollContainerRef}
@@ -261,7 +261,7 @@ export default function Testimonials() {
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
+            className="relative overflow-x-auto overflow-y-hidden rounded-[10px] carousel-scroll snap-x snap-mandatory"
             style={{ scrollSnapType: 'x mandatory' }}
           >
             <div className="flex gap-4 pb-4">

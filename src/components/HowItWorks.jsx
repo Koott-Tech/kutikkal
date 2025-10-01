@@ -88,7 +88,7 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="w-full mobile-section mb-12 md:mb-16">
+    <section id="how-it-works" className="w-full mobile-section mt-20">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {

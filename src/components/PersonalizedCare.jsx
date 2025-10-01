@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function PersonalizedCare() {
   return (
-    <section className="w-full flex items-center mt-10">
+    <section className="w-full flex items-center mt-20">
       <div className="w-full px-3 sm:px-6 md:px-0 py-4">
         {/* Header Section */}
         <div className="text-center mb-0">

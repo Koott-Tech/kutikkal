@@ -44,7 +44,7 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center mt-6 mb-4 md:mb-16 our-promise-section" style={{ height: 'auto' }}>
+    <section className="w-full flex items-center mt-32 our-promise-section" style={{ height: 'auto' }}>
       <style jsx>{`
         .faq-background {
           height: 100% !important;
@@ -70,8 +70,8 @@ export default function SupportFaq() {
         .our-promise-section {
           min-height: auto !important;
           height: auto !important;
-          padding-top: 72px !important;
-          padding-bottom: 72px !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
           position: relative;
           z-index: 0;
           isolation: isolate;
@@ -80,14 +80,14 @@ export default function SupportFaq() {
           .our-promise-section {
             min-height: clamp(520px, 60vh, 820px) !important;
             height: clamp(520px, 60vh, 820px) !important;
-            padding-top: 80px !important;
-            padding-bottom: 80px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
           }
         }
       `}</style>
-      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px] py-4 md:py-8">
-        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 mb-2 leading-tight">Our promise</p>
-        <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-normal tracking-tight md:tracking-normal leading-tight text-gray-900 mt-2 mb-10 md:mb-12">
+      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
+        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight">Our promise</p>
+        <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-normal tracking-tight md:tracking-normal leading-tight text-gray-900 mt-2">
           Support at every step, so the next one is easier.
         </h2>
 

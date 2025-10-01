@@ -37,7 +37,7 @@ export default function Footer() {
                 
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     {/* Main footer content - header-like FAQ dropdowns */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 xl:gap-16">
                         {/* Counselling (mirrors header nested submenu) */}
                         <div className="space-y-5">
                             <button

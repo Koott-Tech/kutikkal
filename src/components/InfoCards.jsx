@@ -56,7 +56,7 @@ export default function InfoCards() {
   };
 
   return (
-    <section className="mt-10 mobile-section">
+    <section className="mt-20 mobile-section">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
