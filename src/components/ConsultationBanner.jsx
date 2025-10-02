@@ -76,7 +76,7 @@ export default function ConsultationBanner() {
           <div className="grid grid-cols-5 md:grid-cols-2 items-center min-h-[320px] md:min-h-[240px] gap-0 lg:gap-0 mobile-container rounded-[10px] overflow-hidden relative z-10">
             {/* Left: Text and Button */}
             <div className="p-2 md:p-6 pl-5 md:pl-14 lg:pl-6 ml-0 md:ml-6 lg:ml-8 col-span-3 md:col-span-1 flex flex-col justify-center mobile-text max-w-[360px] md:max-w-[560px]">
-              <h4 className="text-left font-medium max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <h4 className="text-left font-semibold max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Get a Free 20-minute Consultation
               </h4>
               
@@ -96,7 +96,7 @@ export default function ConsultationBanner() {
 
             {/* Right: Image */}
             <div className="relative h-full col-span-2 md:col-span-1 flex justify-end items-center md:items-center pr-0 pb-0 pt-0">
-              <div className="absolute right-6 md:right-0 w-20 h-20 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-[10px] overflow-hidden mb-0" style={{ top: '50%', transform: 'translateY(-50%)', bottom: 'auto' }}>
+              <div className="absolute right-6 md:right-8 w-20 h-20 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-[10px] overflow-hidden mb-0" style={{ top: '50%', transform: 'translateY(-50%)', bottom: 'auto' }}>
                 <img
                   src="/consultation.png"
                   alt="Consultation"
