@@ -109,9 +109,9 @@ export default function HowItWorks() {
         }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
-        <h3 className="text-center md:text-center text-[18px] mt-2" style={{ fontWeight: 500 }}>
+        <p1 className="text-center md:text-center mt-2">
           How it works
-        </h3>
+        </p1>
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center md:text-center">
@@ -154,11 +154,11 @@ export default function HowItWorks() {
               }}
             >
               {/* Header Section */}
-              <div className="flex-shrink-0">
-                        <div className="text-2xl font-medium text-gray-900 text-center">{card.number}</div>
-                        <h5 className="text-center">
+                      <div className="flex-shrink-0">
+                        <div className="text-2xl font-medium text-gray-900 text-center mb-4">{card.number}</div>
+                        <h6 className="text-center font-semibold">
                           {card.title}
-                        </h5>
+                        </h6>
                       </div>
 
                       {/* Content Section */}
@@ -206,9 +206,9 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-1 pt-2 text-sm leading-relaxed text-gray-700 text-center px-6">
+                        <p1 className="mt-1 pt-2 text-center px-6">
                           {card.description}
-                        </p>
+                        </p1>
                       </div>
                     </div>
                   </div>
@@ -266,10 +266,10 @@ export default function HowItWorks() {
                 backgroundImage: "url('/1.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">01</div>
-            <h5 className="text-center">
-              Explore Your Matches
-            </h5>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">01</div>
+            <h6 className="text-center font-semibold">
+              Tell Us What's Important
+            </h6>
 
             <div className="mt-4 flex-1 flex flex-col gap-3 items-center justify-center">
               {[
@@ -287,9 +287,9 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
-              Browse profiles of ADHD specialists who fit your child's needs.
-            </p>
+            <p1 className="mt-auto mb-2.5 text-center">
+              Browse ADHD specialist profiles for your child.
+            </p1>
           </div>
 
             {/* Card 02 - Desktop */}
@@ -299,10 +299,10 @@ export default function HowItWorks() {
                 backgroundImage: "url('/2.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">02</div>
-            <h5 className="text-center">
-              Explore your matches
-            </h5>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">02</div>
+            <h6 className="text-center font-semibold">
+              Explore Your Matches
+            </h6>
 
             <div className="flex-1"></div>
 
@@ -312,10 +312,10 @@ export default function HowItWorks() {
               <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
             </div>
 
-            <p className="mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
+            <p1 className="mb-2.5 text-center">
               Browse licensed providers who match
               your preferences.
-            </p>
+            </p1>
           </div>
 
             {/* Card 03 - Desktop */}
@@ -325,10 +325,10 @@ export default function HowItWorks() {
                 backgroundImage: "url('/3.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">03</div>
-            <h5 className="text-center">
-              Schedule your visit
-            </h5>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">03</div>
+            <h6 className="text-center font-semibold">
+              Schedule Your Visit
+            </h6>
 
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className="mt-6 flex justify-center">
@@ -351,10 +351,10 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
+            <p1 className="mt-auto mb-2.5 text-center">
               Choose your time and meet with provider as soon as
               tomorrow.
-            </p>
+            </p1>
           </div>
 
             {/* Card 04 - Desktop */}
@@ -364,15 +364,15 @@ export default function HowItWorks() {
                 backgroundImage: "url('/4.png')",
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">04</div>
-            <h5 className="text-center">
-              Join your online session
-            </h5>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">04</div>
+            <h6 className="text-center font-semibold">
+              Join Online Session
+            </h6>
 
 
-            <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">
+            <p1 className="mt-auto mb-2.5 text-center">
               Connect with your provider over live video from wherever you are.
-            </p>
+            </p1>
             </div>
           </div>
         </div>

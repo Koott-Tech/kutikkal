@@ -51,9 +51,9 @@ export default function Hero() {
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#593494', fontWeight: 600}}>
                 Your Partner in Child Counselling & Parent Support
               </h1>
-              <p className="mt-10 text-lg font-normal opacity-95 leading-relaxed break-words" style={{ color: '#15171a' }}>
+              <p1 className="mt-10">
                 Expert Child Counselling & Parent Support to help your whole family grow.
-              </p>
+              </p1>
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}

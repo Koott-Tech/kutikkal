@@ -18,9 +18,9 @@ export default function Footer() {
                 background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
             }}>
                 <div className="text-center max-w-4xl mx-auto">
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl mb-4 leading-tight" style={{ fontWeight: 500 }}>
+                    <h4 className="mb-4 font-semibold">
                         Ready to start your journey to mental well-being?
-                    </h3>
+                    </h4>
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
@@ -49,7 +49,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block font-bold text-white">Counselling</h3>
+                            <h4 className="hidden md:block text-white font-semibold mb-8">Counselling</h4>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1">
@@ -149,7 +149,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block font-bold text-white">Assessments</h3>
+                            <h4 className="hidden md:block text-white font-semibold mb-8">Assessments</h4>
                             <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: ADHD Assessments */}
                                 <div className="space-y-1">
@@ -228,7 +228,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block font-bold text-white">About Us</h3>
+                            <h4 className="hidden md:block text-white font-semibold mb-8">About Us</h4>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Our story</a></li>
                                 <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
@@ -247,7 +247,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block font-bold text-white">Resources</h3>
+                            <h4 className="hidden md:block text-white font-semibold mb-8">Resources</h4>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
                                 <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
@@ -262,19 +262,19 @@ export default function Footer() {
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     <div className="w-full h-px my-8 bg-white/40"></div>
                     <div className="mt-0 text-white">
-                        <h3 className="font-medium mb-6 text-center md:text-left">Here to help</h3>
+                        <h4 className="mb-6 text-center md:text-left font-semibold">Here to help</h4>
                         <div className="space-y-4 text-center md:text-left">
                             <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Emergency</div>
-                            <p className="text-base md:text-lg text-white/90 leading-[1]">
-                                The <span className="font-bold">9152987821</span> Suicide and Crisis Lifeline provides <span className="font-bold">24/7</span>, confidential support with trained crisis counselors.
-                            </p>
-                            <p className="text-base md:text-lg text-white/90 leading-[1]">
-                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text <span className="font-bold">9152987821</span>.
-                            </p>
+                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
+                                The <span className="number-bold">9152987821</span> Suicide and Crisis Lifeline provides <span className="number-bold">24/7</span>, confidential support with trained crisis counselors.
+                            </div>
+                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
+                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text <span className="number-bold">9152987821</span>.
+                            </div>
                         </div>
                         <div className="w-full h-px my-8 bg-white/40"></div>
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
-                            <div className="text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</div>
+                            <p2 className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p2>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="#" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
                                 <a href="#" className="hover:text-white transition-colors">PRIVACY POLICY</a>

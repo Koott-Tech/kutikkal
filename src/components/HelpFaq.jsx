@@ -47,20 +47,22 @@ export default function HelpFaq() {
     <section className="w-full mt-20 px-4 lg:px-6">
       <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-8 px-0 py-4 md:py-6 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
-        <div className="flex flex-col ml-4 md:ml-0">
-          <div>
-            <h3 className="font-medium text-gray-900 text-center md:text-left">
+        <div className="flex flex-col ml-4 md:ml-0 space-y-4">
+          <div className="space-y-1">
+            <h3 className="font-semibold text-gray-900 text-center md:text-left">
               Questions?
             </h3>
-            <h3 className="font-medium text-gray-900 text-center md:text-left">
+            <h4 className="text-gray-900 text-center md:text-left">
               We're here to help
-            </h3>
-            <p className="mt-5 text-base md:text-lg text-gray-700 text-center md:text-left leading-[1.3]">
+            </h4>
+          </div>
+          <div>
+            <p1 className="text-base md:text-lg text-center md:text-left">
               Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br />
               commonly asked questions.
-            </p>
+            </p1>
           </div>
-                     <div className="relative mt-10 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
+                     <div className="relative mt-6 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
             <Image
               src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
               alt="Smiling people"
@@ -100,9 +102,9 @@ export default function HelpFaq() {
                         }`}
                       >
                         <div className="px-3 pb-4 md:px-0">
-                          <p className="text-sm text-gray-700 leading-relaxed">
+                          <p1 className="text-sm">
                             {item.a}
-                          </p>
+                          </p1>
                         </div>
                       </div>
                     </div>

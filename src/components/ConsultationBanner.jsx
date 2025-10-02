@@ -76,13 +76,13 @@ export default function ConsultationBanner() {
           <div className="grid grid-cols-5 md:grid-cols-2 items-center min-h-[320px] md:min-h-[240px] gap-0 lg:gap-0 mobile-container rounded-[10px] overflow-hidden relative z-10">
             {/* Left: Text and Button */}
             <div className="p-2 md:p-6 pl-5 md:pl-14 lg:pl-6 ml-0 md:ml-6 lg:ml-8 col-span-3 md:col-span-1 flex flex-col justify-center mobile-text max-w-[360px] md:max-w-[560px]">
-              <h4 className="text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <h4 className="text-left font-medium max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Get a Free 20-minute Consultation
               </h4>
               
-              <p className="text-[10px] md:text-base text-gray-700 mb-10 md:mb-8 leading-tight text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <p1 className="text-[10px] md:text-base mb-10 md:mb-8 text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
-              </p>
+              </p1>
               
               <button className="bg-green-200 hover:bg-green-300 text-gray-900 px-1 py-0.5 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-[10px] md:text-sm font-medium transition-all duration-200 flex items-center gap-0.5 md:gap-2 w-fit">
                 <span>Book a Google Meet now.</span>

@@ -41,7 +41,7 @@ export default function BlogTeaser() {
       <div className="mx-auto max-w-[1100px] px-0 py-6 md:py-8 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
-             <p className="text-lg md:text-base text-gray-700 leading-tight">From our blog</p>
+             <p1 className="text-lg md:text-base">From our blog</p1>
                  <h3 className="mt-3 break-words">
                Tips for getting started on your journey
              </h3>
@@ -74,14 +74,14 @@ export default function BlogTeaser() {
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 260px"
                 />
               </div>
-              <div className="mt-5 md:mt-3 text-sm md:text-xs text-gray-600 leading-relaxed">
-                <span>{post.author}</span>
-                <span className="px-2">•</span>
-                <span>{post.date}</span>
+              <div className="mt-6 md:mt-4 text-gray-600">
+                <span className="p2">{post.author}</span>
+                <span className="px-2 p2">•</span>
+                <span className="p2">{post.date}</span>
               </div>
-              <h6 className="mt-3 md:mt-2">
+              <h7 className="mt-3 md:mt-2 font-medium">
                 {post.title}
-              </h6>
+              </h7>
             </article>
           ))}
         </div>

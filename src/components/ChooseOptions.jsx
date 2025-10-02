@@ -62,7 +62,7 @@ export default function ChooseOptions() {
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
         <div className="text-center md:text-left mb-6 max-w-4xl mx-auto">
-          <p className="text-lg text-gray-600 mb-2 leading-tight">Let us guide you.</p>
+          <p1 className="text-lg mb-2">Let us guide you.</p1>
           <h3 style={{ fontWeight: 500 }}>
             Choose your options to get started
           </h3>
@@ -98,9 +98,9 @@ export default function ChooseOptions() {
                 </h5>
 
                 {/* Description */}
-                <p className="text-sm text-gray-600 leading-tight mb-0">
+                <p1 className="text-sm mb-0">
                   {card.description}
-                </p>
+                </p1>
               </div>
 
               {/* Image Section */}

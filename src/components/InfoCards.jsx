@@ -77,23 +77,23 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h7 className="text-left">
+              <h7 className="text-left font-medium">
                 {item.title}
               </h7>
             </div>
             
             {/* Description */}
-            <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+            <p1 className="mt-4 text-sm">
               {item.description}
-            </p>
+            </p1>
 
             {/* Call to Action */}
             <div className="mt-auto pt-6">
               <a
                 href="#"
-                className="flex items-center justify-between text-base font-bold text-gray-900 hover:text-gray-700 group"
+                className="flex font-regular items-center justify-between text-base  text-gray-900 hover:text-gray-700 group"
               >
-                <span>{item.cta}</span>
+                <h7>{item.cta}</h7>
                 <span className="text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
               </a>
             </div>

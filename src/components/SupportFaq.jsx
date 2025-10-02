@@ -152,7 +152,7 @@ export default function SupportFaq() {
                         aria-expanded={open}
                       >
                       <div>
-                        <h5>{item.title}</h5>
+                        <h6 style={{ fontWeight: 500 }}>{item.title}</h6>
                       </div>
                         <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
@@ -205,7 +205,7 @@ export default function SupportFaq() {
                       aria-expanded={open}
                     >
                       <div>
-                        <h5>{item.title}</h5>
+                        <h6 style={{ fontWeight: 500 }}>{item.title}</h6>
                       </div>
                       <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                     </button>

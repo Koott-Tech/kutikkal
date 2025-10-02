@@ -58,21 +58,18 @@ h4 {
   font-size: 40px !important;
   line-height: 2.5rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: regular !important;
 }
 
 h5 {
   font-size: 32px !important;
   line-height: 2rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: regular !important;
 }
 
 h6 {
   font-size: 24px !important;
   line-height: 1.5rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: regular !important;
 }
 
 h7 {
@@ -83,9 +80,28 @@ h7 {
 }
 
 /* Paragraphs use Work Sans */
-body p {
+body p1 {
   font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.5rem !important;
+  letter-spacing: -0.80px !important;
+  
 }
+
+/* Paragraph size classes - like headings but for paragraphs */
+.p2 {
+  font-family: 'Work Sans' !important;
+  font-size: 16px !important;
+  line-height: 1rem !important;
+  letter-spacing: -0.80px !important;
+  font-weight: 300 !important;
+}
+
+/* Number bold styling */
+.number-bold {
+  font-weight: 500 !important;
+}
+
 
 /* Specific override for Hero h1 - uses DM Sans */
 .hero-title {
