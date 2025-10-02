@@ -76,9 +76,9 @@ export default function ConsultationBanner() {
           <div className="grid grid-cols-5 md:grid-cols-2 items-center min-h-[320px] md:min-h-[240px] gap-0 lg:gap-0 mobile-container rounded-[10px] overflow-hidden relative z-10">
             {/* Left: Text and Button */}
             <div className="p-2 md:p-6 pl-5 md:pl-14 lg:pl-6 ml-0 md:ml-6 lg:ml-8 col-span-3 md:col-span-1 flex flex-col justify-center mobile-text max-w-[360px] md:max-w-[560px]">
-              <h2 className="text-sm md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 leading-none text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <h4 className="text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Get a Free 20-minute Consultation
-              </h2>
+              </h4>
               
               <p className="text-[10px] md:text-base text-gray-700 mb-10 md:mb-8 leading-tight text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.

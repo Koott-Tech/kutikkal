@@ -87,7 +87,7 @@ export default function SupportFaq() {
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight">Our promise</p>
-        <h2 className="text-center md:text-center text-[32px] md:text-[48px] font-normal tracking-tight md:tracking-normal leading-tight text-gray-900 mt-2">
+        <h2 className="text-center md:text-center font-normal text-gray-900 mt-2">
           Support at every step, so the next one is easier.
         </h2>
 
@@ -151,9 +151,9 @@ export default function SupportFaq() {
                         className="flex w-full items-start justify-between gap-4 text-left cursor-pointer"
                         aria-expanded={open}
                       >
-                        <div>
-                          <h3 className="text-lg md:text-xl font-normal text-gray-900">{item.title}</h3>
-                        </div>
+                      <div>
+                        <h5>{item.title}</h5>
+                      </div>
                         <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
 
@@ -205,7 +205,7 @@ export default function SupportFaq() {
                       aria-expanded={open}
                     >
                       <div>
-                        <h3 className="text-lg font-normal text-gray-900">{item.title}</h3>
+                        <h5>{item.title}</h5>
                       </div>
                       <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                     </button>

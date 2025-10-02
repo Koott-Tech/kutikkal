@@ -57,15 +57,15 @@ export default function BlogPost({ slug }) {
       <article className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
             <p className="text-gray-600 mb-6">
               {error ? `Error: ${error}` : "The article you're looking for doesn't exist."}
             </p>
-            <Link href="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">
-              ← Back to Blog
-            </Link>
-          </div>
+          <Link href="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">
+            ← Back to Blog
+          </Link>
         </div>
+      </div>
       </article>
     );
   }
@@ -109,7 +109,7 @@ export default function BlogPost({ slug }) {
               {blogPost.view_count || 0} views
             </span>
           </div>
-
+          
           {/* Tags */}
           {blogPost.tags && blogPost.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
@@ -121,7 +121,7 @@ export default function BlogPost({ slug }) {
                   {tag}
                 </span>
               ))}
-            </div>
+          </div>
           )}
         </header>
 
@@ -131,11 +131,11 @@ export default function BlogPost({ slug }) {
             <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
               <img
                 src={blogPost.featured_image_url}
-                alt={blogPost.title}
+            alt={blogPost.title}
                 className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
+          />
+        </div>
+        </div>
         )}
 
         {/* Excerpt */}
@@ -152,8 +152,8 @@ export default function BlogPost({ slug }) {
           <div 
             className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700"
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
-          />
-        </div>
+                        />
+                      </div>
 
         {/* Author Bio */}
         <div className="mt-12 pt-8 border-t border-gray-200">

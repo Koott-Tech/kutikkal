@@ -29,8 +29,51 @@ body {
 /* Headings use DM Sans from Google Fonts */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-  letter-spacing: 0.010em !important;
-  font-weight: 600 !important;
+}
+
+/* Universal H1 styling per request */
+h1 {
+  font-size: 64px !important;
+  line-height: 4rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: bold !important;
+}
+
+/* Universal H2 styling per request */
+h2 {
+  font-size: 56px !important;
+  line-height: 3.5rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: semibold !important;
+}
+
+h3 {
+  font-size: 48px !important;
+  line-height: 3rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: medium !important;
+}
+
+
+h4 {
+  font-size: 40px !important;
+  line-height: 2.5rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: regular !important;
+}
+
+h5 {
+  font-size: 32px !important;
+  line-height: 2rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: regular !important;
+}
+
+h6 {
+  font-size: 24px !important;
+  line-height: 1.5rem !important;
+  letter-spacing: -0.65px !important;
+  font-weight: regular !important;
 }
 
 /* Paragraphs use Work Sans */
@@ -41,8 +84,6 @@ body p {
 /* Specific override for Hero h1 - uses DM Sans */
 .hero-title {
   font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.010em !important;
 }
 
 /* Ensure anchors use body font and standard features */

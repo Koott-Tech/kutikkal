@@ -49,7 +49,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Counselling</h3>
+                            <h3 className="hidden md:block font-bold text-white">Counselling</h3>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1">
@@ -149,7 +149,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Assessments</h3>
+                            <h3 className="hidden md:block font-bold text-white">Assessments</h3>
                             <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: ADHD Assessments */}
                                 <div className="space-y-1">
@@ -228,7 +228,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">About Us</h3>
+                            <h3 className="hidden md:block font-bold text-white">About Us</h3>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Our story</a></li>
                                 <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
@@ -247,7 +247,7 @@ export default function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h3 className="hidden md:block text-3xl font-bold leading-relaxed tracking-wide text-white">Resources</h3>
+                            <h3 className="hidden md:block font-bold text-white">Resources</h3>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
                                 <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
@@ -262,7 +262,7 @@ export default function Footer() {
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     <div className="w-full h-px my-8 bg-white/40"></div>
                     <div className="mt-0 text-white">
-                        <h3 className="text-2xl md:text-3xl font-medium mb-6 text-center md:text-left">Here to help</h3>
+                        <h3 className="font-medium mb-6 text-center md:text-left">Here to help</h3>
                         <div className="space-y-4 text-center md:text-left">
                             <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Emergency</div>
                             <p className="text-base md:text-lg text-white/90 leading-[1]">

@@ -42,7 +42,7 @@ export default function ResourcesTeaser() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-base text-gray-700 leading-tight">Therapy resources</p>
-            <h2 className="mt-3 text-[32px] md:text-[48px] font-medium tracking-tight text-gray-900 leading-tight">
+            <h2 className="mt-3 font-medium text-gray-900">
               Tools and guides for your mental health journey
             </h2>
           </div>
@@ -76,7 +76,7 @@ export default function ResourcesTeaser() {
                 <span className="px-2">•</span>
                 <span>{resource.date}</span>
               </div>
-              <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 leading-tight">
+              <h3 className="mt-3 font-medium text-gray-900">
                 {resource.title}
               </h3>
             </article>

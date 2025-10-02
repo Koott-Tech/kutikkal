@@ -115,9 +115,9 @@ export default function HowItWorks() {
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center md:text-center">
-          <h3 className="text-4xl md:text-5xl font-medium text-gray-900 leading-tight tracking-tight md:tracking-normal">
+          <h2 className="text-center">
             Your journey to mental well-being gets easier<br />from here.
-          </h3>
+          </h2>
           <button
             type="button"
             className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:opacity-90 shadow-sm"
@@ -156,9 +156,9 @@ export default function HowItWorks() {
               {/* Header Section */}
               <div className="flex-shrink-0">
                         <div className="text-2xl font-medium text-gray-900 text-center">{card.number}</div>
-                        <h3 className="mt-0 text-base font-medium text-gray-900 text-center">
+                        <h5 className="text-center">
                           {card.title}
-                        </h3>
+                        </h5>
                       </div>
 
                       {/* Content Section */}
@@ -267,9 +267,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">01</div>
-            <h3 className="mt-3 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
+            <h5 className="text-center">
               Explore Your Matches
-            </h3>
+            </h5>
 
             <div className="mt-4 flex-1 flex flex-col gap-3 items-center justify-center">
               {[
@@ -300,9 +300,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">02</div>
-            <h3 className="mt-2 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
+            <h5 className="text-center">
               Explore your matches
-            </h3>
+            </h5>
 
             <div className="flex-1"></div>
 
@@ -326,9 +326,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">03</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
+            <h5 className="text-center">
               Schedule your visit
-            </h3>
+            </h5>
 
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className="mt-6 flex justify-center">
@@ -365,9 +365,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center">04</div>
-            <h3 className="mt-4 text-lg md:text-xl font-medium text-gray-900 text-center whitespace-nowrap truncate leading-none">
+            <h5 className="text-center">
               Join your online session
-            </h3>
+            </h5>
 
 
             <p className="mt-auto mb-2.5 text-sm leading-relaxed text-gray-700 text-center">

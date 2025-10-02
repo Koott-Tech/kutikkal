@@ -39,12 +39,12 @@ export default function BlogTeaser() {
   return (
     <section className="w-full mt-20 px-4 lg:px-6">
       <div className="mx-auto max-w-[1100px] px-0 py-6 md:py-8 overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
              <p className="text-lg md:text-base text-gray-700 leading-tight">From our blog</p>
-                          <h2 className="mt-3 text-[28px] sm:text-[36px] md:text-[42px] font-medium tracking-tight md:tracking-normal text-gray-900 break-words leading-tight">
+                 <h3 className="mt-3 break-words">
                Tips for getting started on your journey
-             </h2>
+             </h3>
            </div>
           <div className="flex justify-center md:justify-end mt-6 md:mt-9">
             <button
@@ -79,9 +79,9 @@ export default function BlogTeaser() {
                 <span className="px-2">•</span>
                 <span>{post.date}</span>
               </div>
-              <h3 className="mt-3 md:mt-2 text-lg md:text-base font-medium text-gray-900 leading-tight">
+              <h6 className="mt-3 md:mt-2">
                 {post.title}
-              </h3>
+              </h6>
             </article>
           ))}
         </div>
