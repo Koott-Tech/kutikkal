@@ -121,7 +121,7 @@ export default function HowItWorks() {
           <button
             type="button"
             className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:opacity-90 shadow-sm"
-            style={{ backgroundColor: '#3e2e73' }}
+            style={{ backgroundColor: '#593494' }}
           >
             Get started
           </button>

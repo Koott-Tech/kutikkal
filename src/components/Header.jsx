@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
@@ -28,8 +29,11 @@ export default function Header() {
         setClickedSubmenu(null);
       }
       
-      // Close main dropdowns
-      if (!event.target.closest('.header-dropdown') && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+      // Close main dropdowns - exclude navigation buttons
+      if (!event.target.closest('.header-dropdown') && 
+          !event.target.closest('.counselling-dropdown') && 
+          !event.target.closest('.assessments-dropdown') &&
+          !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
@@ -43,8 +47,11 @@ export default function Header() {
         setClickedSubmenu(null);
       }
       
-      // Close main dropdowns
-      if (!event.target.closest('.header-dropdown') && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+      // Close main dropdowns - exclude navigation buttons
+      if (!event.target.closest('.header-dropdown') && 
+          !event.target.closest('.counselling-dropdown') && 
+          !event.target.closest('.assessments-dropdown') &&
+          !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
@@ -189,9 +196,15 @@ export default function Header() {
             <div className="flex items-center">
               <button 
                 onClick={handleHomeClick}
-                className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-gray-900 hover:text-gray-700 transition-colors cursor-pointer"
+                className="cursor-pointer"
               >
-                Little Care
+                <Image 
+                  src="/Logo.webp" 
+                  alt="Little Care Logo" 
+                  width={120} 
+                  height={40} 
+                  className="hover:opacity-80 transition-opacity"
+                />
               </button>
             </div>
 
@@ -207,7 +220,7 @@ export default function Header() {
                       setIsResourcesOpen(false);
                     }}
                   >
-                  <span>Counselling</span>
+                  <span className="header-nav-item">Counselling</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
@@ -491,7 +504,7 @@ export default function Header() {
                       setIsResourcesOpen(false);
                     }}
                   >
-                  <span>Assessments</span>
+                  <span className="header-nav-item">Assessments</span>
                     <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
@@ -722,7 +735,7 @@ export default function Header() {
                       setIsResourcesOpen(false);
                     }}
                   >
-                    <span>About Us</span>
+                    <span className="header-nav-item">About Us</span>
                     <ChevronUpIcon className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
@@ -763,7 +776,7 @@ export default function Header() {
                       setIsAboutOpen(false);
                     }}
                   >
-                    <span>Resources</span>
+                    <span className="header-nav-item">Resources</span>
                     <ChevronUpIcon className={`transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
@@ -851,7 +864,7 @@ export default function Header() {
                 </span>
               </button>
             )}
-            <button className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm hover:opacity-90" style={{ backgroundColor: '#3e2e73' }}>
+            <button className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
               Get started
             </button>
             </div>
@@ -880,11 +893,14 @@ export default function Header() {
           <div className="md:hidden fixed inset-0 bg-white z-50 flex flex-col">
             {/* Header with Logo and Close Button */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <span className="text-indigo-700 font-semibold text-sm">L</span>
-                </div>
-                <span className="text-xl font-semibold text-gray-900">Little Care</span>
+              <div className="flex items-center">
+                <Image 
+                  src="/Logo.webp" 
+                  alt="Little Care Logo" 
+                  width={100} 
+                  height={35} 
+                  className="hover:opacity-80 transition-opacity"
+                />
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -966,7 +982,7 @@ export default function Header() {
                       setIsMobileResourcesOpen(false);
                     }}
                   >
-                    <span className="text-lg font-medium text-gray-900">Counselling</span>
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">Counselling</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileFindCareOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1128,7 +1144,7 @@ export default function Header() {
                       setIsMobileResourcesOpen(false);
                     }}
                   >
-                    <span className="text-lg font-medium text-gray-900">Assessments</span>
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">Assessments</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileForProvidersOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1274,7 +1290,7 @@ export default function Header() {
                       setIsMobileResourcesOpen(false);
                     }}
                   >
-                    <span className="text-lg font-medium text-gray-900">About Us</span>
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">About Us</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileAboutOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1318,7 +1334,7 @@ export default function Header() {
                       setIsMobileAboutOpen(false);
                     }}
                   >
-                    <span className="text-lg font-medium text-gray-900">Resources</span>
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">Resources</span>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>

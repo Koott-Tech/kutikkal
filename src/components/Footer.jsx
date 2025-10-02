@@ -24,14 +24,14 @@ export default function Footer() {
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
-                    <button className="text-white px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#3e2e73' }}>
+                    <button className="text-white px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
                         Get started
                     </button>
                 </div>
             </div>
 
             {/* Original footer content */}
-            <div className="w-full py-16" style={{ backgroundColor: '#1D1733' }}>
+            <div className="w-full py-16" style={{ backgroundColor: '#1B102C' }}>
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3 bg-white"></div>
                 

@@ -43,7 +43,6 @@ h2 {
   font-size: 56px !important;
   line-height: 3.5rem !important;
   letter-spacing: -0.65px !important;
-  
 }
 
 h3 {
@@ -106,10 +105,26 @@ body p1 {
 /* Specific override for Hero h1 - uses DM Sans */
 .hero-title {
   font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
+  color: #23153B !important;
 }
+
 
 /* Ensure anchors use body font and standard features */
 a { font-family: inherit; font-feature-settings: 'kern' 1; font-variant-ligatures: normal; }
+
+/* Hero badge text override */
+.hero-badge-text {
+  font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.50px !important;
+}
+
+/* Header navigation menu items */
+.header-nav-item {
+  font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
+  letter-spacing: -0.40px !important;
+}
 
 /* Improve rendering of custom fonts */
 html, body {

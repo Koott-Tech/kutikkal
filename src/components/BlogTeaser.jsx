@@ -51,7 +51,7 @@ export default function BlogTeaser() {
               type="button"
               onClick={handleExploreClick}
               className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-normal text-white hover:opacity-90"
-              style={{ backgroundColor: '#3e2e73' }}
+              style={{ backgroundColor: '#593494' }}
             >
               Explore more articles
             </button>
