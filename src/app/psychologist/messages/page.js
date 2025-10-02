@@ -30,6 +30,12 @@ export default function PsychologistMessagesPage() {
   }, [user]);
 
   const loadConversations = async () => {
+    // Prevent reloading if conversations are already loaded
+    if (conversations.length > 0) {
+      console.log('Conversations already loaded, skipping reload');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -68,8 +74,16 @@ export default function PsychologistMessagesPage() {
 
   const handleConversationClick = (conversation) => {
     console.log('Psychologist clicked conversation:', conversation);
-    setSelectedConversation(conversation);
-    setShowMessages(true);
+    
+    // Only update if it's a different conversation
+    if (selectedConversation?.id !== conversation.id) {
+      setSelectedConversation(conversation);
+    }
+    
+    // Only show messages if not already showing
+    if (!showMessages) {
+      setShowMessages(true);
+    }
   };
 
   const formatDate = (timestamp) => {
@@ -206,7 +220,7 @@ export default function PsychologistMessagesPage() {
           onClose={() => {
             setShowMessages(false);
             setSelectedConversation(null);
-            loadConversations(); // Refresh conversations
+            // Don't refresh conversations on close to avoid unnecessary reloads
           }}
           session={selectedConversation} // Pass the conversation as session
         />

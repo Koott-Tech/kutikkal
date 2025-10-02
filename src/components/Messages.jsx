@@ -56,15 +56,17 @@ export default function Messages({ isOpen, onClose, session = null }) {
       console.log('Looking for conversation with ID:', session.conversationId);
       console.log('Available conversations:', conversations);
       const targetConversation = conversations.find(conv => conv.id === session.conversationId);
-      if (targetConversation) {
+      if (targetConversation && targetConversation.id !== selectedConversation?.id) {
         console.log('Found target conversation:', targetConversation);
         setSelectedConversation(targetConversation);
         // Show chat screen for session-specific conversations
         setShowChatScreen(true);
-      } else {
+      } else if (!targetConversation) {
         console.log('Target conversation not found, selecting first conversation');
         // If the specific conversation is not found, select the first one
-        setSelectedConversation(conversations[0]);
+        if (conversations[0] && conversations[0].id !== selectedConversation?.id) {
+          setSelectedConversation(conversations[0]);
+        }
         // Don't auto-show chat screen
       }
     } else if (conversations.length > 0 && !selectedConversation) {
@@ -73,7 +75,7 @@ export default function Messages({ isOpen, onClose, session = null }) {
       setSelectedConversation(conversations[0]);
       // Don't auto-show chat screen
     }
-  }, [session, conversations, selectedConversation]);
+  }, [session?.conversationId, conversations, selectedConversation?.id]);
 
   useEffect(() => {
     if (selectedConversation) {
@@ -90,6 +92,12 @@ export default function Messages({ isOpen, onClose, session = null }) {
   };
 
   const loadConversations = async () => {
+    // Prevent reloading if conversations are already loaded
+    if (conversations.length > 0) {
+      console.log('Conversations already loaded, skipping reload');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -208,6 +216,12 @@ export default function Messages({ isOpen, onClose, session = null }) {
   };
 
   const loadMessages = async (conversationId) => {
+    // Prevent loading messages for the same conversation
+    if (messages.length > 0 && messages[0]?.conversation_id === conversationId) {
+      console.log('Messages already loaded for conversation:', conversationId);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -235,8 +249,10 @@ export default function Messages({ isOpen, onClose, session = null }) {
       
       setMessages(validMessages);
       
-      // Mark messages as read
-      await messagesApi.markAsRead(conversationId);
+      // Mark messages as read (non-blocking)
+      messagesApi.markAsRead(conversationId).catch(err => 
+        console.error('Failed to mark messages as read:', err)
+      );
     } catch (err) {
       console.error('Error loading messages:', err);
       setError(err.message);

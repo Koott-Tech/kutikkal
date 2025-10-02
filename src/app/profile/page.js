@@ -332,7 +332,11 @@ export default function ProfilePage() {
           session.conversationId = conversationId;
           console.log('Session with conversation ID:', session);
           setSelectedSession(session);
-          setActiveTab("messages");
+          
+          // Only switch to messages tab if not already there
+          if (activeTab !== "messages") {
+            setActiveTab("messages");
+          }
         } else {
           console.error('Failed to create conversation: No conversation ID found', response);
           setError('Failed to create conversation. Please try again.');

@@ -20,6 +20,7 @@ export default function MessagesPage({ session = null }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showChatScreen, setShowChatScreen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -54,15 +55,17 @@ export default function MessagesPage({ session = null }) {
       console.log('Looking for conversation with ID:', session.conversationId);
       console.log('Available conversations:', conversations);
       const targetConversation = conversations.find(conv => conv.id === session.conversationId);
-      if (targetConversation) {
+      if (targetConversation && targetConversation.id !== selectedConversation?.id) {
         console.log('Found target conversation:', targetConversation);
         setSelectedConversation(targetConversation);
         // Show chat screen for session-specific conversations
         setShowChatScreen(true);
-      } else {
+      } else if (!targetConversation) {
         console.log('Target conversation not found, selecting first conversation');
         // If the specific conversation is not found, select the first one
-        setSelectedConversation(conversations[0]);
+        if (conversations[0] && conversations[0].id !== selectedConversation?.id) {
+          setSelectedConversation(conversations[0]);
+        }
         // Don't auto-show chat screen
       }
     } else if (conversations.length > 0 && !selectedConversation) {
@@ -71,7 +74,7 @@ export default function MessagesPage({ session = null }) {
       setSelectedConversation(conversations[0]);
       // Don't auto-show chat screen
     }
-  }, [session, conversations, selectedConversation]);
+  }, [session?.conversationId, conversations, selectedConversation?.id]);
 
   useEffect(() => {
     if (selectedConversation) {
@@ -94,6 +97,12 @@ export default function MessagesPage({ session = null }) {
   };
 
   const loadConversations = async () => {
+    // Prevent reloading if conversations are already loaded
+    if (conversations.length > 0) {
+      console.log('Conversations already loaded, skipping reload');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -212,6 +221,12 @@ export default function MessagesPage({ session = null }) {
   };
 
   const loadMessages = async (conversationId) => {
+    // Prevent loading messages for the same conversation
+    if (messages.length > 0 && messages[0]?.conversation_id === conversationId) {
+      console.log('Messages already loaded for conversation:', conversationId);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -239,8 +254,10 @@ export default function MessagesPage({ session = null }) {
       
       setMessages(validMessages);
       
-      // Mark messages as read
-      await messagesApi.markAsRead(conversationId);
+      // Mark messages as read (non-blocking)
+      messagesApi.markAsRead(conversationId).catch(err => 
+        console.error('Failed to mark messages as read:', err)
+      );
     } catch (err) {
       console.error('Error loading messages:', err);
       setError(err.message);
@@ -252,7 +269,7 @@ export default function MessagesPage({ session = null }) {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedConversation) return;
+    if (!newMessage.trim() || !selectedConversation || isSending) return;
 
     // Don't send messages to mock conversations
     if (selectedConversation.id.startsWith('mock-') || selectedConversation.id.startsWith('fallback-')) {
@@ -261,15 +278,46 @@ export default function MessagesPage({ session = null }) {
       return;
     }
 
+    const messageContent = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    
+    // Set sending state to prevent duplicate sends
+    setIsSending(true);
+    
+    // Create optimistic message for immediate UI update
+    const optimisticMessage = {
+      id: tempId,
+      content: messageContent,
+      sender_type: user?.role,
+      sender_id: user?.id,
+      created_at: new Date().toISOString(),
+      isOptimistic: true
+    };
+
+    // Clear input immediately for better UX
+    setNewMessage("");
+    
+    // Add optimistic message to UI immediately
+    setMessages(prev => [...prev, optimisticMessage]);
+    
+    // Update conversation in list immediately
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === selectedConversation.id 
+          ? { ...conv, last_message_at: new Date().toISOString() }
+          : conv
+      )
+    );
+
     try {
       const response = await messagesApi.sendMessage(selectedConversation.id, {
-        content: newMessage.trim(),
+        content: messageContent,
         messageType: 'text'
       });
 
       console.log('Send message response:', response);
 
-      // Add new message to the list - handle both response formats
+      // Extract real message data from response
       let newMessageData = null;
       if (response.success && response.message && response.message.message) {
         newMessageData = response.message.message;
@@ -280,25 +328,37 @@ export default function MessagesPage({ session = null }) {
       }
 
       if (newMessageData) {
-        console.log('Adding new message to UI:', newMessageData);
-        setMessages(prev => [...prev, newMessageData]);
-        setNewMessage("");
+        // Replace optimistic message with real message
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === tempId 
+              ? { ...newMessageData, isOptimistic: false }
+              : msg
+          )
+        );
       } else {
+        // If we can't get real message, keep optimistic one but mark as sent
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === tempId 
+              ? { ...msg, isOptimistic: false, status: 'sent' }
+              : msg
+          )
+        );
         console.error('Could not extract message data from response:', response);
-        setError('Message sent but could not update UI. Please refresh.');
       }
-
-      // Update conversation in list
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === selectedConversation.id 
-            ? { ...conv, last_message_at: new Date().toISOString() }
-            : conv
-        )
-      );
     } catch (err) {
       console.error('Error sending message:', err);
+      
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      
+      // Restore message to input
+      setNewMessage(messageContent);
+      
       setError(err.message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -349,9 +409,9 @@ export default function MessagesPage({ session = null }) {
   };
 
   return (
-    <div className="bg-white h-[700px] md:h-[800px] lg:h-[900px] flex flex-col">
+    <div className="bg-white h-[calc(100vh-200px)] md:h-[calc(100vh-150px)] lg:h-[calc(100vh-120px)] flex flex-col relative">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4 border-b bg-white z-10">
         <div className="flex items-center space-x-3">
           <button
             onClick={showChatScreen ? handleBackToConversations : null}
@@ -366,9 +426,9 @@ export default function MessagesPage({ session = null }) {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Conversations List */}
-        <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 bg-gray-50 overflow-y-auto max-h-[500px] md:max-h-[600px] lg:max-h-[700px]`}>
+        <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 bg-gray-50 overflow-y-auto`}>
           <div className="p-4">
             <h3 className="font-medium text-gray-900 mb-3">Conversations</h3>
             {isLoading ? (
@@ -427,7 +487,7 @@ export default function MessagesPage({ session = null }) {
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
-              <div className="p-4 border-b bg-white">
+              <div className="p-4 border-b bg-white flex-shrink-0">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <User className="h-5 w-5 text-blue-600" />
@@ -452,7 +512,7 @@ export default function MessagesPage({ session = null }) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[500px] md:max-h-[600px] lg:max-h-[700px]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {isLoading ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
@@ -478,12 +538,20 @@ export default function MessagesPage({ session = null }) {
                             (message?.sender_type || '') === user?.role
                               ? 'bg-blue-600 text-white'
                               : 'bg-gray-200 text-gray-900'
-                          }`}
+                          } ${message?.isOptimistic ? 'opacity-70' : ''}`}
                         >
                           <p className="text-sm">{message?.content || 'Message content unavailable'}</p>
-                          <p className="text-xs mt-1 opacity-70">
-                            {formatTime(message?.created_at)}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-xs opacity-70">
+                              {formatTime(message?.created_at)}
+                            </p>
+                            {message?.isOptimistic && (
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
+                                <span className="text-xs opacity-70">Sending...</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))
@@ -491,8 +559,8 @@ export default function MessagesPage({ session = null }) {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Message Input */}
-              <div className="p-4 border-t bg-white">
+              {/* Message Input - Fixed at bottom */}
+              <div className="p-4 border-t bg-white flex-shrink-0">
                 <form onSubmit={handleSendMessage} className="flex space-x-2">
                   <input
                     type="text"
@@ -503,10 +571,14 @@ export default function MessagesPage({ session = null }) {
                   />
                   <button
                     type="submit"
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || isSending}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="h-4 w-4" />
+                    {isSending ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                   </button>
                 </form>
               </div>
