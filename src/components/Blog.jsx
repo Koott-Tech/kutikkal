@@ -171,9 +171,9 @@ export default function Blog() {
                     </div>
                     
                     {/* Title */}
-                    <h2 className="text-xl md:text-2xl leading-tight" style={{ fontWeight: 25 }}>
+                    <h3 className="text-xl md:text-2xl leading-tight" style={{ fontWeight: 500 }}>
                       {featuredPost.title}
-                    </h2>
+                    </h3>
                   </div>
                 </div>
               </div>

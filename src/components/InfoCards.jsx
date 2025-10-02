@@ -77,9 +77,9 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h6 className="text-gray-900 text-left">
+              <h7 className="text-left">
                 {item.title}
-              </h6>
+              </h7>
             </div>
             
             {/* Description */}

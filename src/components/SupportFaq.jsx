@@ -87,9 +87,9 @@ export default function SupportFaq() {
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight">Our promise</p>
-        <h2 className="text-center md:text-center font-normal text-gray-900 mt-2">
+        <h3 className="text-center md:text-center mt-2" style={{ fontWeight: 500 }}>
           Support at every step, so the next one is easier.
-        </h2>
+        </h3>
 
         {/* Desktop Layout: Image on left (60%), FAQ on right (40%) */}
         <div className="hidden lg:grid mt-2 grid-cols-[1fr_1fr] xl:grid-cols-[6fr_4fr] gap-4 xl:gap-8 items-stretch" style={{ minHeight: 'inherit', height: '100%' }}>

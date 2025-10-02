@@ -63,13 +63,13 @@ export default function ChooseOptions() {
         {/* Header */}
         <div className="text-center md:text-left mb-6 max-w-4xl mx-auto">
           <p className="text-lg text-gray-600 mb-2 leading-tight">Let us guide you.</p>
-          <h2 className="font-medium text-gray-900">
+          <h3 style={{ fontWeight: 500 }}>
             Choose your options to get started
-          </h2>
+          </h3>
         </div>
 
         {/* Cards Grid */}
-        <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto items-stretch">
+        <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-16 max-w-4xl mx-auto items-stretch">
           {cards.map((card) => (
             <div
               key={card.id}
@@ -93,9 +93,9 @@ export default function ChooseOptions() {
                 </div>
 
                 {/* Title */}
-                <h4 className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none" style={{ fontWeight: 500 }}>
+                <h5 className="text-3xl md:text-4xl font-medium text-gray-900 mb-3 whitespace-pre-line leading-none" style={{ fontWeight: 'bold' }}>
                   {card.title}
-                </h4>
+                </h5>
 
                 {/* Description */}
                 <p className="text-sm text-gray-600 leading-tight mb-0">

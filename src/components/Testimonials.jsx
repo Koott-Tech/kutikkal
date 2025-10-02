@@ -159,7 +159,7 @@ export default function Testimonials() {
         {/* Heading */}
         <div className="text-center px-4">
           <p className="text-sm md:text-base text-gray-600 leading-tight">Testimonials</p>
-          <h2 className="mt-2 text-[32px] md:text-[48px] font-normal text-gray-900 leading-tight tracking-tight md:tracking-normal">What families are saying</h2>
+          <h3 className="mt-2" style={{ fontWeight: 500 }}>What families are saying</h3>
         </div>
 
         {/* Desktop: 5-column layout with images */}

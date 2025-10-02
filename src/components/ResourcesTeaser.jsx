@@ -42,9 +42,9 @@ export default function ResourcesTeaser() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-base text-gray-700 leading-tight">Therapy resources</p>
-            <h2 className="mt-3 font-medium text-gray-900">
+            <h3 className="mt-3" style={{ fontWeight: 500 }}>
               Tools and guides for your mental health journey
-            </h2>
+            </h3>
           </div>
           <button
             type="button"

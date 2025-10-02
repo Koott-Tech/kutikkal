@@ -36,7 +36,6 @@ h1 {
   font-size: 64px !important;
   line-height: 4rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: bold !important;
 }
 
 /* Universal H2 styling per request */
@@ -44,14 +43,14 @@ h2 {
   font-size: 56px !important;
   line-height: 3.5rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: semibold !important;
+  
 }
 
 h3 {
   font-size: 48px !important;
   line-height: 3rem !important;
   letter-spacing: -0.65px !important;
-  font-weight: medium !important;
+  
 }
 
 
@@ -74,6 +73,13 @@ h6 {
   line-height: 1.5rem !important;
   letter-spacing: -0.65px !important;
   font-weight: regular !important;
+}
+
+h7 {
+  font-size: 18px !important;
+  line-height: 1.5rem !important;
+  letter-spacing: -0.65px !important;
+ 
 }
 
 /* Paragraphs use Work Sans */

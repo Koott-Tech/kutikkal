@@ -18,9 +18,9 @@ export default function Footer() {
                 background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
             }}>
                 <div className="text-center max-w-4xl mx-auto">
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-4 leading-tight">
-                        Ready to start yout journeyto mental well-being?
-                    </h2>
+                    <h3 className="text-2xl md:text-3xl lg:text-4xl mb-4 leading-tight" style={{ fontWeight: 500 }}>
+                        Ready to start your journey to mental well-being?
+                    </h3>
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
