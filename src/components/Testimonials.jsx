@@ -158,7 +158,7 @@ export default function Testimonials() {
       <div className="mx-auto max-w-[1600px] px-0 md:px-1">
         {/* Heading */}
         <div className="text-center px-4">
-          <p1>Testimonials</p1>
+          <p className="p1">Testimonials</p>
           <h3 className="mt-2">What families are saying</h3>
         </div>
 
@@ -172,14 +172,14 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/faq1.png')" }}
               />
               <div className="relative z-10">
-                <p1>
+                <p className="p1">
                   "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
-                </p1>
+                </p>
                 <br />
                 <br />
-                <p2 className="p2 mt-4 mb-4">
+                <p className="p2 mt-4 mb-4">
                   Arjun M., Parent of a 7-year-old
-                </p2>
+                </p>
               </div>
             </div>
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
@@ -188,14 +188,14 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/6.png')" }}
               />
               <div className="relative z-10">
-                <p1>
+                <p>
                   "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
-                </p1>
+                </p>
                 <br />
                 <br />
-                <p2 className="p2 mt-4 mb-4">
+                <p className="p2 mt-4 mb-4">
                   Priya L., Parent of a 11-year-old
-                </p2>
+                </p>
               </div>
             </div>
           </div>
@@ -213,14 +213,14 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/7.png')" }}
               />
               <div className="relative z-10">
-                <p1>
+                <p>
                   "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. When I get big feelings, we use a color chart to name them, and that helps me calm down. I'm proud that I'm braver now."
-                </p1>
+                </p>
                 <br />
                 <br />
-                <p2 className="p2 mt-4 mb-4">
+                <p className="p2 mt-4 mb-4">
                   8-year-old
-                </p2>
+                </p>
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
@@ -254,14 +254,14 @@ export default function Testimonials() {
                 style={{ backgroundImage: "url('/8.png')" }}
               />
               <div className="relative z-10">
-                <p1>
+                <p>
                   "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing. Now I look forward to our sessions every week!"
-                </p1>
+                </p>
                 <br />
                 <br />
-                <p2 className="p2 mt-4 mb-4">
+                <p className="p2 mt-4 mb-4">
                   6-year-old
-                </p2>
+                </p>
               </div>
             </div>
           </div>
@@ -351,12 +351,12 @@ function QuoteCard({ quote, by, tone = "mint", className = "" }) {
   };
   return (
     <div className={`rounded-2xl p-6 md:p-7 border border-gray-200 ${toneClasses[tone]} ${className}`}>
-      <p1>"{quote}"</p1>
+      <p>"{quote}"</p>
       <br />
       <br />
-      <p2 className="p2 mt-4 mb-4">
+      <p className="p2 mt-4 mb-4">
         {by}
-      </p2>
+      </p>
     </div>
   );
 }

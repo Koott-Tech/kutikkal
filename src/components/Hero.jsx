@@ -23,7 +23,7 @@ export default function Hero() {
         <section 
           className="text-black rounded-none md:rounded-[10px] p-0 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] mx-0 md:mx-0 overflow-visible relative"
           style={{ 
-            background: 'linear-gradient(98.54deg, rgba(153, 126, 255, .25) 6.76%, rgba(153, 126, 255, .2) 98%)'
+            backgroundColor: '#EAE4F4'
           }}
         >
           <style jsx>{`
@@ -51,9 +51,9 @@ export default function Hero() {
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
                 Your Partner in Child Counselling & Parent Support
               </h1>
-              <p1 className="mt-10">
+              <p className="p1 mt-10">
                 Expert Child Counselling & Parent Support to help your whole family grow.
-              </p1>
+              </p>
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}
@@ -94,9 +94,9 @@ export default function Hero() {
             {/* Right: Image */}
             <div className="hidden md:block order-2 md:order-2 -mt-8 md:mt-0 md:h-full">
               {/* Responsive image box aligned to bottom of column */}
-              <div className="relative w-full md:w-1/2 hero-image-box md:absolute md:bottom-[-60px] md:right-0">
+              <div className="relative w-full md:w-1/2 hero-image-box md:absolute md:bottom-[-60px] md:right-0.5">
                 <Image
-                  src="/heroo.png"
+                  src="/hee.webp"
                   alt="Hero"
                   fill
                   className="object-cover md:object-bottom"

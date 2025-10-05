@@ -24,7 +24,7 @@ export default function Footer() {
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
-                    <button className="text-white px-8 py-3 rounded-3xl font-medium transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
+                    <button className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
                         Get started
                     </button>
                 </div>
@@ -274,7 +274,7 @@ export default function Footer() {
                         </div>
                         <div className="w-full h-px my-8 bg-white/40"></div>
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
-                            <p2 className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p2>
+                            <p className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="#" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
                                 <a href="#" className="hover:text-white transition-colors">PRIVACY POLICY</a>

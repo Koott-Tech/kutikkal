@@ -9,6 +9,18 @@ export default function BlogTeaser() {
     router.push('/blog');
   };
 
+  const handleBlogClick = (post) => {
+    // Create a URL-friendly slug from the title
+    const slug = post.title.toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/--+/g, '-') // Replace multiple hyphens with single hyphen
+      .trim();
+    
+    // Navigate to the specific blog post page
+    router.push(`/blog/${slug}`);
+  };
+
   const posts = [
     {
       src: "/hero.png",
@@ -41,7 +53,7 @@ export default function BlogTeaser() {
       <div className="mx-auto max-w-[1100px] px-0 py-6 md:py-8 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
-             <p1 className="text-lg md:text-base">From our blog</p1>
+             <p className="text-lg md:text-base">From our blog</p>
                  <h3 className="mt-3 break-words">
                Tips for getting started on your journey
              </h3>
@@ -50,7 +62,7 @@ export default function BlogTeaser() {
             <button
               type="button"
               onClick={handleExploreClick}
-              className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-normal text-white hover:opacity-90"
+              className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-semibold text-white hover:opacity-90"
               style={{ backgroundColor: '#593494' }}
             >
               Explore more articles
@@ -60,7 +72,11 @@ export default function BlogTeaser() {
 
         <div className="mt-16 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-1">
            {posts.map((post) => (
-            <article key={post.title} className="group w-[260px] sm:w-[280px] md:w-full md:max-w-[340px] mx-auto md:mx-0">
+            <article 
+              key={post.title} 
+              className="group w-[260px] sm:w-[280px] md:w-full md:max-w-[340px] mx-auto md:mx-0 cursor-pointer"
+              onClick={() => handleBlogClick(post)}
+            >
                <div
                 className={`relative w-full h-[150px] sm:h-[160px] md:aspect-[16/9] overflow-hidden rounded-2xl ${
                    post.highlight ? "ring-8 ring-sky-100" : ""
@@ -79,9 +95,9 @@ export default function BlogTeaser() {
                 <span className="px-2 p2">•</span>
                 <span className="p2">{post.date}</span>
               </div>
-              <h7 className="mt-3 md:mt-2 font-medium">
+              <h6 className="mt-3 md:mt-2 font-medium">
                 {post.title}
-              </h7>
+              </h6>
             </article>
           ))}
         </div>

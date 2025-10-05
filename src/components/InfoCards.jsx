@@ -56,7 +56,7 @@ export default function InfoCards() {
   };
 
   return (
-    <section className="mt-20 mobile-section">
+    <section className="mt-12 mobile-section">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
@@ -77,15 +77,15 @@ export default function InfoCards() {
               </div>
               
               {/* Title */}
-              <h7 className="text-left font-medium">
+              <h6 className="text-left font-medium">
                 {item.title}
-              </h7>
+              </h6>
             </div>
             
             {/* Description */}
-            <p1 className="mt-4 text-sm">
+            <p className="p1 mt-4 text-sm">
               {item.description}
-            </p1>
+            </p>
 
             {/* Call to Action */}
             <div className="mt-auto pt-6">
@@ -93,7 +93,7 @@ export default function InfoCards() {
                 href="#"
                 className="flex font-regular items-center justify-between text-base  text-gray-900 hover:text-gray-700 group"
               >
-                <h7>{item.cta}</h7>
+                <h6>{item.cta}</h6>
                 <span className="text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
               </a>
             </div>

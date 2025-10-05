@@ -79,10 +79,10 @@ h7 {
 }
 
 /* Paragraphs use Work Sans */
-body p1 {
+.p1 {
   font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
   font-size: 16px !important;
-  line-height: 1.5rem !important;
+  line-height: 1.5rem ;
   letter-spacing: -0.80px !important;
   
 }
@@ -94,6 +94,11 @@ body p1 {
   line-height: 1rem !important;
   letter-spacing: -0.80px !important;
   font-weight: 300 !important;
+}
+
+/* Override h6 font size to 18px */
+h6 {
+  font-size: 18px !important;
 }
 
 /* Number bold styling */

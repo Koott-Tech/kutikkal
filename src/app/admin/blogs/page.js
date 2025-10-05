@@ -329,7 +329,7 @@ export default function BlogsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Blog Management</h1>
+              <h6>Blog Management</h6>
               <p className="text-gray-600 mt-1">Manage blog posts and content</p>
             </div>
             <button
@@ -351,7 +351,7 @@ export default function BlogsPage() {
               <Globe className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Blogs</p>
-                <p className="text-2xl font-bold text-gray-900">{blogs?.length || 0}</p>
+                <p className="number-bold">{blogs?.length || 0}</p>
               </div>
             </div>
           </div>
@@ -360,7 +360,7 @@ export default function BlogsPage() {
               <TrendingUp className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Published</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="number-bold">
                   {blogs?.filter(b => b.status === 'published').length || 0}
                 </p>
               </div>
@@ -371,7 +371,7 @@ export default function BlogsPage() {
               <Clock className="h-8 w-8 text-yellow-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Drafts</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="number-bold">
                   {blogs?.filter(b => b.status === 'draft').length || 0}
                 </p>
               </div>
@@ -382,7 +382,7 @@ export default function BlogsPage() {
               <Eye className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Views</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="number-bold">
                   {blogs?.reduce((sum, b) => sum + (b.view_count || 0), 0) || 0}
                 </p>
               </div>
@@ -465,7 +465,7 @@ export default function BlogsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                           </svg>
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No blog posts yet</h3>
+                        <h6>No blog posts yet</h6>
                         <p className="text-gray-500 mb-4">Create your first blog post to get started</p>
                         <button
                           onClick={() => setShowAddModal(true)}
@@ -572,9 +572,9 @@ export default function BlogsPage() {
             <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h6>
                     {selectedBlog ? 'Edit Blog' : 'Create New Blog'}
-                  </h2>
+                  </h6>
                   <button
                     type="button"
                     onClick={() => {

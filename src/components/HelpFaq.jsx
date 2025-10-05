@@ -57,10 +57,10 @@ export default function HelpFaq() {
             </h4>
           </div>
           <div>
-            <p1 className="text-base md:text-lg text-center md:text-left">
+            <p className="text-base md:text-lg text-center md:text-left">
               Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br />
               commonly asked questions.
-            </p1>
+            </p>
           </div>
                      <div className="relative mt-6 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
             <Image
@@ -102,9 +102,9 @@ export default function HelpFaq() {
                         }`}
                       >
                         <div className="px-3 pb-4 md:px-0">
-                          <p1 className="text-sm">
+                          <p className="text-sm">
                             {item.a}
-                          </p1>
+                          </p>
                         </div>
                       </div>
                     </div>

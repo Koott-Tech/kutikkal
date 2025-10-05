@@ -204,6 +204,8 @@ export default function Header() {
                   width={120} 
                   height={40} 
                   className="hover:opacity-80 transition-opacity"
+                  priority={true}
+                  style={{ width: "auto", height: "auto" }}
                 />
               </button>
             </div>
@@ -247,7 +249,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Mental Health</h7>
+                                <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Mental Health</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -293,7 +295,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Child Development & Learning</h7>
+                                <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Child Development & Learning</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -338,7 +340,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Behaviour & Confidence Building</h7>
+                                <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Behaviour & Confidence Building</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -381,7 +383,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Stress & Academic Support</h7>
+                                <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Stress & Academic Support</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -423,7 +425,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Trauma & Healing</h7>
+                                <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Trauma & Healing</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -530,7 +532,7 @@ export default function Header() {
                                 setActiveSubmenu(null);
                               }}
                             >
-                              <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h7>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                </svg>
@@ -572,7 +574,7 @@ export default function Header() {
                                 setActiveSubmenu(null);
                               }}
                             >
-                              <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h7>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                </svg>
@@ -615,7 +617,7 @@ export default function Header() {
                                 setActiveSubmenu(null);
                               }}
                             >
-                              <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h7>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                </svg>
@@ -656,7 +658,7 @@ export default function Header() {
                                 setActiveSubmenu(null);
                               }}
                             >
-                              <h7 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h7>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h6>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -900,6 +902,8 @@ export default function Header() {
                   width={100} 
                   height={35} 
                   className="hover:opacity-80 transition-opacity"
+                  priority={true}
+                  style={{ width: "auto", height: "auto" }}
                 />
               </div>
               <button
@@ -994,7 +998,7 @@ export default function Header() {
                       <div className="px-4 py-2 space-y-4">
                         {/* Emotional & Mental Health */}
                         <div>
-                          <h7 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Emotional & Mental Health</h7>
+                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Emotional & Mental Health</h6>
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
@@ -1018,7 +1022,7 @@ export default function Header() {
 
                         {/* Child Development & Learning */}
                         <div>
-                          <h7 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Child Development & Learning</h7>
+                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Child Development & Learning</h6>
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
@@ -1041,7 +1045,7 @@ export default function Header() {
 
                         {/* Behaviour & Confidence Building */}
                         <div>
-                          <h7 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Behaviour & Confidence Building</h7>
+                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Behaviour & Confidence Building</h6>
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
@@ -1062,7 +1066,7 @@ export default function Header() {
 
                         {/* Stress & Academic Support */}
                         <div>
-                          <h7 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Stress & Academic Support</h7>
+                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Stress & Academic Support</h6>
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" }
@@ -1082,7 +1086,7 @@ export default function Header() {
 
                         {/* Trauma & Healing */}
                         <div>
-                          <h7 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Trauma & Healing</h7>
+                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Trauma & Healing</h6>
                           <div className="space-y-1 ml-2">
                             {[
                               { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
@@ -1156,7 +1160,7 @@ export default function Header() {
                       <div className="px-4">
                         {/* ADHD Assessments */}
                         <div className="mb-4">
-                          <h7 className="text-gray-900 mb-2">ADHD Assessments</h7>
+                          <h6 className="text-gray-900 mb-2">ADHD Assessments</h6>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1181,7 +1185,7 @@ export default function Header() {
 
                         {/* Emotional & Behavioral Screening */}
                         <div className="mb-4">
-                          <h7 className="text-gray-900 mb-2">Emotional & Behavioral Screening</h7>
+                          <h6 className="text-gray-900 mb-2">Emotional & Behavioral Screening</h6>
                           <div className="space-y-1 ml-2">
                           <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1215,7 +1219,7 @@ export default function Header() {
                       
                         {/* Intelligence Tests */}
                         <div className="mb-4">
-                          <h7 className="text-gray-900 mb-2">Intelligence Tests</h7>
+                          <h6 className="text-gray-900 mb-2">Intelligence Tests</h6>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1231,7 +1235,7 @@ export default function Header() {
 
                         {/* Projective Tests */}
                         <div className="mb-4">
-                          <h7 className="text-gray-900 mb-2">Projective Tests</h7>
+                          <h6 className="text-gray-900 mb-2">Projective Tests</h6>
                           <div className="space-y-1 ml-2">
                             <div 
                               className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"

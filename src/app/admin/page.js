@@ -223,7 +223,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Access Denied</h3>
+            <h6>Access Denied</h6>
             <p className="text-sm text-red-700 mt-1">You do not have permission to access the admin dashboard.</p>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
                 </div>
                   </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
+            <h6>Error</h6>
             <p className="text-sm text-red-700 mt-1">{error}</p>
                     </div>
                 </div>
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Welcome to Admin Dashboard</h1>
+        <h6>Welcome to Admin Dashboard</h6>
         <p className="text-blue-100 mb-2 text-sm sm:text-base">Manage your platform, users, and therapy sessions from one central location.</p>
         <div className="text-blue-100 text-xs sm:text-sm">
           <p>Logged in as: <span className="font-semibold">{user?.email}</span></p>
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="ml-3 sm:ml-4">
                   <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="number-bold">{stat.value}</p>
                 </div>
               </div>
               <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">{stat.description}</p>
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <h6>Quick Actions</h6>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
@@ -322,7 +322,7 @@ export default function AdminDashboard() {
                   <div className={`p-2 rounded-lg ${action.color}`}>
                     <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <h3 className="ml-2 sm:ml-3 font-medium text-gray-900 text-sm sm:text-base">{action.title}</h3>
+                  <h6>{action.title}</h6>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600">{action.description}</p>
               </a>
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Activity</h2>
+          <h6>Recent Activity</h6>
           <a href="/admin/bookings" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
             View All
           </a>

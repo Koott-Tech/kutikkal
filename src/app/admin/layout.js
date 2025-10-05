@@ -78,7 +78,7 @@ export default function AdminLayout({ children }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+            <h6>Admin Panel</h6>
           </div>
 
           {/* Navigation */}
@@ -123,7 +123,7 @@ export default function AdminLayout({ children }) {
         {/* Top bar */}
         <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 w-full">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
+            <h6>Little Care</h6>
             <nav className="hidden lg:flex items-center space-x-2">
               {navigation.map((item) => {
                 const Icon = item.icon;

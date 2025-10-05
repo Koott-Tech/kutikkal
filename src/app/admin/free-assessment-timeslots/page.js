@@ -305,7 +305,7 @@ export default function FreeAssessmentTimeslotsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <X className="h-12 w-12 text-red-500 mx-auto" />
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">Access Denied</h2>
+          <h6>Access Denied</h6>
           <p className="mt-2 text-gray-600">You need admin privileges to access this page.</p>
         </div>
       </div>
@@ -318,7 +318,7 @@ export default function FreeAssessmentTimeslotsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Free Assessment Timeslots</h1>
+            <h6>Free Assessment Timeslots</h6>
             <p className="text-lg text-gray-600">Manage available time slots for free assessments</p>
           </div>
           <button
@@ -351,10 +351,10 @@ export default function FreeAssessmentTimeslotsPage() {
 
         {/* Calendar-based Timeslot Management */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+          <h6 className="mb-6 flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
             Calendar-based Timeslot Management
-          </h2>
+          </h6>
           
           {/* Step Indicator */}
           <div className="flex items-center justify-center mb-6">
@@ -376,7 +376,7 @@ export default function FreeAssessmentTimeslotsPage() {
           {/* Step 1: Date Selection */}
           {step === 1 && (
             <div className="text-center">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">Step 1: Select a Date</h4>
+              <h6>Step 1: Select a Date</h6>
               
               {/* Simple Calendar */}
               <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-xs mx-auto">
@@ -483,7 +483,7 @@ export default function FreeAssessmentTimeslotsPage() {
               <div className="max-w-md mx-auto space-y-4">
                 {Object.entries(timeSlots).map(([period, times]) => (
                   <div key={period} className="bg-gray-50 rounded-lg p-4">
-                    <h5 className="text-sm font-medium text-gray-700 mb-3 capitalize">{period}</h5>
+                    <h6 className="mb-3 capitalize">{period}</h6>
                     <div className="grid grid-cols-2 gap-2">
                       {times.map(time => {
                         const timeKey = `${period}:${time}`;
@@ -548,7 +548,7 @@ export default function FreeAssessmentTimeslotsPage() {
         {/* Current Availability Display */}
         {Object.keys(availabilityData).length > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Current Availability</h3>
+            <h6>Current Availability</h6>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(availabilityData).map(([dateStr, data]) => {
                 // Only show dates that have been configured through the calendar (have timeSlots)
@@ -614,7 +614,7 @@ export default function FreeAssessmentTimeslotsPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add New Timeslot</h3>
+            <h6>Add New Timeslot</h6>
             
             <div className="space-y-4">
               <div>
@@ -687,7 +687,7 @@ export default function FreeAssessmentTimeslotsPage() {
       {showEditModal && editingTimeslot && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Edit Timeslot</h3>
+            <h6>Edit Timeslot</h6>
             
             <div className="space-y-4">
               <div>

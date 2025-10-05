@@ -719,6 +719,11 @@ export const adminApi = {
     return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
   },
 
+  // Get psychologist calendar events
+  async getPsychologistCalendarEvents(psychologistId, startDate, endDate) {
+    return apiRequest(`/admin/psychologists/${psychologistId}/calendar-events?startDate=${startDate}&endDate=${endDate}`);
+  },
+
   // Free Assessment Timeslots API
   async getFreeAssessmentTimeslots() {
     return apiRequest('/free-assessment-timeslots');
@@ -1086,7 +1091,8 @@ export const bookingsApi = {
   },
 };
 
-export default {
+// Default export with common methods for backward compatibility
+export const backendApi = {
   auth: authApi,
   client: clientApi,
   psychologist: psychologistApi,
@@ -1097,4 +1103,34 @@ export default {
   doctors: doctorsApi,
   users: usersApi,
   bookings: bookingsApi,
+  
+  // Generic GET method for backward compatibility
+  async get(endpoint) {
+    return apiRequest(endpoint, { method: 'GET' });
+  },
+  
+  // Generic POST method for backward compatibility
+  async post(endpoint, data) {
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  // Generic PUT method for backward compatibility
+  async put(endpoint, data) {
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  
+  // Generic DELETE method for backward compatibility
+  async delete(endpoint) {
+    return apiRequest(endpoint, {
+      method: 'DELETE',
+    });
+  },
 };
+
+export default backendApi;

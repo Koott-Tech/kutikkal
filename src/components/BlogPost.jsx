@@ -17,12 +17,12 @@ export default function BlogPost({ slug }) {
   const loadBlogPost = async () => {
     try {
       setLoading(true);
-      const response = await backendApi.get(`/api/blogs/slug/${slug}`);
+      const response = await backendApi.get(`/blogs/slug/${slug}`);
       
-      if (response.data.success) {
-        setBlogPost(response.data.data);
+      if (response.success) {
+        setBlogPost(response.data);
       } else {
-        throw new Error(response.data.message || 'Failed to load blog post');
+        throw new Error(response.message || 'Failed to load blog post');
       }
     } catch (err) {
       console.error('Error loading blog post:', err);
@@ -57,8 +57,8 @@ export default function BlogPost({ slug }) {
       <article className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center py-16">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
-            <p className="text-gray-600 mb-6">
+          <h1 className="mb-4">Article Not Found</h1>
+            <p className="p2 mb-6">
               {error ? `Error: ${error}` : "The article you're looking for doesn't exist."}
             </p>
           <Link href="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">
@@ -75,7 +75,7 @@ export default function BlogPost({ slug }) {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Breadcrumbs */}
         <nav className="mb-8">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex items-center space-x-2 p2 text-gray-600">
             <Link href="/blog" className="hover:text-indigo-600">Blog</Link>
             <span>/</span>
             {blogPost.tags && blogPost.tags.length > 0 ? (
@@ -88,24 +88,24 @@ export default function BlogPost({ slug }) {
 
         {/* Title & Metadata */}
         <header className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          <h1 className="mb-4">
             {blogPost.title}
           </h1>
           
-          <div className="flex items-center space-x-6 text-gray-600 mb-6">
-            <span className="text-sm">
+          <div className="flex items-center space-x-6 mb-6">
+            <span className="p2">
               By <span className="font-medium">{blogPost.author_name}</span>
             </span>
-            <span>•</span>
-            <span className="text-sm">
+            <span className="p2">•</span>
+            <span className="p2">
               {formatDate(blogPost.published_at || blogPost.created_at)}
             </span>
-            <span>•</span>
-            <span className="text-sm">
+            <span className="p2">•</span>
+            <span className="p2">
               {blogPost.read_time_minutes || 5} min read
             </span>
-            <span>•</span>
-            <span className="text-sm">
+            <span className="p2">•</span>
+            <span className="p2">
               {blogPost.view_count || 0} views
             </span>
           </div>
@@ -116,7 +116,7 @@ export default function BlogPost({ slug }) {
               {blogPost.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800"
+                  className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
                 >
                   {tag}
                 </span>
@@ -141,8 +141,8 @@ export default function BlogPost({ slug }) {
         {/* Excerpt */}
         {blogPost.excerpt && (
           <div className="mb-8">
-            <div className="text-xl text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-lg">
-              {blogPost.excerpt}
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <p className="p1">{blogPost.excerpt}</p>
             </div>
           </div>
         )}
@@ -150,7 +150,7 @@ export default function BlogPost({ slug }) {
         {/* Content */}
         <div className="blog-content">
           <div 
-            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700"
+            className="max-w-none"
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
                         />
                       </div>
@@ -158,8 +158,8 @@ export default function BlogPost({ slug }) {
         {/* Author Bio */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">About {blogPost.author_name}</h3>
-            <p className="text-gray-600">
+            <h3 className="mb-2">About {blogPost.author_name}</h3>
+            <p className="p1">
               Professional psychologist and mental health advocate with expertise in child and family therapy.
             </p>
           </div>

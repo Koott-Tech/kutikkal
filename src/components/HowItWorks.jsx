@@ -109,9 +109,9 @@ export default function HowItWorks() {
         }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
-        <p1 className="text-center md:text-center mt-2">
+        <p className="text-center md:text-center mt-2">
           How it works
-        </p1>
+        </p>
 
         {/* Inline CTA under the heading */}
         <div className="mt-2 mb-6 text-center md:text-center">
@@ -206,9 +206,9 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p1 className="mt-1 pt-2 text-center px-6">
+                        <p className="mt-1 pt-2 text-center px-6">
                           {card.description}
-                        </p1>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -287,9 +287,9 @@ export default function HowItWorks() {
               ))}
             </div>
 
-            <p1 className="mt-auto mb-2.5 text-center">
+            <p className="mt-auto mb-2.5 text-center">
               Browse ADHD specialist profiles for your child.
-            </p1>
+            </p>
           </div>
 
             {/* Card 02 - Desktop */}
@@ -312,10 +312,10 @@ export default function HowItWorks() {
               <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
             </div>
 
-            <p1 className="mb-2.5 text-center">
+            <p className="mb-2.5 text-center">
               Browse licensed providers who match
               your preferences.
-            </p1>
+            </p>
           </div>
 
             {/* Card 03 - Desktop */}
@@ -351,10 +351,10 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p1 className="mt-auto mb-2.5 text-center">
+            <p className="mt-auto mb-2.5 text-center">
               Choose your time and meet with provider as soon as
               tomorrow.
-            </p1>
+            </p>
           </div>
 
             {/* Card 04 - Desktop */}
@@ -370,9 +370,9 @@ export default function HowItWorks() {
             </h6>
 
 
-            <p1 className="mt-auto mb-2.5 text-center">
+            <p className="mt-auto mb-2.5 text-center">
               Connect with your provider over live video from wherever you are.
-            </p1>
+            </p>
             </div>
           </div>
         </div>

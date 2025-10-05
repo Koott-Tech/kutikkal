@@ -61,7 +61,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Settings</h1>
+          <h6>Admin Settings</h6>
           <p className="mt-1 text-sm text-gray-600">
             Configure platform settings and preferences
           </p>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <Bell className="h-5 w-5 text-gray-400 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
+            <h6>Notifications</h6>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -149,7 +149,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <Shield className="h-5 w-5 text-gray-400 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Security</h2>
+            <h6>Security</h6>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <Database className="h-5 w-5 text-gray-400 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Platform</h2>
+            <h6>Platform</h6>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -244,7 +244,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center mb-4">
             <Settings className="h-5 w-5 text-gray-400 mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">System Information</h2>
+            <h6>System Information</h6>
           </div>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
@@ -271,19 +271,19 @@ export default function SettingsPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center mb-4">
           <Users className="h-5 w-5 text-gray-400 mr-2" />
-          <h2 className="text-lg font-semibold text-gray-900">User Management</h2>
+          <h6>User Management</h6>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">150</div>
+            <div className="number-bold text-blue-600">150</div>
             <div className="text-sm text-gray-600">Total Users</div>
           </div>
           <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">25</div>
+            <div className="number-bold text-green-600">25</div>
             <div className="text-sm text-gray-600">Active Psychologists</div>
           </div>
           <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">89</div>
+            <div className="number-bold text-purple-600">89</div>
             <div className="text-sm text-gray-600">Total Sessions</div>
           </div>
         </div>

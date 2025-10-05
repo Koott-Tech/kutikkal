@@ -16,9 +16,13 @@ import {
 import { adminApi } from '@/lib/backendApi';
 import UserModal from '@/components/UserModal';
 import { useNotification } from '@/contexts/NotificationContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function UsersPage() {
   const { showError, showSuccess } = useNotification();
+  const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [users, setUsers] = useState([]);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -29,17 +33,39 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    // Check authentication and role
+    if (!authLoading) {
+      if (!isAuthenticated()) {
+        console.log('User not authenticated, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      
+      if (!hasRole('admin') && !hasRole('superadmin')) {
+        console.log('User does not have admin privileges, redirecting to profile');
+        router.push('/profile');
+        return;
+      }
+      
+      // User is authenticated and has admin role, load users data
+      loadUsers();
+    }
+  }, [authLoading, isAuthenticated, hasRole, router]);
 
   const loadUsers = async () => {
     try {
       setIsLoading(true);
+      console.log('🔍 Loading users...');
       const response = await adminApi.getUsers();
+      console.log('📊 Users API response:', response);
       
       if (response && response.success && response.data && response.data.users) {
+        console.log('🔍 All users from API:', response.data.users);
+        console.log('🔍 User roles:', response.data.users.map(u => ({ id: u.id, email: u.email, role: u.role })));
+        
         // Filter out psychologists (they're managed in doctors page)
         const clientUsers = response.data.users.filter(user => user.role === 'client');
+        console.log('👥 Filtered client users:', clientUsers);
         setUsers(clientUsers);
       } else {
         console.warn('Invalid response structure:', response);
@@ -113,6 +139,31 @@ export default function UsersPage() {
 
   const roles = [...new Set(users.map(u => u.role).filter(Boolean))];
 
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Show access denied if user is not authenticated or doesn't have admin role
+  if (!user || (!hasRole('admin') && !hasRole('superadmin'))) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-4 h-4 bg-red-600 rounded-full"></div>
+          </div>
+          <h6>Access Denied</h6>
+          <p className="text-sm text-red-700 mt-1">You do not have permission to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading spinner while fetching data
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -126,7 +177,7 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
+          <h6>Users Management</h6>
           <p className="mt-1 text-sm text-gray-600">
             Manage client users and their accounts on the platform
           </p>
@@ -247,7 +298,7 @@ export default function UsersPage() {
       {filteredUsers.length === 0 && (
         <div className="text-center py-12">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+          <h6>No users found</h6>
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm || filterRole !== 'all' 
               ? 'Try adjusting your search or filter criteria.'
@@ -284,7 +335,7 @@ export default function UsersPage() {
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">User Profile</h2>
+                <h6>User Profile</h6>
                 <button
                   onClick={() => setIsFullProfileOpen(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -298,7 +349,7 @@ export default function UsersPage() {
               <div className="space-y-6">
                 {/* Basic Info */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
+                  <h6>Basic Information</h6>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -327,7 +378,7 @@ export default function UsersPage() {
                 {/* Child Information (for clients) */}
                 {selectedUser.role === 'client' && (selectedUser.profile?.child_name || selectedUser.profile?.child_age) && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Child Information</h3>
+                    <h6>Child Information</h6>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Child Name</label>
@@ -346,7 +397,7 @@ export default function UsersPage() {
                 {/* Additional Info */}
                 {selectedUser.created_at && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Account Information</h3>
+                    <h6>Account Information</h6>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Member Since</label>

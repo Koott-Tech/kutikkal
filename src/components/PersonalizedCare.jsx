@@ -9,9 +9,9 @@ export default function PersonalizedCare() {
           <h3 className="mb-0 mx-auto" style={{ fontWeight: 500 }}>
             The care you need, whenever you need it
           </h3>
-          <p1 className="text-sm md:text-lg max-w-3xl mx-auto mt-2 md:mt-3">
+          <p className="p1 text-sm md:text-lg max-w-3xl mx-auto mt-2 md:mt-3">
             We know parenting can be challenging, so we're here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
-          </p1>
+          </p>
         </div>
 
         {/* Main Content with Central Image */}

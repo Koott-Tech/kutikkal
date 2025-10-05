@@ -190,7 +190,7 @@ export default function BookingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bookings Management</h1>
+          <h6>Bookings Management</h6>
           <p className="mt-1 text-sm text-gray-600">
             Manage therapy sessions and appointments across the platform
           </p>
@@ -349,7 +349,7 @@ export default function BookingsPage() {
       {filteredBookings.length === 0 && (
         <div className="text-center py-12">
           <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
+          <h6>No bookings found</h6>
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm || filterStatus !== 'all' || filterDate
               ? 'Try adjusting your search or filter criteria.'
@@ -364,7 +364,7 @@ export default function BookingsPage() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Session Details</h3>
+              <h6>Session Details</h6>
               <button
                 onClick={() => setIsSessionDetailsOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -518,7 +518,7 @@ export default function BookingsPage() {
               {/* Session Notes */}
               {selectedSession.session_notes && (
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Session Notes</h4>
+                  <h6>Session Notes</h6>
                   <p className="text-sm text-gray-900">{selectedSession.session_notes}</p>
                 </div>
               )}

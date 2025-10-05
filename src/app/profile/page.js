@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "../../contexts/AuthContext";
 import { clientApi, authApi, messagesApi } from "../../lib/backendApi";
 import RescheduleModal from "../../components/RescheduleModal";
@@ -524,7 +525,17 @@ export default function ProfilePage() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 right-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
-            <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+            <div className="flex items-center">
+              <Image 
+                src="/Logo.webp" 
+                alt="Little Care Logo" 
+                width={100} 
+                height={32} 
+                className="hover:opacity-80 transition-opacity"
+                priority={true}
+                style={{ width: "auto", height: "auto" }}
+              />
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -654,9 +665,19 @@ export default function ProfilePage() {
 
       {/* Main content */}
       <div className="lg:pl-64">
-        {/* Mobile header - Company name left, menu right */}
+        {/* Mobile header - Logo left, menu right */}
         <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
-          <h1 className="text-lg font-semibold text-gray-900">Little Care</h1>
+          <div className="flex items-center">
+            <Image 
+              src="/Logo.webp" 
+              alt="Little Care Logo" 
+              width={100} 
+              height={32} 
+              className="hover:opacity-80 transition-opacity"
+              priority={true}
+              style={{ width: "auto", height: "auto" }}
+            />
+          </div>
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-gray-500 hover:text-gray-600"

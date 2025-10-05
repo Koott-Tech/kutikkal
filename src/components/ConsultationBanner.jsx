@@ -80,9 +80,9 @@ export default function ConsultationBanner() {
                 Get a Free 20-minute Consultation
               </h4>
               
-              <p1 className="text-[10px] md:text-base mb-10 md:mb-8 text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
+              <p className="text-[10px] md:text-base mb-10 md:mb-8 text-left max-w-none lg:max-w-none lg:whitespace-nowrap">
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
-              </p1>
+              </p>
               
               <button className="bg-green-200 hover:bg-green-300 text-gray-900 px-1 py-0.5 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-[10px] md:text-sm font-medium transition-all duration-200 flex items-center gap-0.5 md:gap-2 w-fit">
                 <span>Book a Google Meet now.</span>

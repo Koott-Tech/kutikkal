@@ -10,10 +10,12 @@ import {
   Eye, 
   Search,
   Filter,
-  Clock
+  Clock,
+  Calendar
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
+import PsychologistCalendarView from '@/components/PsychologistCalendarView';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,6 +31,7 @@ export default function DoctorsPage() {
   const [filterSpecialty, setFilterSpecialty] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [isCalendarViewOpen, setIsCalendarViewOpen] = useState(false);
 
   useEffect(() => {
     // Check authentication and role
@@ -117,6 +120,11 @@ export default function DoctorsPage() {
     setIsFullProfileOpen(true);
   };
 
+  const openCalendarView = (doctor) => {
+    setSelectedDoctor(doctor);
+    setIsCalendarViewOpen(true);
+  };
+
   const handleDoctorModalClose = () => {
     setIsDoctorModalOpen(false);
     setEditingDoctor(null);
@@ -190,7 +198,7 @@ export default function DoctorsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Doctors Management</h1>
+          <h6>Doctors Management</h6>
           <p className="mt-1 text-sm text-gray-600">
             Manage psychologists and therapists on the platform
           </p>
@@ -269,13 +277,20 @@ export default function DoctorsPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); openFullProfile(doctor); }}
                 className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 text-sm"
               >
                 <Eye className="w-4 h-4" />
                 View Profile
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }}
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1 text-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                View Calendar
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }}
@@ -300,7 +315,7 @@ export default function DoctorsPage() {
       {filteredDoctors.length === 0 && (
         <div className="text-center py-12">
           <UserCheck className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No doctors found</h3>
+          <h6>No doctors found</h6>
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm || filterSpecialty !== 'all' 
               ? 'Try adjusting your search or filter criteria.'
@@ -338,7 +353,7 @@ export default function DoctorsPage() {
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Doctor Profile</h2>
+                <h6>Doctor Profile</h6>
                 <button
                   onClick={() => setIsFullProfileOpen(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -352,7 +367,7 @@ export default function DoctorsPage() {
               <div className="space-y-6">
                 {/* Basic Info */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
+                  <h6>Basic Information</h6>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -387,7 +402,7 @@ export default function DoctorsPage() {
 
                 {/* Availability */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Availability</h3>
+                  <h6>Availability</h6>
 
                   {selectedDoctor.availability && selectedDoctor.availability.length > 0 ? (
                     <div className="space-y-2">
@@ -423,11 +438,11 @@ export default function DoctorsPage() {
 
                 {/* Pricing & Packages */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Pricing & Packages</h3>
+                  <h6>Pricing & Packages</h6>
                   
                   {/* Individual Session Pricing */}
                   <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="text-md font-semibold text-green-800 mb-2">Individual Session</h4>
+                    <h6>Individual Session</h6>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-green-700">Price per session</span>
                       <span className="text-lg font-bold text-green-800">
@@ -438,7 +453,7 @@ export default function DoctorsPage() {
 
                   {/* Package Information */}
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="text-md font-semibold text-blue-800 mb-2">Package Information</h4>
+                    <h6>Package Information</h6>
                     <p className="text-sm text-blue-700">
                       Package details and pricing are managed through the packages system. 
                       Individual session pricing is set above and used as the base rate for package calculations.
@@ -471,6 +486,18 @@ export default function DoctorsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Calendar View Modal */}
+      {isCalendarViewOpen && selectedDoctor && (
+        <PsychologistCalendarView
+          psychologistId={selectedDoctor.psychologist_id || selectedDoctor.id}
+          psychologistName={selectedDoctor.name || selectedDoctor.email}
+          onClose={() => {
+            setIsCalendarViewOpen(false);
+            setSelectedDoctor(null);
+          }}
+        />
       )}
 
     </div>
