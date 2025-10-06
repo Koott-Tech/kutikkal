@@ -10,7 +10,7 @@ export default function ChooseOptions() {
       title: "Child\nCounselling",
       description: "Safe space for children to share and grow.",
       image: "/girl1.png",
-      gradient: "from-green-100 to-white",
+      gradient: "from-[#EEF4E4] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -23,7 +23,7 @@ export default function ChooseOptions() {
       title: "Child\nAssessment", 
       description: "Reveal your child's strengths and needs.",
       image: "/boy1.png",
-      gradient: "from-purple-100 to-white",
+      gradient: "from-[#F4E4EE] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -35,11 +35,12 @@ export default function ChooseOptions() {
       title: "Better\nParenting",
       description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
-      gradient: "from-orange-100 to-white",
+      gradient: "from-[#F4F0E4] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
-      }
+      },
+      imageClass: "object-cover object-[50%_100%]"
     }
   ];
 
@@ -84,10 +85,10 @@ export default function ChooseOptions() {
               <div className="p-6 pb-0 mb-0 px-14 md:px-8 relative z-10">
                 {/* Tags */}
                 <div className="flex gap-2 mb-4">
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${card.tagColors.primary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
+                  <span className={`px-2 py-0.5 rounded-full font-light ${card.tagColors.primary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
                     {card.tags[0]}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${card.tagColors.secondary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
+                  <span className={`px-2 py-0.5 rounded-full font-light ${card.tagColors.secondary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
                     {card.tags[1]}
                   </span>
                 </div>

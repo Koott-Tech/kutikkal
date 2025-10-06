@@ -176,7 +176,6 @@ export default function Testimonials() {
                   "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
                 </p>
                 <br />
-                <br />
                 <p className="p2 mt-4 mb-4">
                   Arjun M., Parent of a 7-year-old
                 </p>
@@ -191,7 +190,6 @@ export default function Testimonials() {
                 <p>
                   "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
                 </p>
-                <br />
                 <br />
                 <p className="p2 mt-4 mb-4">
                   Priya L., Parent of a 11-year-old
@@ -216,7 +214,6 @@ export default function Testimonials() {
                 <p>
                   "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. When I get big feelings, we use a color chart to name them, and that helps me calm down. I'm proud that I'm braver now."
                 </p>
-                <br />
                 <br />
                 <p className="p2 mt-4 mb-4">
                   8-year-old
@@ -257,7 +254,6 @@ export default function Testimonials() {
                 <p>
                   "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing. Now I look forward to our sessions every week!"
                 </p>
-                <br />
                 <br />
                 <p className="p2 mt-4 mb-4">
                   6-year-old
@@ -352,7 +348,6 @@ function QuoteCard({ quote, by, tone = "mint", className = "" }) {
   return (
     <div className={`rounded-2xl p-6 md:p-7 border border-gray-200 ${toneClasses[tone]} ${className}`}>
       <p>"{quote}"</p>
-      <br />
       <br />
       <p className="p2 mt-4 mb-4">
         {by}

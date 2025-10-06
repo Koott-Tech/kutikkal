@@ -18,7 +18,7 @@ export default function HowItWorks() {
       id: 1,
       number: "01",
       title: "Explore Your Matches",
-      gradient: "conic-gradient(at 50% 50%, #f5f3ff 0deg, #ede9fe 120deg, #e9d5ff 240deg, #f5f3ff 360deg)",
+      gradient: "radial-gradient(circle at top right, #fffdff 0%, #fffdff 30%, #d6cae9 50%, #b19cd3 100%)",
       tags: ["Anxiety and Depression", "Accepts Cigna Health Plans", "Available this week"],
       description: "Browse profiles of ADHD specialists who fit your child's needs."
     },
@@ -34,14 +34,14 @@ export default function HowItWorks() {
       number: "03",
       title: "Schedule your visit", 
       gradient: "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
-      description: "Choose your preferred time and meet with provider as soon as tomorrow."
+      description: "Choose your preferred time and meet tomorrow."
     },
     {
       id: 4,
       number: "04",
       title: "Join your online session",
       gradient: "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
-      description: "Connect with your provider over live video from wherever you feel comfortable."
+      description: "Connect with your provider via live video."
     }
   ];
 
@@ -146,7 +146,7 @@ export default function HowItWorks() {
                     <div
                       className="rounded-lg p-4 h-[320px] w-[380px] flex flex-col justify-between card-bg-mobile"
                       style={{ 
-                        backgroundImage: card.id === 1 ? "url('/1.png')" : card.id === 2 ? "url('/2.png')" : card.id === 3 ? "url('/3.png')" : card.id === 4 ? "url('/4.png')" : card.gradient,
+                        backgroundImage: card.id === 1 ? "url('/howitworks1.webp')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.webp')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",
                         backgroundPosition: "center top",
                         backgroundRepeat: "no-repeat",
@@ -164,19 +164,7 @@ export default function HowItWorks() {
                       {/* Content Section */}
                       <div className="flex-1 flex flex-col justify-center">
                         {/* Card-specific content */}
-                        {card.id === 1 && (
-                          <div className="mt-2 flex flex-col gap-1 items-center">
-                            {card.tags.map((label) => (
-                              <div
-                                key={label}
-                                className="inline-flex w-fit items-center gap-1 rounded-full border border-gray-200 bg-white/90 px-2 py-1 text-sm text-gray-900"
-                              >
-                                <span className="text-indigo-700 text-sm">✓</span>
-                                <span>{label}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        {card.id === 1 && null}
 
 
                         {card.id === 3 && (
@@ -184,7 +172,7 @@ export default function HowItWorks() {
                           <div className="mt-6 flex justify-center">
                             <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-base text-gray-900">
                                 <span className="text-indigo-700">📅</span>
-                                <span>Evenings After 4pm</span>
+                                <span className="tight-tracking">Evenings After 4pm</span>
                               </div>
                             </div>
                             <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-700">
@@ -260,10 +248,10 @@ export default function HowItWorks() {
           {/* Desktop Layout */}
           <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
-          <div
+            <div
               className="rounded-2xl p-6 h-[355px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/1.png')",
+                backgroundImage: "url('/howitworks1.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">01</div>
@@ -271,21 +259,7 @@ export default function HowItWorks() {
               Tell Us What's Important
             </h6>
 
-            <div className="mt-4 flex-1 flex flex-col gap-3 items-center justify-center">
-              {[
-                "Anxiety and Depression",
-                "Accepts Cigna Health Plans",
-                "Available this week",
-              ].map((label) => (
-                <div
-                  key={label}
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900"
-                >
-                  <span className="text-indigo-700">✓</span>
-                  <span>{label}</span>
-                </div>
-              ))}
-            </div>
+            <div className="flex-1"></div>
 
             <p className="mt-auto mb-2.5 text-center">
               Browse ADHD specialist profiles for your child.
@@ -296,7 +270,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/2.png')",
+                backgroundImage: "url('/howitworks2.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">02</div>
@@ -322,7 +296,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/3.png')",
+                backgroundImage: "url('/howitworks3.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">03</div>
@@ -331,13 +305,13 @@ export default function HowItWorks() {
             </h6>
 
             <div className="flex-1 flex flex-col items-center justify-center">
-              <div className="mt-6 flex justify-center">
+              <div className="mt-2 flex justify-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
                   <span className="text-indigo-700">📅</span>
-                  <span>Evenings After 4pm</span>
+                  <span className="tight-tracking">Evenings After 4pm</span>
                 </div>
               </div>
-              <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-700">
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-700">
                 {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                   <div
                     key={d}
@@ -352,8 +326,7 @@ export default function HowItWorks() {
             </div>
 
             <p className="mt-auto mb-2.5 text-center">
-              Choose your time and meet with provider as soon as
-              tomorrow.
+              Choose your preferred time and meet tomorrow.
             </p>
           </div>
 
@@ -361,7 +334,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/4.png')",
+                backgroundImage: "url('/howitworks4.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">04</div>
@@ -371,7 +344,7 @@ export default function HowItWorks() {
 
 
             <p className="mt-auto mb-2.5 text-center">
-              Connect with your provider over live video from wherever you are.
+              Connect with your provider via live video.
             </p>
             </div>
           </div>

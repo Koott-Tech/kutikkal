@@ -79,12 +79,11 @@ h7 {
 }
 
 /* Paragraphs use Work Sans */
-.p1 {
+p {
   font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
   font-size: 16px !important;
   line-height: 1.5rem ;
-  letter-spacing: -0.80px !important;
-  
+  letter-spacing: -0.50px !important;
 }
 
 /* Paragraph size classes - like headings but for paragraphs */
@@ -94,6 +93,11 @@ h7 {
   line-height: 1rem !important;
   letter-spacing: -0.80px !important;
   font-weight: 300 !important;
+}
+
+/* Utility: tighter tracking override */
+.tight-tracking {
+  letter-spacing: -0.50px !important;
 }
 
 /* Override h6 font size to 18px */
@@ -139,8 +143,13 @@ html, body {
 }
 
 /* Ensure increased letter-spacing for body text */
-body, p, span, li, a, button, input, textarea {
+body, span, li, a, button, input, textarea {
   letter-spacing: 0.010em !important;
+}
+
+/* Ensure global paragraph letter-spacing takes effect sitewide */
+p {
+  letter-spacing: -0.50px !important;
 }
 
 /* Hide scrollbars globally while keeping scroll behavior */
