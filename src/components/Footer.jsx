@@ -24,7 +24,12 @@ export default function Footer() {
                     <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
-                    <button className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
+                    <button 
+                        className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
+                        style={{ backgroundColor: '#593494' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+                    >
                         Get started
                     </button>
                 </div>
@@ -55,7 +60,7 @@ export default function Footer() {
                                 <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('c_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Emotional & Mental Health</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +79,7 @@ export default function Footer() {
                                 <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_development')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Child Development & Learning</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_development ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +97,7 @@ export default function Footer() {
                                 <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Behaviour & Confidence</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_behaviour ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +113,7 @@ export default function Footer() {
                                 <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Stress & Academic Support</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_stress ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +128,7 @@ export default function Footer() {
                                 <div className="space-y-1 mt-2">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Trauma & Healing</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_trauma ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +160,7 @@ export default function Footer() {
                                 <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_adhd')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>ADHD Assessments</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +193,7 @@ export default function Footer() {
                                 <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Intelligence Tests</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,7 +208,7 @@ export default function Footer() {
                                 <div className="space-y-1">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
                                     >
                                         <span>Projective Tests</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

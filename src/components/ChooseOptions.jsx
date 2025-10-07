@@ -10,7 +10,7 @@ export default function ChooseOptions() {
       title: "Child\nCounselling",
       description: "Safe space for children to share and grow.",
       image: "/girl1.png",
-      gradient: "from-[#EEF4E4] to-white",
+      gradient: "from-[#DEEACB] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -23,7 +23,7 @@ export default function ChooseOptions() {
       title: "Child\nAssessment", 
       description: "Reveal your child's strengths and needs.",
       image: "/boy1.png",
-      gradient: "from-[#F4E4EE] to-white",
+      gradient: "from-[#EACBDE] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -35,7 +35,7 @@ export default function ChooseOptions() {
       title: "Better\nParenting",
       description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
-      gradient: "from-[#F4F0E4] to-white",
+      gradient: "from-[#EAE0CB] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -118,9 +118,9 @@ export default function ChooseOptions() {
                 <div className="absolute bottom-8 left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
                     <span className="px-3">Read more.</span>
-                    <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#3e2e73] transition-colors duration-200">
+                     <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200">
                       <svg
-                        className="w-3.5 h-3.5 group-hover:stroke-white group-hover:scale-110 transition-all duration-200"
+                        className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"
                         fill="none"
                         stroke="#000000"
                         strokeOpacity="0.6"

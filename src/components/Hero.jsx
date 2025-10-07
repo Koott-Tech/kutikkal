@@ -57,9 +57,11 @@ export default function Hero() {
               <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}
-                  className="w-full sm:w-fit inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
+                  className="w-full sm:w-fit inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
                   style={{ backgroundColor: '#593494' }}
                   type="button"
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
                 >
                   <span style={{ fontWeight: 500 }}>Get Started</span>
                 </button>

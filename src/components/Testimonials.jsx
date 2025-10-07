@@ -159,11 +159,11 @@ export default function Testimonials() {
         {/* Heading */}
         <div className="text-center px-4">
           <p className="p1">Testimonials</p>
-          <h3 className="mt-2">What families are saying</h3>
+          <h3 className="mt-2 mb-16">What families are saying</h3>
         </div>
 
         {/* Desktop: 5-column layout with images */}
-        <div className="hidden lg:grid grid-cols-5 gap-2 px-2.5 mt-10 items-start">
+        <div className="hidden lg:grid grid-cols-5 gap-2 px-2.5 items-start">
           {/* First column split vertically into two equal halves with padding and gap */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>

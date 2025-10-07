@@ -87,17 +87,17 @@ export default function SupportFaq() {
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight">Our promise</p>
-        <h3 className="text-center md:text-center mt-2" style={{ fontWeight: 500 }}>
+        <h3 className="text-center md:text-center mt-2 mb-16" style={{ fontWeight: 500 }}>
           Support at every step, so the next one is easier.
         </h3>
 
         {/* Desktop Layout: Image on left (60%), FAQ on right (40%) */}
-        <div className="hidden lg:grid mt-2 grid-cols-[1fr_1fr] xl:grid-cols-[6fr_4fr] gap-4 xl:gap-8 items-stretch" style={{ minHeight: 'inherit', height: '100%' }}>
+        <div className="hidden lg:grid grid-cols-[1fr_1fr] xl:grid-cols-[6fr_4fr] gap-4 xl:gap-8 items-stretch" style={{ minHeight: 'inherit', height: '100%' }}>
           {/* Left: Image that changes per selection */}
           <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
-              key={items[active >= 0 ? active : 0]?.image}
-              src={items[active >= 0 ? active : 0]?.image}
+              key={(active === 2 ? '/ourpromise3.webp' : items[active >= 0 ? active : 0]?.image) || 'fallback'}
+              src={active === 2 ? '/ourpromise3.webp' : items[active >= 0 ? active : 0]?.image}
               alt={items[active >= 0 ? active : 0]?.title}
               fill
               className="object-cover"
@@ -184,7 +184,7 @@ export default function SupportFaq() {
         </div>
 
         {/* Mobile/Tablet Layout: FAQ centered with image below when opened */}
-        <div className="lg:hidden mt-2">
+        <div className="lg:hidden">
           <div className="rounded-2xl bg-white space-y-2">
             {items.map((item, idx) => {
               const open = active === idx;

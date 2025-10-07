@@ -120,8 +120,10 @@ export default function HowItWorks() {
           </h3>
           <button
             type="button"
-            className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white hover:opacity-90 shadow-sm"
+            className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
             style={{ backgroundColor: '#593494' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
           >
             Get started
           </button>
@@ -278,12 +280,12 @@ export default function HowItWorks() {
               Explore Your Matches
             </h6>
 
-            <div className="flex-1"></div>
-
-            {/* Doctor Information */}
-            <div className="mb-3 text-center">
-              <div className="text-sm font-bold text-gray-900">Dr. Aswathy Sampath</div>
-              <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
+            <div className="flex-1 flex items-end justify-center pb-8">
+              {/* Doctor Information */}
+              <div className="text-center">
+                <div className="text-sm font-bold text-gray-900">Dr. Aswathy Sampath</div>
+                <div className="text-xs text-gray-600 mt-1">Licensed Psychiatric Therapist</div>
+              </div>
             </div>
 
             <p className="mb-2.5 text-center">

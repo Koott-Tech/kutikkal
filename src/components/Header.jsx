@@ -866,7 +866,12 @@ export default function Header() {
                 </span>
               </button>
             )}
-            <button className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm hover:opacity-90" style={{ backgroundColor: '#593494' }}>
+            <button 
+              className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm transition-colors duration-200" 
+              style={{ backgroundColor: '#593494' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+            >
               Get started
             </button>
             </div>
