@@ -23,11 +23,12 @@ export default function ChooseOptions() {
       title: "Child\nAssessment", 
       description: "Reveal your child's strengths and needs.",
       image: "/boy1.png",
-      gradient: "from-[#EACBDE] to-white",
+      gradient: "from-[#F4E4EE] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
-      }
+      },
+      imageClass: "object-cover object-[50%_100%] scale-110"
     },
     {
       id: 3,
@@ -35,12 +36,12 @@ export default function ChooseOptions() {
       title: "Better\nParenting",
       description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
-      gradient: "from-[#EAE0CB] to-white",
+      gradient: "from-[#F4F0E4] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
       },
-      imageClass: "object-cover object-[50%_100%]"
+      imageClass: "object-cover object-[50%_100%] scale-110"
     }
   ];
 
