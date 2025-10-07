@@ -96,8 +96,18 @@ export default function SupportFaq() {
           {/* Left: Image that changes per selection */}
           <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gray-100">
             <Image
-              key={(active === 2 ? '/ourpromise3.webp' : items[active >= 0 ? active : 0]?.image) || 'fallback'}
-              src={active === 2 ? '/ourpromise3.webp' : items[active >= 0 ? active : 0]?.image}
+              key={(
+                active === 3 ? '/ourpromise4.webp' :
+                active === 2 ? '/ourpromise3.webp' :
+                active === 1 ? '/ourpromise2.webp' :
+                items[active >= 0 ? active : 0]?.image
+              ) || 'fallback'}
+              src={
+                active === 3 ? '/ourpromise4.webp' :
+                active === 2 ? '/ourpromise3.webp' :
+                active === 1 ? '/ourpromise2.webp' :
+                items[active >= 0 ? active : 0]?.image
+              }
               alt={items[active >= 0 ? active : 0]?.title}
               fill
               className="object-cover"
