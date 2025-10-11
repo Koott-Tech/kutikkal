@@ -644,10 +644,18 @@ export default function CounsellingPageBuilder({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-100 flex flex-col md:flex-row h-screen">
+    <div className="fixed inset-0 z-50 bg-gray-100 flex h-screen">
+      {/* Mobile Backdrop Overlay */}
+      {showSidebar && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       {showSidebar && (
-        <div className="w-full md:w-80 lg:w-96 bg-white border-r border-gray-200 flex flex-col max-h-[50vh] md:max-h-full overflow-hidden">
+        <div className="fixed md:relative top-0 left-0 bottom-0 w-4/5 sm:w-3/5 md:w-80 lg:w-96 bg-white border-r border-gray-200 flex flex-col h-full overflow-hidden z-50 md:z-auto shadow-2xl md:shadow-none">
           {/* Header */}
           <div className="p-3 md:p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -829,9 +837,9 @@ export default function CounsellingPageBuilder({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
         {/* Toolbar */}
-        <div className="bg-white border-b border-gray-200 p-2 md:p-4 flex-shrink-0">
+        <div className="bg-white border-b border-gray-200 p-2 md:p-4 flex-shrink-0 relative z-30">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
               <button
