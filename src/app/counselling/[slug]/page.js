@@ -43,57 +43,28 @@ export async function generateMetadata({ params }) {
       const data = await response.json();
       if (data.success && data.message) {
         const service = data.message;
+        const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
+        const description = service.hero_subtext || 'Specialized counselling services for children and families.';
+        
         const metadata = {
-          title: service.seo_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`,
-          description: service.seo_description || 'Specialized counselling services for children and families.',
+          title,
+          description,
         };
-
-        // Add keywords if available
-        if (service.seo_keywords) {
-          metadata.keywords = service.seo_keywords.split(',').map(k => k.trim());
-        }
-
-        // Add robots meta tag
-        if (service.robots) {
-          metadata.robots = service.robots;
-        }
-
-        // Add canonical URL if specified
-        if (service.canonical_url) {
-          metadata.alternates = {
-            canonical: service.canonical_url
-          };
-        }
 
         // Add Open Graph metadata
         metadata.openGraph = {
-          title: service.og_title || service.seo_title || service.hero_title,
-          description: service.og_description || service.seo_description,
+          title,
+          description,
           type: 'website',
           siteName: 'Little Care',
         };
 
-        if (service.og_image) {
-          metadata.openGraph.images = [
-            {
-              url: service.og_image,
-              width: 1200,
-              height: 630,
-              alt: service.og_title || service.seo_title
-            }
-          ];
-        }
-
         // Add Twitter Card metadata
         metadata.twitter = {
           card: 'summary_large_image',
-          title: service.og_title || service.seo_title,
-          description: service.og_description || service.seo_description,
+          title,
+          description,
         };
-
-        if (service.og_image) {
-          metadata.twitter.images = [service.og_image];
-        }
 
         return metadata;
       }
