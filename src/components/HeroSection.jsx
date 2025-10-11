@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function HeroSection({ therapyType = "individual" }) {
+export default function HeroSection({ therapyType = "individual", cmsData = null }) {
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -137,7 +137,14 @@ export default function HeroSection({ therapyType = "individual" }) {
     }
   };
 
-  const currentContent = content[therapyType] || content.individual;
+  // Use CMS data if available, otherwise fall back to hardcoded content
+  const currentContent = cmsData ? {
+    title: cmsData.title || content[therapyType]?.title || content.individual.title,
+    description: cmsData.subtext || content[therapyType]?.description || content.individual.description,
+    image: cmsData.imageUrl || content[therapyType]?.image || content.individual.image,
+    alt: content[therapyType]?.alt || content.individual.alt,
+    features: content[therapyType]?.features || content.individual.features
+  } : (content[therapyType] || content.individual);
 
   return (
     <div className="w-full">
@@ -200,14 +207,25 @@ export default function HeroSection({ therapyType = "individual" }) {
             
                          {/* Image Area - Below content on mobile, right side on desktop */}
              <div className="relative h-96 md:h-full order-2 lg:order-2">
-               <div className="absolute inset-0">
-                 <Image
-                   src={currentContent.image}
-                   alt={currentContent.alt}
-                   fill
-                   className="object-cover"
-                   loading="lazy"
-                 />
+               <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                 {currentContent.image ? (
+                   <Image
+                     src={currentContent.image}
+                     alt={currentContent.alt}
+                     fill
+                     className="object-cover"
+                     loading="lazy"
+                     onError={(e) => {
+                       console.error('Image failed to load:', currentContent.image);
+                       e.target.src = '/kids.png'; // Fallback image
+                     }}
+                   />
+                 ) : (
+                   <div className="text-gray-500 text-center">
+                     <p>No image selected</p>
+                     <p className="text-sm">Image URL: {currentContent.image || 'None'}</p>
+                   </div>
+                 )}
                </div>
              </div>
           </div>

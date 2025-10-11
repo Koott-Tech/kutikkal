@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
+import { authApi } from "../lib/backendApi";
 
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
@@ -18,8 +19,85 @@ export default function Header() {
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
+  const [counsellingMenuItems, setCounsellingMenuItems] = useState({
+    emotional: [],
+    development: [],
+    behaviour: [],
+    stress: [],
+    trauma: []
+  });
+  const [profileData, setProfileData] = useState(null);
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
+
+  // Fetch profile data for authenticated users
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user && isAuthenticated() && !profileData) {
+        try {
+          const response = await authApi.getProfile({ silent: true });
+          if (response?.data?.user) {
+            const profile = response.data.user.profile || response.data.user;
+            setProfileData(profile);
+          }
+        } catch (error) {
+          // Silently fail - non-critical
+        }
+      }
+    };
+    
+    fetchProfile();
+  }, [user]);
+
+  // Fetch counselling menu items from API
+  useEffect(() => {
+    const fetchCounsellingMenu = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/counselling?limit=50`);
+        
+        if (!response.ok) {
+          // Silently fail if backend is not available
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.message.services) {
+          // Group services by category
+          const grouped = {
+            emotional: [],
+            development: [],
+            behaviour: [],
+            stress: [],
+            trauma: []
+          };
+          
+          data.message.services
+            .filter(service => service.status === 'published' && service.category)
+            .forEach(service => {
+              if (grouped[service.category]) {
+                grouped[service.category].push({
+                  name: service.seo_title?.replace(' - Little Care', '') || service.hero_title,
+                  url: `/counselling/${service.slug}`,
+                  order: service.menu_order || 0
+                });
+              }
+            });
+          
+          // Sort each category by menu_order
+          Object.keys(grouped).forEach(category => {
+            grouped[category].sort((a, b) => a.order - b.order);
+          });
+          
+          setCounsellingMenuItems(grouped);
+        }
+      } catch (error) {
+        // Silently fail - backend might not be running
+      }
+    };
+    
+    fetchCounsellingMenu();
+  }, []);
 
   // Close submenu when clicking outside
   useEffect(() => {
@@ -159,14 +237,9 @@ export default function Header() {
       return user.email;
     }
     
-    // For psychologists, show name from profile
-    if (user.role === 'psychologist' && user.profile) {
-      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
-    }
-    
-    // For clients, show name from profile
-    if (user.role === 'client' && user.profile) {
-      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+    // For psychologists and clients, show name from fetched profile data
+    if (profileData && profileData.first_name && profileData.last_name) {
+      return `${profileData.first_name} ${profileData.last_name}`.trim();
     }
     
     // Fallback to email if no name available
@@ -240,7 +313,12 @@ export default function Header() {
                               setActiveSubmenu('emotional');
                               setClickedSubmenu(null);
                             }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                            onMouseLeave={(e) => {
+                              const relatedTarget = e.relatedTarget;
+                              if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                                setActiveSubmenu(null);
+                              }
+                            }}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
@@ -256,20 +334,19 @@ export default function Header() {
                             </div>
                             {/* Hover/Click dropdown */}
                             {(activeSubmenu === 'emotional' || clickedSubmenu === 'emotional') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                              {[
-                                { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
-                                { name: "Depression Counselling", url: "/counselling/depression" },
-                                { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
-                            { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
-                                { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
-                              ].map((service, index) => (
+                              <div 
+                                className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('emotional')}
+                                onMouseLeave={() => setActiveSubmenu(null)}
+                              >
+                              {counsellingMenuItems.emotional.map((service, index) => (
                                 <div 
                                   key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
+                                    setIsFindCareOpen(false);
                                   }}
                                 >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
@@ -286,7 +363,12 @@ export default function Header() {
                               setActiveSubmenu('development');
                               setClickedSubmenu(null);
                             }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                            onMouseLeave={(e) => {
+                              const relatedTarget = e.relatedTarget;
+                              if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                                setActiveSubmenu(null);
+                              }
+                            }}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
@@ -302,19 +384,19 @@ export default function Header() {
                             </div>
                             {/* Hover/Click dropdown */}
                             {(activeSubmenu === 'development' || clickedSubmenu === 'development') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                              {[
-                                { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
-                            { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
-                                { name: "Autism Support", url: "/counselling/autism-support" },
-                                { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
-                              ].map((service, index) => (
+                              <div 
+                                className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('development')}
+                                onMouseLeave={() => setActiveSubmenu(null)}
+                              >
+                              {counsellingMenuItems.development.map((service, index) => (
                                 <div 
                                   key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
+                                    setIsFindCareOpen(false);
                                   }}
                                 >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
@@ -331,7 +413,12 @@ export default function Header() {
                               setActiveSubmenu('behaviour');
                               setClickedSubmenu(null);
                             }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                            onMouseLeave={(e) => {
+                              const relatedTarget = e.relatedTarget;
+                              if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                                setActiveSubmenu(null);
+                              }
+                            }}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
@@ -347,17 +434,19 @@ export default function Header() {
                             </div>
                             {/* Hover/Click dropdown */}
                             {(activeSubmenu === 'behaviour' || clickedSubmenu === 'behaviour') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                              {[
-                                { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
-                                { name: "Confidence & Self-Esteem", url: "/counselling/confidence-self-esteem" }
-                              ].map((service, index) => (
+                              <div 
+                                className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('behaviour')}
+                                onMouseLeave={() => setActiveSubmenu(null)}
+                              >
+                              {counsellingMenuItems.behaviour.map((service, index) => (
                                 <div 
                                   key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
+                                    setIsFindCareOpen(false);
                                   }}
                                 >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
@@ -374,7 +463,12 @@ export default function Header() {
                               setActiveSubmenu('stress');
                               setClickedSubmenu(null);
                             }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                            onMouseLeave={(e) => {
+                              const relatedTarget = e.relatedTarget;
+                              if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                                setActiveSubmenu(null);
+                              }
+                            }}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
@@ -390,16 +484,19 @@ export default function Header() {
                             </div>
                             {/* Hover/Click dropdown */}
                             {(activeSubmenu === 'stress' || clickedSubmenu === 'stress') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                              {[
-                                { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" }
-                              ].map((service, index) => (
+                              <div 
+                                className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('stress')}
+                                onMouseLeave={() => setActiveSubmenu(null)}
+                              >
+                              {counsellingMenuItems.stress.map((service, index) => (
                                 <div 
                                   key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                   onClick={() => {
                                     router.push(service.url);
                                     setClickedSubmenu(null);
+                                    setIsFindCareOpen(false);
                                   }}
                                 >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
@@ -416,7 +513,12 @@ export default function Header() {
                               setActiveSubmenu('trauma');
                               setClickedSubmenu(null);
                             }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                            onMouseLeave={(e) => {
+                              const relatedTarget = e.relatedTarget;
+                              if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+                                setActiveSubmenu(null);
+                              }
+                            }}
                           >
                               <div 
                                 className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
@@ -432,23 +534,24 @@ export default function Header() {
                             </div>
                             {/* Hover/Click dropdown */}
                             {(activeSubmenu === 'trauma' || clickedSubmenu === 'trauma') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                              {[
-                                { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
-                            { name: "Grief & Loss", url: "/counselling/grief-loss" },
-                                { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
-                          ].map((service, index) => (
-                            <div 
-                              key={index}
+                              <div 
+                                className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('trauma')}
+                                onMouseLeave={() => setActiveSubmenu(null)}
+                              >
+                              {counsellingMenuItems.trauma.map((service, index) => (
+                                <div 
+                                  key={index}
                                   className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
-                              onClick={() => {
-                                router.push(service.url);
+                                  onClick={() => {
+                                    router.push(service.url);
                                     setClickedSubmenu(null);
-                              }}
-                            >
+                                    setIsFindCareOpen(false);
+                                  }}
+                                >
                                   <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{service.name}</span>
-                            </div>
-                          ))}
+                                </div>
+                              ))}
                               </div>
                             )}
                           </div>
@@ -1005,13 +1108,7 @@ export default function Header() {
                         <div>
                           <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Emotional & Mental Health</h6>
                           <div className="space-y-1 ml-2">
-                            {[
-                              { name: "Anxiety Counselling", url: "/counselling/anxiety-sadness" },
-                              { name: "Depression Counselling", url: "/counselling/depression" },
-                              { name: "Big Emotions (CBT – Kids)", url: "/counselling/big-emotions" },
-                          { name: "Overthinking & OCD", url: "/counselling/overthinking-ocd" },
-                              { name: "Fear & Phobias Support", url: "/counselling/fear-phobias-support" }
-                            ].map((service, index) => (
+                            {counsellingMenuItems.emotional.map((service, index) => (
                               <div 
                                 key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1029,12 +1126,7 @@ export default function Header() {
                         <div>
                           <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Child Development & Learning</h6>
                           <div className="space-y-1 ml-2">
-                            {[
-                              { name: "ADHD or Attention Struggles", url: "/counselling/adhd-attention" },
-                          { name: "Learning Difficulties (Remedial)", url: "/counselling/learning-difficulties" },
-                              { name: "Autism Support", url: "/counselling/autism-support" },
-                              { name: "Communication & Social Skills", url: "/counselling/communication-social-skills" }
-                            ].map((service, index) => (
+                            {counsellingMenuItems.development.map((service, index) => (
                               <div 
                                 key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1052,10 +1144,7 @@ export default function Header() {
                         <div>
                           <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Behaviour & Confidence Building</h6>
                           <div className="space-y-1 ml-2">
-                            {[
-                              { name: "Behavioral Coaching", url: "/counselling/behavioral-coaching" },
-                              { name: "Confidence & Self-Esteem", url: "/counselling/confidence-self-esteem" }
-                            ].map((service, index) => (
+                            {counsellingMenuItems.behaviour.map((service, index) => (
                               <div 
                                 key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1073,9 +1162,7 @@ export default function Header() {
                         <div>
                           <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Stress & Academic Support</h6>
                           <div className="space-y-1 ml-2">
-                            {[
-                              { name: "Exam Fear & Study Stress", url: "/counselling/exam-fear-study-stress" }
-                            ].map((service, index) => (
+                            {counsellingMenuItems.stress.map((service, index) => (
                               <div 
                                 key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1093,21 +1180,17 @@ export default function Header() {
                         <div>
                           <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Trauma & Healing</h6>
                           <div className="space-y-1 ml-2">
-                            {[
-                              { name: "Trauma & Abuse", url: "/counselling/trauma-abuses" },
-                          { name: "Grief & Loss", url: "/counselling/grief-loss" },
-                              { name: "Family Conflict Recovery", url: "/counselling/family-conflict-recovery" }
-                        ].map((service, index) => (
-                          <div 
-                            key={index}
+                            {counsellingMenuItems.trauma.map((service, index) => (
+                              <div 
+                                key={index}
                                 className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              router.push(service.url);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm">{service.name}</span>
-                          </div>
-                        ))}
+                                onClick={() => {
+                                  router.push(service.url);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">{service.name}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                         

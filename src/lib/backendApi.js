@@ -17,16 +17,20 @@ console.log('Environment variables:', {
 });
 
 // Helper function to handle API responses
-const handleResponse = async (response) => {
+const handleResponse = async (response, options = {}) => {
   if (!response.ok) {
     try {
       const error = await response.json();
-      console.error('Backend API Error Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: error,
-        headers: Object.fromEntries(response.headers.entries())
-      });
+      
+      // Only log errors if not silenced
+      if (!options.silent) {
+        console.error('Backend API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: error,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      }
       
       // Handle authentication/authorization errors - auto logout
       if (response.status === 401 || response.status === 403) {
@@ -142,22 +146,26 @@ const handleResponse = async (response) => {
 async function apiRequest(endpoint, options = {}) {
   const url = `${BACKEND_BASE_URL}${endpoint}`;
   
-  // Debug logging
-  console.log('API Request:', {
-    endpoint,
-    BACKEND_BASE_URL,
-    fullUrl: url
-  });
+  // Debug logging (skip if silent)
+  if (!options.silent) {
+    console.log('API Request:', {
+      endpoint,
+      BACKEND_BASE_URL,
+      fullUrl: url
+    });
+  }
   
   // Get token from localStorage if available
   let token = typeof window !== 'undefined' ? (localStorage.getItem('authToken') || localStorage.getItem('token')) : null;
   
-  console.log('🔍 API Request Debug:', {
-    endpoint,
-    hasToken: !!token,
-    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-    url
-  });
+  if (!options.silent) {
+    console.log('🔍 API Request Debug:', {
+      endpoint,
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+      url
+    });
+  }
   
   const makeRequest = async (authToken) => {
     const config = {
@@ -199,15 +207,18 @@ async function apiRequest(endpoint, options = {}) {
 
   try {
     const response = await makeRequest(token);
-    return await handleResponse(response);
+    return await handleResponse(response, { silent: options.silent });
   } catch (error) {
-    console.error('API Request Failed:', {
-      url,
-      error: error.message,
-      errorType: error.constructor.name,
-      errorStack: error.stack,
-      fullError: error
-    });
+    // Only log errors if not silenced
+    if (!options.silent) {
+      console.error('API Request Failed:', {
+        url,
+        error: error.message,
+        errorType: error.constructor.name,
+        errorStack: error.stack,
+        fullError: error
+      });
+    }
     throw error;
   }
 }
@@ -236,8 +247,8 @@ export const authApi = {
   },
 
   // Get current user profile
-  async getProfile() {
-    return apiRequest('/auth/profile');
+  async getProfile(options = {}) {
+    return apiRequest('/auth/profile', options);
   },
 
   // Update profile picture
@@ -782,6 +793,40 @@ export const adminApi = {
 
   async getAvailabilityRange(startDate, endDate) {
     return apiRequest(`/free-assessment-timeslots/availability-range?startDate=${startDate}&endDate=${endDate}`);
+  },
+
+  // Counselling Services Management
+  async getCounsellingServices(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/counselling/admin?${queryParams}`);
+  },
+
+  async getCounsellingService(id) {
+    return apiRequest(`/counselling/admin/${id}`);
+  },
+
+  async createCounsellingService(serviceData) {
+    return apiRequest('/counselling/admin', {
+      method: 'POST',
+      body: JSON.stringify(serviceData),
+    });
+  },
+
+  async updateCounsellingService(id, serviceData) {
+    return apiRequest(`/counselling/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(serviceData),
+    });
+  },
+
+  async deleteCounsellingService(id) {
+    return apiRequest(`/counselling/admin/${id}`, {
+      method: 'DELETE',
+    });
   },
 };
 

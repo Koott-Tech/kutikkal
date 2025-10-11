@@ -39,9 +39,35 @@ const DATA = [
   },
 ];
 
-export default function HelpFaq() {
+export default function HelpFaq({ cmsData = null }) {
   // Track open item as "categoryIndex-questionIndex"
   const [openId, setOpenId] = useState("");
+
+  // Use CMS data if available, otherwise fall back to hardcoded data
+  const faqData = cmsData && cmsData.faqs && cmsData.faqs.length > 0 ? 
+    (() => {
+      const midpoint = Math.ceil(cmsData.faqs.length / 2);
+      return [
+        {
+          title: "Getting Started",
+          items: cmsData.faqs.slice(0, midpoint).map(faq => ({
+            q: faq.question,
+            a: faq.answer
+          }))
+        },
+        {
+          title: "Understanding Therapy",
+          items: cmsData.faqs.slice(midpoint).map(faq => ({
+            q: faq.question,
+            a: faq.answer
+          }))
+        }
+      ];
+    })() : 
+    DATA;
+
+  // Get the left image from CMS data or use default
+  const leftImageUrl = cmsData?.leftImageUrl || "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png";
 
   return (
     <section className="w-full mt-20 px-4 lg:px-6">
@@ -64,7 +90,7 @@ export default function HelpFaq() {
           </div>
                      <div className="relative mt-6 w-[320px] h-[180px] md:w-[320px] md:h-[240px] overflow-hidden rounded-2xl">
             <Image
-              src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+              src={leftImageUrl}
               alt="Smiling people"
               fill
               className="object-cover"
@@ -75,7 +101,7 @@ export default function HelpFaq() {
 
                  {/* Right column: Accordion FAQ */}
          <div className="mr-8 md:mr-12 w-full md:max-w-2xl ml-1 md:ml-0">
-           {DATA.map((section, ci) => (
+           {faqData.map((section, ci) => (
             <div key={section.title} className="mb-10 mt-3">
               <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left`}>
                 {section.title}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Users, 
   UserCheck, 
@@ -12,7 +13,8 @@ import {
   Menu,
   X,
   Clock,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -46,6 +48,7 @@ export default function AdminLayout({ children }) {
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
     { name: 'Blogs', href: '/admin/blogs', icon: FileText },
+    { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
     { name: 'Free Assessment Timeslots', href: '/admin/free-assessment-timeslots', icon: Clock },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
@@ -78,7 +81,13 @@ export default function AdminLayout({ children }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
-            <h6>Admin Panel</h6>
+            <Image
+              src="/Logo.webp"
+              alt="Little Care Logo"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
           </div>
 
           {/* Navigation */}
@@ -121,24 +130,17 @@ export default function AdminLayout({ children }) {
       {/* Main content (push right for desktop left sidebar) */}
       <div className="lg:ml-64">
         {/* Top bar */}
-        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 w-full">
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 w-full sticky top-0 z-30">
           <div className="flex items-center justify-between">
-            <h6>Little Care</h6>
-            <nav className="hidden lg:flex items-center space-x-2">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  >
-                    <Icon className="h-4 w-4 mr-2" />
-                    {item.name}
-                  </a>
-                );
-              })}
-            </nav>
+            <h6>Little Care Admin Panel</h6>
+            <div className="flex items-center space-x-4">
+              {user && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{user.email}</span>
+                  <span className="ml-2 text-gray-400 capitalize">({user.role})</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

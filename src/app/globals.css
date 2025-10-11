@@ -147,6 +147,11 @@ body, span, li, a, button, input, textarea {
   letter-spacing: 0.010em !important;
 }
 
+/* Make all buttons and clickable elements show pointer cursor */
+button {
+  cursor: pointer !important;
+}
+
 /* Ensure global paragraph letter-spacing takes effect sitewide */
 p {
   letter-spacing: -0.50px !important;

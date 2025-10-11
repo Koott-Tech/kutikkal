@@ -27,13 +27,9 @@ export default function MessagesPage({ session = null }) {
     loadConversations();
   }, []);
 
-  // Auto-select conversation when conversations are loaded
+  // Don't auto-select conversations - let user click to select
   useEffect(() => {
-    if (conversations.length > 0 && !selectedConversation) {
-      console.log('Auto-selecting first conversation:', conversations[0]);
-      setSelectedConversation(conversations[0]);
-      // Don't auto-show chat screen - let user select
-    }
+    // Removed auto-selection logic
   }, [conversations, selectedConversation]);
 
   // Focus on input when conversation is selected
@@ -60,19 +56,7 @@ export default function MessagesPage({ session = null }) {
         setSelectedConversation(targetConversation);
         // Show chat screen for session-specific conversations
         setShowChatScreen(true);
-      } else if (!targetConversation) {
-        console.log('Target conversation not found, selecting first conversation');
-        // If the specific conversation is not found, select the first one
-        if (conversations[0] && conversations[0].id !== selectedConversation?.id) {
-          setSelectedConversation(conversations[0]);
-        }
-        // Don't auto-show chat screen
       }
-    } else if (conversations.length > 0 && !selectedConversation) {
-      // If no session is provided but conversations exist, select the first one
-      console.log('No session provided, selecting first conversation:', conversations[0]);
-      setSelectedConversation(conversations[0]);
-      // Don't auto-show chat screen
     }
   }, [session?.conversationId, conversations, selectedConversation?.id]);
 
@@ -412,25 +396,17 @@ export default function MessagesPage({ session = null }) {
     <div className="bg-white h-[calc(100vh-200px)] md:h-[calc(100vh-150px)] lg:h-[calc(100vh-120px)] flex flex-col relative">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-white z-10">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={showChatScreen ? handleBackToConversations : null}
-            className={`p-2 hover:bg-gray-100 rounded-full ${!showChatScreen ? 'invisible' : ''}`}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center space-x-2">
-            <MessageSquare className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold">Messages</h2>
-          </div>
+        <div className="flex items-center space-x-4">
+          <MessageSquare className="h-6 w-6 text-blue-600" />
+          <h3>Messages</h3>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Conversations List */}
-        <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 bg-gray-50 overflow-y-auto`}>
+        <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50 overflow-y-auto`}>
           <div className="p-4">
-            <h3 className="font-medium text-gray-900 mb-3">Conversations</h3>
+            <h4 className="text-gray-900 mb-3">Conversations</h4>
             {isLoading ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
@@ -438,10 +414,10 @@ export default function MessagesPage({ session = null }) {
             ) : conversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+                <h3 className="text-gray-900 mb-2">No conversations yet</h3>
                 <p className="text-gray-600 mb-4">Start a conversation with your booked psychologist</p>
                 <button
-                  onClick={() => window.location.href = '/profile?tab=sessions'}
+                  onClick={() => window.location.href = '/profile/sessions'}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   View Sessions
@@ -453,27 +429,43 @@ export default function MessagesPage({ session = null }) {
                   <div
                     key={conversation.id}
                     onClick={() => handleConversationSelect(conversation)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                    className={`p-5 rounded-lg cursor-pointer transition-colors ${
                       selectedConversation?.id === conversation.id
                         ? 'bg-blue-100 border-blue-300'
                         : 'bg-white hover:bg-gray-100'
                     }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
+                    <div className="flex items-center justify-between space-x-6">
+                      <div className="flex items-center space-x-6 flex-1 min-w-0">
+                        <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          {conversation.psychologist?.cover_image_url ? (
+                            <img 
+                              src={conversation.psychologist.cover_image_url}
+                              alt={getConversationName(conversation)}
+                              className="w-14 h-14 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-blue-600" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="text-gray-900 truncate">
+                            {getConversationName(conversation)}
+                          </h5>
+                          <p className="text-gray-500 truncate">
+                            {getConversationSubtitle(conversation)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 truncate">
-                          {getConversationName(conversation)}
-                        </h4>
-                        <p className="text-sm text-gray-500 truncate">
-                          {getConversationSubtitle(conversation)}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(conversation.last_message_at)}
-                        </p>
-                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = `/therapist-profile?doctor=${conversation.psychologist?.id || 0}`;
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
+                      >
+                        Book Session
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -483,27 +475,41 @@ export default function MessagesPage({ session = null }) {
         </div>
 
         {/* Messages Area */}
-        <div className={`${!showChatScreen ? 'hidden md:block' : 'block'} flex-1 flex flex-col`}>
+        <div className={`${showChatScreen ? 'block' : 'hidden'} w-full flex flex-col`}>
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
               <div className="p-4 border-b bg-white flex-shrink-0">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-blue-600" />
+                  <button
+                    onClick={handleBackToConversations}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ArrowLeft className="h-5 w-5 text-gray-600" />
+                  </button>
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    {selectedConversation.psychologist?.cover_image_url ? (
+                      <img 
+                        src={selectedConversation.psychologist.cover_image_url}
+                        alt={getConversationName(selectedConversation)}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-5 w-5 text-blue-600" />
+                    )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">
+                    <h5 className="text-gray-900">
                       {getConversationName(selectedConversation)}
-                    </h3>
-                    <p className="text-sm text-gray-500">
+                    </h5>
+                    <p className="text-gray-500">
                       {getConversationSubtitle(selectedConversation)}
                     </p>
-                    <p className="text-xs text-green-600 font-medium">
+                    <p className="text-green-600">
                       ✓ Conversation active
                     </p>
                     {selectedConversation.id.startsWith('mock-') || selectedConversation.id.startsWith('fallback-') ? (
-                      <p className="text-xs text-orange-600 font-medium">
+                      <p className="text-orange-600">
                         ⚠ Temporary conversation - refresh to connect
                       </p>
                     ) : null}

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-export default function BenefitsSection({ therapyType = "individual" }) {
+export default function BenefitsSection({ therapyType = "individual", cmsData = null, showAllBenefits = false }) {
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -207,17 +207,21 @@ export default function BenefitsSection({ therapyType = "individual" }) {
     }
   };
 
-  const currentContent = content[therapyType] || content.individual;
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Use CMS data if available, otherwise fall back to hardcoded content
+  const currentContent = cmsData ? {
+    title: content[therapyType]?.title || content.individual.title,
+    benefits: cmsData.benefits && cmsData.benefits.length > 0 ? cmsData.benefits : (content[therapyType]?.benefits || content.individual.benefits)
+  } : (content[therapyType] || content.individual);
+  const [isExpanded, setIsExpanded] = useState(showAllBenefits);
 
   return (
          <section className="w-full bg-white lg:h-screen">
              <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
         {/* Header */}
         <div className="text-center mb-20 mt-24">
-          <h2 className="text-[2.5rem] md:text-5xl font-medium text-black tracking-[-0.125rem] md:tracking-normal leading-[1.1] md:leading-normal">
+          <h3 className="font-medium text-black">
             {currentContent.title}
-          </h2>
+          </h3>
         </div>
 
         {/* Content Grid */}
@@ -250,7 +254,7 @@ export default function BenefitsSection({ therapyType = "individual" }) {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-black text-lg mb-2">{benefit.title}</h3>
+                    <p className="font-semibold text-black mb-2">{benefit.title}</p>
                     <p className="text-black md:font-sans">{benefit.description}</p>
                   </div>
                 </div>

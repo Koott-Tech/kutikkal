@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
 
-export default function TherapyTypesSplit({ therapyType = "individual" }) {
+export default function TherapyTypesSplit({ therapyType = "individual", cmsData = null }) {
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -105,7 +107,13 @@ export default function TherapyTypesSplit({ therapyType = "individual" }) {
     }
   };
 
-  const currentContent = content[therapyType] || content.individual;
+  // Use CMS data if available, otherwise fall back to hardcoded content
+  const currentContent = cmsData ? {
+    title: content[therapyType]?.title || content.individual.title,
+    types: cmsData.types && cmsData.types.length > 0 ? cmsData.types : (content[therapyType]?.types || content.individual.types),
+    rightImageUrl: cmsData.rightImageUrl || content[therapyType]?.rightImageUrl || content.individual.rightImageUrl,
+    buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
+  } : (content[therapyType] || content.individual);
   return (
     <div className="px-4 sm:px-8 md:px-[50px]">
              <section className="w-full mt-16 md:mt-20 mb-6 md:mb-8">
@@ -116,8 +124,8 @@ export default function TherapyTypesSplit({ therapyType = "individual" }) {
                  className="flex flex-col justify-start px-5 sm:px-8 md:px-[100px] lg:px-[120px] py-20 text-[#1c331d]"
                  style={{ background: "#d3e9d1" }}
                >
-                                                                                         <h2 
-                   className="mb-2 text-[2.5rem] md:text-[4rem] tracking-[-0.125rem] md:tracking-[-0.195rem] leading-[110%] md:leading-[106%]"
+                 <h3 
+                   className="mb-2"
                    style={{
                      color: '#15171a',
                      fontWeight: 500,
@@ -125,30 +133,43 @@ export default function TherapyTypesSplit({ therapyType = "individual" }) {
                    }}
                  >
                   {currentContent.title}
-                </h2>
+                </h3>
                
                <div className="mt-12 space-y-8">
                  {currentContent.types.map((type, index) => (
                    <div key={index}>
-                     <h3 className="text-base md:text-lg font-normal mb-3">
+                     <p className="font-semibold mb-3">
                        {type.title}
-                     </h3>
-                     <p className="text-sm md:text-base leading-relaxed font-normal">
+                     </p>
+                     <p className="leading-relaxed font-normal">
                        {type.description}
                      </p>
                    </div>
                  ))}
                </div>
-                   
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button className="mt-8 inline-flex items-center rounded-full bg-[#38663a] px-12 sm:px-10 md:px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#2d4f2e] w-fit mx-auto md:mx-0">
-                           {currentContent.buttonText}
-                         </button>
+                  
+               <button 
+                 className="mt-8 inline-flex items-center justify-center rounded-full px-12 py-4 shadow-lg transition-colors duration-200 w-fit mx-auto md:mx-0"
+                 style={{ 
+                   backgroundColor: '#38663a',
+                   color: 'white',
+                   fontSize: '18px',
+                   fontWeight: 500,
+                   textTransform: 'none',
+                   letterSpacing: 'normal',
+                   fontFamily: "'Work Sans', Arial, sans-serif"
+                 }}
+                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d4f2e'}
+                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#38663a'}
+               >
+                 {currentContent.buttonText || "Get started"}
+               </button>
                          
                          {/* Mobile Image Section - Hidden on Desktop */}
                          <div className="block md:hidden mt-12 -mx-5 -mb-20">
                            <div className="relative h-[50vh] w-screen overflow-hidden">
                              <Image
-                               src="/rightside5th.png"
+                               src={currentContent.rightImageUrl || "/rightside5th.png"}
                                alt="Two women sitting on a couch during therapy session"
                                fill
                                className="object-cover"
@@ -162,7 +183,7 @@ export default function TherapyTypesSplit({ therapyType = "individual" }) {
             {/* Right: Image */}
             <div className="relative">
               <Image
-                src="/rightside5th.png"
+                src={currentContent.rightImageUrl || "/rightside5th.png"}
                 alt="Two women sitting on a couch during therapy session"
                 fill
                 className="object-cover"
