@@ -33,7 +33,44 @@ const FALLBACK_META = {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   
-  // Use static metadata for now (skip API call to prevent 500 errors)
+  try {
+    // Try to fetch from API for dynamic metadata
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/counselling/${slug}`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.message) {
+        const service = data.message;
+        // Only use fields that exist in database
+        const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
+        const description = service.hero_subtext || 'Specialized counselling services for children and families.';
+        
+        return {
+          title,
+          description,
+          openGraph: {
+            title,
+            description,
+            type: 'website',
+            siteName: 'Little Care',
+          },
+          twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+          },
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching metadata (non-critical):', error);
+    // Fall through to static metadata
+  }
+  
+  // Fallback to static metadata if API fails
   const meta = FALLBACK_META[slug] || {
     title: `${slug?.replace(/[-_]/g, ' ') || 'Counselling'} - Little Care`,
     description: 'Specialized counselling services for children and families.'
