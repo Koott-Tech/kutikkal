@@ -10,6 +10,7 @@ import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import HelpFaq from '@/components/HelpFaq';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function CounsellingPageBuilder({ 
   serviceId, 
@@ -182,17 +183,13 @@ export default function CounsellingPageBuilder({
                 className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                Hero Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.hero_image_url}
-                onChange={(e) => handleInputChange('hero_image_url', e.target.value)}
-                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <ImageUpload
+              currentImageUrl={formData.hero_image_url}
+              onImageUpload={(url) => handleInputChange('hero_image_url', url)}
+              imageType="hero"
+              slug={formData.slug}
+              label="Hero Image"
+            />
           </div>
         );
 
@@ -414,56 +411,40 @@ export default function CounsellingPageBuilder({
 
       case 'images':
         return (
-          <div className="space-y-3 md:space-y-4">
+          <div className="space-y-4 md:space-y-6">
             <h3 className="text-base md:text-lg font-semibold">Edit Images</h3>
             
-            <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                Hero Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.hero_image_url}
-                onChange={(e) => handleInputChange('hero_image_url', e.target.value)}
-                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <ImageUpload
+              currentImageUrl={formData.hero_image_url}
+              onImageUpload={(url) => handleInputChange('hero_image_url', url)}
+              imageType="hero"
+              slug={formData.slug}
+              label="Hero Image"
+            />
             
-            <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                Therapy Types Right Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.right_image_url}
-                onChange={(e) => handleInputChange('right_image_url', e.target.value)}
-                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <ImageUpload
+              currentImageUrl={formData.right_image_url}
+              onImageUpload={(url) => handleInputChange('right_image_url', url)}
+              imageType="right"
+              slug={formData.slug}
+              label="Therapy Types Right Image"
+            />
             
-            <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                FAQ Left Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.left_image_url || ''}
-                onChange={(e) => handleInputChange('left_image_url', e.target.value)}
-                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <ImageUpload
+              currentImageUrl={formData.left_image_url || ''}
+              onImageUpload={(url) => handleInputChange('left_image_url', url)}
+              imageType="left"
+              slug={formData.slug}
+              label="FAQ Left Image"
+            />
             
-            <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                Mobile Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.mobile_image_url}
-                onChange={(e) => handleInputChange('mobile_image_url', e.target.value)}
-                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <ImageUpload
+              currentImageUrl={formData.mobile_image_url}
+              onImageUpload={(url) => handleInputChange('mobile_image_url', url)}
+              imageType="mobile"
+              slug={formData.slug}
+              label="Mobile Image"
+            />
           </div>
         );
 

@@ -129,7 +129,7 @@ export default function CounsellingAdminPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Counselling Services</h1>
+          <h5 className="font-bold text-gray-900">Counselling Services</h5>
           <p className="text-gray-600 mt-2">Manage counselling service pages and content</p>
         </div>
         <button
