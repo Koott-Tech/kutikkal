@@ -33,7 +33,7 @@ const FALLBACK_META = {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   
-  try {
+    try {
     // Try to fetch from API for dynamic metadata
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/counselling/${slug}`, {
       cache: 'no-store',
@@ -117,16 +117,16 @@ export default async function CounsellingDynamicPage({ params }) {
     return <CounsellingNotFound slug={slug} />;
   }
 
-  // Render with CMS data
+  // Render with CMS data - with safe fallbacks
   return (
     <div>
       <ScrollToTop />
       <HeroSection 
         therapyType={slug} 
         cmsData={{
-          title: serviceData.hero_title,
-          subtext: serviceData.hero_subtext,
-          imageUrl: serviceData.hero_image_url
+          title: serviceData.hero_title || 'Counselling',
+          subtext: serviceData.hero_subtext || '',
+          imageUrl: serviceData.hero_image_url || ''
         }}
       />
       <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
@@ -135,20 +135,21 @@ export default async function CounsellingDynamicPage({ params }) {
       <BenefitsSection 
         therapyType={slug} 
         cmsData={{
-          benefits: serviceData.benefits
+          benefits: serviceData.benefits || []
         }}
       />
       <TherapyTypesSplit 
         therapyType={slug} 
         cmsData={{
-          types: serviceData.types,
-          rightImageUrl: serviceData.right_image_url
+          types: serviceData.types || [],
+          rightImageUrl: serviceData.right_image_url || '',
+          buttonText: 'Get started'
         }}
       />
       <div className="mt-24">
         <HelpFaq 
           cmsData={{
-            faqs: serviceData.faqs
+            faqs: serviceData.faqs || []
           }}
         />
       </div>
