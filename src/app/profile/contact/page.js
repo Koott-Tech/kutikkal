@@ -18,40 +18,40 @@ export default function ContactPage() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (user) {
-        console.log('📋 User object in contact page:', user);
-        
-        try {
-          // Fetch the full profile data from backend
-          const response = await authApi.getProfile();
-          console.log('📋 Profile API response:', response);
-          
-          if (response?.data?.user) {
-            const profileData = response.data.user.profile || response.data.user;
-            console.log('📋 Profile data:', profileData);
-            
-            setProfileForm({
-              first_name: profileData.first_name || '',
-              last_name: profileData.last_name || '',
-              phone_number: profileData.phone_number || '',
-              child_name: profileData.child_name || '',
-              child_age: profileData.child_age || ''
-            });
-          }
-        } catch (error) {
-          console.error('📋 Error fetching profile:', error);
-          // Fallback to user object if API fails
-          const profile = user.profile || user;
+      if (!user) return;
+      
+      // First, try to use data from user context (already loaded by layout)
+      const profile = user.profile || user;
+      if (profile.first_name || profile.last_name) {
+        // Data already available in context, no need to fetch
+        setProfileForm({
+          first_name: profile.first_name || '',
+          last_name: profile.last_name || '',
+          phone_number: profile.phone_number || '',
+          child_name: profile.child_name || '',
+          child_age: profile.child_age || ''
+        });
+        setIsDataLoaded(true);
+        return;
+      }
+      
+      // Only fetch if data is not in context
+      try {
+        const response = await authApi.getProfile();
+        if (response?.data?.user) {
+          const profileData = response.data.user.profile || response.data.user;
           setProfileForm({
-            first_name: profile.first_name || '',
-            last_name: profile.last_name || '',
-            phone_number: profile.phone_number || '',
-            child_name: profile.child_name || '',
-            child_age: profile.child_age || ''
+            first_name: profileData.first_name || '',
+            last_name: profileData.last_name || '',
+            phone_number: profileData.phone_number || '',
+            child_name: profileData.child_name || '',
+            child_age: profileData.child_age || ''
           });
-        } finally {
-          setIsDataLoaded(true);
         }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsDataLoaded(true);
       }
     };
     

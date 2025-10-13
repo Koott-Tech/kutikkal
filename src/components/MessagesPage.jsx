@@ -22,9 +22,14 @@ export default function MessagesPage({ session = null }) {
   const [showChatScreen, setShowChatScreen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    loadConversations();
+    // Only load once when component first mounts
+    if (!hasLoadedRef.current) {
+      loadConversations();
+      hasLoadedRef.current = true;
+    }
   }, []);
 
   // Don't auto-select conversations - let user click to select

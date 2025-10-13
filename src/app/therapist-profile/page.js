@@ -1261,9 +1261,9 @@ const TherapistProfileContent = () => {
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
                       const dateAvailability = psychologistAvailability[dateStr];
-                      const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
+                    const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
                     
-                    // Only show dates as available if they actually have availability data
+                    // Only treat as available/highlight if it is not a past date
                     const isActuallyAvailable = isPsychologistAvailable && isAvailable;
                     
                     calendarDays.push(
@@ -1276,23 +1276,23 @@ const TherapistProfileContent = () => {
                           }
                         }}
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
-                          isSelected 
-                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
+                          isSelected
+                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer'
                             : isToday
                               ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                              : isPsychologistAvailable
-                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform' // Dates with actual availability - highlighted with hover effects
+                              : isActuallyAvailable
+                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
                               : isAvailable
-                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer' // Future dates without availability (now clickable)
-                                : 'text-gray-300 cursor-not-allowed' // Past dates
+                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                : 'text-gray-300 cursor-not-allowed'
                         }`}
                         title={isPsychologistAvailable ? 'Available for booking' : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
-                        {isPsychologistAvailable && (
+                        {isActuallyAvailable && (
                           <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
                         )}
-                        {!isPsychologistAvailable && isAvailable && (
+                        {!isActuallyAvailable && isAvailable && (
                           <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
                         )}
                       </div>

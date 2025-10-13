@@ -11,12 +11,14 @@ export default function Header() {
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = useState(false);
+  const [isBetterParentingOpen, setIsBetterParentingOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileFindCareOpen, setIsMobileFindCareOpen] = useState(false);
   const [isMobileForProvidersOpen, setIsMobileForProvidersOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
+  const [isMobileBetterParentingOpen, setIsMobileBetterParentingOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
   const [counsellingMenuItems, setCounsellingMenuItems] = useState({
@@ -111,11 +113,13 @@ export default function Header() {
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
           !event.target.closest('.assessments-dropdown') &&
+          !event.target.closest('.better-parenting-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
+        setIsBetterParentingOpen(false);
       }
     };
 
@@ -129,11 +133,13 @@ export default function Header() {
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
           !event.target.closest('.assessments-dropdown') &&
+          !event.target.closest('.better-parenting-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
+        setIsBetterParentingOpen(false);
       }
     };
 
@@ -232,18 +238,23 @@ export default function Header() {
   const getUserDisplayName = () => {
     if (!user) return 'User';
     
-    // For admins, show email
-    if (user.role === 'admin' || user.role === 'superadmin') {
-      return user.email;
-    }
-    
-    // For psychologists and clients, show name from fetched profile data
+    // Prefer full name from profileData
     if (profileData && profileData.first_name && profileData.last_name) {
       return `${profileData.first_name} ${profileData.last_name}`.trim();
     }
     
-    // Fallback to email if no name available
-    return user.email || 'User';
+    // If AuthContext already has profile with name, use it to avoid flashing email
+    if (user.profile?.first_name && user.profile?.last_name) {
+      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+    }
+    
+    // For admins/superadmins, keep showing email
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      return user.email;
+    }
+    
+    // Fallback placeholder instead of email to avoid flash
+    return 'User';
   };
 
   const getUserInitial = () => {
@@ -287,7 +298,7 @@ export default function Header() {
               <ul className="flex items-center gap-6 text-base font-medium text-gray-800">
                 <li className="relative group">
                   <button 
-                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
                       setIsFindCareOpen(!isFindCareOpen);
                       setIsForProvidersOpen(false);
@@ -295,10 +306,10 @@ export default function Header() {
                       setIsResourcesOpen(false);
                     }}
                   >
-                  <span className="header-nav-item">Counselling</span>
+                  <span className="header-nav-item inline-block">Counselling</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
@@ -601,18 +612,19 @@ export default function Header() {
                 </li>
                 <li className="relative group">
                   <button 
-                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
                       setIsForProvidersOpen(!isForProvidersOpen);
                       setIsFindCareOpen(false);
                       setIsAboutOpen(false);
                       setIsResourcesOpen(false);
+                      setIsBetterParentingOpen(false);
                     }}
                   >
-                  <span className="header-nav-item">Assessments</span>
+                  <span className="header-nav-item inline-block">Assessments</span>
                     <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
                   
                   {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
@@ -832,7 +844,61 @@ export default function Header() {
                 </li>
                 <li className="relative group">
                   <button 
-                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    onClick={() => {
+                      setIsBetterParentingOpen(!isBetterParentingOpen);
+                      setIsFindCareOpen(false);
+                      setIsForProvidersOpen(false);
+                      setIsAboutOpen(false);
+                      setIsResourcesOpen(false);
+                    }}
+                  >
+                    <span className="header-nav-item inline-block">Better Parenting</span>
+                    <ChevronUpIcon className={`transition-transform ${isBetterParentingOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
+
+                  {/* Better Parenting Dropdown */}
+                  {isBetterParentingOpen && (
+                    <div className="better-parenting-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
+                      <div className="px-6 pb-4 border-b border-gray-200">
+                        <div className="space-y-2">
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => router.push('/better-parenting')}>
+                            <span className="text-gray-900 text-sm font-semibold">BETTER PARENTING</span>
+                          </div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Early Parent and Postpartum Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Parenting Coaching and Counselling</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Parent-Child Joint Sessions</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Child Development and Behaviour Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Help for All Kinds of Parents</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Group and Community Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Care for Parents</span></div>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="px-4 pt-3">
+                        <div className="space-y-2">
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={() => router.push('/free-assessment')}>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            <span className="text-gray-700 text-sm">Get a Free Consultation</span>
+                          </div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={() => router.push('/guide')}>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2" /></svg>
+                            <span className="text-gray-700 text-sm">View Therapists</span>
+                          </div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={handleFAQClick}>
+                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="text-gray-700 text-sm">FAQ</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </li>
+                <li className="relative group">
+                  <button 
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
                       setIsAboutOpen(!isAboutOpen);
                       setIsFindCareOpen(false);
@@ -840,10 +906,10 @@ export default function Header() {
                       setIsResourcesOpen(false);
                     }}
                   >
-                    <span className="header-nav-item">About Us</span>
+                    <span className="header-nav-item inline-block">About Us</span>
                     <ChevronUpIcon className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
                   
                                      {/* About Us Dropdown */}
                    {isAboutOpen && (
@@ -873,7 +939,7 @@ export default function Header() {
                 </li>
                 <li className="relative group">
                   <button 
-                    className="flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
                       setIsResourcesOpen(!isResourcesOpen);
                       setIsFindCareOpen(false);
@@ -881,10 +947,10 @@ export default function Header() {
                       setIsAboutOpen(false);
                     }}
                   >
-                    <span className="header-nav-item">Resources</span>
+                  <span className="header-nav-item inline-block">Resources</span>
                     <ChevronUpIcon className={`transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  <span className="absolute left-0 right-0 -bottom-3 mx-auto block h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-20"></span>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
                   
                   {/* Resources Dropdown */}
                   {isResourcesOpen && (
@@ -1220,6 +1286,42 @@ export default function Header() {
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Resources</span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Better Parenting Dropdown */}
+                <div className="border-b border-gray-100">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
+                    onClick={() => {
+                      setIsMobileBetterParentingOpen(!isMobileBetterParentingOpen);
+                      setIsMobileFindCareOpen(false);
+                      setIsMobileForProvidersOpen(false);
+                      setIsMobileAboutOpen(false);
+                      setIsMobileResourcesOpen(false);
+                    }}
+                  >
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">Better Parenting</span>
+                    <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileBetterParentingOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  {isMobileBetterParentingOpen && (
+                    <div className="ml-4 space-y-3 py-2">
+                      <div className="text-gray-900 text-sm font-semibold">BETTER PARENTING</div>
+                      <div className="text-gray-700 text-sm">Early Parent and Postpartum Support</div>
+                      <div className="text-gray-700 text-sm">Parenting Coaching and Counselling</div>
+                      <div className="text-gray-700 text-sm">Parent-Child Joint Sessions</div>
+                      <div className="text-gray-700 text-sm">Child Development and Behaviour Support</div>
+                      <div className="text-gray-700 text-sm">Help for All Kinds of Parents</div>
+                      <div className="text-gray-700 text-sm">Group and Community Support</div>
+                      <div className="text-gray-700 text-sm">Care for Parents</div>
+                      <div className="border-t border-gray-200 pt-3 space-y-2">
+                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/free-assessment'); setIsMobileMenuOpen(false); }}>Get a Free Consultation</div>
+                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/guide'); setIsMobileMenuOpen(false); }}>View Therapists</div>
+                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { handleFAQClick(); setIsMobileMenuOpen(false); }}>FAQ</div>
                       </div>
                     </div>
                   )}

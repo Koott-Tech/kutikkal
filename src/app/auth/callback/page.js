@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthCallback() {
   const router = useRouter();
   const [status, setStatus] = useState('Processing...');
+  const { login } = useAuth();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -36,7 +38,7 @@ export default function AuthCallback() {
           console.log('🔍 Supabase auth successful:', data.session.user);
           setStatus('Authentication successful! Redirecting...');
           
-      // Store user data in localStorage for your auth context
+      // Store user data and immediately update AuthContext
       const userData = {
         id: data.session.user.id,
         email: data.session.user.email,
@@ -53,9 +55,16 @@ export default function AuthCallback() {
         token: data.session.access_token.substring(0, 20) + '...',
         userData: userData
       });
+      
+      // Immediately hydrate AuthContext so downstream pages don't need a manual refresh
+      try {
+        login(userData, data.session.access_token);
+      } catch (e) {
+        console.warn('AuthContext login not available during callback, proceeding with redirect');
+      }
           
           // Redirect to profile contact tab to complete setup (same as email/password registration)
-          setTimeout(() => router.push('/profile?tab=contact'), 1000);
+          router.push('/profile?tab=contact');
         } else {
           console.log('No session found, redirecting to login');
           setStatus('No session found. Redirecting...');

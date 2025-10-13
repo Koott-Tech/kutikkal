@@ -111,7 +111,8 @@ export default function LoginPage() {
       style={{ 
         display: "flex", 
         height: "90vh",
-        fontFamily: "Arial, Helvetica, sans-serif"
+        fontFamily: "Arial, Helvetica, sans-serif",
+        paddingTop: "80px" /* offset fixed header */
       }}
     >
       {/* Left Side - Large Image */}

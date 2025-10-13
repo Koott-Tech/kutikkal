@@ -67,6 +67,13 @@ export default function ProfileLayout({ children }) {
     router.push('/login');
   };
 
+  // Prefer showing full name from loaded profile or auth context; avoid flashing email
+  const displayName = (profileData?.first_name && profileData?.last_name)
+    ? `${profileData.first_name} ${profileData.last_name}`
+    : (user?.profile?.first_name && user?.profile?.last_name)
+      ? `${user.profile.first_name} ${user.profile.last_name}`
+      : null;
+
   const handleNavigationClick = (item) => {
     router.push(item.href);
     setSidebarOpen(false);
@@ -120,9 +127,7 @@ export default function ProfileLayout({ children }) {
                 <User className="h-8 w-8 text-blue-600" />
               </div>
               <h2 className="text-base font-semibold text-gray-900">
-                {profileData?.first_name && profileData?.last_name 
-                  ? `${profileData.first_name} ${profileData.last_name}`
-                  : user?.email || 'User'}
+                {displayName || 'User'}
               </h2>
               <p className="text-xs text-gray-600 capitalize">{user.role}</p>
             </div>
@@ -205,9 +210,7 @@ export default function ProfileLayout({ children }) {
         <div className="flex h-16 items-center justify-end px-4">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
-              {profileData?.first_name && profileData?.last_name 
-                ? `${profileData.first_name} ${profileData.last_name}`
-                : user?.email || 'User'}
+              {displayName || 'User'}
             </span>
             <button
               onClick={handleLogout}

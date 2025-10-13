@@ -102,7 +102,8 @@ export default function RegisterPage() {
       style={{ 
         display: "flex", 
         height: "90vh",
-        fontFamily: "Arial, Helvetica, sans-serif"
+        fontFamily: "Arial, Helvetica, sans-serif",
+        paddingTop: "80px" /* offset fixed header */
       }}
     >
       {/* Left Side - Large Image */}
@@ -146,19 +147,19 @@ export default function RegisterPage() {
             maxWidth: "500px",
             lineHeight: "1.6"
           }}>
-            Create your account quickly with just email and password. Complete your profile later to access therapy services.
+            Create your account quickly with just email and password.
           </p>
         </div>
       </div>
 
-      {/* Right Side - Registration Form */}
+      {/* Right Side - Registration Form (no blue container) */}
       <div style={{ 
         flex: "1",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "1rem",
-        backgroundColor: "#f9fafb"
+        background: "#ffffff"
       }}>
         <div style={{
           width: "100%",
@@ -169,12 +170,12 @@ export default function RegisterPage() {
             marginBottom: "2rem"
           }}>
             <h2 style={{
-              fontSize: "2rem",
-              fontWeight: "bold",
-              color: "#111827",
-              marginBottom: "0.5rem"
+              fontSize: "1.875rem",
+              fontWeight: "700",
+              color: "#1a1a1a",
+              marginBottom: "0.25rem"
             }}>
-              Quick Sign Up
+              Sign Up
             </h2>
             <p style={{
               color: "#6b7280",
@@ -183,18 +184,7 @@ export default function RegisterPage() {
               Just email and password to get started
             </p>
             
-            {/* Registration Policy Note */}
-            <div style={{
-              backgroundColor: "#eff6ff",
-              border: "1px solid #bfdbfe",
-              color: "#1e40af",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              marginTop: "1rem",
-              fontSize: "0.75rem"
-            }}>
-              <strong>Note:</strong> Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators. You&apos;ll complete your profile after registration to access therapy services.
-            </div>
+            {/* Registration Policy Note removed */}
           </div>
 
           {error && (
