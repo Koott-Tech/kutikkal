@@ -63,7 +63,7 @@ export default function PsychologistPackages() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Therapy Packages</h1>
+          <h6 className="font-semibold text-gray-900">Therapy Packages</h6>
           <p className="mt-2 text-sm text-gray-700">
             View your available therapy packages and pricing.
           </p>
@@ -72,12 +72,12 @@ export default function PsychologistPackages() {
 
       {/* Packages Grid */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Available Packages</h2>
+        <p className="font-medium text-gray-900 mb-4">Available Packages</p>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {packages.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No packages available</h3>
+              <p className="mt-2 text-sm font-medium text-gray-900">No packages available</p>
               <p className="mt-1 text-sm text-gray-500">
                 Contact your administrator to set up therapy packages.
               </p>
@@ -93,9 +93,9 @@ export default function PsychologistPackages() {
                       </div>
                     </div>
                     <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <p className="font-medium text-gray-900">
                         {pkg.package_type.replace('_', ' ').toUpperCase()}
-                      </h3>
+                      </p>
                       <p className="text-sm text-gray-500">{pkg.description}</p>
                     </div>
                   </div>
@@ -111,7 +111,7 @@ export default function PsychologistPackages() {
 
                   {pkg.features && pkg.features.length > 0 && (
                     <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">Package Features</h4>
+                      <p className="text-sm font-medium text-gray-900 mb-3">Package Features</p>
                       <ul className="space-y-2">
                         {pkg.features.map((feature, index) => (
                           <li key={index} className="flex items-start">
@@ -144,10 +144,10 @@ export default function PsychologistPackages() {
 
       {/* Package Information */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Package Information</h2>
+        <p className="font-medium text-gray-900 mb-4">Package Information</p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">How It Works</h3>
+            <p className="font-medium text-gray-900">How It Works</p>
           </div>
           <div className="px-6 py-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -155,7 +155,7 @@ export default function PsychologistPackages() {
                 <div className="mx-auto h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                   <span className="text-xl font-bold text-blue-600">1</span>
                 </div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Client Selects Package</h4>
+                <p className="text-sm font-medium text-gray-900 mb-2">Client Selects Package</p>
                 <p className="text-sm text-gray-500">
                   Clients choose a therapy package that best fits their needs and budget.
                 </p>
@@ -165,7 +165,7 @@ export default function PsychologistPackages() {
                 <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
                   <span className="text-xl font-bold text-green-600">2</span>
                 </div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Book Sessions</h4>
+                <p className="text-sm font-medium text-gray-900 mb-2">Book Sessions</p>
                 <p className="text-sm text-gray-500">
                   Clients book therapy sessions based on your available time slots.
                 </p>
@@ -175,7 +175,7 @@ export default function PsychologistPackages() {
                 <div className="mx-auto h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center mb-4">
                   <span className="text-xl font-bold text-purple-600">3</span>
                 </div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Provide Therapy</h4>
+                <p className="text-sm font-medium text-gray-900 mb-2">Provide Therapy</p>
                 <p className="text-sm text-gray-500">
                   Conduct therapy sessions and track progress with your clients.
                 </p>

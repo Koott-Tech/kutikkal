@@ -135,7 +135,8 @@ export default async function CounsellingDynamicPage({ params }) {
       <BenefitsSection 
         therapyType={slug} 
         cmsData={{
-          benefits: serviceData.benefits || []
+          benefits: serviceData.benefits || [],
+          benefitsImageUrl: serviceData.benefits_image_url || ''
         }}
       />
       <TherapyTypesSplit 

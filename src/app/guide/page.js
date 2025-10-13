@@ -129,9 +129,9 @@ const Guide = () => {
       <div style={{ position: "relative", zIndex: 3 }}></div>
       
       <section style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
-        <h1 style={{ fontSize: "3.2rem", fontWeight: 800, color: "#1a1a1a", textAlign: "center", letterSpacing: "-0.01em", lineHeight: 1.1, maxWidth: 900, marginBottom: "2.2rem" }}>
+        <h5 style={{ fontWeight: 800, color: "#1a1a1a", textAlign: "center", maxWidth: 900, marginBottom: "2.2rem" }}>
           Guides that help you grow
-        </h1>
+        </h5>
         <p style={{ fontSize: "1.18rem", color: "#444", textAlign: "center", maxWidth: 600, fontWeight: 500, margin: 0, marginBottom: "2.2rem" }}>
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
         </p>
@@ -550,22 +550,8 @@ const Guide = () => {
                   }
                 }
                 .doctor-modal-title {
-                  font-size: 32px;
                   font-weight: 700;
                   margin-bottom: 8px;
-                }
-                
-                /* Laptop specific title adjustments */
-                @media (min-width: 1024px) and (max-width: 1440px) {
-                  .doctor-modal-title {
-                    font-size: 28px;
-                  }
-                }
-                
-                @media (min-width: 1441px) {
-                  .doctor-modal-title {
-                    font-size: 32px;
-                  }
                 }
                 .doctor-modal-buttons {
                   display: flex;
@@ -741,7 +727,7 @@ const Guide = () => {
               
               {/* Right: Details */}
               <div className="doctor-modal-content">
-                <h2 className="doctor-modal-title">{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</h2>
+                <p className="doctor-modal-title">{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</p>
                 
                 {/* Experience Years */}
                 {doctors[selected]?.experience_years && (
@@ -962,7 +948,6 @@ const Guide = () => {
                   text-align: center;
                 }
                 .datetime-modal-title {
-                  font-size: 24px;
                   font-weight: 700;
                   color: #1a1a1a;
                   margin-bottom: 20px;
@@ -987,9 +972,6 @@ const Guide = () => {
                     max-height: 90vh;
                     overflow-y: auto;
                   }
-                  .datetime-modal-title {
-                    font-size: 20px;
-                  }
                   .datetime-modal-buttons {
                     flex-direction: column;
                   }
@@ -1000,13 +982,13 @@ const Guide = () => {
                   }
                 }
               `}</style>
-              <h2 className="datetime-modal-title">
+              <p className="datetime-modal-title">
                 Book Session with {selectedDoctor?.name}
-              </h2>
+              </p>
               
               {/* Calendar Header */}
               <div style={{ textAlign: "center", marginBottom: "15px" }}>
-                <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#333", marginBottom: "3px" }}>Select Date & Time</h3>
+                <p style={{ fontWeight: 700, color: "#333", marginBottom: "3px" }}>Select Date & Time</p>
                 <p style={{ fontSize: "12px", color: "#666" }}>Choose a date and time that works for you</p>
               </div>
               
@@ -1065,9 +1047,9 @@ const Guide = () => {
               
               {/* Time Slots */}
               <div style={{ marginBottom: "20px" }}>
-                <h4 style={{ fontSize: "14px", fontWeight: 600, color: "#333", marginBottom: "8px", textAlign: "left" }}>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "#333", marginBottom: "8px", textAlign: "left" }}>
                   Available Times
-                </h4>
+                </p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "6px" }}>
                   {['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'].map((time) => {
                     const timeValue = time === '9:00 AM' ? '09:00' : 
@@ -1161,7 +1143,6 @@ const Guide = () => {
                   text-align: center;
                 }
                 .payment-modal-title {
-                  font-size: 28px;
                   font-weight: 700;
                   color: #1a1a1a;
                   margin-bottom: 20px;
@@ -1186,9 +1167,6 @@ const Guide = () => {
                     max-height: 90vh;
                     overflow-y: auto;
                   }
-                  .payment-modal-title {
-                    font-size: 22px;
-                  }
                   .payment-modal-buttons {
                     flex-direction: column;
                   }
@@ -1200,9 +1178,9 @@ const Guide = () => {
                 }
               `}</style>
               <div onClick={e => e.stopPropagation()}>
-              <h2 className="payment-modal-title">
+              <p className="payment-modal-title">
                 Complete Your Booking
-              </h2>
+              </p>
               
               <div style={{ 
                 background: "#f8f9fa", 
@@ -1211,9 +1189,9 @@ const Guide = () => {
                 marginBottom: "30px",
                 textAlign: "left"
               }}>
-                <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#333", marginBottom: "15px" }}>
+                <p style={{ fontWeight: 600, color: "#333", marginBottom: "15px" }}>
                   Session Details:
-                </h3>
+                </p>
                 <div style={{ fontSize: "16px", color: "#666", lineHeight: "1.6" }}>
                   <p><strong>Doctor:</strong> {selectedDoctor?.name}</p>
                   <p><strong>Date:</strong> {selectedDate}</p>
@@ -1224,9 +1202,9 @@ const Guide = () => {
               </div>
 
               <div style={{ marginBottom: "30px" }}>
-                <h3 style={{ fontSize: "18px", fontWeight: 600, color: "#333", marginBottom: "15px" }}>
+                <p style={{ fontWeight: 600, color: "#333", marginBottom: "15px" }}>
                   Payment Method:
-                </h3>
+                </p>
                 <div style={{ 
                   border: "2px solid #e1e5e9", 
                   borderRadius: "12px", 

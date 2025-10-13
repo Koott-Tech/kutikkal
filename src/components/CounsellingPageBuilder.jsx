@@ -41,6 +41,7 @@ export default function CounsellingPageBuilder({
     benefits: [],
     types: [],
     faqs: [],
+    benefits_image_url: '',
     right_image_url: '',
     mobile_image_url: ''
   });
@@ -77,6 +78,7 @@ export default function CounsellingPageBuilder({
         benefits: initialData.benefits || [],
         types: initialData.types || [],
         faqs: initialData.faqs || [],
+        benefits_image_url: initialData.benefits_image_url || '',
         right_image_url: initialData.right_image_url || '',
         left_image_url: initialData.left_image_url || '',
         mobile_image_url: initialData.mobile_image_url || ''
@@ -420,6 +422,14 @@ export default function CounsellingPageBuilder({
               imageType="hero"
               slug={formData.slug}
               label="Hero Image"
+            />
+            
+            <ImageUpload
+              currentImageUrl={formData.benefits_image_url}
+              onImageUpload={(url) => handleInputChange('benefits_image_url', url)}
+              imageType="benefits"
+              slug={formData.slug}
+              label="Benefits Section Image"
             />
             
             <ImageUpload
@@ -873,10 +883,11 @@ export default function CounsellingPageBuilder({
             {/* Benefits Section */}
             {renderEditableElement('benefits', (
               <BenefitsSection 
-                key={`benefits-${JSON.stringify(formData.benefits)}`}
+                key={`benefits-${JSON.stringify(formData.benefits)}-${formData.benefits_image_url}`}
                 therapyType="anxiety-sadness" 
                 cmsData={{
-                  benefits: formData.benefits
+                  benefits: formData.benefits,
+                  benefitsImageUrl: formData.benefits_image_url
                 }}
                 showAllBenefits={true}
               />

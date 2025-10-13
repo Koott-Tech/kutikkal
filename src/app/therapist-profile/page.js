@@ -621,6 +621,24 @@ const TherapistProfileContent = () => {
 
 
 
+  // Scroll to top on page load/refresh and disable automatic scroll restoration
+  useEffect(() => {
+    // Disable browser's automatic scroll restoration
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    
+    // Force scroll to top
+    window.scrollTo(0, 0);
+    
+    // Cleanup: restore default behavior when component unmounts
+    return () => {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchDoctors();
   }, []);
@@ -629,7 +647,9 @@ const TherapistProfileContent = () => {
     if (doctorIndex !== null && doctors.length > 0) {
       const doctor = doctors[parseInt(doctorIndex)];
       if (doctor) {
-
+        // Scroll to top when doctor is selected
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
         setSelectedDoctor(doctor);
         // Fetch availability and packages for this psychologist
 
@@ -653,7 +673,7 @@ const TherapistProfileContent = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading Doctor Profile...</h1>
+          <p className="font-bold text-gray-800 mb-4">Loading Doctor Profile...</p>
         </div>
       </div>
     );
@@ -663,7 +683,7 @@ const TherapistProfileContent = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Doctor Not Found</h1>
+          <p className="font-bold text-gray-800 mb-4">Doctor Not Found</p>
           <p className="text-gray-600 mb-4">{error || 'Unable to load doctor information'}</p>
           <button 
             onClick={() => router.push('/guide')}
@@ -684,7 +704,7 @@ const TherapistProfileContent = () => {
       <div className="bg-white shadow-lg">
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12" style={{ minHeight: '120px', zIndex: 0 }}>
+          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12 pt-40 md:pt-44" style={{ minHeight: '120px', zIndex: 0 }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
@@ -698,7 +718,7 @@ const TherapistProfileContent = () => {
             </div>
             
             {/* Mobile: Profile Picture at top */}
-            <div className="relative z-10 flex items-center justify-center md:hidden h-full" style={{ paddingTop: '60px', pointerEvents: 'auto' }}>
+            <div className="relative z-10 flex items-center justify-center md:hidden h-full" style={{ pointerEvents: 'auto' }}>
               <div className="relative">
                 <div className="w-48 h-48 rounded-[20px] overflow-hidden relative bg-white">
                   {/* Doctor Profile Picture or Fallback */}
@@ -766,11 +786,11 @@ const TherapistProfileContent = () => {
             </div>
 
             {/* Desktop: Name and Title - Responsive positioning */}
-            <div className="hidden md:flex relative z-10 items-center justify-start md:ml-[28rem] h-full" style={{ paddingTop: '60px', pointerEvents: 'auto' }}>
+            <div className="hidden md:flex relative z-10 items-center justify-start md:ml-[28rem] h-full" style={{ pointerEvents: 'auto' }}>
               <div className="text-left">
-                <h1 className="text-3xl font-bold text-gray-800 mb-1">
+                <h6 className="font-bold text-gray-800 mb-1">
                   {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-                </h1>
+                </h6>
                 <p className="text-lg text-gray-600 mb-2">
                   Psychologist
                 </p>
@@ -785,9 +805,9 @@ const TherapistProfileContent = () => {
         <div className="w-full p-4 md:p-8">
           {/* Mobile: Doctor Name below image */}
           <div className="text-center md:hidden mb-6">
-            <h1 className="text-xl font-bold text-gray-800 mb-2">
+            <p className="font-bold text-gray-800 mb-2">
               {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-            </h1>
+            </p>
             <p className="text-sm text-gray-600">
               {selectedDoctor.specialization || 'Licensed Psychologist'}
             </p>
@@ -909,7 +929,7 @@ const TherapistProfileContent = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             {/* Left Side - About Description */}
             <div className="space-y-6 mt-[50px] md:mt-[100px]">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</h2>
+              <p className="font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 {selectedDoctor.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
               </p>
@@ -919,7 +939,7 @@ const TherapistProfileContent = () => {
               {/* Specialization */}
               {selectedDoctor.area_of_expertise && Array.isArray(selectedDoctor.area_of_expertise) && selectedDoctor.area_of_expertise.length > 0 && (
                 <div className="p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Specialization</h3>
+                  <p className="font-semibold text-gray-800 mb-3">Specialization</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedDoctor.area_of_expertise.map((spec, i) => (
                       <div key={i} className="bg-purple-100 text-purple-800 px-3 py-2 rounded-full text-sm font-medium">
@@ -935,7 +955,7 @@ const TherapistProfileContent = () => {
                (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') || 
                (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A') ? (
               <div className="p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Education & Qualifications</h3>
+                  <p className="font-semibold text-gray-800 mb-3">Education & Qualifications</p>
                   <div className="space-y-2">
                     {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
                       <p className="text-gray-700 text-sm">
@@ -958,7 +978,7 @@ const TherapistProfileContent = () => {
               
               {/* Languages Section */}
               <div className="p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">Languages</h3>
+                <p className="font-semibold text-gray-800 mb-3">Languages</p>
                 <div className="flex flex-wrap gap-2">
                   <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
                     English
@@ -971,7 +991,7 @@ const TherapistProfileContent = () => {
               
               {/* FAQ Section - Desktop/Laptop View */}
               <div className="mt-6 p-4 rounded-lg bg-gray-50 hidden lg:block">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
+                <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
                 
                 <div className="space-y-3">
                   {/* FAQ 1 */}
@@ -1042,7 +1062,7 @@ const TherapistProfileContent = () => {
             <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 sticky top-4 self-start mt-[50px] md:mt-[100px]">
               {/* Calendar Header */}
               <div className="text-center mb-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-1">Book Your Session</h3>
+                <p className="font-bold text-gray-800 mb-1">Book Your Session</p>
                 <p className="text-gray-600 text-sm">Select a date and time that works for you</p>
                 {loadingAvailability && (
                   <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
@@ -1057,7 +1077,7 @@ const TherapistProfileContent = () => {
                 {isBookingRemaining && clientPackage ? (
                   // Show package information when booking remaining sessions
                   <div>
-                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Your Package</h4>
+                    <p className="font-semibold text-gray-800 mb-3 text-sm">Your Package</p>
                     <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
                       <div className="flex justify-between items-start mb-2">
                         <div className="text-left">
@@ -1082,7 +1102,7 @@ const TherapistProfileContent = () => {
                 ) : (
                   // Show package selection for new bookings
                   <>
-                    <h4 className="font-semibold text-gray-800 mb-3 text-sm">Select Package</h4>
+                    <p className="font-semibold text-gray-800 mb-3 text-sm">Select Package</p>
                     
                     {/* Individual Session Option - Always Available */}
                     <button
@@ -1162,7 +1182,7 @@ const TherapistProfileContent = () => {
                     <path d="M15 18l-6-6 6-6"/>
                   </svg>
                 </button>
-                <h4 className="text-sm font-semibold text-gray-800">{getMonthName(currentDate)}</h4>
+                <p className="text-sm font-semibold text-gray-800">{getMonthName(currentDate)}</p>
                 <button 
                   onClick={handleNextMonth}
                   className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -1310,7 +1330,7 @@ const TherapistProfileContent = () => {
 
               {/* Time Slots */}
               <div className="space-y-4">
-                <h4 className="font-semibold text-gray-800 mb-3 text-sm">Available Times</h4>
+                <p className="font-semibold text-gray-800 mb-3 text-sm">Available Times</p>
                 
                 {selectedDate ? (
                                       (() => {
@@ -1358,14 +1378,14 @@ const TherapistProfileContent = () => {
                     return (
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <h5 className="font-bold text-gray-800 text-sm">TIME SLOTS</h5>
+                          <p className="font-bold text-gray-800 text-sm">TIME SLOTS</p>
                           <span className="font-bold text-gray-800 text-sm">Available: {availableSlots.length} | Blocked: {blockedSlots.length}</span>
                         </div>
                         
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 && (
                           <div className="space-y-2">
-                            <h6 className="text-sm font-medium text-green-700">Available Times:</h6>
+                            <p className="text-sm font-medium text-green-700">Available Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button
@@ -1387,7 +1407,7 @@ const TherapistProfileContent = () => {
                         {/* Blocked Time Slots */}
                         {blockedSlots.length > 0 && (
                           <div className="space-y-2">
-                            <h6 className="text-sm font-medium text-red-700">Blocked Times:</h6>
+                            <p className="text-sm font-medium text-red-700">Blocked Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {blockedSlots.map((time) => (
                                 <div
@@ -1462,7 +1482,7 @@ const TherapistProfileContent = () => {
       <div className="w-full p-4 md:p-8 bg-white lg:hidden">
         <div className="max-w-6xl mx-auto">
           <div className="mt-6 p-4 rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Frequently Asked Questions</h3>
+            <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
             
             <div className="space-y-3">
               {/* FAQ 1 */}
@@ -1543,7 +1563,7 @@ const TherapistProfileContent = () => {
             <div className="p-4 md:p-8">
               {/* Header with centered title and close button */}
               <div className="flex justify-between items-center mb-4 md:mb-6">
-                <h3 className="text-lg md:text-xl font-bold text-gray-800 text-center flex-1">Treatment Method</h3>
+                <p className="font-bold text-gray-800 text-center flex-1">Treatment Method</p>
                 <button
                   onClick={closeTreatmentModal}
                   className="text-gray-500 hover:text-gray-700 transition-colors duration-200 ml-4"
@@ -1556,9 +1576,9 @@ const TherapistProfileContent = () => {
               </div>
               
               {/* Treatment title */}
-              <h4 className="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4">
+              <p className="font-bold text-gray-800 mb-3 md:mb-4">
                 {selectedTreatment}
-              </h4>
+              </p>
               
               {/* Description */}
               <p className="text-gray-700 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
@@ -1597,7 +1617,7 @@ const TherapistProfileContent = () => {
 const TherapistProfileLoading = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Loading...</h1>
+      <p className="font-bold text-gray-800 mb-4">Loading...</p>
     </div>
   </div>
 );

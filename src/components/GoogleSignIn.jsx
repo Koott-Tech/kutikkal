@@ -14,31 +14,45 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
 
   const handleGoogleSignIn = async () => {
     if (!supabase) {
-      console.error('Supabase client not available');
-      onError?.('Supabase client not available');
+      console.error('❌ Supabase client not available');
+      console.error('Check environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+      onError?.(new Error('Supabase configuration missing'));
       return;
     }
     
     try {
       console.log('🔍 Starting Supabase Google Sign-In');
+      console.log('🔍 Redirect URL:', `${window.location.origin}/auth/callback`);
+      console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 
       if (error) {
-        console.error('Supabase Google Sign-In error:', error);
+        console.error('❌ Supabase Google Sign-In error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
         if (onError) onError(new Error(error.message));
         return;
       }
 
-      console.log('🔍 Supabase Google Sign-In initiated:', data);
+      console.log('✅ Supabase Google Sign-In initiated:', data);
+      // Note: User will be redirected to Google, so no further code will execute
       
     } catch (error) {
-      console.error('Google Sign-In error:', error);
+      console.error('❌ Google Sign-In error:', error);
+      console.error('Error stack:', error.stack);
       if (onError) onError(error);
     }
   };

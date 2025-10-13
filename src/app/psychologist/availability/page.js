@@ -90,10 +90,21 @@ export default function PsychologistAvailability() {
     try {
       if (!newAvailability.date || newAvailability.time_slots.length === 0) {
         setError('Please select a date and at least one time slot');
+        showError('Please select a date and at least one time slot', 'Validation Error');
         return;
       }
 
-      await psychologistApi.addAvailability(newAvailability);
+      const response = await psychologistApi.addAvailability(newAvailability);
+
+      // Check if any slots were blocked due to Google Calendar conflicts
+      if (response.data?.blocked_count > 0) {
+        showError(
+          `⚠️ ${response.data.blocked_count} slot(s) were automatically blocked due to Google Calendar conflicts: ${response.data.blocked_slots.join(', ')}`,
+          'Calendar Conflict Detected'
+        );
+      } else {
+        showSuccess('Availability added successfully', 'Success');
+      }
 
       // Reset form and close modal
       setNewAvailability({ date: '', time_slots: [] });
@@ -106,6 +117,7 @@ export default function PsychologistAvailability() {
     } catch (err) {
       console.error('Error adding availability:', err);
       setError(err.message);
+      showError(err.message || 'Failed to add availability', 'Add Error');
     }
   };
 
@@ -151,7 +163,17 @@ export default function PsychologistAvailability() {
       // Debug payload
       console.log('Updating availability with payload:', availabilityData);
       
-      await psychologistApi.updateAvailability(availabilityData);
+      const response = await psychologistApi.updateAvailability(availabilityData);
+      
+      // Check if any slots were blocked due to Google Calendar conflicts
+      if (response.data?.blocked_count > 0) {
+        showError(
+          `⚠️ ${response.data.blocked_count} slot(s) were automatically blocked due to Google Calendar conflicts: ${response.data.blocked_slots.join(', ')}`,
+          'Calendar Conflict Detected'
+        );
+      } else {
+        showSuccess('Availability updated successfully', 'Success');
+      }
       
       // Reset edit state and close modal
       setEditingAvailability(null);
@@ -163,6 +185,7 @@ export default function PsychologistAvailability() {
     } catch (err) {
       console.error('Error updating availability (frontend catch):', err);
       setError(err.message);
+      showError(err.message || 'Failed to update availability', 'Update Error');
     }
   };
 
@@ -195,7 +218,10 @@ export default function PsychologistAvailability() {
 
   const openAddModal = () => {
     setShowAddModal(true);
-    setNewAvailability({ date: '', time_slots: [] });
+    // Set current date as default
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    setNewAvailability({ date: formattedDate, time_slots: [] });
     setError(null);
   };
 
@@ -239,7 +265,7 @@ export default function PsychologistAvailability() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Availability Management</h1>
+          <h6 className="font-semibold text-gray-900">Availability Management</h6>
           <p className="mt-2 text-sm text-gray-700">
             Set your available time slots for client bookings.
           </p>
@@ -264,16 +290,16 @@ export default function PsychologistAvailability() {
 
       {/* Current Availability */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Current Availability</h2>
+        <p className="font-medium text-gray-900 mb-4">Current Availability</p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Your Available Time Slots</h3>
+            <p className="font-medium text-gray-900">Your Available Time Slots</p>
           </div>
           <div className="p-6">
             {availability.length === 0 ? (
               <div className="text-center py-8">
                 <Clock className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No availability set</h3>
+                <p className="mt-2 text-sm font-medium text-gray-900">No availability set</p>
                 <p className="mt-1 text-sm text-gray-500">
                   Click &quot;Add New Availability&quot; to add your available time slots.
                 </p>
@@ -286,14 +312,14 @@ export default function PsychologistAvailability() {
                       // Edit Mode
                       <div>
                         <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900">
                             {new Date(day.date).toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
                             })}
-                          </h4>
+                          </p>
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => handleEditAvailability(editingAvailability)}
@@ -341,14 +367,14 @@ export default function PsychologistAvailability() {
                       // View Mode
                       <div>
                         <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900">
                             {new Date(day.date).toLocaleDateString('en-US', { 
                               weekday: 'long', 
                               year: 'numeric', 
                               month: 'long', 
                               day: 'numeric' 
                             })}
-                          </h4>
+                          </p>
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => openEditMode(day)}
@@ -391,7 +417,7 @@ export default function PsychologistAvailability() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Availability</h3>
+              <p className="font-semibold text-gray-900">Add New Availability</p>
               <button
                 onClick={closeAddModal}
                 className="text-gray-400 hover:text-gray-600"

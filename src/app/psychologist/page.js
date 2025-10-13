@@ -34,16 +34,9 @@ export default function PsychologistDashboard() {
       setIsLoading(true);
       setError(null);
 
-      // Load all data in parallel
-      const [sessionsData, availabilityData, packagesData] = await Promise.all([
-        psychologistApi.getSessions(),
-        psychologistApi.getAvailability(),
-        psychologistApi.getPackages()
-      ]);
-
+      // Load critical data first (sessions), then secondary data in background
+      const sessionsData = await psychologistApi.getSessions();
       const sessions = sessionsData.data?.sessions || [];
-      const availability = availabilityData.data || [];
-      const packages = packagesData.data || [];
 
       // Calculate upcoming sessions (today and future)
       const today = new Date();
@@ -53,12 +46,32 @@ export default function PsychologistDashboard() {
         return sessionDate >= today && session.status === 'booked';
       });
 
+      // Set initial stats with sessions data
       setStats({
         totalSessions: sessions.length,
         upcomingSessions: upcomingSessions.length,
-        totalAvailability: availability.length,
-        totalPackages: packages.length
+        totalAvailability: 0, // Will be updated
+        totalPackages: 0 // Will be updated
       });
+
+      // Load secondary data in background
+      Promise.all([
+        psychologistApi.getAvailability(),
+        psychologistApi.getPackages()
+      ]).then(([availabilityData, packagesData]) => {
+        const availability = availabilityData.data || [];
+        const packages = packagesData.data || [];
+        
+        setStats(prev => ({
+          ...prev,
+          totalAvailability: availability.length,
+          totalPackages: packages.length
+        }));
+      }).catch(err => {
+        console.error('Error loading secondary dashboard data:', err);
+        // Don't show error for secondary data
+      });
+
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
       setError(err.message);
@@ -94,7 +107,7 @@ export default function PsychologistDashboard() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+          <h6 className="font-semibold text-gray-900">Dashboard</h6>
           <p className="mt-2 text-sm text-gray-700">
             Welcome back! Here&apos;s an overview of your practice.
           </p>
@@ -170,7 +183,7 @@ export default function PsychologistDashboard() {
 
       {/* Quick Actions */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
+        <p className="font-medium text-gray-900 mb-4">Quick Actions</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <a
             href="/psychologist/sessions"
@@ -179,7 +192,7 @@ export default function PsychologistDashboard() {
             <div className="flex items-center">
               <Calendar className="h-8 w-8 text-blue-600 mr-4" />
               <div>
-                <h3 className="text-lg font-medium text-gray-900">View Sessions</h3>
+                <p className="font-medium text-gray-900">View Sessions</p>
                 <p className="text-sm text-gray-500">Check your upcoming and past therapy sessions.</p>
               </div>
             </div>
@@ -192,7 +205,7 @@ export default function PsychologistDashboard() {
             <div className="flex items-center">
               <Clock className="h-8 w-8 text-green-600 mr-4" />
               <div>
-                <h3 className="text-lg font-medium text-gray-900">Manage Availability</h3>
+                <p className="font-medium text-gray-900">Manage Availability</p>
                 <p className="text-sm text-gray-500">Set your available time slots for client bookings.</p>
               </div>
             </div>
@@ -205,7 +218,7 @@ export default function PsychologistDashboard() {
             <div className="flex items-center">
               <FileText className="h-8 w-8 text-purple-600 mr-4" />
               <div>
-                <h3 className="text-lg font-medium text-gray-900">View Packages</h3>
+                <p className="font-medium text-gray-900">View Packages</p>
                 <p className="text-sm text-gray-500">Check your therapy packages and pricing.</p>
               </div>
             </div>
@@ -215,7 +228,7 @@ export default function PsychologistDashboard() {
 
       {/* Recent Activity */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
+        <p className="font-medium text-gray-900 mb-4">Recent Activity</p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <p className="text-sm text-gray-500">

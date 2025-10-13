@@ -212,6 +212,10 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
     title: content[therapyType]?.title || content.individual.title,
     benefits: cmsData.benefits && cmsData.benefits.length > 0 ? cmsData.benefits : (content[therapyType]?.benefits || content.individual.benefits)
   } : (content[therapyType] || content.individual);
+  
+  // Get image URL from CMS data or use default
+  const benefitsImageUrl = cmsData?.benefitsImageUrl || '/rightside5th.png';
+  
   const [isExpanded, setIsExpanded] = useState(showAllBenefits);
 
   return (
@@ -230,7 +234,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
           <div className="hidden lg:flex justify-start -mt-4">
             <div className="relative w-[500px] h-[500px]">
               <Image
-                src="/rightside5th.png"
+                src={benefitsImageUrl}
                 alt="Therapy benefits illustration"
                 fill
                 className="object-cover rounded-lg"

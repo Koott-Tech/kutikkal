@@ -780,9 +780,9 @@ export default function DoctorModal({
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <p className="font-bold text-gray-800">
               {mode === 'add' ? 'Add New Doctor' : 'Edit Doctor'}
-            </h2>
+            </p>
             <button
               onClick={handleClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"

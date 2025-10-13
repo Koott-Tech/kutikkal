@@ -374,7 +374,7 @@ export default function PsychologistSettings() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Profile Settings</h1>
+          <h6 className="font-semibold text-gray-900">Profile Settings</h6>
           <p className="mt-2 text-sm text-gray-700">
             Manage your personal information and professional details.
           </p>
@@ -387,7 +387,7 @@ export default function PsychologistSettings() {
           {/* Personal Information */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Personal Information</h3>
+              <p className="font-medium text-gray-900">Personal Information</p>
             </div>
             <div className="px-6 py-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -442,7 +442,7 @@ export default function PsychologistSettings() {
           {/* Education */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Education</h3>
+              <p className="font-medium text-gray-900">Education</p>
             </div>
             <div className="px-6 py-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -497,7 +497,7 @@ export default function PsychologistSettings() {
           {/* Professional Details */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">Professional Details</h3>
+              <p className="font-medium text-gray-900">Professional Details</p>
             </div>
             <div className="px-6 py-6 space-y-6">
               <div>
@@ -537,10 +537,10 @@ export default function PsychologistSettings() {
           {/* Google Calendar Integration */}
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+              <p className="font-medium text-gray-900 flex items-center">
                 <Calendar className="h-5 w-5 mr-2" />
                 Google Calendar Integration
-              </h3>
+              </p>
             </div>
             <div className="px-6 py-6 space-y-4">
               <div className="flex items-start">
@@ -612,7 +612,7 @@ export default function PsychologistSettings() {
               </div>
               
               <div className="mt-4 bg-blue-50 border border-blue-200 rounded-md p-4">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">How it works:</h4>
+                <p className="text-sm font-medium text-blue-900 mb-2">How it works:</p>
                 <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
                   <li>System syncs your calendar every 30 minutes automatically</li>
                   <li>Bookings from other platforms are detected and blocked here</li>
@@ -627,7 +627,7 @@ export default function PsychologistSettings() {
                   {/* Month Calendar View */}
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-semibold text-gray-900">Calendar View - Bookings from Other Platforms</h4>
+                      <p className="text-sm font-semibold text-gray-900">Calendar View - Bookings from Other Platforms</p>
                       <button
                         onClick={fetchCalendarEvents}
                         disabled={isLoadingEvents}
@@ -658,9 +658,9 @@ export default function PsychologistSettings() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                           </svg>
                         </button>
-                        <h3 className="text-lg font-semibold">
+                        <p className="font-semibold">
                           {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                        </h3>
+                        </p>
                         <button
                           onClick={() => navigateMonth(1)}
                           className="p-2 hover:bg-gray-100 rounded-full"
@@ -731,9 +731,9 @@ export default function PsychologistSettings() {
                   
                   {/* Selected Date Events */}
                   <div className="bg-white border rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
                       Events for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    </h4>
+                    </p>
                     
                     {(() => {
                       const dayEvents = getEventsForDate(selectedDate);
@@ -746,7 +746,7 @@ export default function PsychologistSettings() {
                             >
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <h5 className="font-medium text-sm">{event.summary || 'Untitled Event'}</h5>
+                                  <p className="font-medium text-sm">{event.summary || 'Untitled Event'}</p>
                                   <p className="text-xs mt-1 opacity-80">
                                     {new Date(event.start.dateTime || event.start.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     {event.end && ` - ${new Date(event.end.dateTime || event.end.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`}

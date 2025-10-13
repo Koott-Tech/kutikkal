@@ -30,12 +30,10 @@ export function AuthProvider({ children }) {
           const now = new Date();
           const daysUntilExpiry = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
           
-          console.log('🔍 JWT Token Info:', {
-            expiresAt: expirationDate.toLocaleString(),
-            isExpired: now > expirationDate,
-            daysUntilExpiry: daysUntilExpiry,
-            configuredExpiry: '30 days (from .env)'
-          });
+          // Reduced logging for better performance
+          if (now > expirationDate) {
+            console.log('⚠️ Token expired');
+          }
           
           // If token is expired, clear auth and redirect to login
           if (now > expirationDate) {

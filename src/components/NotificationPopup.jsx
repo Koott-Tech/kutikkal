@@ -111,9 +111,9 @@ const NotificationPopup = ({
             </div>
             <div className="flex-1">
               {title && (
-                <h3 className={`text-lg font-semibold ${styles.title}`}>
+                <p className={`font-semibold ${styles.title}`}>
                   {title}
-                </h3>
+                </p>
               )}
               {message && (
                 <p className={`mt-2 text-sm ${styles.message}`}>

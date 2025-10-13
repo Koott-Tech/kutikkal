@@ -102,9 +102,9 @@ const OnboardingModal = ({ open, onClose, onComplete }) => {
         </div>
 
         {/* Question */}
-        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1a1a1a', marginBottom: '30px' }}>
+        <p style={{ fontWeight: 700, color: '#1a1a1a', marginBottom: '30px' }}>
           {questions[currentStep].question}
-        </h2>
+        </p>
 
         {/* Options */}
         <div style={{ marginBottom: '30px' }}>

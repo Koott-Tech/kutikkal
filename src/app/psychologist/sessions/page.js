@@ -236,7 +236,7 @@ export default function PsychologistSessions() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Sessions</h1>
+          <h6 className="font-semibold text-gray-900">Sessions</h6>
           <p className="mt-2 text-sm text-gray-700">
             Manage your therapy sessions and client appointments.
           </p>
@@ -284,18 +284,18 @@ export default function PsychologistSessions() {
 
       {/* Upcoming Sessions */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+        <p className="font-medium text-gray-900 mb-4">
           Upcoming Sessions ({upcomingSessions.length})
-        </h2>
+        </p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Scheduled Appointments</h3>
+            <p className="font-medium text-gray-900">Scheduled Appointments</p>
           </div>
           <div className="divide-y divide-gray-200">
             {upcomingSessions.length === 0 ? (
               <div className="px-6 py-8 text-center">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</h3>
+                <p className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</p>
                 <p className="mt-1 text-sm text-gray-500">
                   You don&apos;t have any scheduled sessions at the moment.
                 </p>
@@ -311,14 +311,14 @@ export default function PsychologistSessions() {
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900">
                           {session.client?.first_name} {session.client?.last_name}
                           {session.session_type === 'free_assessment' && (
                             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               Free Assessment
                             </span>
                           )}
-                        </h4>
+                        </p>
                         <p className="text-sm text-gray-500">
                           Child: {session.client?.child_name} ({session.client?.child_age} years)
                         </p>
@@ -411,18 +411,18 @@ export default function PsychologistSessions() {
 
       {/* Completed Sessions */}
       <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
+        <p className="font-medium text-gray-900 mb-4">
           Past Sessions ({pastSessions.length})
-        </h2>
+        </p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Completed & Past Sessions</h3>
+            <p className="font-medium text-gray-900">Completed & Past Sessions</p>
           </div>
           <div className="divide-y divide-gray-200">
             {pastSessions.length === 0 ? (
               <div className="px-6 py-8 text-center">
                 <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No past sessions</h3>
+                <p className="mt-2 text-sm font-medium text-gray-900">No past sessions</p>
                 <p className="mt-1 text-sm text-gray-500">
                   Completed, cancelled, and no-show sessions will appear here.
                 </p>
@@ -438,9 +438,9 @@ export default function PsychologistSessions() {
                         </div>
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900">
                           {session.client?.first_name} {session.client?.last_name}
-                        </h4>
+                        </p>
                         <p className="text-sm text-gray-500">
                           Child: {session.client?.child_name} ({session.client?.child_age} years)
                         </p>
@@ -554,7 +554,7 @@ export default function PsychologistSessions() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Session Details</h3>
+              <p className="font-medium text-gray-900">Session Details</p>
               <button
                 onClick={closeDetailsModal}
                 className="text-gray-400 hover:text-gray-600"
@@ -566,10 +566,10 @@ export default function PsychologistSessions() {
             <div className="space-y-6">
               {/* Client Information */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                <p className="font-semibold text-gray-900 mb-3 flex items-center">
                   <User className="h-5 w-5 mr-2 text-blue-600" />
                   Client Information
-                </h4>
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Full Name</p>
@@ -608,10 +608,10 @@ export default function PsychologistSessions() {
 
               {/* Session Information */}
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                <p className="font-semibold text-gray-900 mb-3 flex items-center">
                   <Calendar className="h-5 w-5 mr-2 text-blue-600" />
                   Session Information
-                </h4>
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Session Date</p>
@@ -650,10 +650,10 @@ export default function PsychologistSessions() {
               {/* Package & Pricing Information */}
               {selectedSession.package && (
                 <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                  <p className="font-semibold text-gray-900 mb-3 flex items-center">
                     <Package className="h-5 w-5 mr-2 text-green-600" />
                     Package & Pricing
-                  </h4>
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-700">Package Type</p>
@@ -675,7 +675,7 @@ export default function PsychologistSessions() {
               {/* Additional Notes */}
               {selectedSession.notes && (
                 <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3">Additional Notes</h4>
+                  <p className="font-semibold text-gray-900 mb-3">Additional Notes</p>
                   <p className="text-sm text-gray-900">{selectedSession.notes}</p>
                 </div>
               )}
@@ -698,7 +698,7 @@ export default function PsychologistSessions() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Reschedule Requests</h3>
+              <p className="font-medium text-gray-900">Reschedule Requests</p>
               <button
                 onClick={() => setShowRescheduleModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -749,7 +749,7 @@ export default function PsychologistSessions() {
               {sessions.filter(s => s.status === 'reschedule_requested').length === 0 && (
                 <div className="text-center py-8">
                   <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pending reschedule requests</h3>
+                  <p className="mt-2 text-sm font-medium text-gray-900">No pending reschedule requests</p>
                   <p className="mt-1 text-sm text-gray-500">
                     All reschedule requests have been processed.
                   </p>

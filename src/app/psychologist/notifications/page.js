@@ -169,9 +169,9 @@ const NotificationsPage = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h6 className="font-bold text-gray-900 mb-2">
             Notifications
-          </h1>
+          </h6>
           <p className="text-gray-600">
             Stay updated with session reschedules and important updates
           </p>
@@ -240,9 +240,9 @@ const NotificationsPage = () => {
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900">
                         {notification.title}
-                      </h3>
+                      </p>
                       {!notification.is_read && (
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           New

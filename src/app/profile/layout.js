@@ -39,7 +39,9 @@ export default function ProfileLayout({ children }) {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user && !profileData) {
+      // Only fetch if user exists and we don't already have profile data
+      // Skip if user already has full profile data
+      if (user && !profileData && !user.first_name && !user.last_name) {
         try {
           const response = await authApi.getProfile({ silent: true });
           
@@ -162,25 +164,9 @@ export default function ProfileLayout({ children }) {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:top-4 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30">
+      <div className="hidden lg:fixed lg:top-20 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          
-          {/* User Profile Section */}
-          <div className="p-4 pt-20 border-b border-gray-200">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <User className="h-8 w-8 text-blue-600" />
-              </div>
-              <h2 className="text-base font-semibold text-gray-900">
-                {profileData?.first_name && profileData?.last_name 
-                  ? `${profileData.first_name} ${profileData.last_name}`
-                  : user?.email || 'User'}
-              </h2>
-              <p className="text-xs text-gray-600 capitalize">{user.role}</p>
-            </div>
-          </div>
-          
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          <nav className="flex-1 space-y-1 px-2 py-4 pt-6">
             {navigation.filter(item => item.show !== false).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
