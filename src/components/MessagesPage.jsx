@@ -403,7 +403,7 @@ export default function MessagesPage({ session = null }) {
       <div className="flex items-center justify-between p-4 border-b bg-white z-10">
         <div className="flex items-center space-x-4">
           <MessageSquare className="h-6 w-6 text-blue-600" />
-          <h3>Messages</h3>
+          <h6>Messages</h6>
         </div>
       </div>
 
@@ -411,7 +411,7 @@ export default function MessagesPage({ session = null }) {
         {/* Conversations List */}
         <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50 overflow-y-auto`}>
           <div className="p-4">
-            <h4 className="text-gray-900 mb-3">Conversations</h4>
+            <h6 className="text-gray-900 mb-3">Conversations</h6>
             {isLoading ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
@@ -419,7 +419,7 @@ export default function MessagesPage({ session = null }) {
             ) : conversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-gray-900 mb-2">No conversations yet</h3>
+                <h6 className="text-gray-900 mb-2">No conversations yet</h6>
                 <p className="text-gray-600 mb-4">Start a conversation with your booked psychologist</p>
                 <button
                   onClick={() => window.location.href = '/profile/sessions'}
@@ -454,9 +454,9 @@ export default function MessagesPage({ session = null }) {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-gray-900 truncate">
+                          <h6 className="text-gray-900 truncate">
                             {getConversationName(conversation)}
-                          </h5>
+                          </h6>
                           <p className="text-gray-500 truncate">
                             {getConversationSubtitle(conversation)}
                           </p>
@@ -504,9 +504,9 @@ export default function MessagesPage({ session = null }) {
                     )}
                   </div>
                   <div>
-                    <h5 className="text-gray-900">
+                    <h6 className="text-gray-900">
                       {getConversationName(selectedConversation)}
-                    </h5>
+                    </h6>
                     <p className="text-gray-500">
                       {getConversationSubtitle(selectedConversation)}
                     </p>

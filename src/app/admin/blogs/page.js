@@ -16,11 +16,14 @@ import {
   Clock,
   TrendingUp,
   Globe,
-  X
+  X,
+  Layers,
+  FileText
 } from 'lucide-react';
 // We'll use direct fetch for blog API calls
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
+import StructuredContentEditor from '@/components/StructuredContentEditor';
 
 export default function BlogsPage() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -39,12 +42,22 @@ export default function BlogsPage() {
     title: '',
     excerpt: '',
     content: '',
+    structured_content: [],
+    content_images: [],
     featured_image_url: '',
     author_name: '',
     status: 'draft',
     tags: [],
-    read_time_minutes: 5
+    categories: [],
+    read_time_minutes: 5,
+    // SEO fields
+    seo_title: '',
+    seo_description: '',
+    focus_keyword: '',
+    meta_keywords: [],
+    canonical_url: ''
   });
+  const [useStructuredContent, setUseStructuredContent] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -160,13 +173,23 @@ export default function BlogsPage() {
         title: '',
         excerpt: '',
         content: '',
+        structured_content: [],
+        content_images: [],
         featured_image_url: '',
         author_name: user?.name || '',
         status: 'draft',
         tags: [],
-        read_time_minutes: 5
+        categories: [],
+        read_time_minutes: 5,
+        // SEO fields
+        seo_title: '',
+        seo_description: '',
+        focus_keyword: '',
+        meta_keywords: [],
+        canonical_url: ''
       });
       setSelectedBlog(null);
+      setUseStructuredContent(true);
     } catch (err) {
       console.error('Error saving blog:', err);
       showError(err.response?.data?.message || 'Failed to save blog');
@@ -208,13 +231,23 @@ export default function BlogsPage() {
     setNewBlog({
       title: blog.title,
       excerpt: blog.excerpt,
-      content: blog.content,
+      content: blog.content || '',
+      structured_content: blog.structured_content || [],
+      content_images: blog.content_images || [],
       featured_image_url: blog.featured_image_url,
       author_name: blog.author_name,
       status: blog.status,
       tags: blog.tags || [],
-      read_time_minutes: blog.read_time_minutes || 5
+      categories: blog.categories || [],
+      read_time_minutes: blog.read_time_minutes || 5,
+      // SEO fields
+      seo_title: blog.seo_title || blog.title,
+      seo_description: blog.seo_description || blog.excerpt,
+      focus_keyword: blog.focus_keyword || '',
+      meta_keywords: blog.meta_keywords || [],
+      canonical_url: blog.canonical_url || ''
     });
+    setUseStructuredContent(blog.structured_content && blog.structured_content.length > 0);
     setShowEditModal(true);
   };
 
@@ -256,6 +289,44 @@ export default function BlogsPage() {
     setNewBlog(prev => ({
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const addCategory = () => {
+    const categoryInput = document.getElementById('categoryInput');
+    const category = categoryInput.value.trim();
+    if (category && !newBlog.categories.includes(category)) {
+      setNewBlog(prev => ({
+        ...prev,
+        categories: [...prev.categories, category]
+      }));
+      categoryInput.value = '';
+    }
+  };
+
+  const removeCategory = (categoryToRemove) => {
+    setNewBlog(prev => ({
+      ...prev,
+      categories: prev.categories.filter(category => category !== categoryToRemove)
+    }));
+  };
+
+  const addMetaKeyword = () => {
+    const metaKeywordInput = document.getElementById('metaKeywordInput');
+    const keyword = metaKeywordInput.value.trim();
+    if (keyword && !newBlog.meta_keywords.includes(keyword)) {
+      setNewBlog(prev => ({
+        ...prev,
+        meta_keywords: [...prev.meta_keywords, keyword]
+      }));
+      metaKeywordInput.value = '';
+    }
+  };
+
+  const removeMetaKeyword = (keywordToRemove) => {
+    setNewBlog(prev => ({
+      ...prev,
+      meta_keywords: prev.meta_keywords.filter(keyword => keyword !== keywordToRemove)
     }));
   };
 
@@ -311,6 +382,37 @@ export default function BlogsPage() {
       showError('Failed to upload image');
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleStructuredContentImageUpload = async (formData) => {
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      
+      formData.append('blogTitle', newBlog.title || 'untitled');
+
+      const response = await fetch(`${baseUrl}/blogs/admin/upload-multiple-images`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showSuccess('Image uploaded successfully');
+        return result;
+      } else {
+        showError(result.message || 'Failed to upload image');
+        return { success: false, error: result.message };
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showError('Failed to upload image');
+      return { success: false, error: error.message };
     }
   };
 
@@ -569,7 +671,7 @@ export default function BlogsPage() {
         {/* Add/Edit Blog Modal */}
         {(showAddModal || showEditModal) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-7xl w-full h-[95vh] overflow-y-auto">
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h6>
@@ -585,12 +687,22 @@ export default function BlogsPage() {
                         title: '',
                         excerpt: '',
                         content: '',
+                        structured_content: [],
+                        content_images: [],
                         featured_image_url: '',
                         author_name: user?.name || '',
                         status: 'draft',
                         tags: [],
-                        read_time_minutes: 5
+                        categories: [],
+                        read_time_minutes: 5,
+                        // SEO fields
+                        seo_title: '',
+                        seo_description: '',
+                        focus_keyword: '',
+                        meta_keywords: [],
+                        canonical_url: ''
                       });
+                      setUseStructuredContent(true);
                     }}
                     className="text-gray-400 hover:text-gray-600"
                   >
@@ -598,8 +710,8 @@ export default function BlogsPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                  <div className="xl:col-span-3 space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Title *
@@ -628,24 +740,66 @@ export default function BlogsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Content *
-                      </label>
-                      <textarea
-                        required
-                        value={newBlog.content}
-                        onChange={(e) => setNewBlog(prev => ({ ...prev, content: e.target.value }))}
-                        rows="12"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Write your blog content here (HTML supported)"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Use HTML tags for formatting (e.g., &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;)
-                      </p>
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Content *
+                        </label>
+                        <div className="flex items-center space-x-4">
+                          <button
+                            type="button"
+                            onClick={() => setUseStructuredContent(true)}
+                            className={`flex items-center px-3 py-2 text-sm rounded-lg ${
+                              useStructuredContent 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <Layers className="h-4 w-4 mr-2" />
+                            Structured Editor
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setUseStructuredContent(false)}
+                            className={`flex items-center px-3 py-2 text-sm rounded-lg ${
+                              !useStructuredContent 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            HTML Editor
+                          </button>
+                        </div>
+                      </div>
+
+                      {useStructuredContent ? (
+                        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                          <StructuredContentEditor
+                            content={newBlog.structured_content}
+                            onChange={(content) => setNewBlog(prev => ({ ...prev, structured_content: content }))}
+                            onImageUpload={handleStructuredContentImageUpload}
+                          />
+                        </div>
+                      ) : (
+                        <textarea
+                          required
+                          value={newBlog.content}
+                          onChange={(e) => setNewBlog(prev => ({ ...prev, content: e.target.value }))}
+                          rows="20"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                          placeholder="Write your blog content here (HTML supported)"
+                        />
+                      )}
+                      
+                      {!useStructuredContent && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Use HTML tags for formatting (e.g., &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;)
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="xl:col-span-1 space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Author Name
@@ -793,10 +947,172 @@ export default function BlogsPage() {
                         ))}
                       </div>
                     </div>
+
+                    {/* SEO Section */}
+                    <div className="border-t border-gray-200 pt-6">
+                      <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg className="h-5 w-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        SEO Optimization
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Focus Keyword *
+                          </label>
+                          <input
+                            type="text"
+                            value={newBlog.focus_keyword}
+                            onChange={(e) => setNewBlog(prev => ({ ...prev, focus_keyword: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="e.g., child psychology, anxiety therapy"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Primary keyword you want to rank for (appears in title, content, and meta tags)
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            SEO Title
+                          </label>
+                          <input
+                            type="text"
+                            value={newBlog.seo_title}
+                            onChange={(e) => setNewBlog(prev => ({ ...prev, seo_title: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="SEO optimized title (max 60 characters)"
+                            maxLength={60}
+                          />
+                          <div className="flex justify-between text-xs mt-1">
+                            <span className="text-gray-500">Optimized for search engines</span>
+                            <span className={`${newBlog.seo_title.length > 60 ? 'text-red-500' : newBlog.seo_title.length > 50 ? 'text-yellow-500' : 'text-green-500'}`}>
+                              {newBlog.seo_title.length}/60
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Meta Description
+                          </label>
+                          <textarea
+                            value={newBlog.seo_description}
+                            onChange={(e) => setNewBlog(prev => ({ ...prev, seo_description: e.target.value }))}
+                            rows="3"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="Brief description for search results (max 160 characters)"
+                            maxLength={160}
+                          />
+                          <div className="flex justify-between text-xs mt-1">
+                            <span className="text-gray-500">Appears in search engine results</span>
+                            <span className={`${newBlog.seo_description.length > 160 ? 'text-red-500' : newBlog.seo_description.length > 140 ? 'text-yellow-500' : 'text-green-500'}`}>
+                              {newBlog.seo_description.length}/160
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Categories
+                          </label>
+                          <div className="flex space-x-2 mb-2">
+                            <input
+                              id="categoryInput"
+                              type="text"
+                              placeholder="Add category"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                            />
+                            <button
+                              type="button"
+                              onClick={addCategory}
+                              className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {newBlog.categories.map((category, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                              >
+                                {category}
+                                <button
+                                  type="button"
+                                  onClick={() => removeCategory(category)}
+                                  className="ml-1 text-green-600 hover:text-green-800"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Meta Keywords
+                          </label>
+                          <div className="flex space-x-2 mb-2">
+                            <input
+                              id="metaKeywordInput"
+                              type="text"
+                              placeholder="Add meta keyword"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMetaKeyword())}
+                            />
+                            <button
+                              type="button"
+                              onClick={addMetaKeyword}
+                              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {newBlog.meta_keywords.map((keyword, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                              >
+                                {keyword}
+                                <button
+                                  type="button"
+                                  onClick={() => removeMetaKeyword(keyword)}
+                                  className="ml-1 text-blue-600 hover:text-blue-800"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Canonical URL
+                          </label>
+                          <input
+                            type="url"
+                            value={newBlog.canonical_url}
+                            onChange={(e) => setNewBlog(prev => ({ ...prev, canonical_url: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="https://example.com/canonical-url"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Preferred URL if this content appears on multiple pages
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => {

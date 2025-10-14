@@ -134,13 +134,9 @@ export default function RegisterPage() {
           position: "relative",
           padding: "2rem"
         }}>
-          <h1 style={{
-            fontSize: "3rem",
-            fontWeight: "bold",
-            marginBottom: "1rem"
-          }}>
+          <h6 className="text-5xl font-bold mb-4">
             Join Kuttikal
-          </h1>
+          </h6>
           <p style={{
             fontSize: "1.25rem",
             opacity: 0.9,
@@ -169,14 +165,9 @@ export default function RegisterPage() {
             textAlign: "center",
             marginBottom: "2rem"
           }}>
-            <h2 style={{
-              fontSize: "1.875rem",
-              fontWeight: "700",
-              color: "#1a1a1a",
-              marginBottom: "0.25rem"
-            }}>
+            <h6 className="text-3xl font-bold text-gray-900 mb-1">
               Sign Up
-            </h2>
+            </h6>
             <p style={{
               color: "#6b7280",
               fontSize: "0.875rem"

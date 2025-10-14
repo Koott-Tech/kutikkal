@@ -1,3 +1,6 @@
+/* never edit the this global css file*/
+
+
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap');
@@ -31,41 +34,44 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
 }
 
-/* Toned-down global heading sizes */
+/* Universal H1 styling per request */
 h1 {
-  font-size: 2.25rem !important; /* 36px */
-  line-height: 2.75rem !important;
-  letter-spacing: -0.4px !important;
+  font-size: 64px !important;
+  line-height: 4rem !important;
+  letter-spacing: -0.65px !important;
 }
 
+/* Universal H2 styling per request */
 h2 {
-  font-size: 1.875rem !important; /* 30px */
-  line-height: 2.25rem !important;
-  letter-spacing: -0.4px !important;
+  font-size: 56px !important;
+  line-height: 3.5rem !important;
+  letter-spacing: -0.65px !important;
 }
 
 h3 {
-  font-size: 1.5rem !important; /* 24px */
-  line-height: 2rem !important;
-  letter-spacing: -0.3px !important;
+  font-size: 48px !important;
+  line-height: 3rem !important;
+  letter-spacing: -0.65px !important;
+  
 }
 
+
 h4 {
-  font-size: 1.25rem !important; /* 20px */
-  line-height: 1.75rem !important;
-  letter-spacing: -0.3px !important;
+  font-size: 40px !important;
+  line-height: 2.5rem !important;
+  letter-spacing: -0.65px !important;
 }
 
 h5 {
-  font-size: 1.125rem !important; /* 18px */
-  line-height: 1.5rem !important;
-  letter-spacing: -0.3px !important;
+  font-size: 32px !important;
+  line-height: 2rem !important;
+  letter-spacing: -0.65px !important;
 }
 
 h6 {
-  font-size: 1rem !important; /* 16px */
+  font-size: 24px !important;
   line-height: 1.5rem !important;
-  letter-spacing: -0.25px !important;
+  letter-spacing: -0.65px !important;
 }
 
 h7 {
@@ -97,7 +103,10 @@ p {
   letter-spacing: -0.50px !important;
 }
 
-/* (No extra h6 override) */
+/* Override h6 font size to 18px */
+h6 {
+  font-size: 18px !important;
+}
 
 /* Number bold styling */
 .number-bold {

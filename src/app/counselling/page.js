@@ -15,9 +15,9 @@ export default function CounsellingPage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h6 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Professional Counselling Services
-          </h1>
+          </h6>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Expert therapists providing personalized counselling for individuals and families. 
             Get the support you need for mental health and well-being.
@@ -36,9 +36,9 @@ export default function CounsellingPage() {
       {/* Counselling Types Section */}
       <div className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          <h6 className="text-3xl font-bold text-center text-gray-900 mb-12">
             Individual & Package Counselling Services
-          </h2>
+          </h6>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
@@ -59,7 +59,7 @@ export default function CounsellingPage() {
             ].map((service, index) => (
               <Link key={index} href={service.url} className="block">
                 <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-100 cursor-pointer">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{service.name}</h3>
+                  <h6 className="text-lg font-semibold text-gray-900 mb-3">{service.name}</h6>
                   <p className="text-gray-600 text-sm">
                     Professional counselling support tailored to your specific needs and challenges.
                   </p>
@@ -76,9 +76,9 @@ export default function CounsellingPage() {
       {/* How It Works Section */}
       <div className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          <h6 className="text-3xl font-bold text-center text-gray-900 mb-12">
             How Our Counselling Works
-          </h2>
+          </h6>
           <ProcessSteps therapyType="counselling" />
         </div>
       </div>
@@ -86,9 +86,9 @@ export default function CounsellingPage() {
       {/* FAQ Section */}
       <div className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          <h6 className="text-3xl font-bold text-center text-gray-900 mb-12">
             Frequently Asked Questions
-          </h2>
+          </h6>
           <HelpFaq />
         </div>
       </div>

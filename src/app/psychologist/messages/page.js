@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { messagesApi } from "../../../lib/backendApi";
 import { useNotification } from "../../../contexts/NotificationContext";
-import Messages from "../../../components/Messages";
 import { 
+  Send,
   MessageSquare, 
   User, 
   Calendar,
@@ -18,24 +18,52 @@ export default function PsychologistMessagesPage() {
   const { showError } = useNotification();
   const router = useRouter();
   const [conversations, setConversations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showMessages, setShowMessages] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState(null);
+  const [showChatScreen, setShowChatScreen] = useState(false);
+  const messagesEndRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (user) {
+    // Only load once when component first mounts
+    if (!hasLoadedRef.current) {
       loadConversations();
+      hasLoadedRef.current = true;
     }
-  }, [user]);
+  }, []);
+
+  // Focus on input when conversation is selected
+  useEffect(() => {
+    if (selectedConversation) {
+      // Focus on the input field after a short delay
+      setTimeout(() => {
+        const input = document.querySelector('input[type="text"]');
+        if (input) {
+          input.focus();
+        }
+      }, 100);
+    }
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      loadMessages(selectedConversation.id);
+    }
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const loadConversations = async () => {
-    // Prevent reloading if conversations are already loaded
-    if (conversations.length > 0) {
-      console.log('Conversations already loaded, skipping reload');
-      return;
-    }
-
     try {
       setIsLoading(true);
       setError(null);
@@ -72,18 +100,110 @@ export default function PsychologistMessagesPage() {
     }
   };
 
-  const handleConversationClick = (conversation) => {
-    console.log('Psychologist clicked conversation:', conversation);
-    
-    // Only update if it's a different conversation
-    if (selectedConversation?.id !== conversation.id) {
-      setSelectedConversation(conversation);
+  const loadMessages = async (conversationId) => {
+    // Prevent loading messages for the same conversation
+    if (messages.length > 0 && messages[0]?.conversation_id === conversationId) {
+      console.log('Messages already loaded for conversation:', conversationId);
+      return;
     }
-    
-    // Only show messages if not already showing
-    if (!showMessages) {
-      setShowMessages(true);
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await messagesApi.getMessages(conversationId);
+      console.log('Messages API response:', response);
+      
+      const messagesData = response.data?.messages || response.message?.messages || [];
+      console.log('Parsed messages:', messagesData);
+      
+      // Ensure we have valid messages
+      const validMessages = messagesData.filter(message => message && message.id);
+      console.log('Valid messages:', validMessages);
+      
+      setMessages(validMessages);
+      
+      // Mark messages as read (non-blocking)
+      messagesApi.markAsRead(conversationId).catch(err => 
+        console.error('Failed to mark messages as read:', err)
+      );
+    } catch (err) {
+      console.error('Error loading messages:', err);
+      setError(err.message);
+      setMessages([]);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedConversation) return;
+
+    try {
+      setIsSending(true);
+      const response = await messagesApi.sendMessage(selectedConversation.id, {
+        content: newMessage.trim(),
+        messageType: 'text'
+      });
+
+      console.log('Send message response:', response);
+
+      // Add new message to the list - handle both response formats
+      let newMessageData = null;
+      if (response.success && response.message && response.message.message) {
+        newMessageData = response.message.message;
+      } else if (response.data && response.data.message) {
+        newMessageData = response.data.message;
+      } else if (response.message) {
+        newMessageData = response.message;
+      }
+
+      if (newMessageData) {
+        console.log('Adding new message to UI:', newMessageData);
+        setMessages(prev => [...prev, newMessageData]);
+        setNewMessage("");
+      } else {
+        console.error('Could not extract message data from response:', response);
+        setError('Message sent but could not update UI. Please refresh.');
+      }
+
+      // Update conversation in list
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === selectedConversation.id 
+            ? { ...conv, last_message_at: new Date().toISOString() }
+            : conv
+        )
+      );
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError(err.message);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+  };
+
+  const handleConversationSelect = (conversation) => {
+    setSelectedConversation(conversation);
+    // Show chat screen when conversation is selected
+    setShowChatScreen(true);
+  };
+
+  const handleBackToConversations = () => {
+    // Go back to conversation list
+    setShowChatScreen(false);
+  };
+
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const formatDate = (timestamp) => {
@@ -94,22 +214,12 @@ export default function PsychologistMessagesPage() {
     });
   };
 
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getConversationName = (conversation) => {
+    return `${conversation.client?.first_name} ${conversation.client?.last_name}`;
   };
 
-  const getUnreadCount = (conversation) => {
-    // The messages array from conversations API contains count info, not actual messages
-    // We need to get the actual messages to count unread ones
-    console.log('Conversation for unread count:', conversation);
-    console.log('Messages array:', conversation.messages);
-    
-    // For now, return 0 since we don't have actual messages in the conversation list
-    // The unread count should be calculated when loading individual conversation messages
-    return 0;
+  const getConversationSubtitle = (conversation) => {
+    return `Child: ${conversation.client?.child_name} (${conversation.client?.child_age} years)`;
   };
 
   if (isLoading) {
@@ -135,96 +245,157 @@ export default function PsychologistMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/psychologist')}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <h6 className="font-bold text-gray-900">Messages</h6>
-            </div>
-          </div>
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="sm:flex sm:items-center">
+        <div className="sm:flex-auto">
+          <h6 className="font-semibold text-gray-900">Messages</h6>
+          <p className="mt-2 text-sm text-gray-700">
+            Communicate with your clients and manage conversations.
+          </p>
         </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow rounded-lg">
-          <div className="p-6 border-b">
-            <p className="font-semibold text-gray-900">Client Conversations</p>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage your conversations with clients
-            </p>
+        {showChatScreen && (
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleBackToConversations}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Conversations
+            </button>
           </div>
-
-          {conversations.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="font-medium text-gray-900 mb-2">No conversations yet</p>
-              <p className="text-gray-600">
-                You'll see conversations here when clients start messaging you.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => handleConversationClick(conversation)}
-                  className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {conversation.client?.first_name} {conversation.client?.last_name}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Child: {conversation.client?.child_name} ({conversation.client?.child_age} years)
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Session: {formatDate(conversation.session?.scheduled_date)} at {formatTime(conversation.session?.scheduled_time)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {formatDate(conversation.last_message_at)}
-                      </p>
-                      {getUnreadCount(conversation) > 0 && (
-                        <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                          {getUnreadCount(conversation)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
-      {/* Messages Modal */}
-      {showMessages && selectedConversation && (
-        <Messages 
-          isOpen={showMessages} 
-          onClose={() => {
-            setShowMessages(false);
-            setSelectedConversation(null);
-            // Don't refresh conversations on close to avoid unnecessary reloads
-          }}
-          session={selectedConversation} // Pass the conversation as session
-        />
-      )}
+      {/* Main Content */}
+      <div className="mt-8">
+        <div className="bg-white h-[calc(100vh-200px)] md:h-[calc(100vh-150px)] lg:h-[calc(100vh-120px)] flex flex-col relative">
+
+          <div className="flex flex-1 overflow-hidden relative">
+            {/* Conversations List */}
+            <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50`}>
+              <div className="p-4">
+                <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
+                {isLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : conversations.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p>No conversations yet</p>
+                    <p className="text-sm mt-2">You'll see conversations here when clients start messaging you.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {conversations.map((conversation) => (
+                      <div
+                        key={conversation.id}
+                        onClick={() => handleConversationSelect(conversation)}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedConversation?.id === conversation.id
+                            ? 'bg-blue-100 border-blue-300'
+                            : 'bg-white hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h6 className="font-medium text-gray-900 truncate">
+                              {getConversationName(conversation)}
+                            </h6>
+                            <p className="text-sm text-gray-500 truncate">
+                              {getConversationSubtitle(conversation)}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {formatDate(conversation.last_message_at)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className={`${!showChatScreen ? 'hidden' : 'block'} w-full flex flex-col`}>
+              {selectedConversation ? (
+                <>
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {isLoading ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                        <p className="text-lg font-medium mb-2">Start a conversation</p>
+                        <p className="text-sm">Type a message below to begin chatting with {getConversationName(selectedConversation)}</p>
+                      </div>
+                    ) : (
+                      messages
+                        .filter(message => message && message.id) // Filter out undefined/null messages
+                        .map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${
+                              (message?.sender_type || '') === user?.role ? 'justify-end' : 'justify-start'
+                            }`}
+                          >
+                            <div
+                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                                (message?.sender_type || '') === user?.role
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-900'
+                              }`}
+                            >
+                              <p className="text-sm">{message?.content || 'Message content unavailable'}</p>
+                              <p className="text-xs mt-1 opacity-70">
+                                {formatTime(message?.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Message Input */}
+                  <div className="p-4 border-t bg-white">
+                    <form onSubmit={handleSendMessage} className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={handleInputChange}
+                        placeholder={`Type a message to ${getConversationName(selectedConversation)}...`}
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!newMessage.trim() || isSending}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Send className="h-4 w-4" />
+                      </button>
+                    </form>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p>Select a conversation to start messaging</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

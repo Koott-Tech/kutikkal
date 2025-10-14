@@ -272,7 +272,7 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
+    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50 border-b border-gray-100 shadow-sm">
       <div className="w-full pl-[50px] pr-[50px]">
         <div className="flex h-16 items-center justify-between">
           {/* Left group: Brand + Nav */}
@@ -294,7 +294,7 @@ export default function Header() {
               </button>
             </div>
 
-            <nav className="hidden md:block">
+            <nav className="hidden xl:block">
               <ul className="flex items-center gap-6 text-base font-medium text-gray-800">
                 <li className="relative group">
                   <button 
@@ -979,7 +979,7 @@ export default function Header() {
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden xl:flex items-center gap-4">
             {isAuthenticated() ? (
               /* Logged in user menu */
               <div className="relative">
@@ -1036,10 +1036,8 @@ export default function Header() {
               </button>
             )}
             <button 
-              className="inline-flex items-center rounded-full px-4 py-2 text-base font-semibold text-white shadow-sm transition-colors duration-200" 
-              style={{ backgroundColor: '#593494' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+              onClick={() => router.push('/')} 
+              className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white bg-indigo-700 hover:bg-indigo-800 shadow-sm transition-colors duration-200"
             >
               Get started
             </button>
@@ -1048,7 +1046,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              className="xl:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
             >
               <span className="sr-only">Open main menu</span>
               {!isMobileMenuOpen ? (

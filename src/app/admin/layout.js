@@ -107,15 +107,8 @@ export default function AdminLayout({ children }) {
             })}
           </nav>
 
-          {/* User info and logout */}
+          {/* Logout */}
           <div className="p-4 border-t border-gray-200">
-            {user && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600">Logged in as</p>
-                <p className="font-medium text-gray-800">{user.email}</p>
-                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
-              </div>
-            )}
             <button
               onClick={handleLogout}
               className="w-full flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"

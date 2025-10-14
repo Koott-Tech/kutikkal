@@ -150,14 +150,9 @@ export default function LoginPage() {
           }}>
             🧠
           </div>
-          <h1 style={{
-            fontSize: "2.5rem",
-            fontWeight: "700",
-            marginBottom: "1rem",
-            lineHeight: "1.2"
-          }}>
+          <h6 className="text-4xl font-bold mb-4 leading-tight">
             Welcome Back
-          </h1>
+          </h6>
           <p style={{
             fontSize: "1.2rem",
             opacity: 0.9,
@@ -201,14 +196,9 @@ export default function LoginPage() {
             >
                               LittleMinds
             </button>
-            <h2 style={{
-              fontSize: "2rem",
-              fontWeight: "700",
-              color: "#1a1a1a",
-              marginBottom: "0.5rem"
-            }}>
+            <h6 className="text-3xl font-bold text-gray-900 mb-2">
               Sign in to your account
-            </h2>
+            </h6>
             <p style={{
               color: "#666",
               fontSize: "1rem"

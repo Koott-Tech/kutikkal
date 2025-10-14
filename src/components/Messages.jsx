@@ -376,7 +376,7 @@ export default function Messages({ isOpen, onClose, session = null }) {
             </button>
             <div className="flex items-center space-x-2">
               <MessageSquare className="h-6 w-6 text-blue-600" />
-              <h2 className="text-xl font-semibold">Messages</h2>
+              <h6 className="text-xl font-semibold">Messages</h6>
             </div>
           </div>
         </div>
@@ -385,7 +385,7 @@ export default function Messages({ isOpen, onClose, session = null }) {
           {/* Conversations List */}
           <div className={`${showChatScreen ? 'hidden md:block' : 'block'} w-full md:w-1/3 border-r bg-gray-50`}>
             <div className="p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Conversations</h3>
+              <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
               {isLoading ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
@@ -412,9 +412,9 @@ export default function Messages({ isOpen, onClose, session = null }) {
                           <User className="h-5 w-5 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 truncate">
+                          <h6 className="font-medium text-gray-900 truncate">
                             {getConversationName(conversation)}
-                          </h4>
+                          </h6>
                           <p className="text-sm text-gray-500 truncate">
                             {getConversationSubtitle(conversation)}
                           </p>
@@ -441,9 +441,9 @@ export default function Messages({ isOpen, onClose, session = null }) {
                       <User className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">
+                      <h6 className="font-medium text-gray-900">
                         {getConversationName(selectedConversation)}
-                      </h3>
+                      </h6>
                       <p className="text-sm text-gray-500">
                         {getConversationSubtitle(selectedConversation)}
                       </p>

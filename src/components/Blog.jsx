@@ -85,9 +85,9 @@ export default function Blog() {
       <section className="min-h-screen w-full bg-white">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
+            <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
               Our Blog
-            </h1>
+            </h6>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
               Behavioral health information you can trust, verified by clinicians.
             </p>
@@ -105,9 +105,9 @@ export default function Blog() {
       <section className="min-h-screen w-full bg-white">
         <div className="mx-auto max-w-6xl px-6 py-16">
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
+            <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
               Our Blog
-            </h1>
+            </h6>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
               Behavioral health information you can trust, verified by clinicians.
             </p>
@@ -131,9 +131,9 @@ export default function Blog() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
+          <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
             Our Blog
-          </h1>
+          </h6>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
             Behavioral health information you can trust, verified by clinicians.
           </p>
@@ -171,9 +171,9 @@ export default function Blog() {
                     </div>
                     
                     {/* Title */}
-                    <h3 className="text-xl md:text-2xl leading-tight" style={{ fontWeight: 500 }}>
+                    <h6 className="text-xl md:text-2xl leading-tight" style={{ fontWeight: 500 }}>
                       {featuredPost.title}
-                    </h3>
+                    </h6>
                   </div>
                 </div>
               </div>
@@ -250,9 +250,9 @@ export default function Blog() {
                     <div className="text-sm text-gray-500 mb-2" style={{ fontWeight: 50 }}>
                       {post.author_name} • {formatDate(post.published_at || post.created_at)}
                     </div>
-                    <h3 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                    <h6 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
                       {post.title}
-                    </h3>
+                    </h6>
                   </div>
                 </div>
               </Link>

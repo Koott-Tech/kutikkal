@@ -133,7 +133,7 @@ export default function ProfileLayout({ children }) {
             </div>
           </div>
           
-          <nav className="flex-1 space-y-1 px-2 py-4">
+          <nav className="flex-1 space-y-4 px-2 py-4">
             {navigation.filter(item => item.show !== false).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -169,9 +169,9 @@ export default function ProfileLayout({ children }) {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:top-20 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30">
+      <div className="hidden lg:fixed lg:top-16 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <nav className="flex-1 space-y-1 px-2 py-4 pt-6">
+          <nav className="flex-1 space-y-4 px-2 py-4 pt-6">
             {navigation.filter(item => item.show !== false).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);

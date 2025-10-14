@@ -54,9 +54,9 @@ export default function BlogTeaser() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
              <p className="text-lg md:text-base">From our blog</p>
-                 <h3 className="mt-3 break-words">
+                 <h6 className="mt-3 break-words">
                Tips for getting started on your journey
-             </h3>
+             </h6>
            </div>
           <div className="flex justify-center md:justify-end mt-6 md:mt-9">
             <button
