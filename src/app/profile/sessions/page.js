@@ -482,16 +482,15 @@ export default function SessionsPage() {
       </div>
 
       {/* Modals */}
-      {showRescheduleModal && (
-        <RescheduleModal
-          session={sessionToReschedule}
-          onClose={() => {
-            setShowRescheduleModal(false);
-            setSessionToReschedule(null);
-          }}
-          onSuccess={handleRescheduleSuccess}
-        />
-      )}
+      <RescheduleModal
+        isOpen={showRescheduleModal}
+        session={sessionToReschedule}
+        onClose={() => {
+          setShowRescheduleModal(false);
+          setSessionToReschedule(null);
+        }}
+        onRescheduleSuccess={handleRescheduleSuccess}
+      />
 
       {showFeedbackModal && (
         <SessionFeedbackModal

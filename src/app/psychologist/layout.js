@@ -59,7 +59,7 @@ export default function PsychologistLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 right-4 z-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 rounded-md bg-white shadow-lg"
@@ -68,10 +68,10 @@ export default function PsychologistLayout({ children }) {
         </button>
       </div>
 
-      {/* Sidebar: right slide-in on mobile, fixed left on desktop */}
+      {/* Sidebar: left slide-in on mobile, fixed left on desktop */}
       <div className={`fixed inset-y-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
-        right-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
-        lg:left-0 lg:right-auto lg:translate-x-0`}
+        left-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:left-0 lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
