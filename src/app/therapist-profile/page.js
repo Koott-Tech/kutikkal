@@ -242,9 +242,8 @@ const TherapistProfileContent = () => {
   const handleDateSelect = (day) => {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(newSelectedDate);
-    // Clear selected time and package when date changes
+    // Clear selected time when date changes (keep selected package)
     setSelectedTime(null);
-    setSelectedPackage(null);
     
     // Check if the selected date has availability
     // Use local date formatting to avoid timezone conversion issues
@@ -262,9 +261,13 @@ const TherapistProfileContent = () => {
   };
 
   const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-    // Clear selected package when time changes
-    setSelectedPackage(null);
+    if (selectedTime === time) {
+      // Toggle off if clicking the already selected time
+      setSelectedTime(null);
+    } else {
+      setSelectedTime(time);
+    }
+    // Keep selected package intact when time changes
   };
 
   const handleBookSession = async () => {
@@ -1394,7 +1397,7 @@ const TherapistProfileContent = () => {
                                   className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
                                     selectedTime === time
                                       ? 'border-green-500 bg-green-50 text-green-700' 
-                                      : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                                      : 'border-gray-300 bg-white hover:border-gray-400 text-gray-700'
                                   }`}
                                 >
                                   {time}

@@ -272,7 +272,7 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50 border-b border-gray-100 shadow-sm">
+    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50 border-b border-gray-100">
       <div className="w-full pl-[50px] pr-[50px]">
         <div className="flex h-16 items-center justify-between">
           {/* Left group: Brand + Nav */}
@@ -866,13 +866,13 @@ export default function Header() {
                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => router.push('/better-parenting')}>
                             <span className="text-gray-900 text-sm font-semibold">BETTER PARENTING</span>
                           </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Early Parent and Postpartum Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Parenting Coaching and Counselling</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Parent-Child Joint Sessions</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Child Development and Behaviour Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Help for All Kinds of Parents</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Group and Community Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"><span className="text-gray-700 text-sm">Care for Parents</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/early-parent-postpartum-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Early Parent and Postpartum Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/parenting-coaching-counselling'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Parenting Coaching and Counselling</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/parent-child-joint-sessions'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Parent-Child Joint Sessions</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/child-development-behaviour-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Child Development and Behaviour Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/help-for-all-kinds-of-parents'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Help for All Kinds of Parents</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/group-community-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Group and Community Support</span></div>
+                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/care-for-parents'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Care for Parents</span></div>
                         </div>
                       </div>
 
@@ -1037,7 +1037,10 @@ export default function Header() {
             )}
             <button 
               onClick={() => router.push('/')} 
-              className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white bg-indigo-700 hover:bg-indigo-800 shadow-sm transition-colors duration-200"
+              className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
+              style={{ backgroundColor: '#593494' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
             >
               Get started
             </button>
@@ -1138,7 +1141,10 @@ export default function Header() {
                     onClick={() => {
                       router.push('/');
                     }}
-                    className="w-full py-3 px-4 text-base font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800"
+                    className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
+                    style={{ backgroundColor: '#593494' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
                   >
                     Get started
                   </button>
@@ -1309,13 +1315,13 @@ export default function Header() {
                   {isMobileBetterParentingOpen && (
                     <div className="ml-4 space-y-3 py-2">
                       <div className="text-gray-900 text-sm font-semibold">BETTER PARENTING</div>
-                      <div className="text-gray-700 text-sm">Early Parent and Postpartum Support</div>
-                      <div className="text-gray-700 text-sm">Parenting Coaching and Counselling</div>
-                      <div className="text-gray-700 text-sm">Parent-Child Joint Sessions</div>
-                      <div className="text-gray-700 text-sm">Child Development and Behaviour Support</div>
-                      <div className="text-gray-700 text-sm">Help for All Kinds of Parents</div>
-                      <div className="text-gray-700 text-sm">Group and Community Support</div>
-                      <div className="text-gray-700 text-sm">Care for Parents</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/early-parent-postpartum-support'); setIsMobileMenuOpen(false); }}>Early Parent and Postpartum Support</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/parenting-coaching-counselling'); setIsMobileMenuOpen(false); }}>Parenting Coaching and Counselling</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/parent-child-joint-sessions'); setIsMobileMenuOpen(false); }}>Parent-Child Joint Sessions</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/child-development-behaviour-support'); setIsMobileMenuOpen(false); }}>Child Development and Behaviour Support</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/help-for-all-kinds-of-parents'); setIsMobileMenuOpen(false); }}>Help for All Kinds of Parents</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/group-community-support'); setIsMobileMenuOpen(false); }}>Group and Community Support</div>
+                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/care-for-parents'); setIsMobileMenuOpen(false); }}>Care for Parents</div>
                       <div className="border-t border-gray-200 pt-3 space-y-2">
                         <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/free-assessment'); setIsMobileMenuOpen(false); }}>Get a Free Consultation</div>
                         <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/guide'); setIsMobileMenuOpen(false); }}>View Therapists</div>

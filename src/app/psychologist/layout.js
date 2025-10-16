@@ -1,36 +1,38 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { 
-  Calendar, 
-  Clock, 
-  Users, 
-  FileText, 
-  Settings, 
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import {
+  Calendar,
+  Clock,
+  FileText,
+  BarChart3,
+  Settings,
   LogOut,
   Menu,
   X,
-  Bell,
   MessageSquare
-} from "lucide-react";
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function PsychologistLayout({ children }) {
-  const { user, logout, hasRole } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, isAuthenticated, hasRole, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Check if user is a psychologist
   useEffect(() => {
-    console.log('Layout useEffect - user:', user, 'hasRole psychologist:', hasRole('psychologist'));
-    
-    // Only redirect if we're sure the user is not a psychologist
-    if (user && !hasRole('psychologist')) {
-      console.log('User is not a psychologist, redirecting to login');
-      router.push('/login');
-      return;
+    if (!authLoading) {
+      if (!isAuthenticated()) {
+        router.push('/login');
+        return;
+      }
+      if (!hasRole('psychologist')) {
+        router.push('/');
+        return;
+      }
     }
-  }, [user, hasRole, router]);
+  }, [authLoading, isAuthenticated, hasRole, router]);
 
   const handleLogout = () => {
     logout();
@@ -38,147 +40,96 @@ export default function PsychologistLayout({ children }) {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/psychologist', icon: Clock },
+    { name: 'Dashboard', href: '/psychologist', icon: BarChart3 },
     { name: 'Sessions', href: '/psychologist/sessions', icon: Calendar },
     { name: 'Availability', href: '/psychologist/availability', icon: Clock },
-    { name: 'Messages', href: '/psychologist/messages', icon: MessageSquare },
-    { name: 'Notifications', href: '/psychologist/notifications', icon: Bell },
     { name: 'Packages', href: '/psychologist/packages', icon: FileText },
-    { name: 'Settings', href: '/psychologist/settings', icon: Settings },
+    { name: 'Messages', href: '/psychologist/messages', icon: MessageSquare },
+    { name: 'Settings', href: '/psychologist/settings', icon: Settings }
   ];
 
-  console.log('Layout render - user:', user, 'hasRole psychologist:', hasRole('psychologist'), 'user type:', typeof user);
-  
-  // Show loading state while user data is being fetched
-  if (!user) {
-    console.log('Showing loading state - no user yet');
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  // Check if user is a psychologist
-  if (!hasRole('psychologist')) {
-    console.log('User is not a psychologist, redirecting to login');
-    router.push('/login');
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
-            <p className="font-semibold text-gray-900">Psychologist Dashboard</p>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-6 w-6" />
-            </button>
+      {/* Mobile menu button */}
+      <div className="lg:hidden fixed top-4 right-4 z-50">
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 rounded-md bg-white shadow-lg"
+        >
+          {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {/* Sidebar: right slide-in on mobile, fixed left on desktop */}
+      <div className={`fixed inset-y-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out 
+        right-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+        lg:left-0 lg:right-auto lg:translate-x-0`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
+            <Image
+              src="/Logo.webp"
+              alt="Little Care Logo"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
           </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
                 >
-                  <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+                  <Icon className="h-5 w-5 mr-3" />
                   {item.name}
                 </a>
               );
             })}
           </nav>
-          <div className="border-t border-gray-200 p-4">
+
+          {/* Logout */}
+          <div className="p-4 border-t border-gray-200">
             <button
               onClick={handleLogout}
-              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              className="w-full flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
             >
-              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+              <LogOut className="h-5 w-5 mr-3" />
               Logout
             </button>
           </div>
         </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-4 border-b border-gray-200">
-            <p className="font-semibold text-gray-900">Psychologist Dashboard</p>
-          </div>
-          <nav className="flex-1 space-y-1 px-2 py-4">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                >
-                  <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-                  {item.name}
-                </a>
-              );
-            })}
-          </nav>
-          <div className="border-t border-gray-200 p-4">
-            <button
-              onClick={handleLogout}
-              className="group flex w-full items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            >
-              <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Mobile header */}
-        <div className="lg:hidden flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-white w-full">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-500 hover:text-gray-600"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <p className="font-semibold text-gray-900">Little Care</p>
-          <div className="w-6" />
-        </div>
-
-        {/* Desktop header - full width */}
-        <div className="hidden lg:block bg-white border-b border-gray-200 w-full">
-          <div className="flex h-16 items-center justify-between px-4">
-            <p className="font-semibold text-gray-900">Little Care</p>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <button
-                onClick={handleLogout}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-              >
-                Get started
-              </button>
-            </div>
-          </div>
-        </div>
-
+      {/* Main content (push right for desktop left sidebar) */}
+      <div className="lg:ml-64">
         {/* Page content */}
-        <main className="py-6">
+        <main className="p-6">
           {children}
         </main>
       </div>
+
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }

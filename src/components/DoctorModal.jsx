@@ -194,8 +194,9 @@ export default function DoctorModal({
       // Fetch packages for this psychologist
       console.log('🔍 Doctor ID for package fetching:', doctor.id);
       console.log('🔍 Doctor psychologist_id:', doctor.psychologist_id);
-      if (doctor.id) {
-        fetchPsychologistPackages(doctor.id);
+      const fetchId = doctor.id || doctor.psychologist_id;
+      if (fetchId) {
+        fetchPsychologistPackages(fetchId);
       } else {
         console.warn('⚠️ No doctor ID found for package fetching');
       }

@@ -1,6 +1,7 @@
 import ProcessSteps from "@/components/ProcessSteps";
 import HelpFaq from "@/components/HelpFaq";
 import ConsultationBanner from "@/components/ConsultationBanner";
+import Link from "next/link";
 
 export const metadata = {
   title: "Better Parenting Support - Little Care",
@@ -42,43 +43,50 @@ export default function BetterParentingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[
               {
+                slug: "early-parent-postpartum-support",
                 title: "Early Parent and Postpartum Support",
                 description: "Comprehensive support for new parents during the critical early months, including postpartum depression and anxiety management."
               },
               {
+                slug: "parenting-coaching-counselling",
                 title: "Parenting Coaching and Counselling",
                 description: "One-on-one coaching sessions to help parents develop effective strategies and build confidence in their parenting skills."
               },
               {
+                slug: "parent-child-joint-sessions",
                 title: "Parent-Child Joint Sessions",
                 description: "Therapeutic sessions involving both parent and child to improve communication, bonding, and relationship dynamics."
               },
               {
+                slug: "child-development-behaviour-support",
                 title: "Child Development and Behaviour Support",
                 description: "Expert guidance on understanding child development milestones and managing challenging behaviors effectively."
               },
               {
+                slug: "help-for-all-kinds-of-parents",
                 title: "Help for All Kinds of Parents",
                 description: "Inclusive support for single parents, blended families, LGBTQ+ parents, and parents with special needs children."
               },
               {
+                slug: "group-community-support",
                 title: "Group and Community Support",
                 description: "Join supportive communities of parents facing similar challenges, sharing experiences and learning together."
               },
               {
+                slug: "care-for-parents",
                 title: "Care for Parents",
                 description: "Mental health support specifically for parents, addressing stress, anxiety, and the unique challenges of parenthood."
               }
-            ].map((service, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{service.title}</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  {service.description}
-                </p>
-                <button className="text-purple-600 hover:text-purple-700 font-medium text-sm">
-                  Learn More →
-                </button>
-              </div>
+            ].map((service) => (
+              <Link key={service.slug} href={`/better-parenting/${service.slug}`} className="block">
+                <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-100 cursor-pointer">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{service.title}</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    {service.description}
+                  </p>
+                  <span className="text-purple-600 hover:text-purple-700 font-medium text-sm">Learn More →</span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
