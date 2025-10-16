@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Plus, Edit, Trash2, Check, X, Save, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, Check, X, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 
 export default function FreeAssessmentTimeslotsPage() {
@@ -12,15 +12,7 @@ export default function FreeAssessmentTimeslotsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Modal states
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingTimeslot, setEditingTimeslot] = useState(null);
-  
-  // Form states
-  const [timeSlot, setTimeSlot] = useState('');
-  const [isActive, setIsActive] = useState(true);
-  const [maxBookingsPerSlot, setMaxBookingsPerSlot] = useState(3);
+  // Removed modal/form states in favor of calendar-based editing
 
   // Calendar states (like doctor modal)
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +20,7 @@ export default function FreeAssessmentTimeslotsPage() {
   const [selectedTimes, setSelectedTimes] = useState([]);
   const [availabilityData, setAvailabilityData] = useState({});
   const [step, setStep] = useState(1); // 1: select date, 2: select times, 3: save
+  const [bookedAssessments, setBookedAssessments] = useState([]);
 
   // Time slot categories (exact same as doctor modal)
   const timeSlots = {
@@ -41,6 +34,12 @@ export default function FreeAssessmentTimeslotsPage() {
   const fetchAvailabilityData = async (date) => {
     try {
       setLoading(true);
+      console.log('[Admin/FreeAssess] fetchAvailabilityData:start', {
+        date,
+        iso: date?.toISOString(),
+        month: date?.getMonth() + 1,
+        year: date?.getFullYear()
+      });
       
       // Get current month dates
       const year = date.getFullYear();
@@ -58,10 +57,16 @@ export default function FreeAssessmentTimeslotsPage() {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
+      console.log('[Admin/FreeAssess] fetchAvailabilityData:range', { startDate, endDate });
       const data = await adminApi.getDateConfigsRange(startDate, endDate);
+      console.log('[Admin/FreeAssess] fetchAvailabilityData:response', data);
       
       if (data.success) {
         setAvailabilityData(data.data);
+        console.log('[Admin/FreeAssess] fetchAvailabilityData:setAvailabilityData', {
+          keys: Object.keys(data.data || {}),
+          count: Object.keys(data.data || {}).length
+        });
       } else {
         console.error('Failed to fetch availability:', data);
         setAvailabilityData({});
@@ -71,6 +76,7 @@ export default function FreeAssessmentTimeslotsPage() {
       setAvailabilityData({});
     } finally {
       setLoading(false);
+      console.log('[Admin/FreeAssess] fetchAvailabilityData:done');
     }
   };
 
@@ -103,16 +109,46 @@ export default function FreeAssessmentTimeslotsPage() {
   const fetchTimeslots = async () => {
     try {
       setLoading(true);
+      console.log('[Admin/FreeAssess] fetchTimeslots:start');
       const data = await adminApi.getFreeAssessmentTimeslots();
+      console.log('[Admin/FreeAssess] fetchTimeslots:response', data);
       
       if (data.success) {
         setTimeslots(data.data);
+        console.log('[Admin/FreeAssess] fetchTimeslots:setTimeslots', {
+          count: (data.data || []).length,
+          sample: (data.data || []).slice(0, 3)
+        });
       } else {
         setError(data.message || 'Failed to fetch timeslots');
       }
     } catch (error) {
       console.error('Error fetching timeslots:', error);
       setError('Failed to fetch timeslots');
+    } finally {
+      setLoading(false);
+      console.log('[Admin/FreeAssess] fetchTimeslots:done');
+    }
+  };
+
+  // Load booked free assessments for admin list
+  const fetchBookedAssessments = async () => {
+    try {
+      setLoading(true);
+      console.log('[Admin/FreeAssess] fetchBooked:start');
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${backendUrl}/free-assessments/admin/list?status=booked`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      console.log('[Admin/FreeAssess] fetchBooked:response', data);
+      if (data.success) {
+        setBookedAssessments(data.data.assessments || []);
+      }
+    } catch (error) {
+      console.error('Error fetching booked free assessments:', error);
     } finally {
       setLoading(false);
     }
@@ -141,9 +177,35 @@ export default function FreeAssessmentTimeslotsPage() {
 
   const handleDateSelect = (day) => {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    console.log('[Admin/FreeAssess] handleDateSelect', {
+      day,
+      selected: newSelectedDate,
+      iso: newSelectedDate.toISOString()
+    });
     setSelectedDate(newSelectedDate);
-    setSelectedTimes([]);
-    setStep(2); // Move to time selection step
+
+    // Prefill selectedTimes from existing availability for this date (to allow edit/remove)
+    const year = newSelectedDate.getFullYear();
+    const month = String(newSelectedDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(newSelectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${dayStr}`;
+    const existing = availabilityData[dateStr]?.timeSlots;
+
+    if (existing) {
+      const preselected = [];
+      Object.entries(existing).forEach(([period, times]) => {
+        if (Array.isArray(times)) {
+          times.forEach((t) => preselected.push(`${period}:${t}`));
+        }
+      });
+      setSelectedTimes(preselected);
+      console.log('[Admin/FreeAssess] prefillSelectedTimes', { preselected });
+    } else {
+      setSelectedTimes([]);
+      console.log('[Admin/FreeAssess] prefillSelectedTimes:none');
+    }
+
+    setStep(2); // Move to time selection/edit step
   };
 
   const handleTimeSelect = (timeKey) => {
@@ -164,6 +226,11 @@ export default function FreeAssessmentTimeslotsPage() {
 
     try {
       setLoading(true);
+      console.log('[Admin/FreeAssess] saveCurrentDateAvailability:start', {
+        selectedTimes,
+        selectedDate,
+        selectedDateISO: selectedDate?.toISOString()
+      });
       
       // Convert selected times to 24-hour format for backend
       const timeslotsToSave = selectedTimes.map(timeKey => {
@@ -172,6 +239,7 @@ export default function FreeAssessmentTimeslotsPage() {
         const time = timeKey.substring(colonIndex + 1);
         return convertTo24Hour(time);
       });
+      console.log('[Admin/FreeAssess] saveCurrentDateAvailability:normalizedTimes', { timeslotsToSave });
 
       // Save timeslots to backend
       const data = await adminApi.bulkCreateFreeAssessmentTimeslots({
@@ -181,10 +249,15 @@ export default function FreeAssessmentTimeslotsPage() {
           max_bookings_per_slot: 3
         }))
       });
+      console.log('[Admin/FreeAssess] bulkCreateFreeAssessmentTimeslots:response', data);
 
       if (data.success) {
-        // Now save the date-specific configuration
-        const dateStr = selectedDate.toISOString().split('T')[0];
+        // Now save the date-specific configuration (use local date parts to avoid UTC shift)
+        const y = selectedDate.getFullYear();
+        const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const d = String(selectedDate.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${d}`;
+        console.log('[Admin/FreeAssess] saveCurrentDateAvailability:dateStr', dateStr);
         const timeSlotsByPeriod = {
           morning: [],
           noon: [],
@@ -201,15 +274,21 @@ export default function FreeAssessmentTimeslotsPage() {
             timeSlotsByPeriod[period].push(time);
           }
         });
+        console.log('[Admin/FreeAssess] saveCurrentDateAvailability:payload', {
+          date: dateStr,
+          timeSlotsByPeriod
+        });
 
         // Save date configuration
         const dateConfigData = await adminApi.createDateConfig({
           date: dateStr,
           timeSlots: timeSlotsByPeriod
         });
+        console.log('[Admin/FreeAssess] createDateConfig:response', dateConfigData);
 
         if (dateConfigData.success) {
           setSuccess('Timeslots saved successfully!');
+          console.log('[Admin/FreeAssess] saveCurrentDateAvailability:success');
           
           // Update local availability data
           const newAvailability = { ...availabilityData };
@@ -218,6 +297,10 @@ export default function FreeAssessmentTimeslotsPage() {
             isConfigured: true
           };
           setAvailabilityData(newAvailability);
+          console.log('[Admin/FreeAssess] availabilityData:updated', {
+            dateStr,
+            timeSlots: newAvailability[dateStr]
+          });
           
           // Reset selection
           setSelectedDate(null);
@@ -228,15 +311,18 @@ export default function FreeAssessmentTimeslotsPage() {
           fetchTimeslots();
         } else {
           setError(dateConfigData.message || 'Failed to save date configuration');
+          console.log('[Admin/FreeAssess] saveCurrentDateAvailability:dateConfigError', dateConfigData);
         }
       } else {
         setError(data.message || 'Failed to save timeslots');
+        console.log('[Admin/FreeAssess] saveCurrentDateAvailability:bulkError', data);
       }
     } catch (error) {
       console.error('Error saving timeslots:', error);
       setError('Failed to save timeslots');
     } finally {
       setLoading(false);
+      console.log('[Admin/FreeAssess] saveCurrentDateAvailability:done');
     }
   };
 
@@ -247,6 +333,7 @@ export default function FreeAssessmentTimeslotsPage() {
     }
 
     // Save current date and move to next date
+    console.log('[Admin/FreeAssess] goToNextDate:start');
     await saveCurrentDateAvailability();
     
     // Move to next day
@@ -256,16 +343,20 @@ export default function FreeAssessmentTimeslotsPage() {
     setSelectedDate(nextDate);
     setSelectedTimes([]);
     setStep(2);
+    console.log('[Admin/FreeAssess] goToNextDate:nextDate', nextDate);
   };
 
   const removeAvailability = async (dateStr) => {
     try {
       setLoading(true);
+      console.log('[Admin/FreeAssess] removeAvailability:start', { dateStr });
       
       const data = await adminApi.deleteDateConfig(dateStr);
+      console.log('[Admin/FreeAssess] removeAvailability:response', data);
 
       if (data.success) {
         setSuccess('Date configuration removed successfully!');
+        console.log('[Admin/FreeAssess] removeAvailability:success', { dateStr });
         
         // Remove from local state
         const newAvailability = { ...availabilityData };
@@ -273,19 +364,28 @@ export default function FreeAssessmentTimeslotsPage() {
         setAvailabilityData(newAvailability);
       } else {
         setError(data.message || 'Failed to remove date configuration');
+        console.log('[Admin/FreeAssess] removeAvailability:error', data);
       }
     } catch (error) {
       console.error('Error removing availability:', error);
       setError('Failed to remove date configuration');
     } finally {
       setLoading(false);
+      console.log('[Admin/FreeAssess] removeAvailability:done');
     }
   };
 
   useEffect(() => {
     if (!authLoading && token && user) {
+      console.log('[Admin/FreeAssess] useEffect:init', {
+        user: { id: user?.id, role: user?.role, email: user?.email },
+        tokenPreview: (token || '').substring(0, 10) + '...',
+        currentDate,
+        iso: currentDate.toISOString()
+      });
       fetchTimeslots();
       fetchAvailabilityData(currentDate);
+      fetchBookedAssessments();
     }
   }, [authLoading, token, user]);
 
@@ -321,13 +421,6 @@ export default function FreeAssessmentTimeslotsPage() {
             <h6>Free Assessment Timeslots</h6>
             <p className="text-lg text-gray-600">Manage available time slots for free assessments</p>
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Timeslot
-          </button>
         </div>
 
         {/* Messages */}
@@ -608,155 +701,53 @@ export default function FreeAssessmentTimeslotsPage() {
             </div>
           </div>
         )}
+
+        {/* Booked Free Assessments */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h6>Booked Free Assessments</h6>
+          {bookedAssessments.length === 0 ? (
+            <p className="text-sm text-gray-600">No free assessments booked yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Date</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Time</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Client</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Doctor</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-700">Meet Link</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {bookedAssessments.map((a) => (
+                    <tr key={a.id} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 whitespace-nowrap">{a.scheduledDate}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{a.scheduledTime}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{a.client ? `${a.client.first_name || ''} ${a.client.last_name || ''}`.trim() : '—'}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">{a.psychologist ? `${a.psychologist.first_name} ${a.psychologist.last_name}` : 'Unassigned'}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {a.meetLink ? (
+                          <button
+                            onClick={() => navigator.clipboard.writeText(a.meetLink)}
+                            className="text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Copy link
+                          </button>
+                        ) : (
+                          <span className="text-gray-500">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Add Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h6>Add New Timeslot</h6>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Time (HH:MM:SS)
-                </label>
-                <input
-                  type="time"
-                  step="1800"
-                  value={timeSlot.slice(0, 5)}
-                  onChange={(e) => setTimeSlot(e.target.value + ':00')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Bookings per Slot
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={maxBookingsPerSlot}
-                  onChange={(e) => setMaxBookingsPerSlot(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded"
-                />
-                <label className="ml-2 text-sm text-gray-700">Active</label>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setTimeSlot('');
-                  setIsActive(true);
-                  setMaxBookingsPerSlot(3);
-                }}
-                className="flex-1 bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600"
-              >
-                Add Timeslot
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setTimeSlot('');
-                  setIsActive(true);
-                  setMaxBookingsPerSlot(3);
-                }}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && editingTimeslot && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h6>Edit Timeslot</h6>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Time (HH:MM:SS)
-                </label>
-                <input
-                  type="time"
-                  step="1800"
-                  value={timeSlot.slice(0, 5)}
-                  onChange={(e) => setTimeSlot(e.target.value + ':00')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Bookings per Slot
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={maxBookingsPerSlot}
-                  onChange={(e) => setMaxBookingsPerSlot(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded"
-                />
-                <label className="ml-2 text-sm text-gray-700">Active</label>
-              </div>
-            </div>
-            
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingTimeslot(null);
-                  setTimeSlot('');
-                  setIsActive(true);
-                  setMaxBookingsPerSlot(3);
-                }}
-                className="flex-1 bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600"
-              >
-                Update Timeslot
-              </button>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingTimeslot(null);
-                  setTimeSlot('');
-                  setIsActive(true);
-                  setMaxBookingsPerSlot(3);
-                }}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modals removed: editing is done directly via calendar selection */}
     </div>
   );
 }

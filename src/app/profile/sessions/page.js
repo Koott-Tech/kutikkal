@@ -245,18 +245,24 @@ export default function SessionsPage() {
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-blue-50/30">
                         <div className="flex gap-4 items-center">
-                          {/* Psychologist Photo */}
+                          {/* Avatar / Placeholder */}
                           <div className="flex-shrink-0">
-                            {session.psychologist?.cover_image_url ? (
-                              <img 
-                                src={session.psychologist.cover_image_url}
-                                alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                              />
-                            ) : (
-                              <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-xl">
-                                {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                            {session.session_type === 'free_assessment' ? (
+                              <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                                FA
                               </div>
+                            ) : (
+                              session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
+                              )
                             )}
                           </div>
                           
@@ -286,16 +292,16 @@ export default function SessionsPage() {
                               </div>
                               
                               <h5 className="text-gray-900 font-semibold mb-3">
-                                {session.session_type === 'free_assessment' ? (
-                                  <span className="flex items-center gap-2">
-                                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                                      Free Assessment
+                                {session.session_type === 'free_assessment'
+                                  ? (
+                                    <span className="flex items-center gap-2">
+                                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                        Free Assessment
+                                      </span>
+                                      Free assessment (doctor to be assigned)
                                     </span>
-                                    Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
-                                  </span>
-                                ) : (
-                                  `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
-                                )}
+                                  )
+                                  : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
                               </h5>
                               
                               {session.package && (
@@ -312,7 +318,7 @@ export default function SessionsPage() {
                             </div>
                             
                             <div className="flex flex-wrap gap-2">
-                              {session.status === 'booked' && !isSessionExpired(session) && (
+                              {session.session_type !== 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
                                 <>
                                   <button
                                     onClick={() => handleMessageClick(session)}
@@ -336,7 +342,7 @@ export default function SessionsPage() {
                                 </>
                               )}
                               
-                              {session.status === 'booked' && isSessionExpired(session) && (
+                              {session.session_type !== 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                   Session time has passed
                                 </span>
@@ -383,18 +389,24 @@ export default function SessionsPage() {
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-green-50/30">
                         <div className="flex gap-4 items-center">
-                          {/* Psychologist Photo */}
+                          {/* Avatar / Placeholder */}
                           <div className="flex-shrink-0">
-                            {session.psychologist?.cover_image_url ? (
-                              <img 
-                                src={session.psychologist.cover_image_url}
-                                alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                              />
-                            ) : (
+                            {session.session_type === 'free_assessment' ? (
                               <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
-                                {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                FA
                               </div>
+                            ) : (
+                              session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
+                              )
                             )}
                           </div>
                           

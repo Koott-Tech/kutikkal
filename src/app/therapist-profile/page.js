@@ -1281,15 +1281,17 @@ const TherapistProfileContent = () => {
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
                           isSelected
                             ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer'
-                            : isToday
-                              ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
+                            : (isToday && isActuallyAvailable)
+                              ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                              : isToday
+                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
                               : isActuallyAvailable
                                 ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
                               : isAvailable
                                 ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
                                 : 'text-gray-300 cursor-not-allowed'
                         }`}
-                        title={isPsychologistAvailable ? 'Available for booking' : isAvailable ? 'Click to check availability' : 'Past date'}
+                        title={isPsychologistAvailable ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
                         {isActuallyAvailable && (
@@ -1390,7 +1392,21 @@ const TherapistProfileContent = () => {
                           <div className="space-y-2">
                             <p className="text-sm font-medium text-green-700">Available Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
-                              {availableSlots.map((time) => (
+                              {availableSlots
+                                .filter((time) => {
+                                  // Hide past time slots if selected date is today
+                                  if (!selectedDate) return true;
+                                  const now = new Date();
+                                  const isToday = selectedDate.getFullYear() === now.getFullYear() &&
+                                                 selectedDate.getMonth() === now.getMonth() &&
+                                                 selectedDate.getDate() === now.getDate();
+                                  if (!isToday) return true;
+                                  const [hh, mm] = time.split(':');
+                                  const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
+                                  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+                                  return slotMinutes > nowMinutes;
+                                })
+                                .map((time) => (
                                 <button
                                   key={time}
                                   onClick={() => handleTimeSelect(time)}

@@ -224,12 +224,14 @@ export default function PsychologistSessions() {
     );
   }
 
+  // Exclude free assessment items from psychologist panel
+  const excludeFreeAssessment = (s) => s.session_type !== 'free_assessment';
   const upcomingSessions = sessions.filter(s => 
-    s.status === 'booked' || s.status === 'rescheduled'
+    (s.status === 'booked' || s.status === 'rescheduled') && excludeFreeAssessment(s)
   );
-  const completedSessions = sessions.filter(s => s.status === 'completed');
+  const completedSessions = sessions.filter(s => s.status === 'completed' && excludeFreeAssessment(s));
   const pastSessions = sessions.filter(s => 
-    s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show'
+    (s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show') && excludeFreeAssessment(s)
   );
 
   return (
