@@ -150,27 +150,15 @@ const Guide = () => {
             font-size: 1.1rem;
             cursor: pointer;
             box-shadow: 0 6px 24px rgba(0,0,0,0.18), 0 2px 12px rgba(0,0,0,0.12);
-            transition: color 0.2s, border 0.2s;
+            transition: all 0.4s cubic-bezier(.4,2,.6,1);
             z-index: 1;
           }
-          .find-therapist-btn::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: -100%;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            z-index: 0;
-            transition: bottom 0.4s cubic-bezier(.4,2,.6,1), opacity 0.2s;
-            opacity: 0.95;
-          }
-          .find-therapist-btn:hover::before {
-            bottom: 0;
-          }
           .find-therapist-btn:hover {
+            background: #fff;
             color: #27ae60;
-            border: none;
+            border: 2px solid #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(39,174,96,0.25), 0 4px 16px rgba(0,0,0,0.15);
           }
           .find-therapist-btn span {
             position: relative;
@@ -194,58 +182,146 @@ const Guide = () => {
           onComplete={() => { setShowOnboarding(false); router.push('/guide'); }} 
         />
         
-        {/* Guide video cards row - Single row with real doctors only */}
+        {/* Guide video cards grid - Responsive grid layout */}
         <div className="guide-cards-container">
           <style>{`
             .guide-cards-container {
               width: 100%;
+              max-width: 1200px;
               margin-top: 3.2rem;
-              display: flex;
-              align-items: flex-end;
-              justify-content: center;
-              position: relative;
-              height: 380px;
-              gap: 18px;
-              overflow-x: visible;
-              padding-left: 0;
-              padding-right: 0;
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 20px;
+              row-gap: 48px;
+              padding: 0 2rem;
+              justify-items: center;
             }
             .guide-video-card {
               cursor: pointer;
               will-change: transform;
               transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
               z-index: 1;
-              width: 300px;
-              height: 370px;
+              width: 100%;
+              max-width: 280px;
+              height: 360px;
               border-radius: 10px;
               overflow: hidden;
               box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
               background: #fff;
               border: 2px solid #e0e7ef;
               position: relative;
-              flex-shrink: 0;
             }
             .guide-video-card:hover {
-              transform: scale(1.13) translateY(-18px);
+              transform: scale(1.08) translateY(-12px);
               z-index: 10;
               box-shadow: 0 16px 48px rgba(39,174,96,0.22), 0 4px 16px rgba(0,0,0,0.12);
             }
-            @media (max-width: 768px) {
+            
+            /* Medium laptop view - 4 cards per row */
+            @media (min-width: 1025px) and (max-width: 1199px) {
               .guide-cards-container {
-                height: auto;
-                gap: 20px;
-                overflow-x: visible;
-                padding-left: 1rem;
-                padding-right: 1rem;
-                flex-direction: column;
-                align-items: center;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 18px;
+                row-gap: 44px;
+                max-width: 1400px;
+                padding: 0 2rem;
               }
               .guide-video-card {
-                width: 280px;
-                height: 300px;
+                max-width: 280px;
+                height: 360px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.06) translateY(-10px);
+              }
+            }
+            
+            /* Large laptop/desktop view - 4 cards per row with larger cards */
+            @media (min-width: 1200px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+                row-gap: 52px;
+                max-width: 1600px;
+                padding: 0 2.5rem;
+              }
+              .guide-video-card {
+                max-width: 300px;
+                height: 380px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.08) translateY(-12px);
+              }
+            }
+            
+            /* Large tablet/small laptop view - 2 cards per row */
+            @media (max-width: 1024px) and (min-width: 769px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                row-gap: 40px;
+                padding: 0 1.5rem;
+              }
+              .guide-video-card {
+                max-width: 320px;
+                height: 350px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.06) translateY(-10px);
+              }
+            }
+            
+            /* Medium tablet view - 2 cards per row with smaller cards */
+            @media (max-width: 900px) and (min-width: 769px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+                row-gap: 36px;
+                padding: 0 1rem;
+              }
+              .guide-video-card {
+                max-width: 280px;
+                height: 330px;
               }
               .guide-video-card:hover {
                 transform: scale(1.05) translateY(-8px);
+              }
+            }
+            
+            /* Mobile view - 1 card per row */
+            @media (max-width: 768px) {
+              .guide-cards-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                row-gap: 36px;
+                padding: 0 1rem;
+                max-width: 400px;
+                margin-left: auto;
+                margin-right: auto;
+              }
+              .guide-video-card {
+                max-width: 280px;
+                height: 320px;
+                width: 100%;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.04) translateY(-8px);
+              }
+            }
+            
+            /* Small mobile view - 1 card per row with smaller cards */
+            @media (max-width: 480px) {
+              .guide-cards-container {
+                gap: 16px;
+                row-gap: 32px;
+                padding: 0 0.75rem;
+                max-width: 350px;
+              }
+              .guide-video-card {
+                max-width: 260px;
+                height: 300px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.03) translateY(-6px);
               }
             }
           `}</style>
@@ -253,10 +329,11 @@ const Guide = () => {
           {loading ? (
             <div style={{
               width: "100%",
+              gridColumn: "1 / -1",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: 380,
+              height: 200,
               color: "#666",
               fontSize: "1.2rem"
             }}>
@@ -265,10 +342,11 @@ const Guide = () => {
           ) : error ? (
             <div style={{
               width: "100%",
+              gridColumn: "1 / -1",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: 380,
+              height: 200,
               color: "#e74c3c",
               fontSize: "1.2rem",
               textAlign: "center"
@@ -278,10 +356,11 @@ const Guide = () => {
           ) : doctors.length === 0 ? (
             <div style={{
               width: "100%",
+              gridColumn: "1 / -1",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: 380,
+              height: 200,
               color: "#666",
               fontSize: "1.2rem",
               textAlign: "center"
@@ -294,8 +373,6 @@ const Guide = () => {
                 <div
                   className="guide-video-card"
                   key={doc.id || doc.name || idx}
-                  style={{ zIndex: idx+1, position: "relative" }}
-
                   onClick={() => handleDoctorClick(doc, idx)}
                 >
                   {/* Doctor Profile Picture or Cover Image */}

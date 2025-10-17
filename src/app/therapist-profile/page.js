@@ -109,7 +109,7 @@ const TherapistProfileContent = () => {
     }
   };
 
-  // Fetch psychologist availability for current month
+  // Fetch psychologist availability for current month with Google Calendar sync
   const fetchPsychologistAvailability = async (psychologistId) => {
     try {
       setLoadingAvailability(true);
@@ -130,9 +130,33 @@ const TherapistProfileContent = () => {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
+      // First, trigger Google Calendar sync to get latest external bookings
+      try {
+        console.log('🔄 Syncing Google Calendar for psychologist:', psychologistId);
+        const syncResponse = await fetch(`/api/availability-controller/sync-google-calendar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            psychologist_id: psychologistId,
+            start_date: startDate,
+            end_date: endDate
+          })
+        });
+        
+        if (syncResponse.ok) {
+          const syncData = await syncResponse.json();
+          console.log('✅ Google Calendar sync completed:', syncData);
+        } else {
+          console.log('⚠️ Google Calendar sync failed, continuing with cached data');
+        }
+      } catch (syncError) {
+        console.log('⚠️ Google Calendar sync error, continuing with cached data:', syncError);
+        // Continue with availability fetch even if sync fails
+      }
       
-      
-      // Use real API call to get psychologist availability range
+      // Use real API call to get psychologist availability range (now includes Google Calendar data)
       const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
       
       if (response.success) {
@@ -347,6 +371,41 @@ const TherapistProfileContent = () => {
         const hour = timeStr.split(':')[0];
         const minute = timeStr.split(':')[1].split(' ')[0];
         scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
+      }
+
+      // Real-time Google Calendar check before booking
+      try {
+        console.log('🔍 Performing real-time Google Calendar check before booking...');
+        const checkResponse = await fetch(`/api/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json();
+          if (checkData.success && checkData.data.length > 0) {
+            // Check if the selected time conflicts with Google Calendar events
+            const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
+            const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000); // 1 hour session
+            
+            const hasConflict = checkData.data.some(event => {
+              const eventStart = new Date(event.start);
+              const eventEnd = new Date(event.end);
+              return (sessionStart < eventEnd && sessionEnd > eventStart);
+            });
+            
+            if (hasConflict) {
+              showError('This time slot is no longer available due to an external booking. Please select another time.', 'Time Slot Unavailable');
+              setIsBooking(false);
+              return;
+            }
+          }
+        }
+      } catch (checkError) {
+        console.log('⚠️ Real-time Google Calendar check failed, proceeding with booking:', checkError);
+        // Continue with booking even if check fails
       }
 
       // First, reserve the time slot and get payment details
@@ -1323,6 +1382,16 @@ const TherapistProfileContent = () => {
                     <span>Today</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-50 border border-red-300 rounded"></div>
+                    <span>Booked on platform</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-50 border border-orange-300 rounded flex items-center justify-center">
+                      <span className="text-xs">📅</span>
+                    </div>
+                    <span>Blocked by Google Calendar</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-gray-100 rounded"></div>
                     <span>Future date (clickable)</span>
                   </div>
@@ -1428,15 +1497,28 @@ const TherapistProfileContent = () => {
                           <div className="space-y-2">
                             <p className="text-sm font-medium text-red-700">Blocked Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
-                              {blockedSlots.map((time) => (
-                                <div
-                                  key={time}
-                                  className="p-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-xs w-full h-10 flex items-center justify-center cursor-not-allowed"
-                                  title="This time slot is not available"
-                                >
-                                  {time}
-                                </div>
-                              ))}
+                              {blockedSlots.map((time) => {
+                                // Check if this slot is blocked by Google Calendar
+                                const slotData = allTimeSlots.find(slot => slot.displayTime === time);
+                                const isGoogleCalendarBlocked = slotData?.reason === 'google_calendar_blocked';
+                                
+                                return (
+                                  <div
+                                    key={time}
+                                    className={`p-2 rounded-lg border text-xs w-full h-10 flex items-center justify-center cursor-not-allowed ${
+                                      isGoogleCalendarBlocked 
+                                        ? 'border-orange-300 bg-orange-50 text-orange-700' 
+                                        : 'border-red-300 bg-red-50 text-red-700'
+                                    }`}
+                                    title={isGoogleCalendarBlocked ? "This time slot is blocked by Google Calendar (external booking)" : "This time slot is booked"}
+                                  >
+                                    {time}
+                                    {isGoogleCalendarBlocked && (
+                                      <span className="ml-1 text-xs">📅</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

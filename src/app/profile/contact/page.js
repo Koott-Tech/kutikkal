@@ -9,6 +9,7 @@ export default function ContactPage() {
     first_name: '',
     last_name: '',
     phone_number: '',
+    country_code: '+91',
     child_name: '',
     child_age: ''
   });
@@ -24,10 +25,24 @@ export default function ContactPage() {
       const profile = user.profile || user;
       if (profile.first_name || profile.last_name) {
         // Data already available in context, no need to fetch
+        // Parse phone number to extract country code and number
+        const phoneNumber = profile.phone_number || '';
+        let countryCode = '+91';
+        let phoneNumberOnly = phoneNumber;
+        
+        if (phoneNumber.startsWith('+91')) {
+          countryCode = '+91';
+          phoneNumberOnly = phoneNumber.substring(3);
+        } else if (phoneNumber.startsWith('91') && phoneNumber.length > 10) {
+          countryCode = '+91';
+          phoneNumberOnly = phoneNumber.substring(2);
+        }
+        
         setProfileForm({
           first_name: profile.first_name || '',
           last_name: profile.last_name || '',
-          phone_number: profile.phone_number || '',
+          phone_number: phoneNumberOnly,
+          country_code: countryCode,
           child_name: profile.child_name || '',
           child_age: profile.child_age || ''
         });
@@ -40,10 +55,25 @@ export default function ContactPage() {
         const response = await authApi.getProfile();
         if (response?.data?.user) {
           const profileData = response.data.user.profile || response.data.user;
+          
+          // Parse phone number to extract country code and number
+          const phoneNumber = profileData.phone_number || '';
+          let countryCode = '+91';
+          let phoneNumberOnly = phoneNumber;
+          
+          if (phoneNumber.startsWith('+91')) {
+            countryCode = '+91';
+            phoneNumberOnly = phoneNumber.substring(3);
+          } else if (phoneNumber.startsWith('91') && phoneNumber.length > 10) {
+            countryCode = '+91';
+            phoneNumberOnly = phoneNumber.substring(2);
+          }
+          
           setProfileForm({
             first_name: profileData.first_name || '',
             last_name: profileData.last_name || '',
-            phone_number: profileData.phone_number || '',
+            phone_number: phoneNumberOnly,
+            country_code: countryCode,
             child_name: profileData.child_name || '',
             child_age: profileData.child_age || ''
           });
@@ -75,10 +105,13 @@ export default function ContactPage() {
         return;
       }
 
+      // Combine country code and phone number for storage
+      const fullPhoneNumber = profileForm.country_code + profileForm.phone_number;
+
       await clientApi.updateProfile({
         first_name: profileForm.first_name,
         last_name: profileForm.last_name,
-        phone_number: profileForm.phone_number,
+        phone_number: fullPhoneNumber,
         child_name: profileForm.child_name || null,
         child_age: profileForm.child_age ? Number(profileForm.child_age) : null
       });
@@ -88,10 +121,25 @@ export default function ContactPage() {
         login(refreshed.data.user, token);
         
         const refreshedProfile = refreshed.data.user.profile || {};
+        
+        // Parse phone number to extract country code and number
+        const phoneNumber = refreshedProfile.phone_number || '';
+        let countryCode = '+91';
+        let phoneNumberOnly = phoneNumber;
+        
+        if (phoneNumber.startsWith('+91')) {
+          countryCode = '+91';
+          phoneNumberOnly = phoneNumber.substring(3);
+        } else if (phoneNumber.startsWith('91') && phoneNumber.length > 10) {
+          countryCode = '+91';
+          phoneNumberOnly = phoneNumber.substring(2);
+        }
+        
         setProfileForm({
           first_name: refreshedProfile.first_name || '',
           last_name: refreshedProfile.last_name || '',
-          phone_number: refreshedProfile.phone_number || '',
+          phone_number: phoneNumberOnly,
+          country_code: countryCode,
           child_name: refreshedProfile.child_name || '',
           child_age: refreshedProfile.child_age || ''
         });
@@ -167,17 +215,39 @@ export default function ContactPage() {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone Number <span className="text-red-500">*</span>
           </label>
-          <input
-            type="tel"
-            name="phone_number"
-            value={profileForm.phone_number}
-            onChange={handleProfileInputChange}
-            className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              !profileForm.phone_number ? 'border-red-300' : 'border-gray-300'
-            }`}
-            placeholder="Enter your phone number"
-            required
-          />
+          <div className="flex">
+            <select
+              name="country_code"
+              value={profileForm.country_code}
+              onChange={handleProfileInputChange}
+              className="border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+81">🇯🇵 +81</option>
+              <option value="+86">🇨🇳 +86</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+65">🇸🇬 +65</option>
+            </select>
+            <input
+              type="tel"
+              name="phone_number"
+              value={profileForm.phone_number}
+              onChange={handleProfileInputChange}
+              className={`flex-1 border border-l-0 rounded-r-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                !profileForm.phone_number ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Enter your phone number"
+              required
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Full number: {profileForm.country_code}{profileForm.phone_number || 'XXXXXXXXXX'}
+          </p>
         </div>
 
         {hasRole('client') && (

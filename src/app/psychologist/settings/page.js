@@ -22,6 +22,8 @@ export default function PsychologistSettings() {
     first_name: '',
     last_name: '',
     email: '',
+    phone: '',
+    country_code: '+91',
     ug_college: '',
     pg_college: '',
     phd_college: '',
@@ -41,10 +43,25 @@ export default function PsychologistSettings() {
 
   useEffect(() => {
     if (user && user.profile) {
+      // Parse phone number to extract country code and number
+      const phoneNumber = user.profile.phone || '';
+      let countryCode = '+91';
+      let phoneNumberOnly = phoneNumber;
+      
+      if (phoneNumber.startsWith('+91')) {
+        countryCode = '+91';
+        phoneNumberOnly = phoneNumber.substring(3);
+      } else if (phoneNumber.startsWith('91') && phoneNumber.length > 10) {
+        countryCode = '+91';
+        phoneNumberOnly = phoneNumber.substring(2);
+      }
+      
       setProfile({
         first_name: user.profile.first_name || '',
         last_name: user.profile.last_name || '',
         email: user.email || '',
+        phone: phoneNumberOnly,
+        country_code: countryCode,
         ug_college: user.profile.ug_college || '',
         pg_college: user.profile.pg_college || '',
         phd_college: user.profile.phd_college || '',
@@ -347,9 +364,20 @@ export default function PsychologistSettings() {
     setSuccess(null);
 
     try {
-      // Here you would typically make an API call to update the profile
-      // For now, we'll just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Combine country code and phone number for storage
+      const fullPhoneNumber = profile.country_code + profile.phone;
+      
+      // Prepare profile data for API call
+      const profileData = {
+        ...profile,
+        phone: fullPhoneNumber
+      };
+      
+      // Remove country_code from the data sent to API
+      delete profileData.country_code;
+      
+      // Make API call to update profile
+      await psychologistApi.updateProfile(profileData);
       
       setSuccess('Profile updated successfully!');
     } catch (err) {
@@ -434,6 +462,42 @@ export default function PsychologistSettings() {
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    📱 Phone Number
+                  </label>
+                  <div className="flex">
+                    <select
+                      name="country_code"
+                      value={profile.country_code}
+                      onChange={handleInputChange}
+                      className="border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="+91">🇮🇳 +91</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+81">🇯🇵 +81</option>
+                      <option value="+86">🇨🇳 +86</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+65">🇸🇬 +65</option>
+                    </select>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={profile.phone}
+                      onChange={handleInputChange}
+                      className="flex-1 border border-l-0 rounded-r-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Full number: {profile.country_code}{profile.phone || 'XXXXXXXXXX'}
+                  </p>
                 </div>
               </div>
             </div>
