@@ -1038,9 +1038,9 @@ export default function Header() {
             <button 
               onClick={() => router.push('/')} 
               className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
-              style={{ backgroundColor: '#593494' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+              style={{ backgroundColor: '#3f2e73' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
             >
               Get started
             </button>
@@ -1142,9 +1142,9 @@ export default function Header() {
                       router.push('/');
                     }}
                     className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
-                    style={{ backgroundColor: '#593494' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+                    style={{ backgroundColor: '#3f2e73' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                   >
                     Get started
                   </button>

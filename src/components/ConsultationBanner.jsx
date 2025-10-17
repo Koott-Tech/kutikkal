@@ -8,7 +8,7 @@ export default function ConsultationBanner() {
       <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
         <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
           <div className="overflow-hidden relative rounded-[10px] main-container min-h-[320px] md:min-h-[240px]" style={{ borderRadius: "10px", minHeight: "240px" }}>
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/consultationbanner.webp')" }}></div>
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/consultationbanner.png')" }}></div>
           <style jsx>{`
             .main-container {
               border-radius: 10px !important;

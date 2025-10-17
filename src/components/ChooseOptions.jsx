@@ -10,7 +10,7 @@ export default function ChooseOptions() {
       title: "Child\nCounselling",
       description: "Safe space for children to share and grow.",
       image: "/girl1.png",
-      gradient: "from-[#DEEACB] to-white",
+      gradient: "from-[#F3FEF0] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -23,7 +23,7 @@ export default function ChooseOptions() {
       title: "Child\nAssessment", 
       description: "Reveal your child's strengths and needs.",
       image: "/boy1.png",
-      gradient: "from-[#F4E4EE] to-white",
+      gradient: "from-[#f1e7f9] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
@@ -36,7 +36,7 @@ export default function ChooseOptions() {
       title: "Better\nParenting",
       description: "Build stronger bonds and nurturing home.", 
       image: "/fam1.png",
-      gradient: "from-[#F4F0E4] to-white",
+      gradient: "from-[#fff4e2] to-white",
       tagColors: {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"

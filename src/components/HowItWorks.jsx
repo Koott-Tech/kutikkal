@@ -148,11 +148,12 @@ export default function HowItWorks() {
                     <div
                       className="rounded-lg p-4 h-[320px] w-[380px] flex flex-col justify-between card-bg-mobile"
                       style={{ 
-                        backgroundImage: card.id === 1 ? "url('/howitworks1.webp')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.webp')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
+                        backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.png')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.png')" : card.gradient,
                         backgroundSize: "cover",
-                        backgroundPosition: "center top",
+                        backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
-                        backgroundAttachment: "scroll"
+                        backgroundAttachment: "scroll",
+                        backgroundColor: card.id === 2 ? "#f0f0f0" : "transparent"
               }}
             >
               {/* Header Section */}
@@ -253,7 +254,7 @@ export default function HowItWorks() {
             <div
               className="rounded-2xl p-6 h-[355px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks1.webp')",
+                backgroundImage: "url('/howitworks1.png')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">01</div>
@@ -272,7 +273,11 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks2.webp')",
+                backgroundImage: "url('/howitworks2.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundColor: "#f0f0f0"
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">02</div>
@@ -298,7 +303,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks3.webp')",
+                backgroundImage: "url('/howitworks3.png')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">03</div>
@@ -336,7 +341,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks4.webp')",
+                backgroundImage: "url('/howitworks4.png')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">04</div>
