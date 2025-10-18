@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { psychologistApi } from "../../../lib/backendApi";
 import { useNotification } from "../../../contexts/NotificationContext";
+import TimeBlockingModal from "../../../components/TimeBlockingModal";
+import BlockedTimeSlots from "../../../components/BlockedTimeSlots";
 import { 
   Plus,
   Edit,
@@ -10,7 +12,8 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Clock
+  Clock,
+  Shield
 } from "lucide-react";
 
 export default function PsychologistAvailability() {
@@ -27,6 +30,9 @@ export default function PsychologistAvailability() {
     date: '',
     time_slots: []
   });
+
+  // Time blocking state
+  const [showBlockingModal, setShowBlockingModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -83,6 +89,31 @@ export default function PsychologistAvailability() {
     } catch (err) {
       console.error('Error cleaning up duplicates:', err);
       setError('Failed to clean up duplicate time slots');
+    }
+  };
+
+  // Time blocking function
+  const handleBlockTimeSlots = async (blockingData) => {
+    try {
+      const response = await fetch('/api/psychologists/block-time', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(blockingData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to block time slots');
+      }
+
+      // Reload availability to reflect blocked slots
+      await loadAvailability();
+    } catch (error) {
+      console.error('Error blocking time slots:', error);
+      throw error;
     }
   };
 
@@ -277,6 +308,13 @@ export default function PsychologistAvailability() {
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Clean Duplicates
+          </button>
+          <button
+            onClick={() => setShowBlockingModal(true)}
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Block Time
           </button>
           <button
             onClick={openAddModal}
@@ -487,6 +525,18 @@ export default function PsychologistAvailability() {
           </div>
         </div>
       )}
+
+      {/* Blocked Time Slots */}
+      <div className="mt-8">
+        <BlockedTimeSlots psychologistId={user?.id} />
+      </div>
+
+      {/* Time Blocking Modal */}
+      <TimeBlockingModal
+        isOpen={showBlockingModal}
+        onClose={() => setShowBlockingModal(false)}
+        onBlock={handleBlockTimeSlots}
+      />
     </div>
   );
 }

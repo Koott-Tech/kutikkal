@@ -76,6 +76,35 @@ export default function SupportFaq() {
           z-index: 0;
           isolation: isolate;
         }
+        .our-promise-grid {
+          height: 600px !important;
+          min-height: 600px !important;
+          max-height: 600px !important;
+        }
+        .left-side-image-container {
+          transition: opacity 0.3s ease-in-out !important;
+          transform: none !important;
+          height: 500px !important;
+          min-height: 500px !important;
+          max-height: 500px !important;
+          flex-shrink: 0 !important;
+          flex-grow: 0 !important;
+          overflow: hidden !important;
+          border-radius: 10px !important;
+        }
+        .left-side-image-container img {
+          transition: opacity 0.3s ease-in-out !important;
+          transform: none !important;
+          animation: none !important;
+          height: 500px !important;
+          width: 100% !important;
+          object-fit: contain !important;
+          max-width: 100% !important;
+          max-height: 500px !important;
+          min-height: 500px !important;
+          min-width: 100% !important;
+          border-radius: 10px !important;
+        }
         @media (min-width: 1024px) {
           .our-promise-section {
             min-height: clamp(520px, 60vh, 820px) !important;
@@ -91,11 +120,11 @@ export default function SupportFaq() {
           Support at every step, so the next one is easier.
         </h3>
 
-        {/* Desktop Layout: Image on left (60%), FAQ on right (40%) */}
-        <div className="hidden lg:grid grid-cols-[1fr_1fr] xl:grid-cols-[6fr_4fr] gap-4 xl:gap-8 items-stretch" style={{ minHeight: 'inherit', height: '100%' }}>
+        {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
+        <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid" style={{ height: '600px' }}>
           {/* Left: Image that changes per selection */}
-          <div className="relative w-full h-full overflow-hidden rounded-2xl bg-gray-100">
-            <Image
+            <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
+            <img
               key={(
                 active === 3 ? '/ourpromise4.webp' :
                 active === 2 ? '/ourpromise3.webp' :
@@ -116,15 +145,13 @@ export default function SupportFaq() {
                 active === 0 ? 'Our Promise 1' :
                 items[active >= 0 ? active : 0]?.title
               }
-              fill
-              className="object-cover"
-              sizes="50vw"
-              priority
+              className="w-full h-full object-contain transition-opacity duration-300 ease-in-out rounded-[10px]"
+              style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
             />
           </div>
 
           {/* Right: FAQ Accordion */}
-          <div className="w-full h-full">
+          <div className="w-full" style={{ height: '500px' }}>
             <div className="rounded-2xl bg-white space-y-2 h-full max-h-full overflow-y-auto pr-2 shadow-none">
               {items.map((item, idx) => {
                 const open = active === idx;
