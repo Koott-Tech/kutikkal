@@ -1,12 +1,32 @@
 "use client";
-import { useState } from "react";
-import { X, Calendar, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Calendar, Clock, AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNotification } from "../contexts/NotificationContext";
 
 export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
   const { showError, showSuccess } = useNotification();
   const [blockingType, setBlockingType] = useState('whole_day');
   const [isLoading, setIsLoading] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [datesWithSlots, setDatesWithSlots] = useState(new Set());
+  
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        type: 'whole_day',
+        date: '',
+        startDate: '',
+        endDate: '',
+        timeSlots: [],
+        reason: ''
+      });
+      setAvailableSlots([]);
+      setCurrentMonth(new Date());
+    }
+  }, [isOpen]);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -17,6 +37,65 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
     timeSlots: [],
     reason: ''
   });
+
+  // Debug formData changes
+  useEffect(() => {
+    console.log('FormData changed:', formData);
+  }, [formData]);
+  
+  // Debug availableSlots changes
+  useEffect(() => {
+    console.log('AvailableSlots changed:', availableSlots);
+  }, [availableSlots]);
+
+  // Fetch all availability for current month to highlight dates with slots
+  const fetchMonthAvailability = async () => {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) return;
+
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      
+      // Get first and last day of month
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      
+      const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+      const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/availability?start_date=${startDate}&end_date=${endDate}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const availabilityData = data.data || data;
+        
+        // Extract dates that have time slots
+        const datesWithAvailability = new Set();
+        availabilityData.forEach(day => {
+          if (day.time_slots && day.time_slots.length > 0) {
+            datesWithAvailability.add(day.date);
+          }
+        });
+        
+        setDatesWithSlots(datesWithAvailability);
+        console.log('Dates with slots:', Array.from(datesWithAvailability));
+      }
+    } catch (error) {
+      console.error('Error fetching month availability:', error);
+    }
+  };
+
+  // Fetch month availability when month changes
+  useEffect(() => {
+    if (isOpen) {
+      fetchMonthAvailability();
+    }
+  }, [currentMonth, isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,15 +157,6 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
     }
   };
 
-  const handleTimeSlotToggle = (timeSlot) => {
-    setFormData(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.includes(timeSlot)
-        ? prev.timeSlots.filter(slot => slot !== timeSlot)
-        : [...prev.timeSlots, timeSlot]
-    }));
-  };
-
   const generateTimeSlots = () => {
     const slots = [];
     for (let hour = 9; hour < 18; hour++) {
@@ -96,11 +166,160 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
     return slots;
   };
 
+  // Fetch available slots for a specific date
+  const fetchAvailableSlots = async (date) => {
+    try {
+      console.log('Fetching available slots for date:', date);
+      
+      setIsLoadingSlots(true);
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        console.log('No token found');
+        showError('Please log in to view available slots');
+        return;
+      }
+
+      console.log('Making API call to:', `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/availability?date=${date}`);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/availability?date=${date}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('API response status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('Unauthorized - no valid token');
+          showError('Please log in to view available slots');
+          return;
+        }
+        const errorText = await response.text();
+        console.log('API error response:', errorText);
+        throw new Error('Failed to fetch available slots');
+      }
+
+      const data = await response.json();
+      console.log('Available slots data:', data);
+      
+      // The backend returns availability directly, not wrapped in data.data
+      let availabilityData = data.data || data;
+      console.log('Availability data:', availabilityData);
+      
+      // Find the availability for the selected date
+      const dayAvailability = availabilityData.find(day => day.date === date);
+      console.log('Day availability found:', dayAvailability);
+      
+      const availableTimeSlots = dayAvailability?.time_slots || [];
+      console.log('Available time slots for', date, ':', availableTimeSlots);
+      setAvailableSlots(availableTimeSlots);
+      
+      // Update form data with selected date
+      setFormData(prev => ({
+        ...prev,
+        date: date,
+        timeSlots: [] // Reset selected time slots
+      }));
+      
+    } catch (error) {
+      console.error('Error fetching available slots:', error);
+      showError('Failed to fetch available slots');
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
+  // Calendar navigation
+  const navigateMonth = (direction) => {
+    setCurrentMonth(prev => {
+      const newMonth = new Date(prev);
+      newMonth.setMonth(prev.getMonth() + direction);
+      return newMonth;
+    });
+  };
+
+  // Generate calendar days
+  const generateCalendarDays = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const days = [];
+    // Get current IST date
+    const now = new Date();
+    const istOffset = 5.5 * 60; // IST is UTC+5:30
+    const istTime = new Date(now.getTime() + (istOffset * 60 * 1000));
+    const istToday = new Date(istTime.getFullYear(), istTime.getMonth(), istTime.getDate());
+    
+    for (let i = 0; i < 42; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      
+      const isCurrentMonth = date.getMonth() === month;
+      const isPast = date < istToday;
+      const isToday = date.toDateString() === istToday.toDateString();
+      
+      // Create date string in YYYY-MM-DD format
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      
+      // Check if this date has available slots (only for future dates)
+      const hasSlots = !isPast && datesWithSlots.has(dateString);
+      
+      days.push({
+        date: dateString,
+        day: date.getDate(),
+        isCurrentMonth,
+        isPast,
+        isToday,
+        hasSlots
+      });
+    }
+    
+    return days;
+  };
+
+  // Handle date selection
+  const handleDateSelect = (date) => {
+    console.log('Date selected:', date);
+    setFormData(prev => ({ ...prev, date }));
+    fetchAvailableSlots(date);
+  };
+
+  // Handle time slot toggle for blocking
+  const handleTimeSlotToggle = (timeSlot) => {
+    setFormData(prev => ({
+      ...prev,
+      timeSlots: prev.timeSlots.includes(timeSlot)
+        ? prev.timeSlots.filter(slot => slot !== timeSlot)
+        : [...prev.timeSlots, timeSlot]
+    }));
+  };
+
+  // Format time slot for display (simple format like therapist profile)
+  const formatTimeSlot = (timeSlot) => {
+    // If it's already in display format (like "9:00 AM"), return as-is
+    if (timeSlot.includes('AM') || timeSlot.includes('PM')) {
+      return timeSlot;
+    }
+    
+    // Convert from "09:00" format to "9:00 AM" format
+    const [hours, minutes] = timeSlot.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -146,22 +365,123 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
             </div>
           </div>
 
-          {/* Whole Day */}
-          {blockingType === 'whole_day' && (
+          {/* Calendar View */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Calendar */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Date
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                required
-              />
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Date</h3>
+              
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  type="button"
+                  onClick={() => navigateMonth(-1)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-500" />
+                </button>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => navigateMonth(1)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="grid grid-cols-7 gap-1">
+                {generateCalendarDays().map((day, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => !day.isPast && handleDateSelect(day.date)}
+                    disabled={day.isPast}
+                    className={`
+                      p-2 text-sm rounded-lg transition-colors relative
+                      ${day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+                      ${day.isPast ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-100'}
+                      ${day.isToday ? 'bg-blue-100 text-blue-600 font-semibold' : ''}
+                      ${formData.date === day.date ? 'bg-red-100 text-red-600 font-semibold' : ''}
+                      ${day.hasSlots && formData.date !== day.date && !day.isPast ? 'bg-green-50 text-green-700 border border-green-200' : ''}
+                    `}
+                  >
+                    <span className="relative">
+                      {day.day}
+                      {day.hasSlots && !day.isPast && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
+
+            {/* Time Slots Selection */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Time Slots</h3>
+              
+              {formData.date ? (
+                <div>
+                  {isLoadingSlots ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                      <p className="text-gray-500 mt-2">Loading available slots...</p>
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <p className="font-bold text-gray-800 text-sm">TIME SLOTS</p>
+                        <span className="font-bold text-gray-800 text-sm">Available: {availableSlots.length}</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-green-700">Available Times:</p>
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
+                          {availableSlots.map((slot) => (
+                            <button
+                              key={slot}
+                              type="button"
+                              onClick={() => handleTimeSlotToggle(slot)}
+                              className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
+                                formData.timeSlots.includes(slot)
+                                  ? 'border-red-500 bg-red-50 text-red-700' 
+                                  : 'border-gray-300 bg-white hover:border-gray-400 text-gray-700'
+                              }`}
+                            >
+                              {formatTimeSlot(slot)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Clock className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                      <p>No available slots for this date</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                  <p>Select a date to view available time slots</p>
+                </div>
+              )}
+            </div>
+          </div>
+
 
           {/* Multiple Days */}
           {blockingType === 'multiple_days' && (
@@ -195,42 +515,6 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
             </div>
           )}
 
-          {/* Specific Time Slots */}
-          {blockingType === 'specific_slots' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Time Slots
-                </label>
-                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                  {generateTimeSlots().map((timeSlot) => (
-                    <label key={timeSlot} className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        checked={formData.timeSlots.includes(timeSlot)}
-                        onChange={() => handleTimeSlotToggle(timeSlot)}
-                        className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                      />
-                      <span className="text-sm text-gray-700">{timeSlot}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Reason */}
           <div>

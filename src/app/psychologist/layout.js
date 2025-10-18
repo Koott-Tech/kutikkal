@@ -118,7 +118,7 @@ export default function PsychologistLayout({ children }) {
       {/* Main content (push right for desktop left sidebar) */}
       <div className="lg:ml-64">
         {/* Page content */}
-        <main className="p-6">
+        <main className="lg:p-6">
           {children}
         </main>
       </div>

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import Image from "next/image";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
 import { 
@@ -96,20 +95,16 @@ export default function ProfileLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar (slide from left) */}
+      {/* Mobile sidebar (slide from right) */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
+        <div className="fixed inset-y-0 right-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
             <div className="flex items-center">
-              <Image 
+              <img 
                 src="/mainlogo.svg" 
                 alt="Kuttikal Logo" 
-                width={100} 
-                height={32} 
-                className="hover:opacity-80 transition-opacity"
-                priority={true}
-                style={{ width: "auto", height: "auto" }}
+                className="h-8 w-auto hover:opacity-80 transition-opacity"
               />
             </div>
             <button
@@ -120,18 +115,6 @@ export default function ProfileLayout({ children }) {
             </button>
           </div>
           
-          {/* User Profile Section */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <User className="h-8 w-8 text-blue-600" />
-              </div>
-              <h2 className="text-base font-semibold text-gray-900">
-                {displayName || 'User'}
-              </h2>
-              <p className="text-xs text-gray-600 capitalize">{user.role}</p>
-            </div>
-          </div>
           
           <nav className="flex-1 space-y-4 px-2 py-4">
             {navigation.filter(item => item.show !== false).map((item) => {
@@ -227,14 +210,10 @@ export default function ProfileLayout({ children }) {
         {/* Mobile header */}
         <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
           <div className="flex items-center">
-            <Image 
+            <img 
               src="/mainlogo.svg" 
               alt="Kuttikal Logo" 
-              width={100} 
-              height={32} 
-              className="hover:opacity-80 transition-opacity"
-              priority={true}
-              style={{ width: "auto", height: "auto" }}
+              className="h-8 w-auto hover:opacity-80 transition-opacity"
             />
           </div>
           <button
@@ -246,8 +225,8 @@ export default function ProfileLayout({ children }) {
         </div>
 
         {/* Page content */}
-        <main className="py-6 lg:pt-24">
-          <div className="px-4 sm:px-6 lg:px-8">
+        <main className="lg:py-6 lg:pt-24">
+          <div className="lg:px-4 lg:sm:px-6 lg:px-8">
             {children}
           </div>
         </main>

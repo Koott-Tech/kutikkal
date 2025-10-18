@@ -5,6 +5,7 @@ import { psychologistApi } from "../../../lib/backendApi";
 import { useNotification } from "../../../contexts/NotificationContext";
 import TimeBlockingModal from "../../../components/TimeBlockingModal";
 import BlockedTimeSlots from "../../../components/BlockedTimeSlots";
+import AvailabilityModal from "../../../components/AvailabilityModal";
 import { 
   Plus,
   Edit,
@@ -26,10 +27,6 @@ export default function PsychologistAvailability() {
   // Availability management state
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAvailability, setEditingAvailability] = useState(null);
-  const [newAvailability, setNewAvailability] = useState({
-    date: '',
-    time_slots: []
-  });
 
   // Time blocking state
   const [showBlockingModal, setShowBlockingModal] = useState(false);
@@ -95,16 +92,27 @@ export default function PsychologistAvailability() {
   // Time blocking function
   const handleBlockTimeSlots = async (blockingData) => {
     try {
-      const response = await fetch('/api/psychologists/block-time', {
+      // Check if user is authenticated
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        showError('Please log in to block time slots');
+        return;
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/block-time`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(blockingData)
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          showError('Please log in to block time slots');
+          return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to block time slots');
       }
@@ -117,15 +125,14 @@ export default function PsychologistAvailability() {
     }
   };
 
-  const handleAddAvailability = async () => {
+  const handleAddAvailability = async (availabilityData, isUpdate = false) => {
     try {
-      if (!newAvailability.date || newAvailability.time_slots.length === 0) {
-        setError('Please select a date and at least one time slot');
-        showError('Please select a date and at least one time slot', 'Validation Error');
-        return;
+      let response;
+      if (isUpdate) {
+        response = await psychologistApi.updateAvailability(availabilityData);
+      } else {
+        response = await psychologistApi.addAvailability(availabilityData);
       }
-
-      const response = await psychologistApi.addAvailability(newAvailability);
 
       // Check if any slots were blocked due to Google Calendar conflicts
       if (response.data?.blocked_count > 0) {
@@ -134,13 +141,9 @@ export default function PsychologistAvailability() {
           'Calendar Conflict Detected'
         );
       } else {
-        showSuccess('Availability added successfully', 'Success');
+        showSuccess(isUpdate ? 'Availability updated successfully' : 'Availability added successfully', 'Success');
       }
 
-      // Reset form and close modal
-      setNewAvailability({ date: '', time_slots: [] });
-      setShowAddModal(false);
-      
       // Reload availability data
       await loadAvailability();
       
@@ -149,6 +152,7 @@ export default function PsychologistAvailability() {
       console.error('Error adding availability:', err);
       setError(err.message);
       showError(err.message || 'Failed to add availability', 'Add Error');
+      throw err; // Re-throw to let the modal handle the error
     }
   };
 
@@ -247,20 +251,6 @@ export default function PsychologistAvailability() {
     setError(null);
   };
 
-  const openAddModal = () => {
-    setShowAddModal(true);
-    // Set current date as default
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-    setNewAvailability({ date: formattedDate, time_slots: [] });
-    setError(null);
-  };
-
-  const closeAddModal = () => {
-    setShowAddModal(false);
-    setNewAvailability({ date: '', time_slots: [] });
-    setError(null);
-  };
 
   const formatTimeForDisplay = (time) => {
     const [hours, minutes] = time.split(':');
@@ -317,7 +307,7 @@ export default function PsychologistAvailability() {
             Block Time
           </button>
           <button
-            onClick={openAddModal}
+            onClick={() => setShowAddModal(true)}
             className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -451,80 +441,11 @@ export default function PsychologistAvailability() {
       </div>
 
       {/* Add Availability Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <p className="font-semibold text-gray-900">Add New Availability</p>
-              <button
-                onClick={closeAddModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XCircle className="h-6 w-6" />
-              </button>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                <input
-                  type="date"
-                  value={newAvailability.date}
-                  onChange={(e) => setNewAvailability({...newAvailability, date: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Time Slots</label>
-                <p className="text-sm text-gray-600 mb-2">Click on time slots to select/deselect them</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => {
-                        const slots = newAvailability.time_slots.includes(time)
-                          ? newAvailability.time_slots.filter(t => t !== time)
-                          : [...newAvailability.time_slots, time];
-                        setNewAvailability({...newAvailability, time_slots: slots});
-                      }}
-                      className={`p-2 text-xs sm:text-sm rounded border transition-colors ${
-                        newAvailability.time_slots.includes(time)
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
-                      }`}
-                    >
-                      {formatTimeForDisplay(time)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 sm:gap-3 mt-6">
-              <button
-                onClick={closeAddModal}
-                className="px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddAvailability}
-                className="px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-700"
-              >
-                Add Availability
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AvailabilityModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAddAvailability={handleAddAvailability}
+      />
 
       {/* Blocked Time Slots */}
       <div className="mt-8">

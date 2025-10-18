@@ -17,17 +17,30 @@ export default function BlockedTimeSlots({ psychologistId }) {
     try {
       setIsLoading(true);
       
+      // Check if user is authenticated
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        console.log('No authentication token found, skipping blocked slots load');
+        setBlockedSlots([]);
+        return;
+      }
+      
       // Get blocked slots for the next 30 days
       const startDate = new Date().toISOString().split('T')[0];
       const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       
-      const response = await fetch(`/api/psychologists/blocked-time?startDate=${startDate}&endDate=${endDate}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/blocked-time?startDate=${startDate}&endDate=${endDate}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.log('User not authenticated, skipping blocked slots load');
+          setBlockedSlots([]);
+          return;
+        }
         throw new Error('Failed to load blocked time slots');
       }
 
@@ -35,7 +48,11 @@ export default function BlockedTimeSlots({ psychologistId }) {
       setBlockedSlots(data.data || []);
     } catch (error) {
       console.error('Error loading blocked slots:', error);
-      showError('Failed to load blocked time slots');
+      // Don't show error to user if it's just an authentication issue
+      if (!error.message.includes('401') && !error.message.includes('Unauthorized')) {
+        showError('Failed to load blocked time slots');
+      }
+      setBlockedSlots([]);
     } finally {
       setIsLoading(false);
     }
@@ -45,16 +62,27 @@ export default function BlockedTimeSlots({ psychologistId }) {
     try {
       setIsUnblocking(true);
       
-      const response = await fetch('/api/psychologists/unblock-time', {
+      // Check if user is authenticated
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        showError('Please log in to unblock time slots');
+        return;
+      }
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/unblock-time`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ eventIds: [eventId] })
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          showError('Please log in to unblock time slots');
+          return;
+        }
         throw new Error('Failed to unblock time slot');
       }
 

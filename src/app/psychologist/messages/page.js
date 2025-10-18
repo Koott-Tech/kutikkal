@@ -268,133 +268,144 @@ export default function PsychologistMessagesPage() {
 
       {/* Main Content */}
       <div className="mt-8">
-        <div className="bg-white h-[calc(100vh-200px)] md:h-[calc(100vh-150px)] lg:h-[calc(100vh-120px)] flex flex-col relative">
-
-          <div className="flex flex-1 overflow-hidden relative">
-            {/* Conversations List */}
-            <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50`}>
-              <div className="p-4">
-                <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
-                {isLoading ? (
-                  <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                  </div>
-                ) : conversations.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>No conversations yet</p>
-                    <p className="text-sm mt-2">You'll see conversations here when clients start messaging you.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {conversations.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        onClick={() => handleConversationSelect(conversation)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                          selectedConversation?.id === conversation.id
-                            ? 'bg-blue-100 border-blue-300'
-                            : 'bg-white hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <User className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h6 className="font-medium text-gray-900 truncate">
-                              {getConversationName(conversation)}
-                            </h6>
-                            <p className="text-sm text-gray-500 truncate">
-                              {getConversationSubtitle(conversation)}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {formatDate(conversation.last_message_at)}
-                            </p>
-                          </div>
-                        </div>
+        {/* Conversations List */}
+        <div className={`${showChatScreen ? 'hidden' : 'block'} bg-white rounded-lg shadow-sm`}>
+          <div className="p-4">
+            <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
+            {isLoading ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                <p>No conversations yet</p>
+                <p className="text-sm mt-2">You'll see conversations here when clients start messaging you.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    onClick={() => handleConversationSelect(conversation)}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      selectedConversation?.id === conversation.id
+                        ? 'bg-blue-100 border-blue-300'
+                        : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-blue-600" />
                       </div>
-                    ))}
+                      <div className="flex-1 min-w-0">
+                        <h6 className="font-medium text-gray-900 truncate">
+                          {getConversationName(conversation)}
+                        </h6>
+                        <p className="text-sm text-gray-500 truncate">
+                          {getConversationSubtitle(conversation)}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(conversation.last_message_at)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Chat Screen - Full Height WhatsApp Style */}
+        {showChatScreen && selectedConversation && (
+          <div className="fixed inset-0 bg-white z-50 flex flex-col" style={{ height: '100vh' }}>
+            {/* Chat Header */}
+            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center space-x-3 flex-shrink-0">
+              <button
+                onClick={handleBackToConversations}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h6 className="font-medium text-gray-900">
+                  {getConversationName(selectedConversation)}
+                </h6>
+                <p className="text-sm text-gray-500">
+                  Session: {formatDate(selectedConversation.session?.scheduled_date)}
+                </p>
+              </div>
+              <div className="flex items-center text-green-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-sm">Active</span>
               </div>
             </div>
 
             {/* Messages Area */}
-            <div className={`${!showChatScreen ? 'hidden' : 'block'} w-full flex flex-col`}>
-              {selectedConversation ? (
-                <>
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {isLoading ? (
-                      <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                      </div>
-                    ) : messages.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                        <p className="text-lg font-medium mb-2">Start a conversation</p>
-                        <p className="text-sm">Type a message below to begin chatting with {getConversationName(selectedConversation)}</p>
-                      </div>
-                    ) : (
-                      messages
-                        .filter(message => message && message.id) // Filter out undefined/null messages
-                        .map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${
-                              (message?.sender_type || '') === user?.role ? 'justify-end' : 'justify-start'
-                            }`}
-                          >
-                            <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                (message?.sender_type || '') === user?.role
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-200 text-gray-900'
-                              }`}
-                            >
-                              <p className="text-sm">{message?.content || 'Message content unavailable'}</p>
-                              <p className="text-xs mt-1 opacity-70">
-                                {formatTime(message?.created_at)}
-                              </p>
-                            </div>
-                          </div>
-                        ))
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="p-4 border-t bg-white">
-                    <form onSubmit={handleSendMessage} className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={newMessage}
-                        onChange={handleInputChange}
-                        placeholder={`Type a message to ${getConversationName(selectedConversation)}...`}
-                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!newMessage.trim() || isSending}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Send className="h-4 w-4" />
-                      </button>
-                    </form>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Select a conversation to start messaging</p>
-                  </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 min-h-0">
+              {isLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                 </div>
+              ) : messages.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">Start a conversation</p>
+                  <p className="text-sm">Type a message below to begin chatting with {getConversationName(selectedConversation)}</p>
+                </div>
+              ) : (
+                messages
+                  .filter(message => message && message.id)
+                  .map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${
+                        (message?.sender_type || '') === user?.role ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          (message?.sender_type || '') === user?.role
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-900'
+                        }`}
+                      >
+                        <p className="text-sm">{message?.content || 'Message content unavailable'}</p>
+                        <p className="text-xs mt-1 opacity-70">
+                          {formatTime(message?.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
               )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input - Fixed at Bottom */}
+            <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+              <form onSubmit={handleSendMessage} className="flex space-x-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={handleInputChange}
+                  placeholder={`Type a message to ${getConversationName(selectedConversation)}...`}
+                  className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="submit"
+                  disabled={!newMessage.trim() || isSending}
+                  className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

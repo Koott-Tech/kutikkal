@@ -9,7 +9,7 @@ export default function ChooseOptions() {
       tags: ["Counselling", "Emotions"],
       title: "Child\nCounselling",
       description: "Safe space for children to share and grow.",
-      image: "/girl1.png",
+      image: "/letusguide1.png",
       gradient: "from-[#DEEFDC] to-white",
       tagColors: {
         primary: "bg-white text-black",

@@ -79,6 +79,15 @@ export default function SessionsPage() {
     });
   };
 
+  const formatDateMobile = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const formatTime = (timeString) => {
     if (!timeString) return 'N/A';
     try {
@@ -209,50 +218,42 @@ export default function SessionsPage() {
             {/* Scheduled Sessions Section */}
             {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
               <div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                    <h3 className="text-gray-900">Scheduled Sessions</h3>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full">
-                      {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length}
-                    </span>
+                    <h5 className="text-gray-900">Scheduled Sessions</h5>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => router.push('/profile/messages')}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center gap-1 cursor-pointer"
-                    >
-                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">View All Messages</span>
-                      <span className="sm:hidden">Messages</span>
-                    </button>
-                    <button
-                      onClick={() => router.push('/guide')}
-                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-200 flex items-center gap-1 cursor-pointer"
-                    >
-                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Book New Session</span>
-                      <span className="sm:hidden">Book Session</span>
-                    </button>
-                    <div className="text-xs sm:text-sm text-gray-600">
-                      Total: {sessions.length} sessions
-                    </div>
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    Total: {sessions.length} sessions
                   </div>
                 </div>
-                <div className="space-y-4">
+                {/* Mobile Layout - Single Column Cards */}
+                <div className="block lg:hidden space-y-4">
                   {sessions
                     .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
                     .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-blue-50/30">
-                        <div className="flex gap-4 items-center">
-                          {/* Avatar / Placeholder */}
-                          <div className="flex-shrink-0">
-                            {session.session_type === 'free_assessment' ? (
-                              <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
-                                FA
-                              </div>
-                            ) : (
-                              session.psychologist?.cover_image_url ? (
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        {/* Status Badge */}
+                        <div className="flex justify-end mb-3">
+                          {isSessionExpired(session) ? (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
+                              Time Expired
+                            </span>
+                          ) : (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
+                              {session.status === 'booked' ? 'Scheduled' : 
+                               session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                               session.status === 'rescheduled' ? 'Rescheduled' : 'Scheduled'}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="flex gap-5 items-start">
+                          {/* Avatar - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && (
+                            <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
                                 <img 
                                   src={session.psychologist.cover_image_url}
                                   alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
@@ -262,9 +263,113 @@ export default function SessionsPage() {
                                 <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-xl">
                                   {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                                 </div>
-                              )
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Session Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-500 mb-1">
+                              {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                            </p>
+                            <h6 className="text-gray-900 font-bold mb-2">
+                              {session.session_type === 'free_assessment'
+                                ? 'Free Assessment'
+                                : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
+                            </h6>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 mt-6">
+                          {/* Regular Session Buttons */}
+                          {session.session_type !== 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
+                            <>
+                              <button
+                                onClick={() => handleMessageClick(session)}
+                                className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors flex items-center justify-center gap-1"
+                              >
+                                <MessageSquare className="h-3 w-3" />
+                                Message
+                              </button>
+                              <button
+                                onClick={() => handleRescheduleClick(session)}
+                                className="flex-1 text-blue-600 border border-blue-300 px-2 py-1 rounded text-xs font-medium hover:bg-blue-50 transition-colors"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                onClick={() => handleRescheduleRequest(session)}
+                                className="flex-1 text-orange-600 border border-orange-300 px-2 py-1 rounded text-xs font-medium hover:bg-orange-50 transition-colors"
+                              >
+                                Help
+                              </button>
+                            </>
+                          )}
+                          
+                          {/* Free Assessment Buttons */}
+                          {session.session_type === 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
+                            <>
+                              <button
+                                onClick={() => handleRescheduleClick(session)}
+                                className="flex-1 text-blue-600 border border-blue-300 px-2 py-1 rounded text-xs font-medium hover:bg-blue-50 transition-colors"
+                              >
+                                Reschedule
+                              </button>
+                              <button
+                                onClick={() => handleRescheduleRequest(session)}
+                                className="flex-1 text-orange-600 border border-orange-300 px-2 py-1 rounded text-xs font-medium hover:bg-orange-50 transition-colors"
+                              >
+                                Help
+                              </button>
+                            </>
+                          )}
+                          
+                          {session.session_type !== 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
+                              Session time has passed
+                            </span>
+                          )}
+                          
+                          {session.session_type === 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
+                              Assessment time has passed
+                            </span>
+                          )}
+                          
+                          {session.status === 'reschedule_requested' && (
+                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
+                              Reschedule Requested
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Desktop Layout - Current Design */}
+                <div className="hidden lg:block space-y-4">
+                  {sessions
+                    .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
+                    .map((session) => (
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-blue-50/30">
+                        <div className="flex gap-4 items-center">
+                          {/* Avatar / Placeholder - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && (
+                          <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
                             )}
                           </div>
+                          )}
                           
                           {/* Session Details */}
                           <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
@@ -318,6 +423,7 @@ export default function SessionsPage() {
                             </div>
                             
                             <div className="flex flex-wrap gap-2">
+                              {/* Regular Session Buttons */}
                               {session.session_type !== 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
                                 <>
                                   <button
@@ -337,7 +443,25 @@ export default function SessionsPage() {
                                     onClick={() => handleRescheduleRequest(session)}
                                     className="text-orange-600 hover:text-orange-900 text-xs sm:text-sm font-medium border border-orange-300 px-2 py-1 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
                                   >
-                                    Request Help
+                                    Help
+                                  </button>
+                                </>
+                              )}
+                              
+                              {/* Free Assessment Buttons */}
+                              {session.session_type === 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
+                                <>
+                                  <button
+                                    onClick={() => handleRescheduleClick(session)}
+                                    className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm font-medium border border-blue-300 px-2 py-1 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
+                                  >
+                                    {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
+                                  </button>
+                                  <button
+                                    onClick={() => handleRescheduleRequest(session)}
+                                    className="text-orange-600 hover:text-orange-900 text-xs sm:text-sm font-medium border border-orange-300 px-2 py-1 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
+                                  >
+                                    Help
                                   </button>
                                 </>
                               )}
@@ -345,6 +469,12 @@ export default function SessionsPage() {
                               {session.session_type !== 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                   Session time has passed
+                                </span>
+                              )}
+                              
+                              {session.session_type === 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                                <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
+                                  Assessment time has passed
                                 </span>
                               )}
                               
@@ -378,25 +508,27 @@ export default function SessionsPage() {
                   <div className="h-5 w-5 sm:h-6 sm:w-6 bg-green-100 rounded-full flex items-center justify-center">
                     <div className="h-2 w-2 sm:h-3 sm:w-3 bg-green-600 rounded-full"></div>
                   </div>
-                  <h3 className="text-gray-900">Completed Sessions</h3>
-                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full">
-                    {sessions.filter(s => s.status === 'completed').length}
-                  </span>
+                  <h5 className="text-gray-900">Completed Sessions</h5>
                 </div>
-                <div className="space-y-4">
+                {/* Mobile Layout - Single Column Cards */}
+                <div className="block lg:hidden space-y-4">
                   {sessions
                     .filter(s => s.status === 'completed')
                     .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-green-50/30">
-                        <div className="flex gap-4 items-center">
-                          {/* Avatar / Placeholder */}
-                          <div className="flex-shrink-0">
-                            {session.session_type === 'free_assessment' ? (
-                              <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
-                                FA
-                              </div>
-                            ) : (
-                              session.psychologist?.cover_image_url ? (
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        {/* Status Badge */}
+                        <div className="flex justify-end mb-3">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Completed
+                          </span>
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="flex gap-5 items-start">
+                          {/* Avatar - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && (
+                            <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
                                 <img 
                                   src={session.psychologist.cover_image_url}
                                   alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
@@ -406,9 +538,78 @@ export default function SessionsPage() {
                                 <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
                                   {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                                 </div>
-                              )
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Session Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-500 mb-1">
+                              {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                            </p>
+                            <h6 className="text-gray-900 font-bold mb-2">
+                              {session.session_type === 'free_assessment' ? 'Free Assessment' : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
+                            </h6>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 mt-6">
+                          <button
+                            onClick={() => handleViewFullReport(session)}
+                            className="flex-1 text-blue-600 border border-blue-300 px-2 py-1 rounded text-xs font-medium hover:bg-blue-50 transition-colors"
+                          >
+                            View Report
+                          </button>
+                          {session.summary && (
+                            <button
+                              onClick={() => handleViewSummary(session)}
+                              className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors"
+                            >
+                              View Summary
+                            </button>
+                          )}
+                          {!session.feedback && (
+                            <button
+                              onClick={() => openFeedbackModal(session)}
+                              className="flex-1 text-purple-600 border border-purple-300 px-2 py-1 rounded text-xs font-medium hover:bg-purple-50 transition-colors"
+                            >
+                              Give Feedback
+                            </button>
+                          )}
+                          {session.feedback && (
+                            <span className="flex-1 text-green-600 bg-green-100 px-2 py-1 rounded text-xs text-center">
+                              ✓ Feedback Submitted
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Desktop Layout - Current Design */}
+                <div className="hidden lg:block space-y-4">
+                  {sessions
+                    .filter(s => s.status === 'completed')
+                    .map((session) => (
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-green-50/30">
+                        <div className="flex gap-4 items-center">
+                          {/* Avatar / Placeholder - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && (
+                          <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
                             )}
                           </div>
+                          )}
                           
                           {/* Session Details */}
                           <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
