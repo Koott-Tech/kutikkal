@@ -84,7 +84,7 @@ export default function ConsultationBanner() {
                 Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
               </p>
               
-              <button className="text-gray-900 px-1 py-0.5 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-[10px] md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-0.5 md:gap-2 w-fit" style={{ backgroundColor: '#EEF4E4' }}>
+              <button className="text-gray-900 px-1 py-0.5 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-[10px] md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-0.5 md:gap-2 w-fit" style={{ backgroundColor: 'white' }}>
                 <span>Book a Google Meet now.</span>
                 <div className="w-3 h-3 md:w-7 md:h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: '#bed39c' }}>
                   <svg className="w-2 h-2 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

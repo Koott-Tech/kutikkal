@@ -106,9 +106,16 @@ export default function SupportFaq() {
                 active === 3 ? '/ourpromise4.webp' :
                 active === 2 ? '/ourpromise3.webp' :
                 active === 1 ? '/ourpromise2.webp' :
+                active === 0 ? '/ourpromise1.png' :
                 items[active >= 0 ? active : 0]?.image
               }
-              alt={items[active >= 0 ? active : 0]?.title}
+              alt={
+                active === 3 ? 'Our Promise 4' :
+                active === 2 ? 'Our Promise 3' :
+                active === 1 ? 'Our Promise 2' :
+                active === 0 ? 'Our Promise 1' :
+                items[active >= 0 ? active : 0]?.title
+              }
               fill
               className="object-cover"
               sizes="50vw"

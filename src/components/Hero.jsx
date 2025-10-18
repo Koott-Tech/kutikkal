@@ -23,7 +23,7 @@ export default function Hero() {
         <section 
           className="text-black rounded-none md:rounded-[10px] p-0 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] mx-0 md:mx-0 overflow-visible relative"
           style={{ 
-            backgroundColor: '#EAE4F4'
+            backgroundColor: '#E4E4F9'
           }}
         >
           <style jsx>{`

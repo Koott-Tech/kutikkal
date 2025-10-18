@@ -282,14 +282,17 @@ export default function Header() {
                 onClick={handleHomeClick}
                 className="cursor-pointer"
               >
-                <Image 
-                  src="/Logo.webp" 
-                  alt="Little Care Logo" 
-                  width={120} 
-                  height={40} 
-                  className="hover:opacity-80 transition-opacity"
-                  priority={true}
-                  style={{ width: "auto", height: "auto" }}
+                <div 
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{ 
+                    width: "120px", 
+                    height: "40px", 
+                    backgroundImage: "url('/mainlogo.svg')", 
+                    backgroundSize: "contain", 
+                    backgroundRepeat: "no-repeat", 
+                    backgroundPosition: "center" 
+                  }}
+                  onClick={handleHomeClick}
                 />
               </button>
             </div>
@@ -1071,14 +1074,16 @@ export default function Header() {
             {/* Header with Logo and Close Button */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center">
-                <Image 
-                  src="/Logo.webp" 
-                  alt="Little Care Logo" 
-                  width={100} 
-                  height={35} 
-                  className="hover:opacity-80 transition-opacity"
-                  priority={true}
-                  style={{ width: "auto", height: "auto" }}
+                <div 
+                  className="hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{ 
+                    width: "100px", 
+                    height: "35px", 
+                    backgroundImage: "url('/mainlogo.svg')", 
+                    backgroundSize: "contain", 
+                    backgroundRepeat: "no-repeat", 
+                    backgroundPosition: "center" 
+                  }}
                 />
               </div>
               <button

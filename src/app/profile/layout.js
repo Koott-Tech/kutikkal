@@ -103,8 +103,8 @@ export default function ProfileLayout({ children }) {
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
             <div className="flex items-center">
               <Image 
-                src="/Logo.webp" 
-                alt="Little Care Logo" 
+                src="/mainlogo.svg" 
+                alt="Kuttikal Logo" 
                 width={100} 
                 height={32} 
                 className="hover:opacity-80 transition-opacity"
@@ -228,8 +228,8 @@ export default function ProfileLayout({ children }) {
         <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
           <div className="flex items-center">
             <Image 
-              src="/Logo.webp" 
-              alt="Little Care Logo" 
+              src="/mainlogo.svg" 
+              alt="Kuttikal Logo" 
               width={100} 
               height={32} 
               className="hover:opacity-80 transition-opacity"
