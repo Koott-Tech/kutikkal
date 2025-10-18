@@ -26,9 +26,9 @@ export default function Footer() {
                     </p>
                     <button 
                         className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
-                        style={{ backgroundColor: '#593494' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+                        style={{ backgroundColor: '#3f2e73' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                     >
                         Get started
                     </button>

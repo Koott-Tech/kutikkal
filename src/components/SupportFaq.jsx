@@ -44,7 +44,7 @@ export default function SupportFaq() {
   }
 
   return (
-    <section className="w-full flex items-center mt-32 our-promise-section" style={{ height: 'auto' }}>
+    <section className="w-full flex items-center mt-20 our-promise-section" style={{ height: 'auto' }}>
       <style jsx>{`
         .faq-background {
           height: 100% !important;
@@ -72,6 +72,7 @@ export default function SupportFaq() {
           height: auto !important;
           padding-top: 0 !important;
           padding-bottom: 0 !important;
+          margin-top: 240px !important;
           position: relative;
           z-index: 0;
           isolation: isolate;
@@ -115,7 +116,7 @@ export default function SupportFaq() {
         }
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
-        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight">Our promise</p>
+        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight mt-6">Our promise</p>
         <h3 className="text-center md:text-center mt-2 mb-16" style={{ fontWeight: 500 }}>
           Support at every step, so the next one is easier.
         </h3>
@@ -126,13 +127,13 @@ export default function SupportFaq() {
             <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
             <img
               key={(
-                active === 3 ? '/ourpromise4.webp' :
+                active === 3 ? '/ourpromise4.png' :
                 active === 2 ? '/ourpromise3.png' :
                 active === 1 ? '/ourpromise2.png' :
                 items[active >= 0 ? active : 0]?.image
               ) || 'fallback'}
               src={
-                active === 3 ? '/ourpromise4.webp' :
+                active === 3 ? '/ourpromise4.png' :
                 active === 2 ? '/ourpromise3.png' :
                 active === 1 ? '/ourpromise2.png' :
                 active === 0 ? '/ourpromise1.png' :

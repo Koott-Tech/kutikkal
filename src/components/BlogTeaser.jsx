@@ -54,16 +54,18 @@ export default function BlogTeaser() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="text-center md:text-left">
              <p className="text-lg md:text-base">From our blog</p>
-                 <h6 className="mt-3 break-words">
+                 <h3 className="mt-3 break-words" style={{ fontWeight: 500 }}>
                Tips for getting started on your journey
-             </h6>
+             </h3>
            </div>
           <div className="flex justify-center md:justify-end mt-6 md:mt-9">
             <button
               type="button"
               onClick={handleExploreClick}
-              className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-semibold text-white hover:opacity-90"
-              style={{ backgroundColor: '#593494' }}
+              className="inline-flex items-center rounded-full px-5 py-3 text-base md:text-sm font-semibold text-white transition-colors duration-200"
+              style={{ backgroundColor: '#3f2e73' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
             >
               Explore more articles
             </button>
