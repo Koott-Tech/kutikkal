@@ -93,7 +93,7 @@ export default function HelpFaq({ cmsData = null }) {
               src={leftImageUrl}
               alt="Smiling people"
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(min-width: 1024px) 40vw, 100vw"
             />
           </div>
