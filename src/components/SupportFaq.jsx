@@ -128,13 +128,13 @@ export default function SupportFaq() {
               key={(
                 active === 3 ? '/ourpromise4.webp' :
                 active === 2 ? '/ourpromise3.png' :
-                active === 1 ? '/ourpromise2.webp' :
+                active === 1 ? '/ourpromise2.png' :
                 items[active >= 0 ? active : 0]?.image
               ) || 'fallback'}
               src={
                 active === 3 ? '/ourpromise4.webp' :
                 active === 2 ? '/ourpromise3.png' :
-                active === 1 ? '/ourpromise2.webp' :
+                active === 1 ? '/ourpromise2.png' :
                 active === 0 ? '/ourpromise1.png' :
                 items[active >= 0 ? active : 0]?.image
               }

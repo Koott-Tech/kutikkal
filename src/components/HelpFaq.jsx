@@ -67,7 +67,7 @@ export default function HelpFaq({ cmsData = null }) {
     DATA;
 
   // Get the left image from CMS data or use default
-  const leftImageUrl = cmsData?.leftImageUrl || "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png";
+  const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq.png";
 
   return (
     <section className="w-full mt-20 px-4 lg:px-6">

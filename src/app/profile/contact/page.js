@@ -168,12 +168,6 @@ export default function ContactPage() {
     <div className="bg-white shadow rounded-lg p-6">
       <h5 className="text-gray-900 mb-6">Contact Information</h5>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h6 className="text-blue-800 mb-2">Required Information</h6>
-        <p className="text-blue-700">
-          All fields below are required to book therapy sessions. This information helps us provide personalized care for your child.
-        </p>
-      </div>
 
       <form className="space-y-6" onSubmit={handleSaveContact}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
