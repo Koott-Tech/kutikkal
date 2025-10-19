@@ -398,7 +398,7 @@ export default function MessagesPage({ session = null }) {
   };
 
   return (
-    <div className="bg-white h-[calc(100vh-200px)] md:h-[calc(100vh-150px)] lg:h-[calc(100vh-120px)] flex flex-col relative">
+    <div className="bg-white h-screen flex flex-col relative">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-white z-10">
         <div className="flex items-center space-x-4">
@@ -480,7 +480,7 @@ export default function MessagesPage({ session = null }) {
         </div>
 
         {/* Messages Area */}
-        <div className={`${showChatScreen ? 'block' : 'hidden'} w-full flex flex-col`}>
+        <div className={`${showChatScreen ? 'block' : 'hidden'} w-full flex flex-col flex-1`}>
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
@@ -571,7 +571,7 @@ export default function MessagesPage({ session = null }) {
               </div>
 
               {/* Message Input - Fixed at bottom */}
-              <div className="p-4 border-t bg-white flex-shrink-0">
+              <div className="p-4 border-t bg-white flex-shrink-0 mt-auto">
                 <form onSubmit={handleSendMessage} className="flex space-x-2">
                   <input
                     type="text"

@@ -236,7 +236,7 @@ export default function Testimonials() {
               <Image src="/testimonial3.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
-              <Image src="/testimonial3.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
