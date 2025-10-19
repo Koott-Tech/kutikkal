@@ -28,7 +28,7 @@ export default function ChooseOptions() {
         primary: "bg-white text-black",
         secondary: "bg-white text-black"
       },
-      imageClass: "object-cover object-[50%_100%] scale-110"
+      imageClass: "object-cover object-[50%_100%]"
     },
     {
       id: 3,
@@ -134,6 +134,7 @@ export default function ChooseOptions() {
           .card-title {
             font-size: 24px !important;
             margin-bottom: 8px !important;
+            line-height: 1.2 !important;
           }
           .card-description {
             font-size: 14px !important;
@@ -193,7 +194,7 @@ export default function ChooseOptions() {
                 </div>
 
                 {/* Title */}
-                <h5 className="card-title text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 whitespace-pre-line leading-tight" style={{ fontWeight: 'bold' }}>
+                <h5 className="card-title text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 whitespace-pre-line" style={{ fontWeight: 'bold' }}>
                   {card.title}
                 </h5>
 

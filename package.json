@@ -24,6 +24,8 @@
   },
   "devDependencies": {
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.18"
+    "eslint-config-next": "14.2.18",
+    "imagemin": "^9.0.1",
+    "imagemin-webp": "^8.0.0"
   }
 }

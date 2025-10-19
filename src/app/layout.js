@@ -28,6 +28,19 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS for immediate mobile styling */
+            @media (max-width: 767px) {
+              .hero-title, .hero-description {
+                text-align: center !important;
+              }
+              .hero-title {
+                line-height: 0.95 !important;
+              }
+            }
+          `
+        }} />
       </head>
       <body
         className="antialiased"

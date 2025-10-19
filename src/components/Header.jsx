@@ -21,6 +21,17 @@ export default function Header() {
   const [isMobileBetterParentingOpen, setIsMobileBetterParentingOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
+  const [isMobileSubmenuOpen, setIsMobileSubmenuOpen] = useState({
+    emotional: false,
+    development: false,
+    behaviour: false,
+    stress: false,
+    trauma: false,
+    adhd: false,
+    emotionalAssessments: false,
+    intelligence: false,
+    projective: false
+  });
   const [counsellingMenuItems, setCounsellingMenuItems] = useState({
     emotional: [],
     development: [],
@@ -271,12 +282,33 @@ export default function Header() {
     return displayName.charAt(0).toUpperCase();
   };
 
+  const toggleMobileSubmenu = (submenuKey) => {
+    setIsMobileSubmenuOpen(prev => ({
+      ...prev,
+      [submenuKey]: !prev[submenuKey]
+    }));
+  };
+
   return (
     <header className="w-full bg-white fixed top-0 left-0 right-0 z-50 border-b border-gray-100">
-      <div className="w-full pl-[50px] pr-[50px]">
-        <div className="flex h-16 items-center justify-between">
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .header-logo-nav-gap {
+            gap: 24px !important;
+          }
+          .header-container {
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+          }
+          .header-main {
+            justify-content: space-between !important;
+          }
+        }
+      `}</style>
+      <div className="w-full pl-[50px] pr-[50px] header-container">
+        <div className="flex h-16 items-center justify-between header-main">
           {/* Left group: Brand + Nav */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 header-logo-nav-gap">
             <div className="flex items-center">
               <button 
                 onClick={handleHomeClick}
@@ -1109,7 +1141,10 @@ export default function Header() {
                     </div>
                     <div>
                       <div className="text-base font-medium text-gray-900">{getUserDisplayName()}</div>
-                      <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
+                      {/* Only show email if it's different from display name */}
+                      {getUserDisplayName() !== user?.email && (
+                        <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
+                      )}
                       <div className="text-sm text-indigo-600 font-medium mt-1">
                         {getRoleDisplayName(user?.role)}
                       </div>
@@ -1177,96 +1212,151 @@ export default function Header() {
                   
                   {/* Counselling Dropdown Content */}
                   {isMobileFindCareOpen && (
-                    <div className="ml-4 space-y-4 py-2">
-                      <div className="px-4 py-2 space-y-4">
+                    <div className="ml-4 space-y-2 py-2">
+                      <div className="px-4 py-2 space-y-2">
                         {/* Emotional & Mental Health */}
                         <div>
-                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Emotional & Mental Health</h6>
-                          <div className="space-y-1 ml-2">
-                            {counsellingMenuItems.emotional.map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('emotional')}
+                          >
+                            <h6 className="text-gray-900">Emotional & Mental Health</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.emotional ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.emotional && (
+                            <div className="ml-2 space-y-1">
+                              {counsellingMenuItems.emotional.map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Child Development & Learning */}
                         <div>
-                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Child Development & Learning</h6>
-                          <div className="space-y-1 ml-2">
-                            {counsellingMenuItems.development.map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('development')}
+                          >
+                            <h6 className="text-gray-900">Child Development & Learning</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.development ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.development && (
+                            <div className="ml-2 space-y-1">
+                              {counsellingMenuItems.development.map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Behaviour & Confidence Building */}
                         <div>
-                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Behaviour & Confidence Building</h6>
-                          <div className="space-y-1 ml-2">
-                            {counsellingMenuItems.behaviour.map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('behaviour')}
+                          >
+                            <h6 className="text-gray-900">Behaviour & Confidence Building</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.behaviour ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.behaviour && (
+                            <div className="ml-2 space-y-1">
+                              {counsellingMenuItems.behaviour.map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Stress & Academic Support */}
                         <div>
-                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Stress & Academic Support</h6>
-                          <div className="space-y-1 ml-2">
-                            {counsellingMenuItems.stress.map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('stress')}
+                          >
+                            <h6 className="text-gray-900">Stress & Academic Support</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.stress ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.stress && (
+                            <div className="ml-2 space-y-1">
+                              {counsellingMenuItems.stress.map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Trauma & Healing */}
                         <div>
-                          <h6 className="text-gray-500 uppercase tracking-wider mb-2">🔹 Trauma & Healing</h6>
-                          <div className="space-y-1 ml-2">
-                            {counsellingMenuItems.trauma.map((service, index) => (
-                              <div 
-                                key={index}
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push(service.url);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">{service.name}</span>
-                              </div>
-                            ))}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('trauma')}
+                          >
+                            <h6 className="text-gray-900">Trauma & Healing</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.trauma ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.trauma && (
+                            <div className="ml-2 space-y-1">
+                              {counsellingMenuItems.trauma.map((service, index) => (
+                                <div 
+                                  key={index}
+                                  className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                  onClick={() => {
+                                    router.push(service.url);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  <span className="text-gray-700 text-sm">{service.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
@@ -1274,6 +1364,7 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/assessments');
+                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Assessments</span>
@@ -1282,6 +1373,7 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/better-parenting');
+                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Better Parenting</span>
@@ -1290,6 +1382,7 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
                               router.push('/resources');
+                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Resources</span>
@@ -1355,126 +1448,176 @@ export default function Header() {
                   
                   {/* Assessments Dropdown Content */}
                   {isMobileForProvidersOpen && (
-                    <div className="ml-4 space-y-4 py-2">
-                      <div className="px-4">
+                    <div className="ml-4 space-y-2 py-2">
+                      <div className="px-4 py-2 space-y-2">
                         {/* ADHD Assessments */}
-                        <div className="mb-4">
-                          <h6 className="text-gray-900 mb-2">ADHD Assessments</h6>
-                          <div className="space-y-1 ml-2">
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/adhd-vanderbilt');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
-                            </div>
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/adhd-conners-3');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">ADHD Conners 3</span>
+                        <div>
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('adhd')}
+                          >
+                            <h6 className="text-gray-900">ADHD Assessments</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.adhd ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.adhd && (
+                            <div className="ml-2 space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/adhd-vanderbilt');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/adhd-conners-3');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">ADHD Conners 3</span>
+                              </div>
                             </div>
-                          </div>
+                          )}
+                        </div>
 
                         {/* Emotional & Behavioral Screening */}
-                        <div className="mb-4">
-                          <h6 className="text-gray-900 mb-2">Emotional & Behavioral Screening</h6>
-                          <div className="space-y-1 ml-2">
+                        <div>
                           <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                                router.push('/assessments/basc-3');
-                              setIsMobileMenuOpen(false);
-                            }}
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('emotionalAssessments')}
                           >
-                              <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
-                            </div>
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/child-depression-inventory');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">Child Depression Inventory</span>
-                            </div>
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/spence-anxiety-scale');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
+                            <h6 className="text-gray-900">Emotional & Behavioral Screening</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.emotionalAssessments ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.emotionalAssessments && (
+                            <div className="ml-2 space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/basc-3');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/child-depression-inventory');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Child Depression Inventory</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/spence-anxiety-scale');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      
+
                         {/* Intelligence Tests */}
-                        <div className="mb-4">
-                          <h6 className="text-gray-900 mb-2">Intelligence Tests</h6>
-                          <div className="space-y-1 ml-2">
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/vsms');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">VSMS</span>
-                            </div>
+                        <div>
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('intelligence')}
+                          >
+                            <h6 className="text-gray-900">Intelligence Tests</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.intelligence ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.intelligence && (
+                            <div className="ml-2 space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/vsms');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">VSMS</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Projective Tests */}
-                        <div className="mb-4">
-                          <h6 className="text-gray-900 mb-2">Projective Tests</h6>
-                          <div className="space-y-1 ml-2">
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/cat');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
-                            </div>
-                            <div 
-                              className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                router.push('/assessments/child-sentence-completion');
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
-                            </div>
+                        <div>
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => toggleMobileSubmenu('projective')}
+                          >
+                            <h6 className="text-gray-900">Projective Tests</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.projective ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </div>
+                          {isMobileSubmenuOpen.projective && (
+                            <div className="ml-2 space-y-1">
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/cat');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
+                              </div>
+                              <div 
+                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                                onClick={() => {
+                                  router.push('/assessments/child-sentence-completion');
+                                  setIsMobileMenuOpen(false);
+                                }}
+                              >
+                                <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Divider */}
-                        <div className="border-t border-gray-200 pt-3">
-                        <div className="space-y-2">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                              <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
+                        <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/free-assessment');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
                           </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2">
-                              <span className="text-gray-700 text-sm font-medium">View Therapists</span>
-                            </div>
-                            <div 
-                              className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                              onClick={() => {
-                                handleFAQClick();
-                                setIsMobileMenuOpen(false);
-                              }}
-                            >
-                              <span className="text-gray-700 text-sm font-medium">FAQ</span>
-                            </div>
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/guide');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm font-medium">View Therapists</span>
+                          </div>
+                          <div 
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              handleFAQClick();
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm font-medium">FAQ</span>
                           </div>
                         </div>
                       </div>
