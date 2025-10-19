@@ -16,8 +16,6 @@ const nextConfig = {
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
-  // Set output file tracing root to silence workspace warning
-  outputFileTracingRoot: '/Users/abhishekr/Desktop/Projects/kuttikal/frontend',
   // Enable prefetching for better navigation performance
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
