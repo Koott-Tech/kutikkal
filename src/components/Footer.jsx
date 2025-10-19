@@ -13,15 +13,27 @@ export default function Footer() {
     };
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+            <style jsx>{`
+                @media (max-width: 767px) {
+                    .footer-heading {
+                        font-size: 28px !important;
+                        line-height: 0.95 !important;
+                        font-weight: 600 !important;
+                    }
+                    .footer-description {
+                        line-height: 1.2 !important;
+                    }
+                }
+            `}</style>
             {/* New section above footer */}
             <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
                 background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
             }}>
                 <div className="text-center max-w-4xl mx-auto">
-                    <h4 className="mb-4 font-semibold">
+                    <h4 className="footer-heading mb-4 font-semibold">
                         Ready to start your journey to mental well-being?
                     </h4>
-                    <p className="text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
+                    <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                         We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                     </p>
                     <button 

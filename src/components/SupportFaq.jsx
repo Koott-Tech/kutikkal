@@ -72,10 +72,36 @@ export default function SupportFaq() {
           height: auto !important;
           padding-top: 0 !important;
           padding-bottom: 0 !important;
-          margin-top: 240px !important;
+          margin-top: 120px !important;
           position: relative;
           z-index: 0;
           isolation: isolate;
+        }
+        @media (max-width: 767px) {
+          .our-promise-section {
+            margin-top: 60px !important;
+            padding: 0 16px !important;
+          }
+          .our-promise-title {
+            font-size: 18px !important;
+            margin-bottom: 12px !important;
+          }
+          .our-promise-description {
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+          }
+          .faq-mobile-content h6 {
+            font-size: 16px !important;
+          }
+          .faq-mobile-content p {
+            font-size: 13px !important;
+            line-height: 1.4 !important;
+          }
+          .our-promise-title {
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            line-height: 0.95 !important;
+          }
         }
         .our-promise-grid {
           height: 600px !important;
@@ -116,8 +142,8 @@ export default function SupportFaq() {
         }
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
-        <p className="text-center md:text-center text-base md:text-lg font-normal text-gray-700 leading-tight mt-6">Our promise</p>
-        <h3 className="text-center md:text-center mt-2 mb-16" style={{ fontWeight: 500 }}>
+        <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
+        <h3 className="our-promise-title text-center md:text-center mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
           Support at every step, so the next one is easier.
         </h3>
 
@@ -265,7 +291,13 @@ export default function SupportFaq() {
                         {/* Image appears below text when FAQ is opened on mobile/tablet */}
                         <div className="relative aspect-[3/2] w-1/2 mx-auto overflow-hidden rounded-xl bg-gray-100">
                           <Image
-                            src={item.image}
+                            src={
+                              idx === 3 ? '/ourpromise4.png' :
+                              idx === 2 ? '/ourpromise3.png' :
+                              idx === 1 ? '/ourpromise2.png' :
+                              idx === 0 ? '/ourpromise1.png' :
+                              item.image
+                            }
                             alt={item.title}
                             fill
                             className="object-cover"

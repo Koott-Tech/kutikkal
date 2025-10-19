@@ -56,45 +56,60 @@ export default function InfoCards() {
   };
 
   return (
-    <section className="mt-12 mobile-section">
+    <section className="mt-8 md:mt-12 mobile-section">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
             margin-top: 8px !important;
           }
+          .info-card {
+            min-height: 180px !important;
+            padding: 16px !important;
+          }
+          .info-card-title {
+            font-size: 16px !important;
+            line-height: 1.3 !important;
+          }
+          .info-card-description {
+            font-size: 13px !important;
+            line-height: 1.4 !important;
+          }
+          .info-card-cta {
+            font-size: 14px !important;
+          }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-6 md:grid-cols-3 px-3 sm:px-8 md:px-[50px]">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 px-4 sm:px-8 md:px-[50px]">
         {items.map((item) => (
           <div
             key={item.title}
-            className="flex min-h-[220px] flex-col rounded-[10px] border border-gray-200 bg-white p-6"
+            className="info-card flex min-h-[180px] md:min-h-[220px] flex-col rounded-[10px] border border-gray-200 bg-white p-4 md:p-6"
           >
             {/* Icon at the left top */}
             <div className="flex flex-col items-start">
-              <div className="mb-4">
+              <div className="mb-3 md:mb-4">
                 {getIcon(item.icon, item.iconColor)}
               </div>
               
               {/* Title */}
-              <h6 className="text-left font-medium">
+              <h6 className="info-card-title text-left font-medium text-sm md:text-base">
                 {item.title}
               </h6>
             </div>
             
             {/* Description */}
-            <p className="p1 mt-4 text-sm">
+            <p className="info-card-description p1 mt-3 md:mt-4 text-xs md:text-sm">
               {item.description}
             </p>
 
             {/* Call to Action */}
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-4 md:pt-6">
               <a
                 href="#"
-                className="flex font-regular items-center justify-between text-base  text-gray-900 hover:text-gray-700 group"
+                className="info-card-cta flex font-regular items-center justify-between text-sm md:text-base text-gray-900 hover:text-gray-700 group"
               >
                 <h6>{item.cta}</h6>
-                <span className="text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
+                <span className="text-base md:text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
               </a>
             </div>
           </div>

@@ -88,11 +88,28 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="w-full mobile-section mt-20">
+    <section id="how-it-works" className="w-full mobile-section mt-12 md:mt-20">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
             margin-top: 8px !important;
+          }
+          .how-it-works-card {
+            height: 280px !important;
+            width: 320px !important;
+          }
+          .how-it-works-title {
+            font-size: 18px !important;
+            margin-bottom: 12px !important;
+          }
+          .how-it-works-description {
+            font-size: 13px !important;
+            line-height: 1.3 !important;
+          }
+          .how-it-works-heading {
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            line-height: 0.95 !important;
           }
         }
         .card-bg-mobile {
@@ -109,18 +126,18 @@ export default function HowItWorks() {
         }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
-        <p className="text-center md:text-center mt-2">
+        <p className="text-center md:text-center mt-2 text-sm md:text-base">
           How it works
         </p>
 
         {/* Inline CTA under the heading */}
-        <div className="mt-2 mb-6 text-center md:text-center">
-          <h3 className="text-center" style={{ fontWeight: 500 }}>
-            Your journey to mental well-being gets easier<br />from here.
+        <div className="mt-3 mb-8 md:mb-6 text-center md:text-center px-4">
+          <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+            Your journey to mental well-being gets easier<br className="hidden md:block" />from here.
           </h3>
           <button
             type="button"
-            className="mt-5 inline-flex items-center rounded-full px-[26px] md:px-[32px] py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
+            className="mt-4 md:mt-5 inline-flex items-center rounded-full px-6 md:px-8 py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
             style={{ backgroundColor: '#593494' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
@@ -146,7 +163,7 @@ export default function HowItWorks() {
                     className="flex-shrink-0 snap-start"
                   >
                     <div
-                      className="rounded-lg p-4 h-[320px] w-[380px] flex flex-col justify-between card-bg-mobile"
+                      className="how-it-works-card rounded-lg p-4 h-[280px] w-[320px] flex flex-col justify-between card-bg-mobile"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.png')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.png')" : card.gradient,
                         backgroundSize: "cover",
@@ -158,8 +175,8 @@ export default function HowItWorks() {
             >
               {/* Header Section */}
                       <div className="flex-shrink-0">
-                        <div className="text-2xl font-medium text-gray-900 text-center mb-4">{card.number}</div>
-                        <h6 className="text-center font-semibold">
+                        <div className="text-xl font-medium text-gray-900 text-center mb-3">{card.number}</div>
+                        <h6 className="how-it-works-title text-center font-semibold text-base">
                           {card.title}
                         </h6>
                       </div>
@@ -172,17 +189,17 @@ export default function HowItWorks() {
 
                         {card.id === 3 && (
                           <>
-                          <div className="mt-6 flex justify-center">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-4 py-2 text-base text-gray-900">
+                          <div className="mt-4 flex justify-center">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-1.5 text-sm text-gray-900">
                                 <span className="text-indigo-700">📅</span>
                                 <span className="tight-tracking">Evenings After 4pm</span>
                               </div>
                             </div>
-                            <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-700">
+                            <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-gray-700">
                               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
                                 <div
                                   key={d}
-                                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm ${
+                                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
                                     d === "Tu" || d === "Fr" ? "bg-white/90 border border-gray-200" : ""
                                   }`}
                                 >
@@ -197,7 +214,7 @@ export default function HowItWorks() {
 
                       {/* Footer Section */}
                       <div className="flex-shrink-0">
-                        <p className="mt-1 pt-2 text-center px-6">
+                        <p className="how-it-works-description mt-1 pt-2 text-center px-4 text-xs">
                           {card.description}
                         </p>
                       </div>

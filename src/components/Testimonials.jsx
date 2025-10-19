@@ -129,7 +129,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white mt-48 testimonials-section">
+    <section className="w-full bg-white mt-24 md:mt-48 testimonials-section">
       <style jsx>{`
         .testimonial-faq-bg {
           position: absolute;
@@ -154,12 +154,19 @@ export default function Testimonials() {
             top: -20%;
           }
         }
+        @media (max-width: 767px) {
+          .testimonials-heading {
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            line-height: 0.95 !important;
+          }
+        }
       `}</style>
       <div className="mx-auto max-w-[1600px] px-0 md:px-1">
         {/* Heading */}
         <div className="text-center px-4">
           <p className="p1">Testimonials</p>
-          <h3 className="mt-2 mb-16">What families are saying</h3>
+          <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What families are saying</h3>
         </div>
 
         {/* Desktop: 5-column layout with images */}
@@ -265,7 +272,7 @@ export default function Testimonials() {
 
 
         {/* Mobile: Horizontal photo carousel */}
-        <div className="block lg:hidden w-full max-w-sm mx-auto mt-8">
+        <div className="block lg:hidden w-full max-w-sm mx-auto mt-6">
           {/* Scrollable Carousel Container */}
           <div 
             ref={scrollContainerRef}
@@ -276,18 +283,19 @@ export default function Testimonials() {
             className="relative overflow-x-auto overflow-y-hidden rounded-[10px] carousel-scroll snap-x snap-mandatory"
             style={{ scrollSnapType: 'x mandatory' }}
           >
-            <div className="flex gap-4 pb-4">
+            <div className="flex gap-3 pb-4">
               {photos.map((photo, index) => (
                 <div 
                   key={index} 
-                  className="flex-shrink-0 w-[280px] snap-start"
+                  className="flex-shrink-0 w-[240px] snap-start"
                 >
-                  <div className="relative w-full h-[200px] rounded-[10px] overflow-hidden">
+                  <div className="relative w-full h-[180px] rounded-[10px] overflow-hidden">
                     <Image 
                       src={photo.src} 
                       alt={photo.alt} 
                       fill 
                       className="object-cover" 
+                      sizes="240px"
                     />
                   </div>
                 </div>
