@@ -241,7 +241,7 @@ export default function Testimonials() {
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
               <img 
-                src="/testimonial3.png" 
+                src="/testimonial3.PNG" 
                 alt="Testimonial" 
                 className="w-full h-full object-cover object-bottom scale-100" 
               />
