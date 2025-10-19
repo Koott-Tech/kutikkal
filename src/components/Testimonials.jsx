@@ -233,7 +233,7 @@ export default function Testimonials() {
           {/* Fourth column: split 30% top (image), 70% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
-              <Image src="/testimonial1.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial3.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
               <Image src="/testimonial3.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
