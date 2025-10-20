@@ -136,11 +136,11 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
           break;
       }
 
+      console.log('🚫 Sending blocking data:', blockingData);
       await onBlock(blockingData);
       showSuccess('Time slots blocked successfully');
-      onClose();
       
-      // Reset form
+      // Reset form only after successful blocking
       setFormData({
         type: 'whole_day',
         date: '',
@@ -149,6 +149,8 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
         timeSlots: [],
         reason: ''
       });
+      
+      onClose();
 
     } catch (error) {
       showError(error.message || 'Failed to block time slots');
@@ -290,14 +292,79 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
     fetchAvailableSlots(date);
   };
 
+  // Helper function to check if a time slot is selected (handles both formats)
+  const isTimeSlotSelected = (timeSlot) => {
+    const convertToTimeRange = (slot) => {
+      // If it's already in range format, return as-is
+      if (slot.includes('-')) {
+        return slot;
+      }
+      
+      // If it's in HH:MM format, convert to HH:MM-HH:MM
+      if (slot.match(/^\d{1,2}:\d{2}$/)) {
+        const [hours, minutes] = slot.split(':');
+        const hour = parseInt(hours);
+        const nextHour = hour + 1;
+        return `${slot}-${nextHour.toString().padStart(2, '0')}:${minutes}`;
+      }
+      
+      // Return as-is if format is not recognized
+      return slot;
+    };
+
+    const timeRangeSlot = convertToTimeRange(timeSlot);
+    return formData.timeSlots.some(slot => {
+      const slotRange = convertToTimeRange(slot);
+      return slotRange === timeRangeSlot;
+    });
+  };
+
   // Handle time slot toggle for blocking
   const handleTimeSlotToggle = (timeSlot) => {
-    setFormData(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.includes(timeSlot)
-        ? prev.timeSlots.filter(slot => slot !== timeSlot)
-        : [...prev.timeSlots, timeSlot]
-    }));
+    // Convert single time format (HH:MM) to range format (HH:MM-HH:MM) for blocking
+    const convertToTimeRange = (slot) => {
+      // If it's already in range format, return as-is
+      if (slot.includes('-')) {
+        return slot;
+      }
+      
+      // If it's in HH:MM format, convert to HH:MM-HH:MM
+      if (slot.match(/^\d{1,2}:\d{2}$/)) {
+        const [hours, minutes] = slot.split(':');
+        const hour = parseInt(hours);
+        const nextHour = hour + 1;
+        return `${slot}-${nextHour.toString().padStart(2, '0')}:${minutes}`;
+      }
+      
+      // Return as-is if format is not recognized
+      return slot;
+    };
+
+    const timeRangeSlot = convertToTimeRange(timeSlot);
+    
+    setFormData(prev => {
+      // Check if this slot (in either format) is already selected
+      const isSelected = prev.timeSlots.some(slot => {
+        const slotRange = convertToTimeRange(slot);
+        return slotRange === timeRangeSlot;
+      });
+      
+      const newTimeSlots = isSelected
+        ? prev.timeSlots.filter(slot => {
+            const slotRange = convertToTimeRange(slot);
+            return slotRange !== timeRangeSlot;
+          })
+        : [...prev.timeSlots, timeRangeSlot];
+      
+      // Automatically switch to specific_slots type when time slots are selected
+      const newType = newTimeSlots.length > 0 ? 'specific_slots' : prev.type;
+      
+      return {
+        ...prev,
+        type: newType,
+        timeSlots: newTimeSlots
+      };
+    });
   };
 
   // Format time slot for display (simple format like therapist profile)
@@ -455,7 +522,7 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
                               type="button"
                               onClick={() => handleTimeSlotToggle(slot)}
                               className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
-                                formData.timeSlots.includes(slot)
+                                isTimeSlotSelected(slot)
                                   ? 'border-red-500 bg-red-50 text-red-700' 
                                   : 'border-gray-300 bg-white hover:border-gray-400 text-gray-700'
                               }`}

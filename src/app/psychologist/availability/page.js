@@ -92,6 +92,8 @@ export default function PsychologistAvailability() {
   // Time blocking function
   const handleBlockTimeSlots = async (blockingData) => {
     try {
+      console.log('🚫 handleBlockTimeSlots called with:', blockingData);
+      
       // Check if user is authenticated
       const token = localStorage.getItem('token') || localStorage.getItem('authToken');
       if (!token) {
@@ -99,7 +101,10 @@ export default function PsychologistAvailability() {
         return;
       }
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/block-time`, {
+      const url = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/block-time`;
+      console.log('🚫 Making blocking request to:', url);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,6 +112,9 @@ export default function PsychologistAvailability() {
         },
         body: JSON.stringify(blockingData)
       });
+
+      console.log('🚫 Blocking response status:', response.status);
+      console.log('🚫 Blocking response ok:', response.ok);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -117,6 +125,7 @@ export default function PsychologistAvailability() {
         throw new Error(errorData.message || 'Failed to block time slots');
       }
 
+      console.log('🚫 Blocking successful, reloading availability...');
       // Reload availability to reflect blocked slots
       await loadAvailability();
     } catch (error) {

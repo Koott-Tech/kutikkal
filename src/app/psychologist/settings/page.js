@@ -18,6 +18,7 @@ export default function PsychologistSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isManualSubmit, setIsManualSubmit] = useState(false);
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -191,7 +192,12 @@ export default function PsychologistSettings() {
   const handleConnectGoogleCalendar = () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/google-calendar/callback`;
-    const scope = 'https://www.googleapis.com/auth/calendar.readonly';
+    const scope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events';
+    
+    console.log('🔍 Google Calendar Connection Debug:');
+    console.log('📋 Scope being requested:', scope);
+    console.log('🔗 Client ID:', clientId);
+    console.log('🔗 Redirect URI:', redirectUri);
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${clientId}` +
@@ -201,6 +207,7 @@ export default function PsychologistSettings() {
       `&access_type=offline` +
       `&prompt=consent`;
     
+    console.log('🔗 Full Auth URL:', authUrl);
     window.location.href = authUrl;
   };
   
@@ -359,6 +366,23 @@ export default function PsychologistSettings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log('🔍 Form submitted - handleSubmit called');
+    console.log('🔍 Event type:', e.type);
+    console.log('🔍 Event target:', e.target);
+    
+    // Check if this is an automatic submission (no user interaction)
+    if (e.type === 'submit' && !e.isTrusted) {
+      console.log('⚠️ Automatic form submission detected, preventing...');
+      return;
+    }
+    
+    // Only proceed if this is a manual submission
+    if (!isManualSubmit) {
+      console.log('⚠️ Form submission not initiated by user, preventing...');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     setSuccess(null);
@@ -376,12 +400,26 @@ export default function PsychologistSettings() {
       // Remove country_code from the data sent to API
       delete profileData.country_code;
       
+      console.log('🔍 Profile data being sent:', profileData);
+      
       // Make API call to update profile
       await psychologistApi.updateProfile(profileData);
       
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      console.error('Profile update error:', err);
+      console.error('Error details:', err.response?.data || err.message);
+      
+      // Extract specific validation errors if available
+      let errorMessage = 'Failed to update profile. Please try again.';
+      if (err.response?.data?.details) {
+        const validationErrors = err.response.data.details.map(error => error.msg).join(', ');
+        errorMessage = `Validation errors: ${validationErrors}`;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -871,6 +909,7 @@ export default function PsychologistSettings() {
             <button
               type="submit"
               disabled={isLoading}
+              onClick={() => setIsManualSubmit(true)}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
