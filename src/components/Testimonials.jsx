@@ -207,7 +207,7 @@ export default function Testimonials() {
           {/* Second column: full-length image edge-to-edge */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
             <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/TESTIMONIALS 1.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial5.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
@@ -228,7 +228,7 @@ export default function Testimonials() {
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
-              <Image src="/TESTIMONIALS 2.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
@@ -236,20 +236,20 @@ export default function Testimonials() {
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
               <img 
-                src="/TESTIMONIALS 3.webp" 
+                src="/testimonial3.PNG" 
                 alt="Testimonial" 
                 className="w-full h-full object-cover object-bottom scale-100" 
               />
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
-              <Image src="/TESTIMONIALS 4.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '316px'}}>
-              <Image src="/TESTIMONIALS 5.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
               <div
