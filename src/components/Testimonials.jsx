@@ -8,11 +8,11 @@ export default function Testimonials() {
   const autoPlayRef = useRef(null);
   
   const photos = [
-    { src: "/thumb1.jpg", alt: "Smiling parent and child" },
-    { src: "/thumb2.jpg", alt: "Family smiling" },
-    { src: "/thumb3.jpg", alt: "Happy child" },
-    { src: "/thumb4.jpg", alt: "Family moment" },
-    { src: "/kids.png", alt: "Happy family" }
+    { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child" },
+    { src: "/TESTIMONIALS 2.webp", alt: "Family smiling" },
+    { src: "/TESTIMONIALS 3.webp", alt: "Happy child" },
+    { src: "/TESTIMONIALS 4.webp", alt: "Family moment" },
+    { src: "/TESTIMONIALS 5.webp", alt: "Happy family" }
   ];
 
   const nextSlide = () => {
@@ -180,11 +180,11 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p className="p1">
-                  "What I loved most was that therapy wasn't just for my daughter — we, as parents, got guidance too. The team helped us understand her emotions better and gave us practical tips to make our home a calmer space."
+                  "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week."
                 </p>
                 <br />
                 <p className="p2 mt-4 mb-4">
-                  Arjun M., Parent of a 7-year-old
+                  Father of a 10-year-old
                 </p>
               </div>
             </div>
@@ -195,11 +195,11 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p>
-                  "Online sessions were perfect for our busy schedule. My son connected with his therapist quickly, and I've seen such a positive change in his mood and school performance. Highly recommend LittleCare!"
+                  "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident."
                 </p>
                 <br />
                 <p className="p2 mt-4 mb-4">
-                  Priya L., Parent of a 11-year-old
+                  12-year-old girl
                 </p>
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function Testimonials() {
           {/* Second column: full-length image edge-to-edge */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
             <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/testimonial5.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/TESTIMONIALS 1.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
@@ -219,21 +219,16 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p>
-                  "I used to feel really sad, but now I feel happier. I like that I can draw and talk about my feelings. When I get big feelings, we use a color chart to name them, and that helps me calm down. I'm proud that I'm braver now."
+                  "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person."
                 </p>
                 <br />
                 <p className="p2 mt-4 mb-4">
-                  8-year-old
+                  Parent of an 8-year-old
                 </p>
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
-              <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
-              <button aria-label="Play video" className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                <span className="h-12 w-12 md:h-14 md:w-14 grid place-items-center rounded-full bg-white/90 shadow-md">
-                  <PlayIcon className="h-6 w-6 text-gray-900" />
-                </span>
-              </button>
+              <Image src="/TESTIMONIALS 2.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
@@ -241,20 +236,20 @@ export default function Testimonials() {
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
               <img 
-                src="/testimonial3.PNG" 
+                src="/TESTIMONIALS 3.webp" 
                 alt="Testimonial" 
                 className="w-full h-full object-cover object-bottom scale-100" 
               />
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
-              <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/TESTIMONIALS 4.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '316px'}}>
-              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/TESTIMONIALS 5.webp" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
               <div
@@ -263,11 +258,11 @@ export default function Testimonials() {
               />
               <div className="relative z-10">
                 <p>
-                  "I thought therapy would be boring, but we play games and do fun things. I don't feel scared to talk anymore. My therapist listens to me and helps me practice calm breathing. Now I look forward to our sessions every week!"
+                  "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children."
                 </p>
                 <br />
                 <p className="p2 mt-4 mb-4">
-                  6-year-old
+                  Parent of a 9-year-old
                 </p>
               </div>
             </div>

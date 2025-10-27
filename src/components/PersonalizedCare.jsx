@@ -21,7 +21,7 @@ export default function PersonalizedCare() {
             The care you need, whenever you need it
           </h3>
           <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto mt-3 md:mt-4">
-            We know parenting can be challenging, so we're here to create a safe, supportive space for you and your child — a place to bring back their smiles and laughter.
+          No matter where your journey begins, Little Care is here to create a safe, supportive, and open space for you and your little ones.
           </p>
         </div>
 
@@ -30,7 +30,7 @@ export default function PersonalizedCare() {
           {/* Central Large Image - Mobile optimized */}
           <div className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[900px] xl:max-w-[1100px] h-[200px] sm:h-[250px] md:h-[400px] lg:h-[500px] xl:h-[550px] rounded-2xl overflow-hidden mx-auto">
             <Image
-              src="/Little Hope.png"
+              src="/Little Hope.webp"
               alt="Little Hope"
               width={1000}
               height={667}

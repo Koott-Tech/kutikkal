@@ -146,11 +146,11 @@ export default function ConsultationBanner() {
             {/* Left: Text and Button */}
             <div className="p-4 md:p-6 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none' }}>
               <h4 className="text-left font-semibold text-lg md:text-xl">
-                Get a Free 20-minute Consultation
+              Free 20 minutes Assessments
               </h4>
               
               <p className="text-xs md:text-base mb-6 md:mb-8 text-left">
-                Our sister brands, united by one vision: Redefining care, work, and hope for a better tomorrow.
+              Confused where to start ? Book a free session with our psychologist.
               </p>
               
               <div className="flex items-center gap-1">

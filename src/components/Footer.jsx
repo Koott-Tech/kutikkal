@@ -31,10 +31,10 @@ export default function Footer() {
             }}>
                 <div className="text-center max-w-4xl mx-auto">
                     <h4 className="footer-heading mb-4 font-semibold">
-                        Ready to start your journey to mental well-being?
+                        Ready to start your care journey?
                     </h4>
                     <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                        We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
+                        We'll connect you with a child therapist who understands your family's needs and provides the right support.
                     </p>
                     <button 
                         className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
@@ -281,12 +281,15 @@ export default function Footer() {
                     <div className="mt-0 text-white">
                         <h4 className="mb-6 text-center md:text-left font-semibold">Here to help</h4>
                         <div className="space-y-4 text-center md:text-left">
-                            <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Emergency</div>
+                            <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Disclaimer</div>
                             <div className="text-base md:text-lg text-white/90 leading-[1] p2">
-                                The <span className="number-bold">9152987821</span> Suicide and Crisis Lifeline provides <span className="number-bold">24/7</span>, confidential support with trained crisis counselors.
+                                This website does not provide emergency or crisis services.
                             </div>
                             <div className="text-base md:text-lg text-white/90 leading-[1] p2">
-                                If you or a loved one is in emotional distress or a suicidal crisis, please call or text <span className="number-bold">9152987821</span>.
+                                If you are in danger or experiencing thoughts of self-harm, please contact <span className="number-bold">DISHA Helpline (1056)</span>, <span className="number-bold">Tele-MANAS (14416 / 1800-891-4416)</span>, or go to the nearest hospital.
+                            </div>
+                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
+                                For emotional support, call <span className="number-bold">Vandrevala Foundation (99996 65555)</span> or <span className="number-bold">AASRA (98204 66726)</span>.
                             </div>
                         </div>
                         <div className="w-full h-px my-8 bg-white/40"></div>

@@ -8,7 +8,7 @@ export default function ChooseOptions() {
       id: 1,
       tags: ["Counselling", "Emotions"],
       title: "Child\nCounselling",
-      description: "Safe space for children to share and grow.",
+      description: "A safe space for your kids to express & grow.",
       image: "/letusguide1.webp",
       gradient: "from-[#DEEFDC] to-white",
       tagColors: {
@@ -21,7 +21,7 @@ export default function ChooseOptions() {
       id: 2,
       tags: ["Assessments", "Tests"],
       title: "Child\nAssessment", 
-      description: "Reveal your child's strengths and needs.",
+      description: "Find your child's needs & strengths to grow.",
       image: "/boy1.png",
       gradient: "from-[#f1e7f9] to-white",
       tagColors: {
@@ -34,7 +34,7 @@ export default function ChooseOptions() {
       id: 3,
       tags: ["Parents", "Workshops"],
       title: "Better\nParenting",
-      description: "Build stronger bonds and nurturing home.", 
+      description: "Learn, Connect & Build a wonderful home.", 
       image: "/fam1.png",
       gradient: "from-[#fff4e2] to-white",
       tagColors: {

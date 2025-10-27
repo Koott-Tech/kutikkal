@@ -12,11 +12,11 @@ const DATA = [
       },
       {
         q: "Are your sessions online or in-person?",
-        a: "We currently provide online sessions to make support accessible and convenient for families anywhere.",
+        a: "Our online sessions make it easy for families to access expert support from the comfort of their homes.",
       },
       {
         q: "How long is a counselling session?",
-        a: "Each session is typically 45–50 minutes, depending on the child's age and comfort level.",
+        a: "50-60 minutes.",
       },
     ],
   },

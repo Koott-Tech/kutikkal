@@ -7,7 +7,7 @@ export default function InfoCards() {
     {
       icon: "speech-bubble",
       iconColor: "purple",
-      title: "Find emotional support and guidance for your child with a licensed therapist",
+      title: "Find licensed therapist to support your child's bigger emotions",
       description:
         "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.",
       cta: "Find a therapist",
@@ -15,17 +15,17 @@ export default function InfoCards() {
     {
       icon: "pill",
       iconColor: "green",
-      title: "Get clarity with expert assessments for your child's needs",
+      title: "Get clarity with experts for your child's needs and strengths",
       description:
-        "Understanding your child's unique strengths and challenges is the first step to meaningful support. Professional assessments can identify learning difficulties, ADHD, autism spectrum concerns, or emotional struggles.",
+        "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.",
       cta: "Book an assessment",
     },
     {
       icon: "combination",
       iconColor: "blue",
-      title: "Learn strategies and tools to build stronger parent-child relationships",
+      title: "Learn strategies and tools to be a better parent that you always wanted to be",
       description:
-        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotional growth.",
+        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.",
       cta: "Start parent coaching",
     },
   ];

@@ -86,7 +86,7 @@ export default function BlogTeaser() {
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
                  <h3 className="blog-teaser-heading mt-2 md:mt-3 break-words text-base md:text-xl lg:text-2xl font-semibold">
-               Tips for getting started on your journey
+               Tips to become a better parent
              </h3>
            </div>
           <div className="flex justify-center md:justify-end mt-4 md:mt-6 lg:mt-9">
