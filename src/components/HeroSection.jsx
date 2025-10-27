@@ -143,7 +143,8 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
     description: cmsData.subtext || content[therapyType]?.description || content.individual.description,
     image: cmsData.imageUrl || content[therapyType]?.image || content.individual.image,
     alt: content[therapyType]?.alt || content.individual.alt,
-    features: content[therapyType]?.features || content.individual.features
+    features: content[therapyType]?.features || content.individual.features,
+    ctaText: cmsData.ctaText
   } : (content[therapyType] || content.individual);
 
   return (
@@ -195,11 +196,11 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                 ))}
               </div>
               
-              {/* Additional Text for Anxiety-Sadness */}
-              {therapyType === "anxiety-sadness" && (
+              {/* Additional CTA Text */}
+              {currentContent.ctaText && (
                 <div className="pt-6">
                   <p className="text-lg md:text-xl font-medium text-[#123331] text-center md:text-left">
-                    Start Child Anxiety Counselling Online Today
+                    {currentContent.ctaText}
                   </p>
                 </div>
               )}

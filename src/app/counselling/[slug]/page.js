@@ -126,6 +126,7 @@ export default async function CounsellingDynamicPage({ params }) {
         cmsData={{
           title: serviceData.hero_title || 'Counselling',
           subtext: serviceData.hero_subtext || '',
+          ctaText: serviceData.hero_cta_text || '',
           imageUrl: serviceData.hero_image_url || ''
         }}
       />
@@ -135,6 +136,7 @@ export default async function CounsellingDynamicPage({ params }) {
       <BenefitsSection 
         therapyType={slug} 
         cmsData={{
+          title: serviceData.benefits_title,
           benefits: serviceData.benefits || [],
           benefitsImageUrl: serviceData.benefits_image_url || ''
         }}
@@ -142,6 +144,7 @@ export default async function CounsellingDynamicPage({ params }) {
       <TherapyTypesSplit 
         therapyType={slug} 
         cmsData={{
+          title: serviceData.types_title,
           types: serviceData.types || [],
           rightImageUrl: serviceData.right_image_url || '',
           buttonText: 'Get started'

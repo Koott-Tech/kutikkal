@@ -102,7 +102,7 @@ export default function ProfileLayout({ children }) {
           <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
             <div className="flex items-center">
               <img 
-                src="/mainlogo.svg" 
+                src="/mainlogo.webp" 
                 alt="Kuttikal Logo" 
                 className="h-8 w-auto hover:opacity-80 transition-opacity"
               />

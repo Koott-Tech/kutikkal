@@ -30,6 +30,7 @@ export default async function AssessmentCmsRenderer({ slug }) {
         cmsData={{
           title: cms?.hero_title || undefined,
           subtext: cms?.hero_subtext || undefined,
+          ctaText: cms?.hero_cta_text || undefined,
           imageUrl: cms?.hero_image_url || undefined,
         }}
       />
@@ -41,6 +42,7 @@ export default async function AssessmentCmsRenderer({ slug }) {
       <BenefitsSection 
         therapyType={slug}
         cmsData={{
+          title: cms?.benefits_title,
           benefits: cms?.benefits || [],
           benefitsImageUrl: cms?.benefits_image_url || undefined,
         }}

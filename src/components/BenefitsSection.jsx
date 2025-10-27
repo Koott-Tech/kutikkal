@@ -209,7 +209,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
 
   // Use CMS data if available, otherwise fall back to hardcoded content
   const currentContent = cmsData ? {
-    title: content[therapyType]?.title || content.individual.title,
+    title: cmsData.title || content[therapyType]?.title || content.individual.title,
     benefits: cmsData.benefits && cmsData.benefits.length > 0 ? cmsData.benefits : (content[therapyType]?.benefits || content.individual.benefits)
   } : (content[therapyType] || content.individual);
   

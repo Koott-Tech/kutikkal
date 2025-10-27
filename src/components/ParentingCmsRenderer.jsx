@@ -62,6 +62,7 @@ export default async function ParentingCmsRenderer({ slug }) {
         cmsData={{
           title: cms?.hero_title || fallback.hero_title || undefined,
           subtext: cms?.hero_subtext || fallback.hero_subtext || undefined,
+          ctaText: cms?.hero_cta_text || undefined,
           imageUrl: cms?.hero_image_url || undefined,
         }}
       />
@@ -73,6 +74,7 @@ export default async function ParentingCmsRenderer({ slug }) {
       <BenefitsSection 
         therapyType={slug}
         cmsData={{
+          title: cms?.benefits_title,
           benefits: cms?.benefits || [],
           benefitsImageUrl: cms?.benefits_image_url || undefined,
         }}
@@ -80,6 +82,7 @@ export default async function ParentingCmsRenderer({ slug }) {
       <TherapyTypesSplit 
         therapyType={slug}
         cmsData={{
+          title: cms?.types_title,
           types: cms?.types || [],
           rightImageUrl: cms?.right_image_url || undefined,
           buttonText: 'Get started',

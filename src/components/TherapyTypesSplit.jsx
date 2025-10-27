@@ -109,7 +109,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
 
   // Use CMS data if available, otherwise fall back to hardcoded content
   const currentContent = cmsData ? {
-    title: content[therapyType]?.title || content.individual.title,
+    title: cmsData.title || content[therapyType]?.title || content.individual.title,
     types: cmsData.types && cmsData.types.length > 0 ? cmsData.types : (content[therapyType]?.types || content.individual.types),
     rightImageUrl: cmsData.rightImageUrl || content[therapyType]?.rightImageUrl || content.individual.rightImageUrl,
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText

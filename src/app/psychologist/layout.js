@@ -77,7 +77,7 @@ export default function PsychologistLayout({ children }) {
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
             <Image
-              src="/mainlogo.svg"
+              src="/mainlogo.webp"
               alt="Kuttikal Logo"
               width={120}
               height={40}

@@ -37,10 +37,13 @@ export default function CounsellingPageBuilder({
     schema_service_type: '',
     hero_title: '',
     hero_subtext: '',
+    hero_cta_text: '',
     hero_image_url: '',
     benefits: [],
     types: [],
+    types_title: '',
     faqs: [],
+    benefits_title: '',
     benefits_image_url: '',
     right_image_url: '',
     mobile_image_url: ''
@@ -74,10 +77,13 @@ export default function CounsellingPageBuilder({
         schema_service_type: initialData.schema_service_type || '',
         hero_title: initialData.hero_title || '',
         hero_subtext: initialData.hero_subtext || '',
+        hero_cta_text: initialData.hero_cta_text || '',
         hero_image_url: initialData.hero_image_url || '',
         benefits: initialData.benefits || [],
         types: initialData.types || [],
+        types_title: initialData.types_title || '',
         faqs: initialData.faqs || [],
+        benefits_title: initialData.benefits_title || '',
         benefits_image_url: initialData.benefits_image_url || '',
         right_image_url: initialData.right_image_url || '',
         left_image_url: initialData.left_image_url || '',
@@ -185,6 +191,18 @@ export default function CounsellingPageBuilder({
                 className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                Hero CTA Text (e.g., "Start Child Anxiety Counselling Online Today")
+              </label>
+              <input
+                type="text"
+                value={formData.hero_cta_text}
+                onChange={(e) => handleInputChange('hero_cta_text', e.target.value)}
+                placeholder="Optional: Add a call-to-action text below the features"
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <ImageUpload
               currentImageUrl={formData.hero_image_url}
               onImageUpload={(url) => handleInputChange('hero_image_url', url)}
@@ -206,6 +224,18 @@ export default function CounsellingPageBuilder({
               >
                 Add Benefit
               </button>
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                Section Title (e.g., "Understanding Worry and Anxiety in Kids")
+              </label>
+              <input
+                type="text"
+                value={formData.benefits_title}
+                onChange={(e) => handleInputChange('benefits_title', e.target.value)}
+                placeholder="Benefits Section Title"
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
             {formData.benefits.map((benefit, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
@@ -269,6 +299,18 @@ export default function CounsellingPageBuilder({
               >
                 Add Type
               </button>
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                Section Title
+              </label>
+              <input
+                type="text"
+                value={formData.types_title}
+                onChange={(e) => handleInputChange('types_title', e.target.value)}
+                placeholder="e.g., Types of Therapy"
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
             {formData.types.map((type, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
@@ -861,11 +903,12 @@ export default function CounsellingPageBuilder({
             {/* Hero Section */}
             {renderEditableElement('hero', (
               <HeroSection 
-                key={`hero-${formData.hero_title}-${formData.hero_subtext}`}
+                key={`hero-${formData.hero_title}-${formData.hero_subtext}-${formData.hero_cta_text}`}
                 therapyType="anxiety-sadness" 
                 cmsData={{
                   title: formData.hero_title,
                   subtext: formData.hero_subtext,
+                  ctaText: formData.hero_cta_text,
                   imageUrl: formData.hero_image_url
                 }}
               />
@@ -883,9 +926,10 @@ export default function CounsellingPageBuilder({
             {/* Benefits Section */}
             {renderEditableElement('benefits', (
               <BenefitsSection 
-                key={`benefits-${JSON.stringify(formData.benefits)}-${formData.benefits_image_url}`}
+                key={`benefits-${JSON.stringify(formData.benefits)}-${formData.benefits_image_url}-${formData.benefits_title}`}
                 therapyType="anxiety-sadness" 
                 cmsData={{
+                  title: formData.benefits_title,
                   benefits: formData.benefits,
                   benefitsImageUrl: formData.benefits_image_url
                 }}
@@ -896,9 +940,10 @@ export default function CounsellingPageBuilder({
             {/* Therapy Types */}
             {renderEditableElement('types', (
               <TherapyTypesSplit 
-                key={`types-${JSON.stringify(formData.types)}-${formData.right_image_url}`}
+                key={`types-${JSON.stringify(formData.types)}-${formData.right_image_url}-${formData.types_title}`}
                 therapyType="anxiety-sadness" 
                 cmsData={{
+                  title: formData.types_title,
                   types: formData.types,
                   rightImageUrl: formData.right_image_url
                 }}
