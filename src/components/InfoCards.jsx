@@ -79,7 +79,7 @@ export default function InfoCards() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 px-4 sm:px-8 md:px-[50px]">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 px-8 sm:px-16 md:px-[50px]">
         {items.map((item) => (
           <div
             key={item.title}

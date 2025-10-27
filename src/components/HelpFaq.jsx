@@ -112,7 +112,7 @@ export default function HelpFaq({ cmsData = null }) {
          <div className="mr-4 md:mr-8 lg:mr-12 w-full md:max-w-2xl ml-1 md:ml-0 px-2 md:px-0">
            {faqData.map((section, ci) => (
             <div key={section.title} className="mb-6 md:mb-10 mt-3">
-              <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left text-base md:text-lg font-medium`}>
+              <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left text-sm md:text-base lg:text-lg font-medium`}>
                 {section.title}
               </h5>
               <div className="space-y-0">
@@ -126,18 +126,18 @@ export default function HelpFaq({ cmsData = null }) {
                         onClick={() => setOpenId(open ? "" : id)}
                         className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                       >
-                        <span className="text-sm md:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                        <span className="text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
                           {item.q}
                         </span>
-                        <Chevron className={`h-4 w-4 md:h-5 md:w-5 text-gray-800 transition-transform ${open ? "rotate-180" : "rotate-0"}`} />
+                        <Chevron className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
                       <div
                         className={`overflow-hidden transition-all duration-300 ease-out ${
-                          open ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+                          open ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
                         }`}
                       >
                         <div className="px-2 pb-3 md:px-0 md:pb-4">
-                          <p className="text-xs md:text-sm">
+                          <p className="text-xs md:text-sm leading-relaxed">
                             {item.a}
                           </p>
                         </div>

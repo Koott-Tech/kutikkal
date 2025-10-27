@@ -222,14 +222,14 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
          <section className="w-full bg-white lg:h-screen">
              <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
         {/* Header */}
-        <div className="text-center mb-20 mt-24">
-          <h3 className="font-medium text-black">
+        <div className="text-center mb-10 md:mb-20 mt-12 md:mt-24">
+          <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2">
             {currentContent.title}
           </h3>
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 items-center">
           {/* Left Section - Image */}
           <div className="hidden lg:flex justify-start -mt-4">
             <div className="relative w-[500px] h-[500px]">
@@ -243,7 +243,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
           </div>
 
           {/* Right Section - Benefits List */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-4 w-full justify-items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-10 md:gap-x-12 lg:gap-x-16 gap-y-6 md:gap-y-8 w-full justify-items-start">
             {currentContent.benefits.map((benefit, index) => (
               <div 
                 key={index} 
@@ -251,15 +251,15 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
                   index >= 4 && !isExpanded ? 'opacity-50 lg:opacity-100' : ''
                 } ${index >= 4 && !isExpanded ? 'hidden lg:block' : ''}`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 md:gap-4">
                   <div className="w-5 h-5 border-2 border-[#296662] rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-2.5 h-2.5 text-[#296662]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-black mb-2">{benefit.title}</p>
-                    <p className="text-black md:font-sans">{benefit.description}</p>
+                    <p className="font-semibold text-sm md:text-base text-black mb-1 md:mb-2">{benefit.title}</p>
+                    <p className="text-xs md:text-sm text-black md:font-sans">{benefit.description}</p>
                   </div>
                 </div>
               </div>

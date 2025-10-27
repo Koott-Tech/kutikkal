@@ -249,9 +249,9 @@ export default function DoctorsPage() {
           <div key={doctor.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <div className="text-lg font-semibold text-gray-900 mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
                   {doctor.name || 'No Name'}
-                </h3>
+                </div>
                 <p className="text-sm text-gray-600 mb-2">{doctor.email}</p>
                 {doctor.area_of_expertise && Array.isArray(doctor.area_of_expertise) && doctor.area_of_expertise.length > 0 && (
                   <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
@@ -280,28 +280,32 @@ export default function DoctorsPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); openFullProfile(doctor); }}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 text-sm"
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm"
+                style={{ gap: '8px' }}
               >
                 <Eye className="w-4 h-4" />
-                View Profile
+                View
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1 text-sm"
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center text-sm"
+                style={{ gap: '8px' }}
               >
                 <Calendar className="w-4 h-4" />
-                View Calendar
+                Calendar
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }}
-                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-1 text-sm"
+                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center text-sm"
+                style={{ gap: '8px' }}
               >
                 <Edit className="w-4 h-4" />
                 Edit
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteDoctor(doctor); }}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-1 text-sm"
+                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm"
+                style={{ gap: '8px' }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete

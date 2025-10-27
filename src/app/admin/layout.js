@@ -14,9 +14,11 @@ import {
   X,
   Clock,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import SecurityNotificationCenter from '@/components/SecurityNotificationCenter';
 
 export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -49,7 +51,8 @@ export default function AdminLayout({ children }) {
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
     { name: 'Blogs', href: '/admin/blogs', icon: FileText },
     { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
-    { name: 'Free Assessment Timeslots', href: '/admin/free-assessment-timeslots', icon: Clock },
+    { name: 'Free Assessment', href: '/admin/free-assessment-timeslots', icon: Clock },
+    { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
@@ -127,6 +130,7 @@ export default function AdminLayout({ children }) {
           <div className="flex items-center justify-between">
             <h6>Little Care Admin Panel</h6>
             <div className="flex items-center space-x-4">
+              <SecurityNotificationCenter />
               {user && (
                 <div className="text-sm text-gray-600">
                   <span className="font-medium">{user.email}</span>

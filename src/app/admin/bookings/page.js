@@ -19,7 +19,9 @@ import {
   Package,
   DollarSign,
   MapPin,
-  RefreshCw
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -36,10 +38,19 @@ export default function BookingsPage() {
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadBookings();
   }, []);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterDate]);
 
   const loadBookings = async () => {
     try {
@@ -111,7 +122,14 @@ export default function BookingsPage() {
   };
 
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status, booking) => {
+    // Check if session time has passed but status is still 'booked'
+    const isTimePassed = () => {
+      if (!booking.scheduled_date || !booking.scheduled_time) return false;
+      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
+      return sessionDateTime < new Date();
+    };
+
     switch (status) {
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -119,12 +137,26 @@ export default function BookingsPage() {
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'no_show':
         return <AlertCircle className="h-4 w-4 text-orange-500" />;
+      case 'rescheduled':
+        return <RefreshCw className="h-4 w-4 text-yellow-500" />;
+      case 'booked':
+        if (isTimePassed()) {
+          return <AlertCircle className="h-4 w-4 text-orange-500" />;
+        }
+        return <Clock className="h-4 w-4 text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-blue-500" />;
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, booking) => {
+    // Check if session time has passed but status is still 'booked'
+    const isTimePassed = () => {
+      if (!booking.scheduled_date || !booking.scheduled_time) return false;
+      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
+      return sessionDateTime < new Date();
+    };
+
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-800';
@@ -132,8 +164,42 @@ export default function BookingsPage() {
         return 'bg-red-100 text-red-800';
       case 'no_show':
         return 'bg-orange-100 text-orange-800';
-      default:
+      case 'rescheduled':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'booked':
+        if (isTimePassed()) {
+          return 'bg-orange-100 text-orange-800';
+        }
         return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status, booking) => {
+    // Check if session time has passed but status is still 'booked'
+    const isTimePassed = () => {
+      if (!booking.scheduled_date || !booking.scheduled_time) return false;
+      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
+      return sessionDateTime < new Date();
+    };
+
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'no_show':
+        return 'No Show';
+      case 'rescheduled':
+        return 'Rescheduled';
+      case 'booked':
+        if (isTimePassed()) {
+          return 'No Show';
+        }
+        return 'Booked';
+      default:
+        return status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown';
     }
   };
 
@@ -175,7 +241,31 @@ export default function BookingsPage() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
+  // Pagination calculations
+  const totalItems = filteredBookings.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+
   const statuses = [...new Set(bookings.map(b => b.status).filter(Boolean))];
+
+  // Pagination handlers
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -261,7 +351,7 @@ export default function BookingsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBookings.map((booking) => (
+              {paginatedBookings.map((booking) => (
                 <tr key={booking.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -297,13 +387,22 @@ export default function BookingsPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <UserCheck className="h-4 w-4 text-gray-400 mr-2" />
-                      <div className="text-sm text-gray-900">
-                        {booking.psychologist?.first_name} {booking.psychologist?.last_name}
+                    {booking.session_type === 'free_assessment' ? (
+                      <div className="flex items-center">
+                        <UserCheck className="h-4 w-4 text-gray-400 mr-2" />
+                        <div className="text-sm text-gray-900">
+                          Free Assessment
+                        </div>
                       </div>
-                    </div>
-                    {booking.psychologist?.area_of_expertise && (
+                    ) : (
+                      <div className="flex items-center">
+                        <UserCheck className="h-4 w-4 text-gray-400 mr-2" />
+                        <div className="text-sm text-gray-900">
+                          {booking.psychologist?.first_name} {booking.psychologist?.last_name}
+                        </div>
+                      </div>
+                    )}
+                    {booking.session_type !== 'free_assessment' && booking.psychologist?.area_of_expertise && (
                       <div className="text-xs text-gray-500">
                         {booking.psychologist.area_of_expertise.join(', ')}
                       </div>
@@ -311,10 +410,9 @@ export default function BookingsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      {getStatusIcon(booking.status)}
-                      <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>
-                        {booking.status === 'no_show' ? 'No Show' : 
-                         booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1) || 'Unknown'}
+                      {getStatusIcon(booking.status, booking)}
+                      <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status, booking)}`}>
+                        {getStatusText(booking.status, booking)}
                       </span>
                     </div>
                   </td>
@@ -346,7 +444,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Empty State */}
-      {filteredBookings.length === 0 && (
+      {paginatedBookings.length === 0 && (
         <div className="text-center py-12">
           <Calendar className="mx-auto h-12 w-12 text-gray-400" />
           <h6>No bookings found</h6>
@@ -359,12 +457,91 @@ export default function BookingsPage() {
         </div>
       )}
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(endIndex, totalItems)}</span> of{' '}
+                <span className="font-medium">{totalItems}</span> results
+                <span className="ml-2 text-xs text-gray-500">(10 per page)</span>
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        currentPage === pageNum
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Session Details Modal */}
       {isSessionDetailsOpen && selectedSession && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h6>Session Details</h6>
+              <div className="text-lg font-semibold text-gray-900">Session Details</div>
               <button
                 onClick={() => setIsSessionDetailsOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -373,13 +550,13 @@ export default function BookingsPage() {
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Session Information */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                  <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-blue-600" />
                   Session Information
-                </h4>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Session ID</p>
@@ -389,9 +566,8 @@ export default function BookingsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">Status</p>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status)}`}>
-                      {selectedSession.status === 'no_show' ? 'No Show' : 
-                       selectedSession.status?.charAt(0).toUpperCase() + selectedSession.status?.slice(1) || 'Unknown'}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status, selectedSession)}`}>
+                      {getStatusText(selectedSession.status, selectedSession)}
                     </span>
                   </div>
                   <div>
@@ -412,11 +588,11 @@ export default function BookingsPage() {
               </div>
 
               {/* Client Information */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-blue-600" />
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                  <User className="h-4 w-4 mr-2 text-blue-600" />
                   Client Information
-                </h4>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Full Name</p>
@@ -454,11 +630,11 @@ export default function BookingsPage() {
               </div>
 
               {/* Psychologist Information */}
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                  <UserCheck className="h-5 w-5 mr-2 text-green-600" />
+              <div className="bg-green-50 p-3 rounded-lg">
+                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                  <UserCheck className="h-4 w-4 mr-2 text-green-600" />
                   Psychologist Information
-                </h4>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Full Name</p>
@@ -484,11 +660,11 @@ export default function BookingsPage() {
 
               {/* Package & Pricing Information */}
               {selectedSession.package && (
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
-                    <Package className="h-5 w-5 mr-2 text-yellow-600" />
+                <div className="bg-yellow-50 p-3 rounded-lg">
+                  <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                    <Package className="h-4 w-4 mr-2 text-yellow-600" />
                     Package & Pricing
-                  </h4>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-700">Package Type</p>
@@ -517,8 +693,8 @@ export default function BookingsPage() {
 
               {/* Session Notes */}
               {selectedSession.session_notes && (
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h6>Session Notes</h6>
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <div className="text-sm font-semibold text-gray-900 mb-2">Session Notes</div>
                   <p className="text-sm text-gray-900">{selectedSession.session_notes}</p>
                 </div>
               )}

@@ -184,7 +184,18 @@ export default function HowItWorks() {
                       {/* Content Section */}
                       <div className="flex-1 flex flex-col justify-center">
                         {/* Card-specific content */}
-                        {card.id === 1 && null}
+                        {card.id === 1 && (
+                          <div className="space-y-2 flex flex-col items-center">
+                            {card.tags && card.tags.map((tag, idx) => (
+                              <div key={idx} className="bg-white/90 rounded-full px-4 py-2 border border-gray-200 flex items-center gap-2 w-fit">
+                                <svg className="w-5 h-5 text-gray-800 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="text-xs text-gray-900 whitespace-nowrap">{tag}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
 
                         {card.id === 3 && (
@@ -279,7 +290,28 @@ export default function HowItWorks() {
               Tell Us What's Important
             </h6>
 
-            <div className="flex-1"></div>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="space-y-2 flex flex-col items-center">
+                <div className="bg-white/90 rounded-full px-4 py-2 border border-gray-200 flex items-center gap-2 w-fit">
+                  <svg className="w-5 h-5 text-gray-800 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs text-gray-900 whitespace-nowrap">Anxiety and Depression</span>
+                </div>
+                <div className="bg-white/90 rounded-full px-4 py-2 border border-gray-200 flex items-center gap-2 w-fit">
+                  <svg className="w-5 h-5 text-gray-800 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs text-gray-900 whitespace-nowrap">Accepts Cigna Health Plans</span>
+                </div>
+                <div className="bg-white/90 rounded-full px-4 py-2 border border-gray-200 flex items-center gap-2 w-fit">
+                  <svg className="w-5 h-5 text-gray-800 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs text-gray-900 whitespace-nowrap">Available this week</span>
+                </div>
+              </div>
+            </div>
 
             <p className="mt-auto mb-2.5 text-center">
               Browse ADHD specialist profiles for your child.

@@ -349,11 +349,33 @@ export default function PsychologistSessions() {
                     </div>
                     <div className="mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
-                        session.status === 'booked' ? 'bg-blue-100 text-blue-800' :
+                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        session.status === 'no_show' ? 'bg-orange-100 text-orange-800' :
                         session.status === 'rescheduled' ? 'bg-yellow-100 text-yellow-800' :
+                        session.status === 'booked' ? (
+                          // Check if session time has passed
+                          (() => {
+                            if (!session.scheduled_date || !session.scheduled_time) return 'bg-blue-100 text-blue-800';
+                            const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+                            return sessionDateTime < new Date() ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800';
+                          })()
+                        ) :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {session.status}
+                        {session.status === 'completed' ? 'Completed' :
+                         session.status === 'cancelled' ? 'Cancelled' :
+                         session.status === 'no_show' ? 'No Show' :
+                         session.status === 'rescheduled' ? 'Rescheduled' :
+                         session.status === 'booked' ? (
+                           // Check if session time has passed
+                           (() => {
+                             if (!session.scheduled_date || !session.scheduled_time) return 'Booked';
+                             const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+                             return sessionDateTime < new Date() ? 'No Show' : 'Booked';
+                           })()
+                         ) :
+                         session.status}
                       </span>
                       <button
                         onClick={() => handleViewDetails(session)}

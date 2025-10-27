@@ -206,7 +206,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
             </div>
             
                          {/* Image Area - Below content on mobile, right side on desktop */}
-             <div className="relative h-96 md:h-full order-2 lg:order-2">
+             <div className="relative h-96 md:h-full order-2 lg:order-2" style={{ minHeight: '300px' }}>
                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
                  {currentContent.image ? (
                    <Image
@@ -215,6 +215,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                      fill
                      className="object-cover"
                      loading="lazy"
+                     style={{ objectPosition: 'center center' }}
                      onError={(e) => {
                        console.error('Image failed to load:', currentContent.image);
                        e.target.src = '/kids.png'; // Fallback image

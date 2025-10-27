@@ -290,7 +290,7 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50 border-b border-gray-100">
+    <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
       <style jsx>{`
         @media (max-width: 767px) {
           .header-logo-nav-gap {
@@ -319,7 +319,7 @@ export default function Header() {
                   style={{ 
                     width: "120px", 
                     height: "40px", 
-                    backgroundImage: "url('/mainlogo.svg')", 
+                    backgroundImage: "url('/mainlogo.webp')", 
                     backgroundSize: "contain", 
                     backgroundRepeat: "no-repeat", 
                     backgroundPosition: "center" 
@@ -1111,7 +1111,7 @@ export default function Header() {
                   style={{ 
                     width: "100px", 
                     height: "35px", 
-                    backgroundImage: "url('/mainlogo.svg')", 
+                    backgroundImage: "url('/mainlogo.webp')", 
                     backgroundSize: "contain", 
                     backgroundRepeat: "no-repeat", 
                     backgroundPosition: "center" 

@@ -9,7 +9,7 @@ export default function ChooseOptions() {
       tags: ["Counselling", "Emotions"],
       title: "Child\nCounselling",
       description: "Safe space for children to share and grow.",
-      image: "/letusguide1.png",
+      image: "/letusguide1.webp",
       gradient: "from-[#DEEFDC] to-white",
       tagColors: {
         primary: "bg-white text-black",
@@ -65,8 +65,8 @@ export default function ChooseOptions() {
             top: 170px !important;
           }
           .read-more-button {
-            bottom: 60px !important;
-            left: 16px !important;
+            bottom: 75px !important;
+            left: 20px !important;
           }
           .choose-options-heading {
             font-size: 24px !important;
@@ -91,8 +91,8 @@ export default function ChooseOptions() {
             top: 175px !important;
           }
           .read-more-button {
-            bottom: 70px !important;
-            left: 18px !important;
+            bottom: 85px !important;
+            left: 22px !important;
           }
           .choose-options-heading {
             font-size: 26px !important;
@@ -117,8 +117,8 @@ export default function ChooseOptions() {
             top: 180px !important;
           }
           .read-more-button {
-            bottom: 80px !important;
-            left: 20px !important;
+            bottom: 95px !important;
+            left: 24px !important;
           }
           .choose-options-heading {
             font-size: 28px !important;

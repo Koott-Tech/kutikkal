@@ -289,7 +289,7 @@ export default function SupportFaq() {
                         <p className="text-sm text-gray-800">{item.body}</p>
                         
                         {/* Image appears below text when FAQ is opened on mobile/tablet */}
-                        <div className="relative aspect-[3/2] w-1/2 mx-auto overflow-hidden rounded-xl bg-gray-100">
+                        <div className="relative aspect-[4/3] w-full mx-auto overflow-hidden rounded-xl bg-gray-100 -mx-6">
                           <Image
                             src={
                               idx === 3 ? '/ourpromise4.png' :

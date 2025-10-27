@@ -142,7 +142,7 @@ export default function ConsultationBanner() {
               }
             }
           `}</style>
-          <div className="grid grid-cols-1 md:grid-cols-[7fr_3fr] items-center min-h-[280px] md:min-h-[240px] mobile-container no-gap rounded-[10px] overflow-hidden relative z-10 desktop-banner">
+          <div className="grid grid-cols-1 md:grid-cols-[8fr_2fr] items-center min-h-[280px] md:min-h-[240px] mobile-container no-gap rounded-[10px] overflow-hidden relative z-10 desktop-banner">
             {/* Left: Text and Button */}
             <div className="p-4 md:p-6 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none' }}>
               <h4 className="text-left font-semibold text-lg md:text-xl">
@@ -179,12 +179,15 @@ export default function ConsultationBanner() {
             </div>
 
             {/* Right: Image - Desktop only */}
-            <div className="mobile-image relative h-full col-span-1 hidden md:flex justify-center md:justify-end items-center pr-0 pb-0 pt-0">
-              <div className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-[10px] overflow-hidden mb-0 desktop-image">
+            <div className="mobile-image relative h-full col-span-1 hidden md:flex justify-center items-center p-8">
+              <div className="desktop-image overflow-hidden" style={{ width: '128px', height: '128px', borderRadius: '20px' }}>
                 <img
                   src="/consultation.png"
                   alt="Consultation"
-                  className="w-full h-full object-cover"
+                  width={128}
+                  height={128}
+                  className="object-cover"
+                  style={{ borderRadius: '20px', width: '100%', height: '100%' }}
                   loading="eager"
                   decoding="async"
                 />

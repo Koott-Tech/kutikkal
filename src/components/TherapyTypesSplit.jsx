@@ -115,86 +115,87 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <div className="px-4 sm:px-8 md:px-[50px]">
-             <section className="w-full mt-16 md:mt-20 mb-6 md:mb-8">
-                                   <div className="min-h-[100vh] w-full overflow-hidden shadow-sm">
-          <div className="grid h-full w-full grid-cols-1 items-stretch md:grid-cols-2">
-            {/* Left: Therapy Types */}
-                                                                                                       <div
-                 className="flex flex-col justify-start px-5 sm:px-8 md:px-[100px] lg:px-[120px] py-20 text-[#1c331d]"
-                 style={{ background: "#d3e9d1" }}
-               >
-                 <h3 
-                   className="mb-2"
-                   style={{
-                     color: '#15171a',
-                     fontWeight: 500,
-                     marginBottom: '0.5rem'
-                   }}
-                 >
-                  {currentContent.title}
-                </h3>
-               
-               <div className="mt-12 space-y-8">
-                 {currentContent.types.map((type, index) => (
-                   <div key={index}>
-                     <p className="font-semibold mb-3">
-                       {type.title}
-                     </p>
-                     <p className="leading-relaxed font-normal">
-                       {type.description}
-                     </p>
-                   </div>
-                 ))}
-               </div>
-                  
-               <button 
-                 className="mt-8 inline-flex items-center justify-center rounded-full px-12 py-4 shadow-lg transition-colors duration-200 w-fit mx-auto md:mx-0"
-                 style={{ 
-                   backgroundColor: '#38663a',
-                   color: 'white',
-                   fontSize: '18px',
-                   fontWeight: 500,
-                   textTransform: 'none',
-                   letterSpacing: 'normal',
-                   fontFamily: "'Work Sans', Arial, sans-serif"
-                 }}
-                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d4f2e'}
-                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#38663a'}
-               >
-                 {currentContent.buttonText || "Get started"}
-               </button>
-                         
-                         {/* Mobile Image Section - Hidden on Desktop */}
-                         <div className="block md:hidden mt-12 -mx-5 -mb-20">
-                           <div className="relative h-[50vh] w-screen overflow-hidden">
-                             <Image
-                               src={currentContent.rightImageUrl || "/rightside5th.png"}
-                               alt="Two women sitting on a couch during therapy session"
-                               fill
-                               className="object-cover"
-                               sizes="100vw"
-                               priority
-                             />
-                           </div>
-                         </div>
+    <section className="w-full mt-16 md:mt-20 mb-0 md:mb-8">
+      <div className="min-h-[100vh] w-full overflow-hidden shadow-sm">
+        <div className="flex flex-col md:grid md:grid-cols-2">
+          {/* Content Area - with background */}
+          <div
+            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative"
+            style={{ background: "#d3e9d1" }}
+          >
+            <h3 
+              className="mb-2"
+              style={{
+                color: '#15171a',
+                fontWeight: 500,
+                marginBottom: '0.5rem'
+              }}
+            >
+              {currentContent.title}
+            </h3>
+           
+            <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
+              {currentContent.types.map((type, index) => (
+                <div key={index}>
+                  <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
+                    {type.title}
+                  </p>
+                  <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
+                    {type.description}
+                  </p>
+                </div>
+              ))}
             </div>
+                
+            <button 
+              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 lg:px-12 py-3 md:py-4 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-sm md:text-base lg:text-lg"
+              style={{ 
+                backgroundColor: '#38663a',
+                color: 'white',
+                fontWeight: 500,
+                textTransform: 'none',
+                letterSpacing: 'normal',
+                fontFamily: "'Work Sans', Arial, sans-serif"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d4f2e'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#38663a'}
+            >
+              {currentContent.buttonText || "Get started"}
+            </button>
 
-            {/* Right: Image */}
-            <div className="relative">
+            {/* Mobile Image - Inside the green background area */}
+            <div className="block md:hidden mt-8 mx-4 relative h-[50vh]" style={{ minHeight: '300px' }}>
+              <div className="absolute inset-0">
+                <Image
+                  src={currentContent.rightImageUrl || "/rightside5th.png"}
+                  alt="Two women sitting on a couch during therapy session"
+                  fill
+                  className="object-cover rounded-lg"
+                  sizes="calc(100vw - 2rem)"
+                  priority
+                  style={{ objectPosition: 'center' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Image Area - Desktop Only */}
+          <div className="hidden md:block relative" style={{ minHeight: '400px' }}>
+            <div className="absolute inset-0">
               <Image
                 src={currentContent.rightImageUrl || "/rightside5th.png"}
                 alt="Two women sitting on a couch during therapy session"
                 fill
                 className="object-cover"
-                sizes="(min-width: 768px) 50vw, 100vw"
+                sizes="50vw"
                 priority
+                style={{ objectPosition: 'center' }}
               />
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }
 
