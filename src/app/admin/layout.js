@@ -52,6 +52,7 @@ export default function AdminLayout({ children }) {
     { name: 'Blogs', href: '/admin/blogs', icon: FileText },
     { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
     { name: 'Better Parenting', href: '/admin/better-parenting', icon: MessageSquare },
+    { name: 'Assessments', href: '/admin/assessments', icon: MessageSquare },
     { name: 'Free Assessment', href: '/admin/free-assessment-timeslots', icon: Clock },
     { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Settings', href: '/admin/settings', icon: Settings },

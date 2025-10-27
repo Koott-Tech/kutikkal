@@ -11,8 +11,8 @@ import AssessmentDemoCTA from '@/components/AssessmentDemoCTA';
 export default async function AssessmentCmsRenderer({ slug }) {
   async function fetchAssessment() {
     try {
-      const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-      const res = await fetch(`${base}/api/assessments/${slug}`, { cache: 'no-store' });
+      const base = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001';
+      const res = await fetch(`${base}/assessments/${slug}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data?.success) return data.message;
