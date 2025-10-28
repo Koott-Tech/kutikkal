@@ -10,6 +10,7 @@ import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import ConditionBoxes from '@/components/ConditionBoxes';
+import InfoCards from '@/components/InfoCards';
 import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -52,6 +53,11 @@ export default function CounsellingPageBuilder({
       { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
       { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
       { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+    ],
+    info_cards: [
+      { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist' },
+      { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment' },
+      { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching' }
     ]
   });
 
@@ -406,6 +412,30 @@ export default function CounsellingPageBuilder({
                       placeholder="e.g., /counselling/anxiety-sadness"
                       className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      case 'info_cards':
+        return (
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="text-base md:text-lg font-semibold">Edit Info Cards</h3>
+            {formData.info_cards.map((card, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" value={card.title} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'title', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea value={card.description} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'description', e.target.value)} rows={3} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA</label>
+                    <input type="text" value={card.cta} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'cta', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                 </div>
               </div>
@@ -1025,6 +1055,11 @@ export default function CounsellingPageBuilder({
                   condition_boxes: formData.condition_boxes
                 }}
               />
+            ))}
+
+            {/* Info Cards */}
+            {renderEditableElement('info_cards', (
+              <InfoCards cmsData={{ items: formData.info_cards }} />
             ))}
 
             {/* FAQs */}

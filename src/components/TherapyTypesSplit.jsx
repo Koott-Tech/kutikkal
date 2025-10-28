@@ -115,7 +115,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <section className="w-full mt-16 md:mt-20 mb-0 md:mb-8">
+    <section className="w-full mt-16 md:mt-20 mb-0 md:mb-8 px-4 sm:px-6 md:px-10 pt-8 md:pt-12">
       <div className="min-h-[100vh] w-full overflow-hidden shadow-sm">
         <div className="flex flex-col md:grid md:grid-cols-2">
           {/* Content Area - with background */}
@@ -148,17 +148,16 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             </div>
                 
             <button 
-              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 lg:px-12 py-3 md:py-4 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-sm md:text-base lg:text-lg"
+              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 lg:px-12 py-3 md:py-4 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-sm md:text-base lg:text-lg text-white"
               style={{ 
-                backgroundColor: '#38663a',
-                color: 'white',
+                backgroundColor: '#3f2e73',
                 fontWeight: 500,
                 textTransform: 'none',
                 letterSpacing: 'normal',
                 fontFamily: "'Work Sans', Arial, sans-serif"
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2d4f2e'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#38663a'}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
             >
               {currentContent.buttonText || "Get started"}
             </button>

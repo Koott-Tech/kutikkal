@@ -150,7 +150,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
   return (
     <div className="w-full">
       <section className="w-full">
-                 <div className="w-full md:rounded-2xl overflow-hidden bg-gradient-to-b from-blue-50 to-teal-50">
+                 <div className="w-full md:rounded-2xl overflow-hidden" style={{ backgroundColor: '#eae5ff' }}>
                      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
              {/* Content Area */}
                           <div className="p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
@@ -163,7 +163,11 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-[#296662] hover:bg-[#1f4f4a] text-white font-medium px-8 py-3 rounded-full transition-colors duration-200 shadow-lg">
+                <button className="text-white font-medium px-8 py-3 rounded-full transition-colors duration-200 shadow-lg"
+                  style={{ backgroundColor: '#3f2e73' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+                >
                   Get started
                 </button>
                 

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 
-export default function InfoCards() {
-  const items = [
+export default function InfoCards({ cmsData = null }) {
+  const defaultItems = [
     {
       icon: "speech-bubble",
       iconColor: "purple",
@@ -29,6 +29,10 @@ export default function InfoCards() {
       cta: "Start parent coaching",
     },
   ];
+
+  const items = (cmsData?.items && Array.isArray(cmsData.items) && cmsData.items.length > 0)
+    ? cmsData.items
+    : defaultItems;
 
   const getIcon = (iconType, color) => {
     if (iconType === "speech-bubble") {
@@ -56,7 +60,7 @@ export default function InfoCards() {
   };
 
   return (
-    <section className="mt-8 md:mt-12 mobile-section">
+    <section className="mobile-section min-h-screen flex items-center justify-center pt-4 md:pt-6 pb-0 mb-0">
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
@@ -79,7 +83,7 @@ export default function InfoCards() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3 px-8 sm:px-16 md:px-[50px]">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-3 px-0 sm:px-4 md:px-6">
         {items.map((item) => (
           <div
             key={item.title}
