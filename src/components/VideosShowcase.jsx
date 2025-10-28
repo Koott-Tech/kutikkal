@@ -77,7 +77,7 @@ export default function VideosShowcase({ cmsData = null }) {
 
           <div
             ref={scrollerRef}
-            className="flex gap-4 md:gap-6 px-1 sm:px-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center"
+            className="flex gap-4 md:gap-6 px-1 sm:px-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
           >
             {[0,1,2].map((i) => (
               <div key={i} className="flex-shrink-0 snap-center">

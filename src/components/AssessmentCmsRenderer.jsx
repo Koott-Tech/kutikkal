@@ -105,6 +105,15 @@ export default async function AssessmentCmsRenderer({ slug }) {
           })}
         </div>
       </div>
+      {/* Desktop-only View More under grid */}
+      <div className="hidden md:block text-center mt-6">
+        <a href="/guide" className="inline-flex items-center justify-center text-gray-900 text-lg group">
+          <span className="relative cursor-pointer">
+            View more →
+            <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gray-900 transition-all duration-300 ease-out group-hover:w-full" />
+          </span>
+        </a>
+      </div>
       {/* How it works should appear under the logos strip */}
       <div className="mt-12 md:mt-16">
         <HowItWorks />
@@ -116,8 +125,10 @@ export default async function AssessmentCmsRenderer({ slug }) {
           benefits: cms?.benefits || [],
           benefitsImageUrl: cms?.benefits_image_url || undefined,
         }}
+        fluid
+        compactSpacing
       />
-      <div className="mb-0">
+      <div className="mt-4 md:mt-6">
         <ConsultationBanner />
       </div>
       <TherapyTypesSplit 
@@ -129,12 +140,12 @@ export default async function AssessmentCmsRenderer({ slug }) {
         }}
       />
       <VideosShowcase cmsData={{ videos: cms?.videos }} />
-      <div className="mt-12 md:mt-16">
+      <div className="-mt-8 md:-mt-12">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
           <InfoCards cmsData={{ items: cms?.info_cards }} hideIcons />
         </div>
       </div>
-      <div className="mt-16 md:mt-24">
+      <div className="mt-16 md:-mt-12">
         <Reviews cmsData={{ reviews: cms?.reviews }} />
       </div>
       {/* Testimonials removed for CMS pages as requested */}

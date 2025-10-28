@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-export default function BenefitsSection({ therapyType = "individual", cmsData = null, showAllBenefits = false }) {
+export default function BenefitsSection({ therapyType = "individual", cmsData = null, showAllBenefits = false, fluid = false, compactSpacing = false }) {
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -218,11 +218,15 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
   
   const [isExpanded, setIsExpanded] = useState(showAllBenefits);
 
+  const sectionClass = `w-full bg-white${fluid ? '' : ' lg:h-screen'}`;
+  const containerClass = `mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 ${compactSpacing ? 'pb-2 lg:pb-0' : 'pb-8 lg:pb-0'}`;
+  const headerClass = `text-center ${compactSpacing ? 'mb-4 md:mb-6' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
+
   return (
-         <section className="w-full bg-white lg:h-screen">
-             <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
+    <section className={sectionClass}>
+      <div className={containerClass}>
         {/* Header */}
-        <div className="text-center mb-8 md:mb-12 mt-8 md:mt-12">
+        <div className={headerClass}>
           <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2">
             {currentContent.title}
           </h3>

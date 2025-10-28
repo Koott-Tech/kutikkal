@@ -180,6 +180,15 @@ export default async function CounsellingDynamicPage({ params }) {
           })}
         </div>
       </div>
+      {/* Desktop-only View More under grid */}
+      <div className="hidden md:block text-center mt-6">
+        <a href="/guide" className="inline-flex items-center justify-center text-gray-900 text-lg group">
+          <span className="relative cursor-pointer">
+            View more →
+            <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gray-900 transition-all duration-300 ease-out group-hover:w-full" />
+          </span>
+        </a>
+      </div>
       <div className="mt-12 md:mt-16">
         <HowItWorks />
       </div>
@@ -190,8 +199,10 @@ export default async function CounsellingDynamicPage({ params }) {
           benefits: serviceData.benefits || [],
           benefitsImageUrl: serviceData.benefits_image_url || ''
         }}
+        fluid
+        compactSpacing
       />
-      <div className="mb-0">
+      <div className="mt-2 md:mt-4">
         <ConsultationBanner />
       </div>
       <div className="mt-24 md:mt-28">
@@ -210,13 +221,13 @@ export default async function CounsellingDynamicPage({ params }) {
         <VideosShowcase cmsData={{ videos: serviceData.videos }} />
       </div>
       {/* Info Cards under Types of Therapy */}
-      <div className="mt-12 md:mt-16">
+      <div className="-mt-8 md:-mt-12">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
           <InfoCards cmsData={{ items: serviceData.info_cards }} hideIcons />
         </div>
       </div>
       {/* Reviews */}
-      <div className="mt-16 md:mt-24">
+      <div className="mt-16 md:-mt-12">
         <Reviews cmsData={{ reviews: serviceData.reviews }} />
       </div>
       <div className="mt-12 md:mt-16">
