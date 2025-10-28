@@ -1,6 +1,5 @@
 "use client";
 
-import { fontSize } from "pdfkit";
 import { useState } from "react";
 
 export default function Footer() {
