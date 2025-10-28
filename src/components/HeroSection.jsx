@@ -154,7 +154,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
              {/* Content Area */}
                           <div className="p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
-                             <h1 className="text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#123331] leading-[1.1] md:leading-none md:whitespace-pre-line text-center md:text-left">
+                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#123331] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left">
                  {currentContent.title}
                </h1>
               

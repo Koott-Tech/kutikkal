@@ -12,6 +12,7 @@ import HelpFaq from '@/components/HelpFaq';
 import ConsultationBanner from '@/components/ConsultationBanner';
 import AssessmentDemoCTA from '@/components/AssessmentDemoCTA';
 import { publicApi } from '@/lib/backendApi';
+import TherapistCarousel from '@/components/TherapistCarousel';
 
 const DEFAULTS = {
   'early-parent-postpartum-support': {
@@ -85,7 +86,10 @@ export default async function ParentingCmsRenderer({ slug }) {
             </h3>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
+        <TherapistCarousel therapists={therapists} />
+
+        {/* Desktop/tablet grid */}
+        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
           {therapists.map((doc, idx) => {
             const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
             const name = doc.name || doc.first_name || 'Therapist';
@@ -134,7 +138,7 @@ export default async function ParentingCmsRenderer({ slug }) {
         </div>
       </div>
       {/* How it works should appear under the logos strip */}
-      <div className="mt-8">
+      <div className="mt-12 md:mt-16">
         <HowItWorks />
       </div>
       <BenefitsSection 
@@ -145,7 +149,7 @@ export default async function ParentingCmsRenderer({ slug }) {
           benefitsImageUrl: cms?.benefits_image_url || undefined,
         }}
       />
-      <div className="mb-6 md:mb-10">
+      <div className="mb-0">
         <ConsultationBanner />
       </div>
       <TherapyTypesSplit 
@@ -158,11 +162,15 @@ export default async function ParentingCmsRenderer({ slug }) {
         }}
       />
       <VideosShowcase cmsData={{ videos: cms?.videos }} />
-      <InfoCards cmsData={{ items: cms?.info_cards }} />
-      <Reviews cmsData={{ reviews: cms?.reviews }} />
-      <div className="mt-8 sm:mt-12 md:mt-16">
-        <Testimonials />
+      <div className="mt-12 md:mt-16">
+        <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
+          <InfoCards cmsData={{ items: cms?.info_cards }} hideIcons />
+        </div>
       </div>
+      <div className="mt-16 md:mt-24">
+        <Reviews cmsData={{ reviews: cms?.reviews }} />
+      </div>
+      {/* Testimonials removed for CMS pages as requested */}
       <div className="mt-12 md:mt-16">
         <HelpFaq cmsData={{ faqs: cms?.faqs || [] }} />
       </div>

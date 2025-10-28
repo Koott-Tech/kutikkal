@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function InfoCards({ cmsData = null }) {
+export default function InfoCards({ cmsData = null, compact = false, hideIcons = false }) {
   const defaultItems = [
     {
       icon: "speech-bubble",
@@ -34,7 +34,7 @@ export default function InfoCards({ cmsData = null }) {
     ? cmsData.items
     : defaultItems;
 
-  const getIcon = (iconType, color) => {
+  const getIcon = (iconType) => {
     if (iconType === "speech-bubble") {
       return (
         <div className="w-8 h-8 flex items-center justify-center">
@@ -59,8 +59,10 @@ export default function InfoCards({ cmsData = null }) {
     return null;
   };
 
+  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center pt-4 md:pt-6 pb-0 mb-0`;
+
   return (
-    <section className="mobile-section min-h-screen flex items-center justify-center pt-4 md:pt-6 pb-0 mb-0">
+    <section className={sectionClassName}>
       <style jsx>{`
         @media (max-width: 767px) {
           .mobile-section {
@@ -83,19 +85,19 @@ export default function InfoCards({ cmsData = null }) {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-3 px-0 sm:px-4 md:px-6">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 px-4 sm:px-6 md:px-8">
         {items.map((item) => (
           <div
             key={item.title}
-            className="info-card flex min-h-[180px] md:min-h-[220px] flex-col rounded-[10px] border border-gray-200 bg-white p-4 md:p-6"
+            className="info-card flex min-h-[160px] md:min-h-[220px] flex-col rounded-[10px] border border-gray-200 bg-white p-3 sm:p-4 md:p-6 mx-1.5 sm:mx-0"
           >
-            {/* Icon at the left top */}
+            {/* Icon and Title */}
             <div className="flex flex-col items-start">
-              <div className="mb-3 md:mb-4">
-                {getIcon(item.icon, item.iconColor)}
-              </div>
-              
-              {/* Title */}
+              {!hideIcons && (
+                <div className="mb-3 md:mb-4">
+                  {getIcon(item.icon)}
+                </div>
+              )}
               <h6 className="info-card-title text-left font-medium text-sm md:text-base">
                 {item.title}
               </h6>

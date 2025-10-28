@@ -85,7 +85,12 @@ h7 {
 @media (max-width: 767px) {
   h1 {
     font-size: 28px !important;
-    line-height: 1.2rem !important;
+    line-height: 1.2rem 
+  }
+  
+  /* CMS hero section specific mobile line-height override */
+  .cms-hero-title {
+    line-height: 2rem !important;
   }
   
   h2 {

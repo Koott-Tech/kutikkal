@@ -19,12 +19,24 @@ export default function Home() {
   return (
     <main className="pt-8">
       <style jsx>{`
+        .info-cards-spacing {
+          margin-top: 32px;
+        }
+        .testimonials-spacing {
+          margin-top: 80px;
+        }
         @media (max-width: 767px) {
           .component-spacing {
             margin-top: 60px !important;
           }
           .component-spacing:first-child {
             margin-top: 0 !important;
+          }
+          .info-cards-spacing {
+            margin-top: 24px !important;
+          }
+          .testimonials-spacing {
+            margin-top: 48px !important;
           }
           .sister-brands-text {
             text-align: left !important;
@@ -94,8 +106,8 @@ export default function Home() {
       <div className="component-spacing">
         <PersonalizedCare />
       </div>
-      <div className="component-spacing">
-        <InfoCards />
+      <div className="component-spacing info-cards-spacing" style={{ marginTop: 20 }}>
+        <InfoCards compact />
       </div>
       <div className="component-spacing">
         <ConsultationBanner />
@@ -106,7 +118,7 @@ export default function Home() {
       <div className="component-spacing">
         <SupportFaq />
       </div>
-      <div className="component-spacing">
+      <div className="component-spacing testimonials-spacing" style={{ marginTop: 160 }}>
         <Testimonials />
       </div>
       

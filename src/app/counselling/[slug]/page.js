@@ -12,6 +12,7 @@ import { publicApi } from '@/lib/backendApi';
 import HelpFaq from '@/components/HelpFaq';
 import CounsellingNotFound from '@/components/CounsellingNotFound';
 import ScrollToTop from '@/components/ScrollToTop';
+import TherapistCarousel from '@/components/TherapistCarousel';
 
 // Force dynamic rendering and disable caching so edits reflect immediately
 export const dynamic = 'force-dynamic';
@@ -150,46 +151,26 @@ export default async function CounsellingDynamicPage({ params }) {
             </h3>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
+        <TherapistCarousel therapists={therapists} />
+
+        {/* Desktop/tablet grid */}
+        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
           {therapists.map((doc, idx) => {
             const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
             const name = doc.name || doc.first_name || 'Therapist';
-            const handle = doc.username ? `@${doc.username}` : null;
             return (
               <a key={idx} href={`/therapist-profile?doctor=${idx}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
-                  {/* Image fill */}
-                  <img
-                    src={imageSrc}
-                    alt={name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                  {/* Gradient Overlay */}
+                  <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                  {/* Text block at bottom */}
                   <div style={{ position: 'absolute', left: 18, bottom: 18, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
                     <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{name}</div>
                     {doc.experience_years && (
                       <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', opacity: 0.95 }}>{doc.experience_years} years experience</div>
                     )}
-                    {/* Expertise bubbles */}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                      {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0
-                        ? doc.area_of_expertise.slice(0, 2)
-                        : ['Child Therapy']
-                      ).map((exp, i) => (
-                        <span key={i} style={{
-                          background: 'rgba(255,255,255,0.22)',
-                          color: '#fff',
-                          borderRadius: 16,
-                          padding: '0.32em 1.1em',
-                          fontWeight: 600,
-                          fontSize: '0.9rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
-                          border: '1.5px solid rgba(255,255,255,0.18)'
-                        }}>{exp}</span>
+                      {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? doc.area_of_expertise.slice(0, 2) : ['Child Therapy']).map((exp, i) => (
+                        <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.32em 1.1em', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
                       ))}
                     </div>
                   </div>
@@ -199,7 +180,9 @@ export default async function CounsellingDynamicPage({ params }) {
           })}
         </div>
       </div>
-      <HowItWorks />
+      <div className="mt-12 md:mt-16">
+        <HowItWorks />
+      </div>
       <BenefitsSection 
         therapyType={slug} 
         cmsData={{
@@ -208,7 +191,7 @@ export default async function CounsellingDynamicPage({ params }) {
           benefitsImageUrl: serviceData.benefits_image_url || ''
         }}
       />
-      <div className="mb-6 md:mb-10">
+      <div className="mb-0">
         <ConsultationBanner />
       </div>
       <div className="mt-24 md:mt-28">
@@ -227,11 +210,13 @@ export default async function CounsellingDynamicPage({ params }) {
         <VideosShowcase cmsData={{ videos: serviceData.videos }} />
       </div>
       {/* Info Cards under Types of Therapy */}
-      <div className="mt-8 md:mt-12">
-        <InfoCards cmsData={{ items: serviceData.info_cards }} />
+      <div className="mt-12 md:mt-16">
+        <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
+          <InfoCards cmsData={{ items: serviceData.info_cards }} hideIcons />
+        </div>
       </div>
       {/* Reviews */}
-      <div className="mt-0 md:mt-0 mb-0 md:mb-0">
+      <div className="mt-16 md:mt-24">
         <Reviews cmsData={{ reviews: serviceData.reviews }} />
       </div>
       <div className="mt-12 md:mt-16">

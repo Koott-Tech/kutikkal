@@ -129,7 +129,7 @@ export default function Testimonials() {
   }, []);
 
   return (
-    <section className="w-full bg-white mt-24 md:mt-48 testimonials-section">
+    <section className="w-full bg-white mt-48 md:mt-64 testimonials-section ">
       <style jsx>{`
         .testimonial-faq-bg {
           position: absolute;
@@ -162,9 +162,9 @@ export default function Testimonials() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-[1600px] px-0 md:px-1">
+      <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
         {/* Heading */}
-        <div className="text-center px-4">
+        <div className="text-center px-4 ">
           <p className="p1">Testimonials</p>
           <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What families are saying</h3>
         </div>

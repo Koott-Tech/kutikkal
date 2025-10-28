@@ -145,7 +145,9 @@ export default function AssessmentsPage() {
       <ConsultationBanner />
 
       {/* How It Works Section (reuse homepage component) */}
-      <HowItWorks />
+      <div className="mt-12 md:mt-16">
+        <HowItWorks />
+      </div>
 
 
       {/* FAQ Section */}

@@ -141,14 +141,14 @@ export default function SupportFaq() {
           }
         }
       `}</style>
-      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
+      <div className="w-full mx-auto max-w-[1400px]  mt-40 px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
         <h3 className="our-promise-title text-center md:text-center mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
         Supporting you and your little one at every step.
         </h3>
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
-        <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid" style={{ height: '600px' }}>
+        <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>
           {/* Left: Image that changes per selection */}
             <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
             <img
