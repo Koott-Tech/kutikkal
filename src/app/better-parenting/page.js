@@ -1,5 +1,4 @@
 import ProcessSteps from "@/components/ProcessSteps";
-import ConditionBoxes from "@/components/ConditionBoxes";
 import HelpFaq from "@/components/HelpFaq";
 import ConsultationBanner from "@/components/ConsultationBanner";
 import Link from "next/link";

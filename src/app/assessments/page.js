@@ -1,5 +1,4 @@
 import HowItWorks from "@/components/HowItWorks";
-import ConditionBoxes from "@/components/ConditionBoxes";
 import HelpFaq from "@/components/HelpFaq";
 import ConsultationBanner from "@/components/ConsultationBanner";
 

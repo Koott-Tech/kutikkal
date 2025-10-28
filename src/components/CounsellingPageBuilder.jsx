@@ -9,7 +9,6 @@ import HowItWorks from '@/components/HowItWorks';
 import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
-import ConditionBoxes from '@/components/ConditionBoxes';
 import InfoCards from '@/components/InfoCards';
 import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
@@ -1047,15 +1046,7 @@ export default function CounsellingPageBuilder({
               />
             ))}
 
-            {/* Condition Boxes */}
-            {renderEditableElement('condition_boxes', (
-              <ConditionBoxes 
-                key={`condition-boxes-${JSON.stringify(formData.condition_boxes)}`}
-                cmsData={{
-                  condition_boxes: formData.condition_boxes
-                }}
-              />
-            ))}
+            {/* Condition Boxes - removed */}
 
             {/* Info Cards */}
             {renderEditableElement('info_cards', (
