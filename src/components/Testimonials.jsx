@@ -228,7 +228,15 @@ export default function Testimonials() {
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
-              <Image src="/testimonial4.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <video 
+                src="/intro_2.mp4" 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                className="w-full h-full object-cover"
+                style={{ objectPosition: 'center bottom' }}
+              />
             </div>
           </div>
 

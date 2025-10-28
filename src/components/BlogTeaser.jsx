@@ -94,9 +94,9 @@ export default function BlogTeaser() {
               type="button"
               onClick={handleExploreClick}
               className="inline-flex items-center rounded-full px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold text-white transition-colors duration-200"
-              style={{ backgroundColor: '#3f2e73' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+              style={{ backgroundColor: '#15171A' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
             >
               Explore more articles
             </button>

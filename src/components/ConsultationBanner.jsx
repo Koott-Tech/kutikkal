@@ -146,16 +146,16 @@ export default function ConsultationBanner() {
             {/* Left: Text and Button */}
             <div className="p-4 md:p-6 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none' }}>
               <h4 className="text-left font-semibold text-lg md:text-xl">
-              Free 20 minutes Assessments
+              Confused where to start?
               </h4>
               
               <p className="text-xs md:text-base mb-6 md:mb-8 text-left">
-              Confused where to start ? Book a free session with our psychologist.
+               Book a free 20 minutes session with our psychologist.
               </p>
               
               <div className="flex items-center gap-1">
                 <button className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" style={{ backgroundColor: 'white' }}>
-                  <span>Book a Google Meet now.</span>
+                  <span>Book Your Slot Now</span>
                   <div className="w-4 h-4 md:w-7 md:h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: '#bed39c' }}>
                     <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />

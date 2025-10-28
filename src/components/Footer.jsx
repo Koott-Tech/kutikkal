@@ -1,5 +1,6 @@
 "use client";
 
+import { fontSize } from "pdfkit";
 import { useState } from "react";
 
 export default function Footer() {
@@ -59,14 +60,14 @@ export default function Footer() {
                         <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('counselling')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
                             >
-                                <span>Counselling</span>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <h5 className="text-white">Counselling</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h4 className="hidden md:block text-white font-semibold mb-8">Counselling</h4>
+                            <h5 className="hidden md:block text-white mb-8">Counselling</h5>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1">
@@ -159,14 +160,14 @@ export default function Footer() {
                         <div className="space-y-5 lg:ml-4 xl:ml-8">
                             <button
                                 onClick={() => toggleSection('assessments')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
                             >
-                                <span>Assessments</span>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <h5 className="text-white">Assessments</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h4 className="hidden md:block text-white font-semibold mb-8">Assessments</h4>
+                            <h5 className="hidden md:block text-white mb-8">Assessments</h5>
                             <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
                                 {/* Category: ADHD Assessments */}
                                 <div className="space-y-1">
@@ -238,14 +239,14 @@ export default function Footer() {
                         <div className="space-y-5 lg:ml-8 xl:ml-16">
                             <button
                                 onClick={() => toggleSection('about')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
                             >
-                                <span>About Us</span>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <h5 className="text-white">About Us</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h4 className="hidden md:block text-white font-semibold mb-8">About Us</h4>
+                            <h5 className="hidden md:block text-white mb-8">About Us</h5>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Our story</a></li>
                                 <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
@@ -257,14 +258,14 @@ export default function Footer() {
                         <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('resources')}
-                                className="md:hidden flex items-center justify-between w-full text-lg font-bold leading-relaxed tracking-wide text-white cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
                             >
-                                <span>Resources</span>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <h5 className="text-white">Resources</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h4 className="hidden md:block text-white font-semibold mb-8">Resources</h4>
+                            <h5 className="hidden md:block text-white mb-8">Resources</h5>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
                                 <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
@@ -279,21 +280,21 @@ export default function Footer() {
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     <div className="w-full h-px my-8 bg-white/40"></div>
                     <div className="mt-0 text-white">
-                        <h4 className="mb-6 text-center md:text-left font-semibold">Here to help</h4>
-                        <div className="space-y-4 text-center md:text-left">
-                            <div className="text-lg md:text-xl font-normal leading-[1] text-gray-400">Disclaimer</div>
-                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
-                                This website does not provide emergency or crisis services.
+                        <h5 className="mb-4 text-center md:text-left "><span className="italic" style={{ color: '#eae5ff', fontSize: '28px' }}>We're</span> Little Care</h5>
+                        <div className="space-y-3 text-center md:text-left">
+                            
+                            <div className="text-base md:text-lg text-white/70 leading-[1] p2">
+                             A team of psychologists who believe every child and parent deserves understanding, guidance, and a space to grow emotionally and happily.
                             </div>
-                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
-                                If you are in danger or experiencing thoughts of self-harm, please contact <span className="number-bold">DISHA Helpline (1056)</span>, <span className="number-bold">Tele-MANAS (14416 / 1800-891-4416)</span>, or go to the nearest hospital.
+                            <div className="w-full h-px mt-10 mb-3 bg-white/40"></div>
+
+                            <div className="text-white/70 leading-[1]" style={{ fontSize: '13px' }}>
+                            If you're in crisis or need immediate help, please contact your local emergency helpline (India (24×7) 1800-891-4416) or visit the nearest hospital.
                             </div>
-                            <div className="text-base md:text-lg text-white/90 leading-[1] p2">
-                                For emotional support, call <span className="number-bold">Vandrevala Foundation (99996 65555)</span> or <span className="number-bold">AASRA (98204 66726)</span>.
-                            </div>
+                           
+                          
                         </div>
-                        <div className="w-full h-px my-8 bg-white/40"></div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm mt-6">
                             <p className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="#" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>

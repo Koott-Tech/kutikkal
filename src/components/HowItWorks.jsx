@@ -41,7 +41,7 @@ export default function HowItWorks() {
       number: "04",
       title: "Join your online session",
       gradient: "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
-      description: "Join sessions on Google Meet from your comfort zone."
+      description: "Join sessions on Google Meet from your comfort place."
     }
   ];
 
@@ -138,9 +138,9 @@ export default function HowItWorks() {
           <button
             type="button"
             className="mt-4 md:mt-5 inline-flex items-center rounded-full px-6 md:px-8 py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
-            style={{ backgroundColor: '#593494' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7351A9'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#593494'}
+            style={{ backgroundColor: '#15171A' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
           >
             Get started
           </button>
@@ -351,7 +351,7 @@ export default function HowItWorks() {
             </div>
 
             <p className="mt-auto mb-2.5 text-center">
-            Understand their emotions and grow together.
+            Choose what do you want to prioritize to get started.
             </p>
           </div>
 
@@ -394,7 +394,7 @@ export default function HowItWorks() {
             </div>
 
             <p className="mb-2.5 text-center" style={{ marginTop: '-15px', marginBottom: '10px', lineHeight: '1.2' }}>
-              Choose Malayali psychologists for you and your child.
+              Choose a therapist for you and your child.
             </p>
           </div>
 
@@ -463,7 +463,7 @@ export default function HowItWorks() {
             </div>
 
             <p className="mb-2.5 text-center" style={{ marginTop: '5px', marginBottom: '10px', lineHeight: '1.2' }}>
-              Join sessions on Google Meet from your comfort zone.
+              Join sessions on Google Meet from your comfort place.
             </p>
             </div>
           </div>

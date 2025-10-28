@@ -59,14 +59,14 @@ export default function Hero() {
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
-                <span className="hero-badge-text text-xs sm:text-sm">Convenient, proven online care for brighter futures</span>
+                <span className="hero-badge-text text-xs sm:text-sm">Convenient, proven online care for brighter future</span>
               </div>
               
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
                 Your Partner in Child Counselling & Parent Support
               </h1>
-              <p className="hero-description p1 mt-6 md:mt-10 text-base md:text-lg">
-                 You and your child deserve quality care from someone who cares as deeply as you do
+              <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
+                 You and your child deserve quality care from someone who care
               </p>
               <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
