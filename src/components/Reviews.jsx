@@ -52,7 +52,7 @@ export default function Reviews({ cmsData = null }) {
       <div className="w-full px-0">
         <div className="text-center" style={{ marginBottom: '20px' }}>
           <h3 className="text-base md:text-xl lg:text-2xl font-semibold">What parents say</h3>
-          <p className="text-sm md:text-base text-gray-600 mt-2">Real experiences from families like yours</p>
+          <p className="text-sm md:text-base text-gray-600 mt-2 mb-14">Real experiences from families like yours</p>
         </div>
 
         {/* Infinite horizontal scroll */}

@@ -172,13 +172,15 @@ export default async function ParentingCmsRenderer({ slug }) {
           buttonText: 'Get started',
         }}
       />
-      <VideosShowcase cmsData={{ videos: cms?.videos }} />
-      <div className="-mt-8 md:-mt-12">
+      <div className="mt-16 md:-mt-24">
+        <VideosShowcase cmsData={{ videos: cms?.videos }} />
+      </div>
+      <div className="-mt-8 md:-mt-24">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
           <InfoCards cmsData={{ items: cms?.info_cards }} hideIcons />
         </div>
       </div>
-      <div className="mt-16 md:-mt-12">
+      <div className="mt-16 md:-mt-24">
         <Reviews cmsData={{ reviews: cms?.reviews }} />
       </div>
       {/* Testimonials removed for CMS pages as requested */}

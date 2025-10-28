@@ -220,10 +220,17 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
 
   const sectionClass = `w-full bg-white${fluid ? '' : ' lg:h-screen'}`;
   const containerClass = `mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 ${compactSpacing ? 'pb-2 lg:pb-0' : 'pb-8 lg:pb-0'}`;
-  const headerClass = `text-center ${compactSpacing ? 'mb-4 md:mb-6' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
+  const headerClass = `text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
 
   return (
     <section className={sectionClass}>
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .benefits-grid-2col {
+            gap: 0.5rem !important;
+          }
+        }
+      `}</style>
       <div className={containerClass}>
         {/* Header */}
         <div className={headerClass}>
@@ -233,7 +240,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3 lg:gap-3 items-center px-6 md:px-8 lg:px-12">
           {/* Left Section - Image */}
           <div className="hidden lg:flex justify-start -mt-4">
             <div className="relative w-[500px] h-[500px]">
@@ -247,7 +254,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
           </div>
 
           {/* Right Section - Benefits List */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-10 md:gap-x-12 lg:gap-x-16 gap-y-6 md:gap-y-8 w-full justify-items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 sm:gap-x-10 md:gap-x-12 lg:gap-x-16 gap-y-4 md:gap-y-8 w-full justify-items-start benefits-grid-2col">
             {currentContent.benefits.map((benefit, index) => (
               <div 
                 key={index} 

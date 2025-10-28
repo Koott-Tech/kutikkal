@@ -217,17 +217,17 @@ export default async function CounsellingDynamicPage({ params }) {
         />
       </div>
       {/* Videos showcase above InfoCards */}
-      <div className="mt-16 md:mt-20">
+      <div className="mt-16 md:-mt-24">
         <VideosShowcase cmsData={{ videos: serviceData.videos }} />
       </div>
       {/* Info Cards under Types of Therapy */}
-      <div className="-mt-8 md:-mt-12">
+      <div className="-mt-8 md:-mt-24">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
           <InfoCards cmsData={{ items: serviceData.info_cards }} hideIcons />
         </div>
       </div>
       {/* Reviews */}
-      <div className="mt-16 md:-mt-12">
+      <div className="mt-16 md:-mt-24">
         <Reviews cmsData={{ reviews: serviceData.reviews }} />
       </div>
       <div className="mt-12 md:mt-16">
