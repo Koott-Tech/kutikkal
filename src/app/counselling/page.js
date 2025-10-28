@@ -83,8 +83,6 @@ export default function CounsellingPage() {
         </div>
       </div>
 
-      {/* Condition Boxes */}
-      <ConditionBoxes />
 
       {/* FAQ Section */}
       <div className="py-16 px-4">

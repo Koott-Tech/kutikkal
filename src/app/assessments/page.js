@@ -147,8 +147,6 @@ export default function AssessmentsPage() {
       {/* How It Works Section (reuse homepage component) */}
       <HowItWorks />
 
-      {/* Condition Boxes */}
-      <ConditionBoxes />
 
       {/* FAQ Section */}
       <div className="py-12 px-4">

@@ -102,8 +102,6 @@ export default function BetterParentingPage() {
         </div>
       </div>
 
-      {/* Condition Boxes */}
-      <ConditionBoxes />
 
       {/* FAQ Section */}
       <div className="py-16 px-4">
