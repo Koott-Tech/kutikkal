@@ -4,6 +4,7 @@ import LogosStrip from '@/components/LogosStrip';
 import HowItWorks from '@/components/HowItWorks';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
+import ConditionBoxes from '@/components/ConditionBoxes';
 import Testimonials from '@/components/Testimonials';
 import HelpFaq from '@/components/HelpFaq';
 import AssessmentDemoCTA from '@/components/AssessmentDemoCTA';
@@ -55,6 +56,7 @@ export default async function AssessmentCmsRenderer({ slug }) {
           buttonText: 'Get started',
         }}
       />
+      <ConditionBoxes cmsData={{ condition_boxes: cms?.condition_boxes }} />
       <div className="mt-8 sm:mt-12 md:mt-16">
         <Testimonials />
       </div>

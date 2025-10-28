@@ -9,6 +9,7 @@ import HowItWorks from '@/components/HowItWorks';
 import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
+import ConditionBoxes from '@/components/ConditionBoxes';
 import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
 
@@ -46,7 +47,12 @@ export default function CounsellingPageBuilder({
     benefits_title: '',
     benefits_image_url: '',
     right_image_url: '',
-    mobile_image_url: ''
+    mobile_image_url: '',
+    condition_boxes: [
+      { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
+      { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
+      { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+    ]
   });
 
   const [activeElement, setActiveElement] = useState(null);
@@ -87,7 +93,12 @@ export default function CounsellingPageBuilder({
         benefits_image_url: initialData.benefits_image_url || '',
         right_image_url: initialData.right_image_url || '',
         left_image_url: initialData.left_image_url || '',
-        mobile_image_url: initialData.mobile_image_url || ''
+        mobile_image_url: initialData.mobile_image_url || '',
+        condition_boxes: initialData.condition_boxes || [
+          { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
+          { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
+          { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+        ]
       });
     }
   }, [initialData]);
@@ -343,6 +354,56 @@ export default function CounsellingPageBuilder({
                       value={type.description}
                       onChange={(e) => handleArrayItemUpdate('types', index, 'description', e.target.value)}
                       rows={3}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'condition_boxes':
+        return (
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="text-base md:text-lg font-semibold">Edit Condition Boxes</h3>
+            {formData.condition_boxes.map((box, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="text-sm md:text-base font-medium">Box {index + 1}</h4>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={box.title}
+                      onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'title', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={box.description}
+                      onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'description', e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
+                      Link URL
+                    </label>
+                    <input
+                      type="text"
+                      value={box.link}
+                      onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'link', e.target.value)}
+                      placeholder="e.g., /counselling/anxiety-sadness"
                       className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -825,6 +886,12 @@ export default function CounsellingPageBuilder({
                       🎭 Therapy Types
                     </button>
                     <button
+                      onClick={() => handleElementClick('condition_boxes')}
+                      className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      📦 Condition Boxes
+                    </button>
+                    <button
                       onClick={() => handleElementClick('faqs')}
                       className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >
@@ -946,6 +1013,16 @@ export default function CounsellingPageBuilder({
                   title: formData.types_title,
                   types: formData.types,
                   rightImageUrl: formData.right_image_url
+                }}
+              />
+            ))}
+
+            {/* Condition Boxes */}
+            {renderEditableElement('condition_boxes', (
+              <ConditionBoxes 
+                key={`condition-boxes-${JSON.stringify(formData.condition_boxes)}`}
+                cmsData={{
+                  condition_boxes: formData.condition_boxes
                 }}
               />
             ))}

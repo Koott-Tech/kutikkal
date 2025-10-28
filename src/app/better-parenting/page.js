@@ -1,4 +1,5 @@
 import ProcessSteps from "@/components/ProcessSteps";
+import ConditionBoxes from "@/components/ConditionBoxes";
 import HelpFaq from "@/components/HelpFaq";
 import ConsultationBanner from "@/components/ConsultationBanner";
 import Link from "next/link";
@@ -101,6 +102,9 @@ export default function BetterParentingPage() {
           <ProcessSteps therapyType="parenting" />
         </div>
       </div>
+
+      {/* Condition Boxes */}
+      <ConditionBoxes />
 
       {/* FAQ Section */}
       <div className="py-16 px-4">

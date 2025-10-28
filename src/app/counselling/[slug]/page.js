@@ -4,6 +4,7 @@ import HowItWorks from '@/components/HowItWorks';
 import ConsultationBanner from '@/components/ConsultationBanner';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
+import ConditionBoxes from '@/components/ConditionBoxes';
 import HelpFaq from '@/components/HelpFaq';
 import CounsellingNotFound from '@/components/CounsellingNotFound';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -150,6 +151,7 @@ export default async function CounsellingDynamicPage({ params }) {
           buttonText: 'Get started'
         }}
       />
+      <ConditionBoxes cmsData={{ condition_boxes: serviceData.condition_boxes }} />
       <div className="mt-24">
         <HelpFaq 
           cmsData={{

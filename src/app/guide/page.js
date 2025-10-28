@@ -166,15 +166,7 @@ const Guide = () => {
           }
         `}</style>
         
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginTop: "2.5rem", marginBottom: "2.5rem" }}>
-          <button 
-            className="find-therapist-btn" 
-            style={{ padding: "10px 24px", fontSize: 18, fontWeight: 700, borderRadius: 12, letterSpacing: "-0.01em" }} 
-            onClick={() => setShowOnboarding(true)}
-          >
-            <span>Find My Therapist</span>
-          </button>
-        </div>
+
         
         <OnboardingModal 
           open={showOnboarding} 
@@ -423,6 +415,17 @@ const Guide = () => {
                     return null;
                   })()}
                   
+                  {/* Gradient Overlay - Black fade from bottom to top */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: "45%",
+                    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+                    pointerEvents: "none"
+                  }} />
+                  
                   {/* Fallback: Doctor Initials Avatar */}
                   <div 
                     style={{
@@ -464,7 +467,7 @@ const Guide = () => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
-                    gap: 8,
+                    gap: 0,
                     width: "80%"
                   }}>
                     <div style={{
@@ -472,7 +475,7 @@ const Guide = () => {
                       fontWeight: 700,
                       fontSize: "1.15rem",
                       textShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                      marginBottom: 4,
+                      marginBottom: 0,
                       letterSpacing: "-0.01em"
                     }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
                     {doc.experience_years && (
@@ -485,7 +488,7 @@ const Guide = () => {
                         opacity: 0.9
                       }}>{doc.experience_years} years experience</div>
                     )}
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxHeight: "80px", overflow: "hidden" }}>
                       {doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? (
                         doc.area_of_expertise.slice(0, 3).map((exp, i) => (
                           <span key={i} style={{

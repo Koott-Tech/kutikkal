@@ -1,8 +1,9 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function MissionHero() {
   return (
-    <div className="w-full h-screen bg-gradient-to-b from-purple-50 to-purple-100 flex flex-col">
+    <div className="w-full min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 flex flex-col">
       {/* Row 1: Header Content */}
       <div className="flex flex-col items-center px-6 pt-16 text-center">
         <h1 
@@ -25,6 +26,19 @@ export default function MissionHero() {
         >
           Get Started
         </button>
+      </div>
+
+      {/* Row 3: Hero Image */}
+      <div className="flex-1 flex items-end justify-center px-6 pb-4">
+        <div className="relative w-full max-w-5xl aspect-video">
+          <Image
+            src="/aboutushero.webp"
+            alt="Our Mission"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
       </div>
     </div>
   );

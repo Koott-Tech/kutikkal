@@ -48,7 +48,7 @@ export default function Footer() {
             </div>
 
             {/* Original footer content */}
-            <div className="w-full py-16" style={{ backgroundColor: '#1D1733' }}>
+            <div className="w-full py-16" style={{ backgroundColor: '#15171A' }}>
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3 bg-white"></div>
                 

@@ -7,7 +7,7 @@ export default function WhyWereHere() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}
-          <div className="space-y-6 ml-4 md:ml-8 max-w-lg">
+          <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
               Why We're Here
             </h2>
@@ -44,33 +44,18 @@ export default function WhyWereHere() {
             </div>
           </div>
 
-          {/* Right Section - Image Collage */}
-          <div className="relative ml-20 md:ml-12 mt-8 md:-mt-16">
-            {/* Top Image - Larger, vertical */}
-            <div className="relative w-64 h-96 md:w-80 md:h-[32rem] mx-auto">
-              <Image
-                src="/kids.png"
-                alt="Young man with laptop and dog"
-                fill
-                className="object-cover rounded-2xl"
-                sizes="(min-width: 768px) 50vw, 100vw"
-              />
-              
-              {/* Small blue logo in top left */}
-              <div className="absolute top-4 left-4 w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center z-10">
-                <div className="w-4 h-4 bg-white rounded-sm"></div>
+          {/* Right Section - Image */}
+          <div className="relative w-full h-full">
+            <div className="relative w-full aspect-square rounded-2xl">
+              <div className="absolute inset-8 rounded-xl overflow-hidden">
+                <Image
+                  src="/aboutus1.webp"
+                  alt="Why We're Here"
+                  fill
+                  className="object-contain"
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                />
               </div>
-            </div>
-
-            {/* Bottom Image - Smaller, horizontal, overlapping */}
-            <div className="absolute -bottom-8 -left-8 w-64 h-48 md:w-80 md:h-60">
-              <Image
-                src="/rightside5th.png"
-                alt="Woman reading a book"
-                fill
-                className="object-cover rounded-2xl"
-                sizes="(min-width: 768px) 25vw, 50vw"
-              />
             </div>
           </div>
         </div>

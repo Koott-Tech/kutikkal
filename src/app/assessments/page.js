@@ -1,4 +1,5 @@
 import HowItWorks from "@/components/HowItWorks";
+import ConditionBoxes from "@/components/ConditionBoxes";
 import HelpFaq from "@/components/HelpFaq";
 import ConsultationBanner from "@/components/ConsultationBanner";
 
@@ -146,6 +147,9 @@ export default function AssessmentsPage() {
 
       {/* How It Works Section (reuse homepage component) */}
       <HowItWorks />
+
+      {/* Condition Boxes */}
+      <ConditionBoxes />
 
       {/* FAQ Section */}
       <div className="py-12 px-4">
