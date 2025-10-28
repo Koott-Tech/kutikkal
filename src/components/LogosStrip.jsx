@@ -26,7 +26,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
   const logosToShow = allLogos.slice(0, logosCount);
 
   return (
-         <section className={`w-full ${bgColor} ${height} mt-2 md:mt-4`}>
+         <section className={`w-full ${bgColor} ${height} mt-0`}>
        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-2 sm:px-4 md:px-[70px]">
                  {/* Insurance Coverage Text - Left on desktop, top on mobile */}
          <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">

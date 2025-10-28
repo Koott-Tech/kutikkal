@@ -222,7 +222,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
          <section className="w-full bg-white lg:h-screen">
              <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 pb-8 lg:pb-0">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-20 mt-12 md:mt-24">
+        <div className="text-center mb-8 md:mb-12 mt-8 md:mt-12">
           <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2">
             {currentContent.title}
           </h3>

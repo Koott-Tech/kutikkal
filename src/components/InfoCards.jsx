@@ -109,10 +109,10 @@ export default function InfoCards({ cmsData = null }) {
             {/* Call to Action */}
             <div className="mt-auto pt-4 md:pt-6">
               <a
-                href="#"
-                className="info-card-cta flex font-regular items-center justify-between text-sm md:text-base text-gray-900 hover:text-gray-700 group"
+                href={item.ctaLink || item.link || '#'}
+                className="info-card-cta flex items-center justify-between text-sm md:text-base text-gray-900 group"
               >
-                <h6>{item.cta}</h6>
+                <h6 className="transition-all group-hover:font-semibold">{item.cta}</h6>
                 <span className="text-base md:text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
               </a>
             </div>

@@ -139,11 +139,9 @@ export default async function CounsellingDynamicPage({ params }) {
           imageUrl: serviceData.hero_image_url || ''
         }}
       />
-      <div className="mb-8 md:mb-10">
-        <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
-      </div>
+      <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} />
       {/* Therapist grid under hero */}
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-16 md:mt-40">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
           <p className="text-center md:text-center mt-2 text-sm md:text-base">How it works</p>
           <div className="mt-3 text-center md:text-center px-4">
@@ -210,7 +208,7 @@ export default async function CounsellingDynamicPage({ params }) {
           benefitsImageUrl: serviceData.benefits_image_url || ''
         }}
       />
-      <div className="mb-10 md:mb-16">
+      <div className="mb-6 md:mb-10">
         <ConsultationBanner />
       </div>
       <div className="mt-24 md:mt-28">

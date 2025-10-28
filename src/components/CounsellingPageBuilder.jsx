@@ -103,6 +103,11 @@ export default function CounsellingPageBuilder({
           { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
           { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
           { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+        ],
+        info_cards: initialData.info_cards || [
+          { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/counselling' },
+          { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment', ctaLink: '/assessments' },
+          { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching', ctaLink: '/better-parenting' }
         ]
       });
     }
@@ -421,7 +426,7 @@ export default function CounsellingPageBuilder({
         return (
           <div className="space-y-3 md:space-y-4">
             <h3 className="text-base md:text-lg font-semibold">Edit Info Cards</h3>
-            {formData.info_cards.map((card, index) => (
+            {(formData.info_cards || []).map((card, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
                 <div className="space-y-3">
                   <div>
