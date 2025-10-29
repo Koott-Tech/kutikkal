@@ -316,7 +316,7 @@ export default function SupportFaq() {
                               idx === 3 ? '/ourpromise4.png' :
                               idx === 2 ? '/ourpromise3.png' :
                               idx === 1 ? '/ourpromise2.png' :
-                              idx === 0 ? '/ourpromise1.png' :
+                              idx === 0 ? '/ourpromise1.webp' :
                               item.image
                             }
                             alt={item.title}
