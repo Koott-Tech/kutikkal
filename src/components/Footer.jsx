@@ -37,15 +37,15 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
             `}</style>
             {/* New section above footer */}
             {isHomePage ? (
-                // Home page footer wrapper design
+                // Home page footer wrapper design (match CMS heading/paragraph styles)
                 <div className="w-full py-20 px-8 md:px-16 lg:px-24" style={{ 
                     background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)'
                 }}>
                     <div className="text-center max-w-4xl mx-auto">
-                        <h2 className="text-4xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
+                        <h4 className="footer-heading mb-2 font-semibold">
                             Ready to start your journey to mental well-being?
-                        </h2>
-                        <p className="text-lg md:text-xl text-gray-800 mb-8 leading-relaxed max-w-3xl mx-auto font-light">
+                        </h4>
+                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                             We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                         </p>
                         <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-3 px-6 rounded-full text-base transition-colors duration-200">

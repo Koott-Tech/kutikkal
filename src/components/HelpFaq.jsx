@@ -78,6 +78,11 @@ export default function HelpFaq({ cmsData = null }) {
             font-weight: 600 !important;
             line-height: 0.95 !important;
           }
+          /* Force smaller answer text on mobile */
+          .faq-answer {
+            font-size: 10.5px !important;
+            line-height: 1.45 !important;
+          }
         }
       `}</style>
       <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 py-4 md:py-6 md:grid-cols-[0.9fr_1.1fr]">
@@ -137,7 +142,7 @@ export default function HelpFaq({ cmsData = null }) {
                         }`}
                       >
                         <div className="px-2 pb-3 md:px-0 md:pb-4">
-                          <p className="text-xs md:text-sm leading-relaxed">
+                          <p className="faq-answer md:text-sm leading-relaxed">
                             {item.a}
                           </p>
                         </div>

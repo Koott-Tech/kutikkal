@@ -170,7 +170,7 @@ export default function ChooseOptions() {
         </div>
 
         {/* Cards Grid */}
-        <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-20 max-w-md md:max-w-4xl mx-auto items-stretch rounded-[37.8px]">
+        <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-20 max-w-md md:max-w-4xl mx-auto justify-items-center md:justify-items-stretch items-stretch rounded-[37.8px]">
           {cards.map((card) => (
             <div
               key={card.id}

@@ -40,6 +40,21 @@ export default function Home() {
           .component-spacing {
             margin-top: 60px !important;
           }
+          .component-spacing-tight {
+            margin-top: 8px !important;
+          }
+          /* Reduce wrapper margin above SupportFaq */
+          .support-tight {
+            margin-top: 12px !important;
+          }
+          /* Tighten spacing above Support section (Our promise) on mobile */
+          :global(.support-tight .our-promise-section) {
+            margin-top: 16px !important;
+          }
+          /* Force the ChooseOptions root <section> margin to collapse on mobile */
+          :global(.raise-choose > section) {
+            margin-top: 0 !important;
+          }
           .component-spacing:first-child {
             margin-top: 0 !important;
           }
@@ -47,7 +62,10 @@ export default function Home() {
             margin-top: 24px !important;
           }
           .testimonials-spacing {
-            margin-top: 48px !important;
+            margin-top: 24px !important;
+          }
+          :global(.testimonials-tight .testimonials-section) {
+            margin-top: 16px !important;
           }
           .sister-brands-text {
             text-align: left !important;
@@ -109,7 +127,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="component-spacing">
+      <div className="component-spacing component-spacing-tight raise-choose">
         <ChooseOptions />
       </div>
       
@@ -126,10 +144,10 @@ export default function Home() {
       <div className="component-spacing">
         <HowItWorks />
       </div>
-      <div className="component-spacing">
+      <div className="component-spacing support-tight">
         <SupportFaq />
       </div>
-      <div className="component-spacing testimonials-spacing" style={{ marginTop: 160 }}>
+      <div className="component-spacing testimonials-spacing testimonials-tight" style={{ marginTop: 160 }}>
         <Testimonials />
       </div>
       

@@ -100,7 +100,7 @@ export default function SupportFaq() {
         }
         @media (max-width: 767px) {
           .our-promise-section {
-            margin-top: 60px !important;
+            margin-top: 20px !important;
             padding: 0 16px !important;
           }
           .our-promise-title {
