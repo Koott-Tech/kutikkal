@@ -12,12 +12,12 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
 
   // Logo array
   const allLogos = [
-    "calicut.webp",
-    "Delhi University.webp",
+    "University of Hyd.webp",
     "Christ University.webp",
-    "logo_bcbs-1.png",
-    "optum-logo-1.png",
-    "kaiser-logo.png",
+    "Delhi University.webp",
+    "calicut.webp",
+    "Manipal University.webp",
+    "Pondichery University.webp",
     "umr-logo.png",
     "anthem_logo_blue.svg",
   ];

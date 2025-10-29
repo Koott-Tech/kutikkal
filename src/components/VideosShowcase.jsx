@@ -63,11 +63,11 @@ export default function VideosShowcase({ cmsData = null }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="px-4 sm:px-6 mb-10 md:mb-14 text-center">
           <p className="text-center md:text-center mt-2 text-sm md:text-base">
-            Video Reviews
+            Let's Watch
           </p>
           <div className="mt-3 text-center md:text-center px-4">
             <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-              Real stories from families who found support and healing.
+              See More of What We Do
             </h3>
           </div>
         </div>
