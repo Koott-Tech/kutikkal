@@ -183,7 +183,7 @@ export default function SupportFaq() {
                 active === 3 ? '/ourpromise4.png' :
                 active === 2 ? '/ourpromise3.png' :
                 active === 1 ? '/ourpromise2.png' :
-                active === 0 ? '/ourpromise1.png' :
+                active === 0 ? '/ourpromise1.webp' :
                 items[active >= 0 ? active : 0]?.image
               }
               alt={

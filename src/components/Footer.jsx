@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function Footer() {
+export default function Footer({ isHomePage = false, isCmsPage = false }) {
     const [openSections, setOpenSections] = useState({});
 
     const toggleSection = (section) => {
@@ -36,37 +36,57 @@ export default function Footer() {
                 }
             `}</style>
             {/* New section above footer */}
-            <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
-                background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
-            }}>
-                <div className="text-center max-w-4xl mx-auto">
-                    <h4 className="footer-heading mb-2 font-semibold">
-                        Confused where to start?
-                    </h4>
-                    <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                        Book a free 20 minutes session with our psychologist.
-                    </p>
-                    <div className="flex items-center justify-center gap-3">
-                        <a
-                            href="https://wa.me/"
-                            className="px-5 py-2.5 rounded-3xl font-semibold transition-all duration-200"
-                            style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
-                        >
-                            WhatsApp Us
-                        </a>
-                        <button 
-                            className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
-                            style={{ backgroundColor: '#3f2e73' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
-                        >
-                            Book  Now
+            {isHomePage ? (
+                // Home page footer wrapper design
+                <div className="w-full py-20 px-8 md:px-16 lg:px-24" style={{ 
+                    background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)'
+                }}>
+                    <div className="text-center max-w-4xl mx-auto">
+                        <h2 className="text-4xl md:text-5xl font-normal text-gray-800 mb-6 leading-tight">
+                            Ready to start your journey to mental well-being?
+                        </h2>
+                        <p className="text-lg md:text-xl text-gray-800 mb-8 leading-relaxed max-w-3xl mx-auto font-light">
+                            We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
+                        </p>
+                        <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-3 px-6 rounded-full text-base transition-colors duration-200">
+                            Get started
                         </button>
                     </div>
                 </div>
-            </div>
+            ) : (
+                // CMS pages footer wrapper design (current design)
+                <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
+                    background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
+                }}>
+                    <div className="text-center max-w-4xl mx-auto">
+                        <h4 className="footer-heading mb-2 font-semibold">
+                            Confused where to start?
+                        </h4>
+                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
+                            Book a free 20 minutes session with our psychologist.
+                        </p>
+                        <div className="flex items-center justify-center gap-3">
+                            <a
+                                href="https://wa.me/"
+                                className="px-5 py-2.5 rounded-3xl font-semibold transition-all duration-200"
+                                style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
+                            >
+                                WhatsApp Us
+                            </a>
+                            <button 
+                                className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
+                                style={{ backgroundColor: '#3f2e73' }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                            >
+                                Book  Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Original footer content */}
             <div className="w-full py-16" style={{ backgroundColor: '#15171A' }}>

@@ -14,6 +14,14 @@ export default function FooterWrapper() {
     return null;
   }
   
-  return <Footer />;
+  // Check if we're on the home page
+  const isHomePage = pathname === '/';
+  
+  // Check if we're on a CMS page (assessments, better-parenting, counselling)
+  const isCmsPage = pathname.startsWith('/assessments/') || 
+                    pathname.startsWith('/better-parenting/') || 
+                    pathname.startsWith('/counselling/');
+  
+  return <Footer isHomePage={isHomePage} isCmsPage={isCmsPage} />;
 }
 

@@ -70,12 +70,8 @@ const Guide = () => {
   };
 
   const handleDoctorClick = (doctor, index) => {
-    // Open modal with selected doctor on desktop; on mobile, go to profile directly
-    if (typeof window !== 'undefined' && window.innerWidth >= 769) {
-      setSelected(index);
-    } else {
-      router.push(`/therapist-profile?doctor=${index}`);
-    }
+    // Open modal with selected doctor for all screen sizes
+    setSelected(index);
   };
 
   const handleDateTimeConfirm = () => {
@@ -288,34 +284,38 @@ const Guide = () => {
             @media (max-width: 768px) {
               .guide-cards-container {
                 grid-template-columns: 1fr;
-                gap: 20px;
-                row-gap: 36px;
-                padding: 0 1rem;
-                max-width: 400px;
+                gap: 24px;
+                row-gap: 40px;
+                padding: 0 1.5rem;
+                max-width: 480px;
                 margin-left: auto;
                 margin-right: auto;
               }
               .guide-video-card {
-                max-width: 280px;
-                height: 320px;
+                max-width: 100%;
+                height: 460px;
                 width: 100%;
               }
               .guide-video-card:hover {
                 transform: scale(1.04) translateY(-8px);
+              }
+              /* Increase doctor name size on mobile */
+              .guide-video-card .doctor-card-name {
+                font-size: 1.25rem !important;
               }
             }
             
             /* Small mobile view - 1 card per row with smaller cards */
             @media (max-width: 480px) {
               .guide-cards-container {
-                gap: 16px;
-                row-gap: 32px;
-                padding: 0 0.75rem;
-                max-width: 350px;
+                gap: 20px;
+                row-gap: 36px;
+                padding: 0 1rem;
+                max-width: 420px;
               }
               .guide-video-card {
-                max-width: 260px;
-                height: 300px;
+                max-width: 100%;
+                height: 440px;
               }
               .guide-video-card:hover {
                 transform: scale(1.03) translateY(-6px);
@@ -476,56 +476,46 @@ const Guide = () => {
                     gap: 0,
                     width: "80%"
                   }}>
-                    <div style={{
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: "1.15rem",
-                      textShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                      marginBottom: 0,
-                      letterSpacing: "-0.01em"
-                    }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
-                    {doc.experience_years && (
-                      <div style={{
-                        color: "#fff",
-                        fontWeight: 600,
-                        fontSize: "0.9rem",
-                        textShadow: "0 2px 8px rgba(0,0,0,0.25)",
-                        marginBottom: 8,
-                        opacity: 0.9
-                      }}>{doc.experience_years} years experience</div>
-                    )}
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxHeight: "80px", overflow: "hidden" }}>
-                      {doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? (
-                        doc.area_of_expertise.slice(0, 3).map((exp, i) => (
-                          <span key={i} style={{
-                            background: "rgba(255,255,255,0.22)",
-                            color: "#fff",
-                            borderRadius: 16,
-                            padding: "0.32em 1.1em",
-                            fontWeight: 600,
-                            fontSize: "0.98rem",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-                            backdropFilter: "blur(8px)",
-                            WebkitBackdropFilter: "blur(8px)",
-                            border: "1.5px solid rgba(255,255,255,0.18)",
-                            marginBottom: 2
-                          }}>{exp}</span>
-                        ))
-                      ) : (
-                        <span style={{
-                          background: "rgba(255,255,255,0.22)",
-                          color: "#fff",
-                          borderRadius: 16,
-                          padding: "0.32em 1.1em",
-                          fontWeight: 600,
-                          fontSize: "0.98rem",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-                          backdropFilter: "blur(8px)",
-                          WebkitBackdropFilter: "blur(8px)",
-                          border: "1.5px solid rgba(255,255,255,0.18)",
-                          marginBottom: 2
-                        }}>Psychology</span>
-                      )}
+                    <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
+                    {/* Expertise bubbles - All as chips */}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                      {/* Specialization chips first */}
+                      {doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 && doc.area_of_expertise.slice(0, 2).map((exp, i) => (
+                        <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
+                      ))}
+                      {/* Price chip (matches specialization chip style) */}
+                      <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
+                      {/* Experience chip */}
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0.18em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
+                        {`${(doc.experience_years || 3)}+ yrs Experience`}
+                      </span>
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0.18em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)'
+                      }}>📚 Consultant Psychologist</span>
                     </div>
                   </div>
                 </div>
@@ -554,7 +544,10 @@ const Guide = () => {
             <style>{`
               @media (max-width: 768px) {
                 .doctor-modal-overlay {
-                  display: none !important;
+                  display: flex !important;
+                  padding: 16px;
+                  align-items: flex-start;
+                  overflow-y: auto;
                 }
               }
             `}</style>
@@ -583,7 +576,22 @@ const Guide = () => {
                   align-items: flex-start;
                   justify-content: flex-start;
                   overflow: hidden;
-                  padding: 14px 40px 34px 14px;
+                  padding: 12px 40px 34px 14px;
+                  border-radius: 10px;
+                }
+                .doctor-modal-image img,
+                .doctor-modal-img {
+                  border-radius: 10px !important;
+                  object-fit: cover !important;
+                }
+                
+                /* Ensure laptop view uses cover for border radius visibility */
+                @media (min-width: 1024px) {
+                  .doctor-modal-image img,
+                  .doctor-modal-img {
+                    object-fit: cover !important;
+                    border-radius: 10px !important;
+                  }
                 }
                 .doctor-modal-content {
                   flex: 1;
@@ -599,6 +607,7 @@ const Guide = () => {
                 .doctor-modal-title {
                   font-weight: 700;
                   margin-bottom: 8px;
+                  font-size: 32px !important; /* Override global h3 */
                 }
                 .doctor-modal-buttons {
                   display: flex;
@@ -646,6 +655,9 @@ const Guide = () => {
                 
                 /* Tablet specific styles */
                 @media (min-width: 768px) and (max-width: 1023px) {
+                  .doctor-modal-title {
+                    font-size: 28px !important; /* Tablet size */
+                  }
                   .doctor-modal {
                     width: 85vw;
                     max-width: 800px;
@@ -679,33 +691,140 @@ const Guide = () => {
                 
                 @media (max-width: 768px) {
                   .doctor-modal {
-                    width: 95vw;
-                    max-width: none;
-                    height: 90vh;
-                    flex-direction: column;
+                    width: 100%;
+                    max-width: 100%;
+                    height: auto;
+                    max-height: 98vh;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    grid-template-columns: none !important;
+                    grid-template-rows: none !important;
+                    border-radius: 0;
                   }
                   .doctor-modal-image {
                     flex: none;
-                    height: 40%;
+                    width: 100%;
+                    height: 320px;
+                    padding: 0;
+                    min-height: 320px;
+                    overflow: hidden;
+                    transform: none !important;
+                    zoom: 1 !important;
+                  }
+                  .doctor-modal-image img,
+                  .doctor-modal-img {
+                    width: 100% !important;
+                    height: 100% !important;
+                    max-width: 100% !important;
+                    max-height: 100% !important;
+                    object-fit: contain !important;
+                    object-position: center !important;
+                    transform: none !important;
+                    zoom: 1 !important;
+                    scale: 1 !important;
+                    -webkit-transform: none !important;
+                    -moz-transform: none !important;
                   }
                   .doctor-modal-content {
-                    flex: none;
-                    height: 60%;
-                    padding: 20px;
+                    flex: 1;
+                    padding: 24px 20px;
                     gap: 12px;
+                    overflow-y: auto;
+                    max-height: calc(98vh - 320px - 120px);
                   }
                   .doctor-modal-title {
-                    font-size: 24px;
+                    font-size: 24px !important;
+                  }
+                  .doctor-modal-buttons-container {
+                    gridColumn: none !important;
+                    order: 3;
+                    width: 100%;
+                    padding: 16px 20px;
+                    border-top: 1px solid #eee;
+                    margin-top: auto;
+                  }
+                  .doctor-modal-image {
+                    order: 1;
+                  }
+                  .doctor-modal-content {
+                    order: 2;
                   }
                   .doctor-modal-buttons {
-                    flex-direction: column;
-                    gap: 12px;
-                    margin-top: 20px;
+                    flex-direction: row;
+                    gap: 8px;
+                    margin-top: 0;
+                    width: 100%;
+                    flex-wrap: nowrap;
                   }
                   .doctor-modal-button {
-                    padding: 14px 20px;
-                    font-size: 16px;
-                    width: 100%;
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    flex: 1;
+                    min-width: 0;
+                  }
+                  .doctor-modal-button:first-child,
+                  .doctor-modal-button:last-child {
+                    flex: 0 1 auto;
+                    padding: 10px 14px;
+                    font-size: 18px;
+                    min-width: 48px;
+                    width: 48px;
+                    height: 48px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                  .doctor-modal-button:first-child .button-text,
+                  .doctor-modal-button:last-child .button-text {
+                    display: none;
+                  }
+                  .doctor-modal-button:first-child .button-arrow-mobile,
+                  .doctor-modal-button:last-child .button-arrow-mobile {
+                    display: block;
+                  }
+                  .button-arrow-desktop {
+                    display: none !important;
+                  }
+                  .doctor-modal-button:nth-child(2),
+                  .find-guide-button {
+                    flex: 1 1 auto;
+                    padding: 10px 8px !important;
+                    font-size: 14px;
+                    min-width: 0;
+                  }
+                  /* Keep laptop view padding as is */
+                  @media (min-width: 769px) {
+                    .doctor-modal-button:nth-child(2),
+                    .find-guide-button {
+                      padding: 14px 100px !important;
+                    }
+                  }
+                }
+                /* Desktop/Laptop arrow and text behavior */
+                @media (min-width: 769px) {
+                  .doctor-modal-button .button-arrow-mobile {
+                    display: none !important;
+                  }
+                  .doctor-modal-button .button-text {
+                    display: inline;
+                  }
+                  .doctor-modal-button:first-child .button-arrow-desktop {
+                    display: inline !important;
+                    margin-right: 4px;
+                  }
+                  .doctor-modal-button:last-child .button-arrow-desktop {
+                    display: inline !important;
+                    margin-right: 0;
+                    margin-left: 4px;
+                  }
+                  .doctor-modal-button:first-child,
+                  .doctor-modal-button:last-child {
+                    padding: 6px 0;
+                    font-size: 14px;
+                    min-width: auto;
+                    width: auto;
+                    height: auto;
+                    display: inline-block;
                   }
                 }
               `}</style>
@@ -745,21 +864,12 @@ const Guide = () => {
               
               {/* Left: Doctor Profile Picture or Cover Image */}
               <div className="doctor-modal-image" onClick={e => e.stopPropagation()}>
-                {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
-                  (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
-                                             doctors[selected].name.toLowerCase().includes('marium')))) ? (
+                {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? (
                   <img
-                    src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url ||
-                         (() => {
-                           const name = doctors[selected]?.name?.toLowerCase() || '';
-                           if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
-                           if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
-                           if (name.includes('child') || name.includes('teen')) return '/kids.png';
-                           return null;
-                         })()}
+                    src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url}
                     alt={`${doctors[selected]?.name || doctors[selected]?.first_name} profile`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "10px" }}
+                    className="doctor-modal-img"
+                    style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "10px", transform: "none" }}
                     onError={(e) => {
                       // Fallback to initials if image fails to load
                       e.target.style.display = 'none';
@@ -771,12 +881,7 @@ const Guide = () => {
                 {/* Fallback: Doctor Initials Avatar */}
                 <div 
                   style={{
-                    display: (doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
-                              (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
-                                                         doctors[selected].name.toLowerCase().includes('marium') ||
-                                                         doctors[selected].name.toLowerCase().includes('doug') ||
-                                                         doctors[selected].name.toLowerCase().includes('ashley') ||
-                                                         doctors[selected].name.toLowerCase().includes('child')))) ? 'none' : 'flex',
+                    display: (doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? 'none' : 'flex',
                     width: "100%",
                     height: "100%",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 หว100%)",
@@ -800,67 +905,64 @@ const Guide = () => {
               
               {/* Right: Details - Only name, years of experience, price, and description */}
               <div className="doctor-modal-content" onClick={e => e.stopPropagation()}>
-                <h3 style={{ fontSize: 42, lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 8 }}>
+                <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 4 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
                 </h3>
                 
-                {/* Years of Experience */}
-                {doctors[selected]?.experience_years && (
-                  <div style={{ marginBottom: 0, lineHeight: 1.2 }}>
-                    <div style={{ 
-                      color: "#333", 
-                      fontSize: 20,
-                      fontWeight: 700,
-                      lineHeight: 1.2
-                    }}>
-                      {doctors[selected].experience_years} {doctors[selected].experience_years === 1 ? 'year' : 'years'} of experience
-                    </div>
-                  </div>
-                )}
-                {/* Price */}
-                {doctors[selected]?.price && (
-                  <div style={{ marginBottom: 8, marginTop: -8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ 
-                      color: "#555", 
-                      fontWeight: 600, 
-                      fontSize: 18
-                    }}>
-                      Price
-                    </div>
-                    <div style={{ 
-                      color: "#27ae60", 
-                      fontSize: 28,
-                      fontWeight: 800
-                    }}>
-                      ₹{doctors[selected].price}
-                    </div>
+                {/* Experience + Price grouped to remove container column gap */}
+                {(doctors[selected]?.experience_years || doctors[selected]?.price) && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: -4 }}>
+                    {doctors[selected]?.experience_years && (
+                      <h6 style={{ margin: 0, lineHeight: '1.2' }}>
+                        {doctors[selected].experience_years} {doctors[selected].experience_years === 1 ? 'year' : 'years'} of experience
+                      </h6>
+                    )}
+                    {doctors[selected]?.price && (
+                      <h6 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 12, lineHeight: '1.2' }}>
+                        <span>Price</span>
+                        <span style={{ color: "#27ae60" }}>₹{doctors[selected].price}</span>
+                      </h6>
+                    )}
                   </div>
                 )}
                 
+                {/* Specialization */}
+                {(() => {
+                  const expertiseArray = doctors[selected]?.area_of_expertise && Array.isArray(doctors[selected].area_of_expertise) && doctors[selected].area_of_expertise.length > 0 
+                    ? doctors[selected].area_of_expertise 
+                    : [];
+                  
+                  return expertiseArray.length > 0 ? (
+                    <div style={{ marginBottom: 8, marginTop: 8 }}>
+                      <h6 style={{ marginBottom: 8, marginTop: 0, fontWeight: 600 }}>Specialization</h6>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {expertiseArray.map((spec, i) => (
+                          <span key={i} style={{ 
+                            background: '#f0f0f0', 
+                            color: '#333', 
+                            padding: '4px 12px', 
+                            borderRadius: '16px', 
+                            fontSize: '14px',
+                            fontWeight: 400
+                          }}>
+                            {spec}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+                
                 {/* Description */}
-                <div style={{ marginBottom: 8 }}>
-                  <div style={{ 
-                    color: "#555", 
-                    fontWeight: 600, 
-                    fontSize: 18,
-                    marginBottom: 6
-                  }}>
-                    Description
-                  </div>
-                  <div style={{ 
-                    fontSize: 16, 
-                    color: '#444', 
-                    lineHeight: 1.4,
-                    marginTop: 0
-                  }}>
-                    {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
-                  </div>
-                </div>
+                <h6 style={{ marginBottom: 0, marginTop: 0, fontWeight: 600 }}>Description</h6>
+                <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.3' }}>
+                  {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
+                </p>
                 
               </div>
               
               {/* Bottom Actions - Below both components */}
-              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, padding: '16px 24px' }}>
+              <div className="doctor-modal-buttons-container" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, padding: '16px 24px' }}>
                 <button
                   className="doctor-modal-button"
                   style={{ background: 'transparent', border: 'none', color: '#666', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
@@ -869,12 +971,14 @@ const Guide = () => {
                     setSelected(prevIndex);
                   }}
                 >
-                  {`< Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.first_name || 'Prev'}`}
+                  <span className="button-arrow-desktop">&lt;</span>
+                  <span className="button-text">{`Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.first_name || 'Prev'}`}</span>
+                  <span className="button-arrow-mobile">&lt;</span>
                 </button>
 
                 <button
-                  className="doctor-modal-button"
-                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '12px 20px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
+                  className="doctor-modal-button find-guide-button"
+                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '14px 100px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
                 >
                   Find your Guide
@@ -888,7 +992,9 @@ const Guide = () => {
                     setSelected(nextIndex);
                   }}
                 >
-                  {`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.first_name || 'Next'} >`}
+                  <span className="button-text">{`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.first_name || 'Next'}`}</span>
+                  <span className="button-arrow-desktop">&gt;</span>
+                  <span className="button-arrow-mobile">&gt;</span>
                 </button>
               </div>
             </div>
