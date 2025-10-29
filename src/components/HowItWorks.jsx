@@ -17,29 +17,29 @@ export default function HowItWorks() {
     {
       id: 1,
       number: "01",
-      title: "Explore Your Matches",
+      title: "Tell Us What's Important",
       gradient: "radial-gradient(circle at top right, #fffdff 0%, #fffdff 30%, #d6cae9 50%, #b19cd3 100%)",
-      tags: ["Anxiety and Depression", "Accepts Cigna Health Plans", "Available this week"],
-      description: "Browse profiles of ADHD specialists who fit your child's needs."
+      tags: ["Assessment", "Child counselling", "Better parenting"],
+      description: "Choose what do you want to prioritize to get started."
     },
     {
       id: 2,
       number: "02", 
-      title: "Explore your matches",
+      title: "Explore Your Matches",
       gradient: "conic-gradient(at 50% 50%, #ecfdf5 0deg, #d1fae5 140deg, #a7f3d0 280deg, #ecfdf5 360deg)",
-      description: "Choose Malayali psychologists for you and your child."
+      description: "Choose a therapist for you and your child."
     },
     {
       id: 3,
       number: "03",
-      title: "Schedule your visit", 
+      title: "Schedule Your Visit", 
       gradient: "conic-gradient(at 50% 50%, #fff7ed 0deg, #ffedd5 150deg, #fed7aa 300deg, #fff7ed 360deg)",
       description: "Choose your preferred slot & Get started as early as today."
     },
     {
       id: 4,
       number: "04",
-      title: "Join your online session",
+      title: "Join Online Session",
       gradient: "conic-gradient(at 50% 50%, #ecfeff 0deg, #cffafe 160deg, #bae6fd 320deg, #ecfeff 360deg)",
       description: "Join sessions on Google Meet from your comfort place."
     }
@@ -66,7 +66,7 @@ export default function HowItWorks() {
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const cardWidth = 320; // Fixed card width (w-80 = 320px)
+      const cardWidth = 260; // Mobile card width
       const gap = 16; // gap-4 = 16px
       const totalCardWidth = cardWidth + gap;
       const newSlide = Math.round(scrollLeft / totalCardWidth);
@@ -77,7 +77,7 @@ export default function HowItWorks() {
   // Scroll to specific slide
   const scrollToSlide = (index) => {
     if (scrollContainerRef.current) {
-      const cardWidth = 320; // Fixed card width (w-80 = 320px)
+      const cardWidth = 260; // Mobile card width
       const gap = 16; // gap-4 = 16px
       const totalCardWidth = cardWidth + gap;
       scrollContainerRef.current.scrollTo({
@@ -96,7 +96,7 @@ export default function HowItWorks() {
           }
           .how-it-works-card {
             height: 280px !important;
-            width: 320px !important;
+            width: 260px !important;
           }
           .how-it-works-title {
             font-size: 18px !important;
@@ -123,6 +123,9 @@ export default function HowItWorks() {
             background-size: 100% 100% !important;
             background-position: center top !important;
           }
+          .card-2-inner-image {
+            margin-top: 10px !important;
+          }
         }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
@@ -148,22 +151,23 @@ export default function HowItWorks() {
 
         <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Mobile Carousel */}
-          <div className="md:hidden w-full max-w-sm mx-auto">
-            {/* Scrollable Carousel Container */}
-            <div 
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
-              style={{ scrollSnapType: 'x mandatory' }}
-            >
-              <div className="flex gap-4 pb-4">
+          <div className="md:hidden w-full">
+            <div className="flex justify-center overflow-hidden">
+              {/* Scrollable Carousel Container */}
+              <div 
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+                className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
+                style={{ width: '260px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+              >
+                <div className="flex gap-4 pb-4">
                 {carouselData.map((card, index) => (
                   <div 
                     key={card.id} 
                     className="flex-shrink-0 snap-start"
                   >
                     <div
-                      className="how-it-works-card rounded-lg p-4 h-[280px] w-[320px] flex flex-col justify-between card-bg-mobile"
+                      className="how-it-works-card rounded-lg p-4 h-[280px] w-[260px] flex flex-col justify-between card-bg-mobile"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",
@@ -200,7 +204,7 @@ export default function HowItWorks() {
                         )}
 
                         {card.id === 2 && (
-                          <div className="flex justify-center items-center" style={{ margin: '-85px 0', padding: 0 }}>
+                          <div className="flex flex-col items-center card-2-inner-image" style={{ margin: '-85px 0', padding: 0 }}>
                             <div className="relative" style={{ width: '200px', height: '200px', padding: 0, margin: 0 }}>
                               <Image
                                 src="/howitworks2inner.png"
@@ -210,6 +214,11 @@ export default function HowItWorks() {
                                 sizes="200px"
                                 style={{ padding: '0 !important', margin: '0 !important', display: 'block' }}
                               />
+                            </div>
+                            {/* Doctor Information */}
+                            <div className="text-center" style={{ marginTop: '-50px' }}>
+                              <div className="text-xs font-bold text-gray-900">Aswathy Sampath</div>
+                              <div className="text-xs text-gray-600">M.Phil, Clinical Psychologist</div>
                             </div>
                           </div>
                         )}
@@ -263,6 +272,7 @@ export default function HowItWorks() {
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             </div>
 

@@ -137,13 +137,22 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
     }
   };
 
+  // Default hero feature bullets for all CMS pages
+  const defaultFeatures = [
+    "Licensed Child Therapists Who Understands Kids",
+    "Online sessions that make a real difference.",
+    "Affordable & Accessible Care"
+  ];
+
   // Use CMS data if available, otherwise fall back to hardcoded content
   const currentContent = cmsData ? {
     title: cmsData.title || content[therapyType]?.title || content.individual.title,
     description: cmsData.subtext || content[therapyType]?.description || content.individual.description,
     image: cmsData.imageUrl || content[therapyType]?.image || content.individual.image,
     alt: content[therapyType]?.alt || content.individual.alt,
-    features: content[therapyType]?.features || content.individual.features,
+    features: (cmsData.features && cmsData.features.length > 0)
+      ? cmsData.features
+      : defaultFeatures,
     ctaText: cmsData.ctaText
   } : (content[therapyType] || content.individual);
 

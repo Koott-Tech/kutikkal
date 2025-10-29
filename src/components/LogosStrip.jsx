@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
-export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logosCount = 8 }) {
+export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logosCount = 8, swapSecondThird = false }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
   // Check if using dark background to determine text and logo colors
@@ -12,9 +12,9 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
 
   // Logo array
   const allLogos = [
-    "aetna-logo-1.png",
-    "cigna-logo-1.png",
-    "uhc-logo.png",
+    "calicut.webp",
+    "Delhi University.webp",
+    "Christ University.webp",
     "logo_bcbs-1.png",
     "optum-logo-1.png",
     "kaiser-logo.png",
@@ -23,23 +23,22 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
   ];
 
   // Slice to get only the requested number of logos
-  const logosToShow = allLogos.slice(0, logosCount);
+  let logosToShow = allLogos.slice(0, logosCount);
+  if (swapSecondThird && logosToShow.length >= 3) {
+    const temp = logosToShow[1];
+    logosToShow[1] = logosToShow[2];
+    logosToShow[2] = temp;
+  }
 
   return (
          <section className={`w-full ${bgColor} ${height} mt-0`}>
        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-2 sm:px-4 md:px-[70px]">
                  {/* Insurance Coverage Text - Left on desktop, top on mobile */}
-         <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
-                      <div className="text-center md:text-left relative">
-              <p className={`text-base font-medium ${textColor} leading-[1.5] block md:hidden`}>
-                120M+ individuals are covered by insurance
-              </p>
-              <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
-                120M+ individuals are
-              </p>
-              <p className={`text-base font-medium ${textColor} leading-tight hidden md:block`}>
-                covered by insurance
-              </p>
+          <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
+                     <div className="text-center md:text-left relative">
+             <p className={`text-base font-medium ${textColor} leading-[1.5]`}>
+               Industry experts from <br /> renowned universities.
+             </p>
              <div className="absolute -top-1 -right-6 md:-right-6">
                <button
                  onMouseEnter={() => setShowTooltip(true)}
@@ -114,13 +113,13 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
               </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}
             <div className="md:hidden mt-4">
-              <span className={`text-base font-medium ${textColor} leading-[1.5]`}>More partners →</span>
+              <span className={`text-base font-medium ${textColor} leading-[1.5]`}>About us →</span>
             </div>
          </div>
         
         {/* More Partners Link - Right on desktop, hidden on mobile */}
         <div className="hidden md:flex items-center order-3">
-          <span className={`text-base font-medium ${textColor}`}>More partners →</span>
+          <span className={`text-base font-medium ${textColor}`}>About us →</span>
         </div>
       </div>
     </section>

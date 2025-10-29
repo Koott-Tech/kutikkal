@@ -30,20 +30,31 @@ export default function Footer() {
                 background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
             }}>
                 <div className="text-center max-w-4xl mx-auto">
-                    <h4 className="footer-heading mb-4 font-semibold">
-                        Ready to start your care journey?
+                    <h4 className="footer-heading mb-2 font-semibold">
+                        Confused where to start?
                     </h4>
                     <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                        We'll connect you with a child therapist who understands your family's needs and provides the right support.
+                        Book a free 20 minutes session with our psychologist.
                     </p>
-                    <button 
-                        className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
-                        style={{ backgroundColor: '#3f2e73' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
-                    >
-                        Get started
-                    </button>
+                    <div className="flex items-center justify-center gap-3">
+                        <a
+                            href="https://wa.me/"
+                            className="px-5 py-2.5 rounded-3xl font-semibold transition-all duration-200"
+                            style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
+                        >
+                            WhatsApp Us
+                        </a>
+                        <button 
+                            className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
+                            style={{ backgroundColor: '#3f2e73' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                        >
+                            Book  Now
+                        </button>
+                    </div>
                 </div>
             </div>
 

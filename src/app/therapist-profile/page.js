@@ -1134,105 +1134,7 @@ const TherapistProfileContent = () => {
                 )}
               </div>
               
-              {/* Package Selection or Package Information */}
-              <div className="space-y-4 mb-4">
-                {isBookingRemaining && clientPackage ? (
-                  // Show package information when booking remaining sessions
-                  <div>
-                    <p className="font-semibold text-gray-800 mb-3 text-sm">Your Package</p>
-                    <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="text-left">
-                          <span className="font-semibold text-base">{clientPackage.package_type}</span>
-                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                            Remaining Sessions
-                          </span>
-                        </div>
-                        <span className="font-bold text-lg">Already Paid</span>
-                      </div>
-                      <div className="text-left text-gray-600 text-xs">
-                        <p>Package purchased on {new Date(clientPackage.purchased_at).toLocaleDateString()}</p>
-                        <p className="mt-1 font-medium">
-                          {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
-                        </p>
-                        <p className="mt-1 text-green-600 font-medium">
-                          Total paid: ${clientPackage.amount_paid}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  // Show package selection for new bookings
-                  <>
-                    <p className="font-semibold text-gray-800 mb-3 text-sm">Select Package</p>
-                    
-                    {/* Individual Session Option - Always Available */}
-                    <button
-                      onClick={() => {
-                        setSelectedPackage({
-                          id: 'individual',
-                          name: 'Individual Session',
-                          description: 'One therapy session',
-                          session_count: 1,
-                          price: selectedDoctor.price,
-                          package_type: 'individual',
-                          discount_percentage: 0
-                        });
-                        setSelectedPrice(selectedDoctor.price);
-                      }}
-                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                        selectedPackage?.id === 'individual'
-                          ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                          : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="text-left">
-                          <span className="font-semibold text-sm">Individual Session</span>
-                        </div>
-                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
-                      </div>
-                    </button>
-                    
-                    {/* Dynamic Packages from Database */}
-                    {loadingPackages ? (
-                      <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
-                        <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
-                      </div>
-                    ) : packages.length > 0 ? (
-                      <div className="space-y-2">
-                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
-                          <button
-                            key={pkg.id}
-                            onClick={() => {
-                              setSelectedPackage(pkg);
-                              setSelectedPrice(pkg.price);
-                            }}
-                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                              selectedPackage?.id === pkg.id
-                                ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                                : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
-                            }`}
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="text-left">
-                                <span className="font-semibold text-sm">{pkg.name}</span>
-                                {pkg.discount_percentage > 0 && (
-                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
-                                    Save {pkg.discount_percentage}%
-                                  </span>
-                                )}
-                              </div>
-                              <span className="font-bold text-base">₹{pkg.price}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </div>
+            
               
               {/* Month Navigation */}
               <div className="flex items-center justify-between mb-2">
@@ -1255,39 +1157,7 @@ const TherapistProfileContent = () => {
                 </button>
               </div>
               
-              {/* Calendar Legend */}
-              <div className="mb-3 text-xs text-gray-600">
-                <div className="flex items-center justify-center space-x-4">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-50 border border-green-200 rounded mr-1"></div>
-                    <span>Available</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-100 rounded mr-1"></div>
-                    <span>Today</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded mr-1"></div>
-                    <span>Selected</span>
-                  </div>
-                </div>
-                {/* Debug info */}
-                <div className="mt-2 text-center text-xs text-gray-500">
-                  <p>Selected: {selectedDate ? selectedDate.toDateString() : 'None'}</p>
-                  <p>Availability loaded: {Object.keys(psychologistAvailability).length > 0 ? 'Yes' : 'No'}</p>
-                  <button 
-                    onClick={() => {
-              
-                      if (selectedDoctor) {
-                        fetchPsychologistAvailability(selectedDoctor.id);
-                      }
-                    }}
-                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
-                  >
-                    Reload Availability
-                  </button>
-                </div>
-              </div>
+             
               
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1 mb-4">
@@ -1368,39 +1238,7 @@ const TherapistProfileContent = () => {
               </div>
               
               {/* Calendar Legend */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-gray-700">Calendar Legend:</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded border-2 border-green-600"></div>
-                    <span className="font-medium">Available for booking</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                    <span>Today</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-50 border border-red-300 rounded"></div>
-                    <span>Booked on platform</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-orange-50 border border-orange-300 rounded flex items-center justify-center">
-                      <span className="text-xs">📅</span>
-                    </div>
-                    <span>Blocked by Google Calendar</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-100 rounded"></div>
-                    <span>Future date (clickable)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-300 rounded"></div>
-                    <span>Past date</span>
-                  </div>
-                </div>
-              </div>
+              
 
               {/* Time Slots */}
               <div className="space-y-4">
@@ -1534,6 +1372,106 @@ const TherapistProfileContent = () => {
                       <p>Select a date to see available times</p>
                     </div>
                   </div>
+                )}
+              </div>
+
+                {/* Package Selection or Package Information */}
+                <div className="space-y-4 mb-4">
+                {isBookingRemaining && clientPackage ? (
+                  // Show package information when booking remaining sessions
+                  <div>
+                    <p className="font-semibold text-gray-800 mb-3 text-sm">Your Package</p>
+                    <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="text-left">
+                          <span className="font-semibold text-base">{clientPackage.package_type}</span>
+                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                            Remaining Sessions
+                          </span>
+                        </div>
+                        <span className="font-bold text-lg">Already Paid</span>
+                      </div>
+                      <div className="text-left text-gray-600 text-xs">
+                        <p>Package purchased on {new Date(clientPackage.purchased_at).toLocaleDateString()}</p>
+                        <p className="mt-1 font-medium">
+                          {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
+                        </p>
+                        <p className="mt-1 text-green-600 font-medium">
+                          Total paid: ${clientPackage.amount_paid}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Show package selection for new bookings
+                  <>
+                    <p className="font-semibold text-gray-800 mb-3 text-sm">Select Package</p>
+                    
+                    {/* Individual Session Option - Always Available */}
+                    <button
+                      onClick={() => {
+                        setSelectedPackage({
+                          id: 'individual',
+                          name: 'Individual Session',
+                          description: 'One therapy session',
+                          session_count: 1,
+                          price: selectedDoctor.price,
+                          package_type: 'individual',
+                          discount_percentage: 0
+                        });
+                        setSelectedPrice(selectedDoctor.price);
+                      }}
+                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                        selectedPackage?.id === 'individual'
+                          ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                          : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="text-left">
+                          <span className="font-semibold text-sm">Individual Session</span>
+                        </div>
+                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
+                      </div>
+                    </button>
+                    
+                    {/* Dynamic Packages from Database */}
+                    {loadingPackages ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                        <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
+                      </div>
+                    ) : packages.length > 0 ? (
+                      <div className="space-y-2">
+                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
+                          <button
+                            key={pkg.id}
+                            onClick={() => {
+                              setSelectedPackage(pkg);
+                              setSelectedPrice(pkg.price);
+                            }}
+                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                              selectedPackage?.id === pkg.id
+                                ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
+                                : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="text-left">
+                                <span className="font-semibold text-sm">{pkg.name}</span>
+                                {pkg.discount_percentage > 0 && (
+                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
+                                    Save {pkg.discount_percentage}%
+                                  </span>
+                                )}
+                              </div>
+                              <span className="font-bold text-base">₹{pkg.price}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
                 )}
               </div>
               

@@ -40,6 +40,10 @@ export default function CounsellingPageBuilder({
     hero_subtext: '',
     hero_cta_text: '',
     hero_image_url: '',
+    hero_point_1: '',
+    hero_point_2: '',
+    hero_point_3: '',
+    therapists_heading: '',
     benefits: [],
     types: [],
     types_title: '',
@@ -90,6 +94,10 @@ export default function CounsellingPageBuilder({
         hero_subtext: initialData.hero_subtext || '',
         hero_cta_text: initialData.hero_cta_text || '',
         hero_image_url: initialData.hero_image_url || '',
+      hero_point_1: initialData.hero_point_1 || '',
+      hero_point_2: initialData.hero_point_2 || '',
+      hero_point_3: initialData.hero_point_3 || '',
+        therapists_heading: initialData.therapists_heading || '',
         benefits: initialData.benefits || [],
         types: initialData.types || [],
         types_title: initialData.types_title || '',
@@ -224,6 +232,33 @@ export default function CounsellingPageBuilder({
                 className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Hero Bullet 1</label>
+              <input
+                type="text"
+                value={formData.hero_point_1}
+                onChange={(e) => handleInputChange('hero_point_1', e.target.value)}
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Hero Bullet 2</label>
+              <input
+                type="text"
+                value={formData.hero_point_2}
+                onChange={(e) => handleInputChange('hero_point_2', e.target.value)}
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Hero Bullet 3</label>
+              <input
+                type="text"
+                value={formData.hero_point_3}
+                onChange={(e) => handleInputChange('hero_point_3', e.target.value)}
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <ImageUpload
               currentImageUrl={formData.hero_image_url}
               onImageUpload={(url) => handleInputChange('hero_image_url', url)}
@@ -231,6 +266,24 @@ export default function CounsellingPageBuilder({
               slug={formData.slug}
               label="Hero Image"
             />
+          </div>
+        );
+      case 'therapists':
+        return (
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="text-base md:text-lg font-semibold">Edit Therapists Section</h3>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                Therapists Heading (appears above doctor cards)
+              </label>
+              <input
+                type="text"
+                value={formData.therapists_heading}
+                onChange={(e) => handleInputChange('therapists_heading', e.target.value)}
+                className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Your journey to a happier, calmer home begins here."
+              />
+            </div>
           </div>
         );
 
@@ -1010,13 +1063,27 @@ export default function CounsellingPageBuilder({
                   title: formData.hero_title,
                   subtext: formData.hero_subtext,
                   ctaText: formData.hero_cta_text,
-                  imageUrl: formData.hero_image_url
+                  imageUrl: formData.hero_image_url,
+                  features: [formData.hero_point_1, formData.hero_point_2, formData.hero_point_3].filter(Boolean)
                 }}
               />
             ))}
 
             {/* Logos Strip */}
             <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
+
+            {/* Therapists Heading (preview) */}
+            {renderEditableElement('therapists', (
+              <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
+                <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
+                  <div className="mt-3 text-center md:text-center px-4">
+                    <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+                      {formData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            ))}
 
             {/* How It Works */}
             <HowItWorks />

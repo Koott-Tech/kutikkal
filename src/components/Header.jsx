@@ -335,10 +335,15 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      setIsFindCareOpen(!isFindCareOpen);
-                      setIsForProvidersOpen(false);
-                      setIsAboutOpen(false);
-                      setIsResourcesOpen(false);
+                      if (isFindCareOpen) {
+                        setIsFindCareOpen(false);
+                      } else {
+                        setIsFindCareOpen(true);
+                        setIsForProvidersOpen(false);
+                        setIsAboutOpen(false);
+                        setIsResourcesOpen(false);
+                        setIsBetterParentingOpen(false);
+                      }
                     }}
                   >
                   <span className="header-nav-item inline-block">Counselling</span>
@@ -348,7 +353,7 @@ export default function Header() {
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
+                    <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       {/* Counselling Services */}
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-3">
@@ -649,11 +654,15 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      setIsForProvidersOpen(!isForProvidersOpen);
-                      setIsFindCareOpen(false);
-                      setIsAboutOpen(false);
-                      setIsResourcesOpen(false);
-                      setIsBetterParentingOpen(false);
+                      if (isForProvidersOpen) {
+                        setIsForProvidersOpen(false);
+                      } else {
+                        setIsForProvidersOpen(true);
+                        setIsFindCareOpen(false);
+                        setIsAboutOpen(false);
+                        setIsResourcesOpen(false);
+                        setIsBetterParentingOpen(false);
+                      }
                     }}
                   >
                   <span className="header-nav-item inline-block">Assessments</span>
@@ -663,7 +672,7 @@ export default function Header() {
                   
                   {/* Assessments Dropdown */}
                   {isForProvidersOpen && (
-                    <div className="assessments-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
+                    <div className="assessments-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-3">
                           {/* ADHD Assessments */}
@@ -881,11 +890,15 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      setIsBetterParentingOpen(!isBetterParentingOpen);
-                      setIsFindCareOpen(false);
-                      setIsForProvidersOpen(false);
-                      setIsAboutOpen(false);
-                      setIsResourcesOpen(false);
+                      if (isBetterParentingOpen) {
+                        setIsBetterParentingOpen(false);
+                      } else {
+                        setIsBetterParentingOpen(true);
+                        setIsFindCareOpen(false);
+                        setIsForProvidersOpen(false);
+                        setIsAboutOpen(false);
+                        setIsResourcesOpen(false);
+                      }
                     }}
                   >
                     <span className="header-nav-item inline-block">Better Parenting</span>
@@ -895,7 +908,7 @@ export default function Header() {
 
                   {/* Better Parenting Dropdown */}
                   {isBetterParentingOpen && (
-                    <div className="better-parenting-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-2">
+                    <div className="better-parenting-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-2">
                           <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => router.push('/better-parenting')}>
@@ -935,10 +948,15 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      setIsAboutOpen(!isAboutOpen);
-                      setIsFindCareOpen(false);
-                      setIsForProvidersOpen(false);
-                      setIsResourcesOpen(false);
+                      if (isAboutOpen) {
+                        setIsAboutOpen(false);
+                      } else {
+                        setIsAboutOpen(true);
+                        setIsFindCareOpen(false);
+                        setIsForProvidersOpen(false);
+                        setIsBetterParentingOpen(false);
+                        setIsResourcesOpen(false);
+                      }
                     }}
                   >
                     <span className="header-nav-item inline-block">About Us</span>
@@ -948,7 +966,7 @@ export default function Header() {
                   
                                      {/* About Us Dropdown */}
                    {isAboutOpen && (
-                     <div className="header-dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                     <div className="header-dropdown absolute top-full left-0 mt-4 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                        <div className="px-4 space-y-2">
                          <div 
                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
@@ -976,10 +994,15 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      setIsResourcesOpen(!isResourcesOpen);
-                      setIsFindCareOpen(false);
-                      setIsForProvidersOpen(false);
-                      setIsAboutOpen(false);
+                      if (isResourcesOpen) {
+                        setIsResourcesOpen(false);
+                      } else {
+                        setIsResourcesOpen(true);
+                        setIsFindCareOpen(false);
+                        setIsForProvidersOpen(false);
+                        setIsAboutOpen(false);
+                        setIsBetterParentingOpen(false);
+                      }
                     }}
                   >
                   <span className="header-nav-item inline-block">Resources</span>
@@ -989,7 +1012,7 @@ export default function Header() {
                   
                   {/* Resources Dropdown */}
                   {isResourcesOpen && (
-                    <div className="header-dropdown absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="header-dropdown absolute top-full left-0 mt-4 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                       <div className="px-4 space-y-2">
                         <div 
                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
@@ -1198,10 +1221,15 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      setIsMobileFindCareOpen(!isMobileFindCareOpen);
-                      setIsMobileForProvidersOpen(false);
-                      setIsMobileAboutOpen(false);
-                      setIsMobileResourcesOpen(false);
+                      if (isMobileFindCareOpen) {
+                        setIsMobileFindCareOpen(false);
+                      } else {
+                        setIsMobileFindCareOpen(true);
+                        setIsMobileForProvidersOpen(false);
+                        setIsMobileAboutOpen(false);
+                        setIsMobileResourcesOpen(false);
+                        setIsMobileBetterParentingOpen(false);
+                      }
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900 header-nav-item">Counselling</span>
@@ -1398,11 +1426,15 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      setIsMobileBetterParentingOpen(!isMobileBetterParentingOpen);
-                      setIsMobileFindCareOpen(false);
-                      setIsMobileForProvidersOpen(false);
-                      setIsMobileAboutOpen(false);
-                      setIsMobileResourcesOpen(false);
+                      if (isMobileBetterParentingOpen) {
+                        setIsMobileBetterParentingOpen(false);
+                      } else {
+                        setIsMobileBetterParentingOpen(true);
+                        setIsMobileFindCareOpen(false);
+                        setIsMobileForProvidersOpen(false);
+                        setIsMobileAboutOpen(false);
+                        setIsMobileResourcesOpen(false);
+                      }
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900 header-nav-item">Better Parenting</span>
@@ -1434,10 +1466,15 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      setIsMobileForProvidersOpen(!isMobileForProvidersOpen);
-                      setIsMobileFindCareOpen(false);
-                      setIsMobileAboutOpen(false);
-                      setIsMobileResourcesOpen(false);
+                      if (isMobileForProvidersOpen) {
+                        setIsMobileForProvidersOpen(false);
+                      } else {
+                        setIsMobileForProvidersOpen(true);
+                        setIsMobileFindCareOpen(false);
+                        setIsMobileAboutOpen(false);
+                        setIsMobileResourcesOpen(false);
+                        setIsMobileBetterParentingOpen(false);
+                      }
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900 header-nav-item">Assessments</span>
@@ -1630,10 +1667,15 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      setIsMobileAboutOpen(!isMobileAboutOpen);
-                      setIsMobileFindCareOpen(false);
-                      setIsMobileForProvidersOpen(false);
-                      setIsMobileResourcesOpen(false);
+                      if (isMobileAboutOpen) {
+                        setIsMobileAboutOpen(false);
+                      } else {
+                        setIsMobileAboutOpen(true);
+                        setIsMobileFindCareOpen(false);
+                        setIsMobileForProvidersOpen(false);
+                        setIsMobileBetterParentingOpen(false);
+                        setIsMobileResourcesOpen(false);
+                      }
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900 header-nav-item">About Us</span>
@@ -1674,10 +1716,15 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
                     onClick={() => {
-                      setIsMobileResourcesOpen(!isMobileResourcesOpen);
-                      setIsMobileFindCareOpen(false);
-                      setIsMobileForProvidersOpen(false);
-                      setIsMobileAboutOpen(false);
+                      if (isMobileResourcesOpen) {
+                        setIsMobileResourcesOpen(false);
+                      } else {
+                        setIsMobileResourcesOpen(true);
+                        setIsMobileFindCareOpen(false);
+                        setIsMobileForProvidersOpen(false);
+                        setIsMobileAboutOpen(false);
+                        setIsMobileBetterParentingOpen(false);
+                      }
                     }}
                   >
                     <span className="text-lg font-medium text-gray-900 header-nav-item">Resources</span>

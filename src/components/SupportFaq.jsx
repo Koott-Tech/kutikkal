@@ -141,9 +141,9 @@ export default function SupportFaq() {
           }
         }
       `}</style>
-      <div className="w-full mx-auto max-w-[1400px]  mt-40 px-3 sm:px-8 md:px-[50px]">
+      <div className="w-full mx-auto max-w-[1400px] mt-4 md:mt-40 px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
-        <h3 className="our-promise-title text-center md:text-center mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+        <h3 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
         Supporting you and your little one at every step.
         </h3>
 

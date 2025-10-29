@@ -8,10 +8,9 @@ import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
 import Testimonials from '@/components/Testimonials';
-import ConsultationBanner from '@/components/ConsultationBanner';
 import HelpFaq from '@/components/HelpFaq';
+import BlogTeaser from '@/components/BlogTeaser';
 import TherapistCarousel from '@/components/TherapistCarousel';
-import AssessmentDemoCTA from '@/components/AssessmentDemoCTA';
 import { publicApi } from '@/lib/backendApi';
 
 export default async function AssessmentCmsRenderer({ slug }) {
@@ -41,16 +40,20 @@ export default async function AssessmentCmsRenderer({ slug }) {
           subtext: cms?.hero_subtext || undefined,
           ctaText: cms?.hero_cta_text || undefined,
           imageUrl: cms?.hero_image_url || undefined,
+          features: [
+            cms?.hero_point_1,
+            cms?.hero_point_2,
+            cms?.hero_point_3
+          ].filter(Boolean),
         }}
       />
-      <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} />
+      <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
       {/* Therapist grid under hero */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
-          <p className="text-center md:text-center mt-2 text-sm md:text-base">How it works</p>
           <div className="mt-3 text-center md:text-center px-4">
             <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-              Your journey to a happier, calmer home begins here.
+              {cms?.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
             </h3>
           </div>
         </div>
@@ -71,15 +74,23 @@ export default async function AssessmentCmsRenderer({ slug }) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                   {/* Gradient Overlay */}
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '55%',
+                      background:
+                        'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 75%, rgba(0,0,0,0) 100%)'
+                    }}
+                  />
                   {/* Text block at bottom */}
                   <div style={{ position: 'absolute', left: 18, bottom: 18, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
                     <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{name}</div>
-                    {doc.experience_years && (
-                      <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', opacity: 0.95 }}>{doc.experience_years} years experience</div>
-                    )}
                     {/* Expertise bubbles */}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                      {/* Specialization chips first */}
                       {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0
                         ? doc.area_of_expertise.slice(0, 2)
                         : ['Child Therapy']
@@ -88,15 +99,59 @@ export default async function AssessmentCmsRenderer({ slug }) {
                           background: 'rgba(255,255,255,0.22)',
                           color: '#fff',
                           borderRadius: 16,
-                          padding: '0.32em 1.1em',
-                          fontWeight: 600,
+                          padding: '0em 0.5em',
+                          fontWeight: 400,
                           fontSize: '0.9rem',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
+                          backdropFilter: 'blur(0.5px)',
+                          WebkitBackdropFilter: 'blur(0.5px)',
                           border: '1.5px solid rgba(255,255,255,0.18)'
                         }}>{exp}</span>
                       ))}
+                      {/* Price chip (matches specialization chip style) */}
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)'
+                      }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
+                      {/* Experience chip */}
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
+                        {`${(doc.experience_years || 3)}+ yrs Experience`}
+                      </span>
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)'
+                      }}>📚 Consultant Psychologist</span>
                     </div>
                   </div>
                 </div>
@@ -128,9 +183,6 @@ export default async function AssessmentCmsRenderer({ slug }) {
         fluid
         compactSpacing
       />
-      <div className="mt-4 md:mt-6">
-        <ConsultationBanner />
-      </div>
       <TherapyTypesSplit 
         therapyType={slug}
         cmsData={{
@@ -151,12 +203,14 @@ export default async function AssessmentCmsRenderer({ slug }) {
         <Reviews cmsData={{ reviews: cms?.reviews }} />
       </div>
       {/* Testimonials removed for CMS pages as requested */}
+      {/* Blog Teaser above FAQ */}
+      <div className="mt-12 md:mt-16">
+        <BlogTeaser />
+      </div>
       <div className="mt-12 md:mt-16">
         <HelpFaq cmsData={{ faqs: cms?.faqs || [] }} />
       </div>
-      <div className="mt-24">
-        <AssessmentDemoCTA />
-      </div>
+      {null}
     </div>
   );
 }

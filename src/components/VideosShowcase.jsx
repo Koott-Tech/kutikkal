@@ -9,9 +9,17 @@ export default function VideosShowcase({ cmsData = null }) {
     { src: "/intro_2.mp4", poster: "/testimonial4.PNG" },
   ];
   const videos = (cmsData?.videos && cmsData.videos.length) ? cmsData.videos : defaultVideos;
+  // Build display list with one extra card at both ends, matching side sizes
+  const displayVideos = [
+    videos[0],
+    videos[0],
+    videos[1],
+    videos[2],
+    videos[2],
+  ];
   
-  const [playingVideo, setPlayingVideo] = useState(1); // Center video plays by default
-  const videoRefs = [useRef(null), useRef(null), useRef(null)];
+  const [playingVideo, setPlayingVideo] = useState(2); // Center (index 2) plays by default in 5-card layout
+  const videoRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
   const scrollerRef = useRef(null);
 
   const handleVideoClick = (index) => {
@@ -29,7 +37,7 @@ export default function VideosShowcase({ cmsData = null }) {
 
   // When a video is selected to play, auto-play it once mounted; pause others
   useEffect(() => {
-    [0,1,2].forEach((i) => {
+    [0,1,2,3,4].forEach((i) => {
       const ref = videoRefs[i].current;
       if (!ref) return;
       try {
@@ -79,20 +87,24 @@ export default function VideosShowcase({ cmsData = null }) {
             ref={scrollerRef}
             className="flex gap-4 md:gap-6 px-1 sm:px-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
           >
-            {[0,1,2].map((i) => (
+            {[0,1,2,3,4].map((i) => (
               <div key={i} className="flex-shrink-0 snap-center">
                 <div
                   data-video-card
                   className={`relative rounded-[14px] overflow-hidden bg-white cursor-pointer group shadow-[0_8px_24px_rgba(63,46,115,0.18)]
-                    w-[240px] h-[360px]
-                    ${i === 1 ? 'md:w-[340px] md:h-[500px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)]' : 'md:w-[280px] md:h-[420px]'}
+                    ${i === 0 || i === 4 ? 'w-[200px] h-[300px]' : 'w-[240px] h-[360px]'}
+                    ${i === 2 
+                      ? 'md:w-[340px] md:h-[500px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)]' 
+                      : (i === 0 || i === 4) 
+                        ? 'md:w-[240px] md:h-[360px]'
+                        : 'md:w-[280px] md:h-[420px]'}
                   `}
                   onClick={() => handleVideoClick(i)}
                 >
                   <video
                     ref={videoRefs[i]}
-                    src={videos[i]?.src}
-                    poster={videos[i]?.poster}
+                    src={displayVideos[i]?.src}
+                    poster={displayVideos[i]?.poster}
                     preload="auto"
                     loop
                     muted
@@ -100,7 +112,7 @@ export default function VideosShowcase({ cmsData = null }) {
                     className={`w-full h-full object-cover transition-opacity duration-200 ${playingVideo === i ? 'opacity-100' : 'opacity-0'}`}
                   />
                   {playingVideo !== i && (
-                    <div className="absolute inset-0" style={{ backgroundImage: `url(${videos[i]?.poster || '/hero.png'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                    <div className="absolute inset-0" style={{ backgroundImage: `url(${displayVideos[i]?.poster || '/hero.png'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
                         <svg className="w-16 h-16 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />

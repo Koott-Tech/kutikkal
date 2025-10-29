@@ -1,7 +1,7 @@
 import HeroSection from '@/components/HeroSection';
 import LogosStrip from '@/components/LogosStrip';
 import HowItWorks from '@/components/HowItWorks';
-import ConsultationBanner from '@/components/ConsultationBanner';
+import BlogTeaser from '@/components/BlogTeaser';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import InfoCards from '@/components/InfoCards';
@@ -137,17 +137,21 @@ export default async function CounsellingDynamicPage({ params }) {
           title: serviceData.hero_title || 'Counselling',
           subtext: serviceData.hero_subtext || '',
           ctaText: serviceData.hero_cta_text || '',
-          imageUrl: serviceData.hero_image_url || ''
+          imageUrl: serviceData.hero_image_url || '',
+          features: [
+            serviceData.hero_point_1,
+            serviceData.hero_point_2,
+            serviceData.hero_point_3
+          ].filter(Boolean)
         }}
       />
-      <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} />
+      <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
       {/* Therapist grid under hero */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
-          <p className="text-center md:text-center mt-2 text-sm md:text-base">How it works</p>
           <div className="mt-3 text-center md:text-center px-4">
             <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-              Your journey to a happier, calmer home begins here.
+              {serviceData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
             </h3>
           </div>
         </div>
@@ -162,16 +166,58 @@ export default async function CounsellingDynamicPage({ params }) {
               <a key={idx} href={`/therapist-profile?doctor=${idx}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
                   <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%', background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '55%',
+                      background:
+                        'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 75%, rgba(0,0,0,0) 100%)'
+                    }}
+                  />
                   <div style={{ position: 'absolute', left: 18, bottom: 18, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
                     <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{name}</div>
-                    {doc.experience_years && (
-                      <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', opacity: 0.95 }}>{doc.experience_years} years experience</div>
-                    )}
+                    {/* Expertise bubbles */}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                      {/* Specialization chips first */}
                       {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? doc.area_of_expertise.slice(0, 2) : ['Child Therapy']).map((exp, i) => (
-                        <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.32em 1.1em', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
+                        <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
                       ))}
+                      {/* Price chip (matches specialization chip style) */}
+                      <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
+                      {/* Experience chip */}
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0.18em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
+                        {`${(doc.experience_years || 3)}+ yrs Experience`}
+                      </span>
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0.18em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)'
+                      }}>📚 Consultant Psychologist</span>
                     </div>
                   </div>
                 </div>
@@ -202,9 +248,6 @@ export default async function CounsellingDynamicPage({ params }) {
         fluid
         compactSpacing
       />
-      <div className="mt-2 md:mt-4">
-        <ConsultationBanner />
-      </div>
       <div className="mt-24 md:mt-28">
         <TherapyTypesSplit 
           therapyType={slug} 
@@ -229,6 +272,10 @@ export default async function CounsellingDynamicPage({ params }) {
       {/* Reviews */}
       <div className="mt-16 md:-mt-24">
         <Reviews cmsData={{ reviews: serviceData.reviews }} />
+      </div>
+      {/* Blog Teaser above FAQ */}
+      <div className="mt-12 md:mt-16">
+        <BlogTeaser />
       </div>
       <div className="mt-12 md:mt-16">
         <HelpFaq 

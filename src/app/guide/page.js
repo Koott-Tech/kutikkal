@@ -12,6 +12,7 @@ const Guide = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selected, setSelected] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,8 +70,12 @@ const Guide = () => {
   };
 
   const handleDoctorClick = (doctor, index) => {
-    // Always redirect to therapist profile page
-    router.push(`/therapist-profile?doctor=${index}`);
+    // Open modal with selected doctor on desktop; on mobile, go to profile directly
+    if (typeof window !== 'undefined' && window.innerWidth >= 769) {
+      setSelected(index);
+    } else {
+      router.push(`/therapist-profile?doctor=${index}`);
+    }
   };
 
   const handleDateTimeConfirm = () => {
@@ -422,7 +427,8 @@ const Guide = () => {
                     left: 0,
                     right: 0,
                     height: "45%",
-                    background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+                  background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 75%, rgba(0,0,0,0) 100%)",
+                  height: '55%',
                     pointerEvents: "none"
                   }} />
                   
@@ -529,7 +535,7 @@ const Guide = () => {
         </div>
 
         {/* Modal Popup for Doctor Details - Hidden on mobile */}
-        {false && (
+        {selected !== null && (
           <div className="doctor-modal-overlay" style={{
             position: "fixed",
             top: 0,
@@ -575,7 +581,8 @@ const Guide = () => {
                     max-width: 1000px;
                     height: 75vh;
                     max-height: 600px;
-                    flex-direction: row;
+                    display: grid;
+                    grid-template-columns: 55% 45%;
                   }
                 }
                 
@@ -585,7 +592,8 @@ const Guide = () => {
                     max-width: 1200px;
                     height: 70vh;
                     max-height: 700px;
-                    flex-direction: row;
+                    display: grid;
+                    grid-template-columns: 55% 45%;
                   }
                 }
                 .doctor-modal-image {
@@ -807,7 +815,14 @@ const Guide = () => {
               
               {/* Right: Details */}
               <div className="doctor-modal-content">
-                <p className="doctor-modal-title">{doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}</p>
+                <h1 style={{ fontSize: 42, lineHeight: 1.1, fontWeight: 800, margin: 0, color: '#111' }}>
+                  {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
+                </h1>
+                <div style={{ color: '#555', fontWeight: 600, marginTop: 6 }}>
+                  {(doctors[selected]?.qualifications && Array.isArray(doctors[selected].qualifications) && doctors[selected].qualifications.length > 0)
+                    ? doctors[selected].qualifications.join(', ')
+                    : (doctors[selected]?.pg_college || doctors[selected]?.ug_college || 'Professional')}
+                </div>
                 
                 {/* Experience Years */}
                 {doctors[selected]?.experience_years && (
@@ -863,8 +878,8 @@ const Guide = () => {
                 ) : null}
                 
                 {/* Bio */}
-                <div style={{ fontSize: 16, color: "#555", lineHeight: 1.5, marginBottom: 24 }}>
-                  <b>Bio:</b> {doctors[selected]?.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
+                <div style={{ fontSize: 16, color: '#444', lineHeight: 1.6, marginBottom: 16, marginTop: 8 }}>
+                  {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
                 </div>
                 
                 {/* Session Types & Pricing */}
@@ -876,48 +891,36 @@ const Guide = () => {
                   </div>
                 </div>
                 
-                {/* Action Buttons */}
-                <div className="doctor-modal-buttons">
+                {/* Bottom Actions */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 16, alignItems: 'center', marginTop: 'auto' }}>
                   <button
                     className="doctor-modal-button"
-                    style={{
-                      background: "#27ae60",
-                      color: "#fff",
-                      border: "none",
-                      boxShadow: "0 2px 8px rgba(39,174,96,0.15)"
-                    }}
-                    onClick={() => handleBookSession(doctors[selected])}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#229954";
-                      e.target.style.transform = "translateY(-1px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "#27ae60";
-                      e.target.style.transform = "translateY(0)";
-                    }}
-                  >
-                    Book a Session
-                  </button>
-                  <button
-                    className="doctor-modal-button"
-                    style={{
-                      background: "transparent",
-                      color: "#27ae60",
-                      border: "2px solid #27ae60"
-                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#0a7f3f', fontWeight: 700, justifySelf: 'start' }}
                     onClick={() => {
-                      router.push(`/therapist-profile?doctor=${selected}`);
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = "#27ae60";
-                      e.target.style.color = "#fff";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = "transparent";
-                      e.target.style.color = "#27ae60";
+                      const prevIndex = selected === 0 ? doctors.length - 1 : selected - 1;
+                      setSelected(prevIndex);
                     }}
                   >
-                    View Profile
+                    {`Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || 'Prev'}`}
+                  </button>
+
+                  <button
+                    className="doctor-modal-button"
+                    style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 16, padding: '16px 24px', fontSize: 18, fontWeight: 700 }}
+                    onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
+                  >
+                    Find your Guide
+                  </button>
+
+                  <button
+                    className="doctor-modal-button"
+                    style={{ background: 'transparent', border: 'none', color: '#0a7f3f', fontWeight: 700, justifySelf: 'end' }}
+                    onClick={() => {
+                      const nextIndex = selected === doctors.length - 1 ? 0 : selected + 1;
+                      setSelected(nextIndex);
+                    }}
+                  >
+                    {`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || 'Next'}`}
                   </button>
                 </div>
                 
