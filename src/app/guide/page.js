@@ -558,54 +558,36 @@ const Guide = () => {
                 }
               }
             `}</style>
-            <div className="doctor-modal">
+            <div className="doctor-modal" onClick={e => e.stopPropagation()}>
               <style>{`
                 .doctor-modal {
-                  width: 80vw;
-                  max-width: 1200px;
-                  height: 80vh;
-                  max-height: 700px;
+                  width: 70vw;
+                  max-width: 900px;
+                  height: 85vh;
+                  max-height: 800px;
                   background: #fff;
                   border-radius: 10px;
                   box-shadow: 0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12);
-                  display: flex;
-                  flex-direction: row;
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  grid-template-rows: 1fr auto;
+                  gap: 0;
                   overflow: hidden;
                   position: relative;
                 }
                 
-                /* Laptop specific optimizations */
-                @media (min-width: 1024px) and (max-width: 1440px) {
-                  .doctor-modal {
-                    width: 75vw;
-                    max-width: 1000px;
-                    height: 75vh;
-                    max-height: 600px;
-                    display: grid;
-                    grid-template-columns: 55% 45%;
-                  }
-                }
-                
-                @media (min-width: 1441px) {
-                  .doctor-modal {
-                    width: 70vw;
-                    max-width: 1200px;
-                    height: 70vh;
-                    max-height: 700px;
-                    display: grid;
-                    grid-template-columns: 55% 45%;
-                  }
-                }
                 .doctor-modal-image {
                   flex: 1;
-                  background: #000;
+                  background: transparent;
                   display: flex;
-                  align-items: center;
-                  justify-content: center;
+                  align-items: flex-start;
+                  justify-content: flex-start;
+                  overflow: hidden;
+                  padding: 14px 40px 34px 14px;
                 }
                 .doctor-modal-content {
-                  flex: 1.5;
-                  padding: 40px 48px;
+                  flex: 1;
+                  padding: 40px 48px 40px 12px;
                   display: flex;
                   flex-direction: column;
                   justify-content: flex-start;
@@ -613,29 +595,6 @@ const Guide = () => {
                   position: relative;
                   overflow-y: auto;
                   max-height: 100%;
-                }
-                
-                /* Laptop specific content adjustments */
-                @media (min-width: 1024px) and (max-width: 1440px) {
-                  .doctor-modal-image {
-                    flex: 1;
-                  }
-                  .doctor-modal-content {
-                    flex: 1.5;
-                    padding: 32px 40px;
-                    gap: 14px;
-                  }
-                }
-                
-                @media (min-width: 1441px) {
-                  .doctor-modal-image {
-                    flex: 1;
-                  }
-                  .doctor-modal-content {
-                    flex: 1.5;
-                    padding: 40px 48px;
-                    gap: 16px;
-                  }
                 }
                 .doctor-modal-title {
                   font-weight: 700;
@@ -685,10 +644,36 @@ const Guide = () => {
                   }
                 }
                 
-                /* Ensure row layout for tablet and larger screens */
+                /* Tablet specific styles */
+                @media (min-width: 768px) and (max-width: 1023px) {
+                  .doctor-modal {
+                    width: 85vw;
+                    max-width: 800px;
+                    height: 80vh;
+                    max-height: 750px;
+                  }
+                  .doctor-modal-image {
+                    padding: 12px 32px 30px 12px;
+                  }
+                  .doctor-modal-content {
+                    padding: 32px 40px 32px 12px;
+                  }
+                  .doctor-modal-buttons {
+                    gap: 8px;
+                    margin-top: 24px;
+                  }
+                  .doctor-modal-button {
+                    padding: 10px 18px;
+                    font-size: 14px;
+                    min-width: 120px;
+                  }
+                }
+                
+                /* Ensure grid layout for desktop */
                 @media (min-width: 769px) {
                   .doctor-modal {
-                    flex-direction: row !important;
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
                   }
                 }
                 
@@ -724,7 +709,6 @@ const Guide = () => {
                   }
                 }
               `}</style>
-              <div onClick={e => e.stopPropagation()}>
               {/* Close X Button */}
               <button
                 style={{
@@ -760,7 +744,7 @@ const Guide = () => {
               </button>
               
               {/* Left: Doctor Profile Picture or Cover Image */}
-              <div className="doctor-modal-image">
+              <div className="doctor-modal-image" onClick={e => e.stopPropagation()}>
                 {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url ||
                   (doctors[selected]?.name && (doctors[selected].name.toLowerCase().includes('irene') || 
                                              doctors[selected].name.toLowerCase().includes('marium')))) ? (
@@ -775,7 +759,7 @@ const Guide = () => {
                            return null;
                          })()}
                     alt={`${doctors[selected]?.name || doctors[selected]?.first_name} profile`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", maxHeight: 700 }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "10px" }}
                     onError={(e) => {
                       // Fallback to initials if image fails to load
                       e.target.style.display = 'none';
@@ -795,13 +779,14 @@ const Guide = () => {
                                                          doctors[selected].name.toLowerCase().includes('child')))) ? 'none' : 'flex',
                     width: "100%",
                     height: "100%",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 หว100%)",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: "8rem",
                     fontWeight: "bold",
                     color: "#fff",
-                    textShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                    textShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                    borderRadius: "10px"
                   }}
                 >
                   {doctors[selected]?.name ? 
@@ -813,190 +798,98 @@ const Guide = () => {
                 </div>
               </div>
               
-              {/* Right: Details */}
-              <div className="doctor-modal-content">
-                <h1 style={{ fontSize: 42, lineHeight: 1.1, fontWeight: 800, margin: 0, color: '#111' }}>
+              {/* Right: Details - Only name, years of experience, price, and description */}
+              <div className="doctor-modal-content" onClick={e => e.stopPropagation()}>
+                <h3 style={{ fontSize: 42, lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 8 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
-                </h1>
-                <div style={{ color: '#555', fontWeight: 600, marginTop: 6 }}>
-                  {(doctors[selected]?.qualifications && Array.isArray(doctors[selected].qualifications) && doctors[selected].qualifications.length > 0)
-                    ? doctors[selected].qualifications.join(', ')
-                    : (doctors[selected]?.pg_college || doctors[selected]?.ug_college || 'Professional')}
-                </div>
+                </h3>
                 
-                {/* Experience Years */}
+                {/* Years of Experience */}
                 {doctors[selected]?.experience_years && (
-                  <div style={{ marginBottom: 44 }}>
-                    <span style={{ 
-                      background: "rgba(255,193,7,0.15)", 
-                      color: "#ff9800", 
-                      borderRadius: 8, 
-                      padding: "6px 16px", 
-                      fontWeight: 600, 
-                      fontSize: 15,
-                      border: "1px solid rgba(255,193,7,0.3)"
+                  <div style={{ marginBottom: 0, lineHeight: 1.2 }}>
+                    <div style={{ 
+                      color: "#333", 
+                      fontSize: 20,
+                      fontWeight: 700,
+                      lineHeight: 1.2
                     }}>
-                      {doctors[selected].experience_years} years experience
-                    </span>
+                      {doctors[selected].experience_years} {doctors[selected].experience_years === 1 ? 'year' : 'years'} of experience
+                    </div>
+                  </div>
+                )}
+                {/* Price */}
+                {doctors[selected]?.price && (
+                  <div style={{ marginBottom: 8, marginTop: -8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ 
+                      color: "#555", 
+                      fontWeight: 600, 
+                      fontSize: 18
+                    }}>
+                      Price
+                    </div>
+                    <div style={{ 
+                      color: "#27ae60", 
+                      fontSize: 28,
+                      fontWeight: 800
+                    }}>
+                      ₹{doctors[selected].price}
+                    </div>
                   </div>
                 )}
                 
-                {/* Expertise Tags */}
-                <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
-                  {doctors[selected]?.area_of_expertise && Array.isArray(doctors[selected].area_of_expertise) && doctors[selected].area_of_expertise.length > 0 ? (
-                    doctors[selected].area_of_expertise.map((exp, i) => (
-                      <span key={i} style={{ background: "rgba(39,174,96,0.12)", color: "#27ae60", borderRadius: 8, padding: "4px 12px", fontWeight: 600, fontSize: 14 }}>{exp}</span>
-                    ))
-                  ) : (
-                    <span style={{ background: "rgba(39,174,96,0.12)", color: "#27ae60", borderRadius: 8, padding: "4px 12px", fontWeight: 600, fontSize: 14 }}>Psychology</span>
-                  )}
-                </div>
-                
-                {/* Contact Info */}
-                <div style={{ marginBottom: 16 }}>
-                  {doctors[selected]?.phone && doctors[selected].phone !== 'N/A' && (
-                    <div style={{ fontSize: 16, color: "#333", marginBottom: 8 }}><b>Phone:</b> {doctors[selected].phone}</div>
-                  )}
-  
-                </div>
-                
-                {/* Education - Only show if not N/A */}
-                {(doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A') || 
-                 (doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A') || 
-                 (doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A') ? (
-                  <div style={{ marginBottom: 16 }}>
-                    {doctors[selected]?.ug_college && doctors[selected].ug_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Education:</b> {doctors[selected].ug_college}</div>
-                    )}
-                    {doctors[selected]?.pg_college && doctors[selected].pg_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333", marginBottom: 4 }}><b>Post Graduate:</b> {doctors[selected].pg_college}</div>
-                    )}
-                    {doctors[selected]?.phd_college && doctors[selected].phd_college !== 'N/A' && (
-                      <div style={{ fontSize: 16, color: "#333" }}><b>PhD:</b> {doctors[selected].phd_college}</div>
-                    )}
+                {/* Description */}
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ 
+                    color: "#555", 
+                    fontWeight: 600, 
+                    fontSize: 18,
+                    marginBottom: 6
+                  }}>
+                    Description
                   </div>
-                ) : null}
-                
-                {/* Bio */}
-                <div style={{ fontSize: 16, color: '#444', lineHeight: 1.6, marginBottom: 16, marginTop: 8 }}>
-                  {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
-                </div>
-                
-                {/* Session Types & Pricing */}
-                <div style={{ marginBottom: 32 }}>
-                  <div style={{ fontSize: 18, fontWeight: 600, color: "#333", marginBottom: 12 }}>Session Types & Pricing</div>
-                  <div style={{ fontSize: 16, color: "#555", lineHeight: 1.6 }}>
-                    • Individual Therapy (60 min) - <b>$150</b><br/>
-                    • Child Therapy (45 min) - <b>$120</b>
+                  <div style={{ 
+                    fontSize: 16, 
+                    color: '#444', 
+                    lineHeight: 1.4,
+                    marginTop: 0
+                  }}>
+                    {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
                   </div>
                 </div>
                 
-                {/* Bottom Actions */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 16, alignItems: 'center', marginTop: 'auto' }}>
-                  <button
-                    className="doctor-modal-button"
-                    style={{ background: 'transparent', border: 'none', color: '#0a7f3f', fontWeight: 700, justifySelf: 'start' }}
-                    onClick={() => {
-                      const prevIndex = selected === 0 ? doctors.length - 1 : selected - 1;
-                      setSelected(prevIndex);
-                    }}
-                  >
-                    {`Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || 'Prev'}`}
-                  </button>
-
-                  <button
-                    className="doctor-modal-button"
-                    style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 16, padding: '16px 24px', fontSize: 18, fontWeight: 700 }}
-                    onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
-                  >
-                    Find your Guide
-                  </button>
-
-                  <button
-                    className="doctor-modal-button"
-                    style={{ background: 'transparent', border: 'none', color: '#0a7f3f', fontWeight: 700, justifySelf: 'end' }}
-                    onClick={() => {
-                      const nextIndex = selected === doctors.length - 1 ? 0 : selected + 1;
-                      setSelected(nextIndex);
-                    }}
-                  >
-                    {`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || 'Next'}`}
-                  </button>
-                </div>
-                
-                {/* Navigation Arrows */}
+              </div>
+              
+              {/* Bottom Actions - Below both components */}
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, padding: '16px 24px' }}>
                 <button
-                  style={{
-                    position: "absolute",
-                    bottom: 20,
-                    left: 20,
-                    width: 50,
-                    height: 50,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.9)",
-                    border: "2px solid #e1e5e9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    transition: "all 0.2s",
-                    zIndex: 10
-                  }}
+                  className="doctor-modal-button"
+                  style={{ background: 'transparent', border: 'none', color: '#666', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
                   onClick={() => {
                     const prevIndex = selected === 0 ? doctors.length - 1 : selected - 1;
                     setSelected(prevIndex);
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = "rgba(39,174,96,0.1)";
-                    e.target.style.borderColor = "#27ae60";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = "rgba(255,255,255,0.9)";
-                    e.target.style.borderColor = "#e1e5e9";
-                  }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                    <path d="M15 18l-6-6 6-6"/>
-                  </svg>
+                  {`< Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.first_name || 'Prev'}`}
                 </button>
-                
+
                 <button
-                  style={{
-                    position: "absolute",
-                    bottom: 20,
-                    right: 20,
-                    width: 50,
-                    height: 50,
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.9)",
-                    border: "2px solid #e1e5e9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                    transition: "all 0.2s",
-                    zIndex: 10
-                  }}
+                  className="doctor-modal-button"
+                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '12px 20px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
+                  onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
+                >
+                  Find your Guide
+                </button>
+
+                <button
+                  className="doctor-modal-button"
+                  style={{ background: 'transparent', border: 'none', color: '#666', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
                   onClick={() => {
                     const nextIndex = selected === doctors.length - 1 ? 0 : selected + 1;
                     setSelected(nextIndex);
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = "rgba(39,174,96,0.1)";
-                    e.target.style.borderColor = "#27ae60";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = "rgba(255,255,255,0.9)";
-                    e.target.style.borderColor = "#e1e5e9";
-                  }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
+                  {`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.first_name || 'Next'} >`}
                 </button>
-              </div>
               </div>
             </div>
           </div>

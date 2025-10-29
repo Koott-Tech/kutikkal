@@ -77,6 +77,27 @@ export default function SupportFaq() {
           z-index: 0;
           isolation: isolate;
         }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .our-promise-section {
+            margin-top: 90px !important;
+            padding: 0 24px !important;
+          }
+          .our-promise-title {
+            font-size: 22px !important;
+            margin-bottom: 14px !important;
+          }
+          .our-promise-description {
+            font-size: 15px !important;
+            line-height: 1.5 !important;
+          }
+          .faq-mobile-content h6 {
+            font-size: 18px !important;
+          }
+          .faq-mobile-content p {
+            font-size: 14px !important;
+            line-height: 1.5 !important;
+          }
+        }
         @media (max-width: 767px) {
           .our-promise-section {
             margin-top: 60px !important;

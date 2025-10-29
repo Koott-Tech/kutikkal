@@ -42,7 +42,17 @@ export default function Hero() {
               .hero-buttons button { padding: 12px 24px !important; font-size: 16px !important; }
               .hero-buttons button:first-child { max-width: 200px !important; }
             }
-            @media (min-width: 768px) {
+            @media (min-width: 768px) and (max-width: 1023px) {
+              section { min-height: clamp(480px, 55vh, 680px); padding: 32px !important; }
+              .hero-image-box { 
+                height: 400px;
+                min-height: 400px;
+              }
+              .hero-title { font-size: 36px !important; line-height: 1.1 !important; }
+              .hero-description { font-size: 17px !important; }
+              .hero-badge-text { font-size: 13px; }
+            }
+            @media (min-width: 1024px) {
               /* Tighten desktop min-height so zoom-out doesn't leave bottom gap */
               section { min-height: clamp(560px, 62vh, 820px); }
               .hero-image-box { 

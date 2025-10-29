@@ -6,6 +6,13 @@ export default function PersonalizedCare() {
   return (
     <section className="w-full flex items-center mt-12 md:mt-20">
       <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .personalized-care-heading {
+            font-size: 32px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+        }
         @media (max-width: 767px) {
           .personalized-care-heading {
             font-size: 28px !important;

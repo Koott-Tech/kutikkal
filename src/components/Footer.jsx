@@ -14,6 +14,16 @@ export default function Footer() {
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
+                @media (min-width: 768px) and (max-width: 1023px) {
+                    .footer-heading {
+                        font-size: 32px !important;
+                        line-height: 1.1 !important;
+                        font-weight: 600 !important;
+                    }
+                    .footer-description {
+                        line-height: 1.3 !important;
+                    }
+                }
                 @media (max-width: 767px) {
                     .footer-heading {
                         font-size: 28px !important;

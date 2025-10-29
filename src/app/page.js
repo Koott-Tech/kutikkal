@@ -25,6 +25,17 @@ export default function Home() {
         .testimonials-spacing {
           margin-top: 80px;
         }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .component-spacing {
+            margin-top: 70px !important;
+          }
+          .info-cards-spacing {
+            margin-top: 28px !important;
+          }
+          .testimonials-spacing {
+            margin-top: 60px !important;
+          }
+        }
         @media (max-width: 767px) {
           .component-spacing {
             margin-top: 60px !important;

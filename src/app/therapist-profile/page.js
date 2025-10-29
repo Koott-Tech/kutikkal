@@ -762,11 +762,32 @@ const TherapistProfileContent = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .therapist-header-padding {
+            padding: 6rem 1.5rem 3rem !important;
+          }
+          .therapist-profile-image {
+            width: 18rem !important;
+            height: 18rem !important;
+          }
+          .therapist-content-padding {
+            padding: 1.5rem !important;
+          }
+          .therapist-about-section {
+            margin-top: 3rem !important;
+          }
+          .therapist-calendar-section {
+            margin-top: 3rem !important;
+            margin-left: 1.5rem !important;
+          }
+        }
+      `}</style>
       {/* Header Section - Profile Card */}
       <div className="bg-white shadow-lg">
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12 pt-40 md:pt-44" style={{ minHeight: '120px', zIndex: 0 }}>
+          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12 pt-40 md:pt-44 therapist-header-padding" style={{ minHeight: '120px', zIndex: 0 }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
@@ -864,7 +885,7 @@ const TherapistProfileContent = () => {
       
       {/* Doctor Details Section */}
       <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-blue-50 shadow-lg">
-        <div className="w-full p-4 md:p-8">
+        <div className="w-full p-4 md:p-8 therapist-content-padding">
           {/* Mobile: Doctor Name below image */}
           <div className="text-center md:hidden mb-6">
             <p className="font-bold text-gray-800 mb-2">
@@ -878,7 +899,7 @@ const TherapistProfileContent = () => {
           {/* Desktop: Profile Picture - Left aligned */}
           <div className="hidden md:flex justify-start -mt-56 mb-8 ml-32">
             <div className="relative">
-              <div className="w-80 h-80 rounded-[20px] overflow-hidden relative bg-white">
+              <div className="w-80 h-80 rounded-[20px] overflow-hidden relative bg-white therapist-profile-image">
                 {/* Doctor Profile Picture or Fallback */}
                 {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
                   (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
@@ -990,7 +1011,7 @@ const TherapistProfileContent = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             {/* Left Side - About Description */}
-            <div className="space-y-6 mt-[50px] md:mt-[100px]">
+            <div className="space-y-6 mt-[50px] md:mt-[100px] therapist-about-section">
               <p className="font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 {selectedDoctor.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
@@ -1121,7 +1142,7 @@ const TherapistProfileContent = () => {
             </div>
             
             {/* Right Side - Calendar */}
-            <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 sticky top-4 self-start mt-[50px] md:mt-[100px]">
+            <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 sticky top-4 self-start mt-[50px] md:mt-[100px] therapist-calendar-section">
               {/* Calendar Header */}
               <div className="text-center mb-4">
                 <p className="font-bold text-gray-800 mb-1">Book Your Session</p>

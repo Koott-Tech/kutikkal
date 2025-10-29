@@ -51,6 +51,26 @@ export default function BlogTeaser() {
   return (
     <section className="w-full mt-12 md:mt-20 px-4 lg:px-6">
       <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .blog-teaser-heading {
+            font-size: 32px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+          .blog-card {
+            max-width: 280px !important;
+          }
+          .blog-image {
+            height: 140px !important;
+          }
+          .blog-title {
+            font-size: 14px !important;
+            line-height: 1.35 !important;
+          }
+          .blog-meta {
+            font-size: 12px !important;
+          }
+        }
         @media (max-width: 767px) {
           .blog-teaser-heading {
             font-size: 28px !important;

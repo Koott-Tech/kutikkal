@@ -64,6 +64,26 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
   return (
     <section className={sectionClassName}>
       <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .mobile-section {
+            margin-top: 12px !important;
+          }
+          .info-card {
+            min-height: 200px !important;
+            padding: 20px !important;
+          }
+          .info-card-title {
+            font-size: 18px !important;
+            line-height: 1.35 !important;
+          }
+          .info-card-description {
+            font-size: 14px !important;
+            line-height: 1.45 !important;
+          }
+          .info-card-cta {
+            font-size: 15px !important;
+          }
+        }
         @media (max-width: 767px) {
           .mobile-section {
             margin-top: 8px !important;

@@ -154,6 +154,16 @@ export default function Testimonials() {
             top: -20%;
           }
         }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .testimonials-heading {
+            font-size: 32px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+          .testimonials-section {
+            margin-top: 80px !important;
+          }
+        }
         @media (max-width: 767px) {
           .testimonials-heading {
             font-size: 28px !important;

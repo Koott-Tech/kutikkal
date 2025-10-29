@@ -17,6 +17,23 @@ export default function ConsultationBanner() {
               border-radius: 10px !important;
               overflow: hidden !important;
             }
+            @media (min-width: 768px) and (max-width: 1023px) {
+              .main-container {
+                min-height: 220px !important;
+              }
+              .mobile-text h4 {
+                font-size: 18px !important;
+                line-height: 1.35 !important;
+              }
+              .mobile-text p {
+                font-size: 13px !important;
+                line-height: 1.45 !important;
+              }
+              .mobile-text button {
+                font-size: 12px !important;
+                padding: 8px 16px !important;
+              }
+            }
             @media (max-width: 767px) {
               .section-mobile > div,
               .section-mobile > div > div {

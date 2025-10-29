@@ -90,6 +90,28 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="w-full mobile-section mt-12 md:mt-20">
       <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .mobile-section {
+            margin-top: 16px !important;
+          }
+          .how-it-works-card {
+            height: 320px !important;
+            width: 300px !important;
+          }
+          .how-it-works-title {
+            font-size: 20px !important;
+            margin-bottom: 14px !important;
+          }
+          .how-it-works-description {
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+          }
+          .how-it-works-heading {
+            font-size: 32px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+        }
         @media (max-width: 767px) {
           .mobile-section {
             margin-top: 8px !important;

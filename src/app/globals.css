@@ -81,6 +81,44 @@ h7 {
  
 }
 
+/* Tablet responsive overrides (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  h1 {
+    font-size: 36px !important;
+    line-height: 2.25rem !important;
+  }
+  
+  /* CMS hero section specific tablet line-height override */
+  .cms-hero-title {
+    line-height: 2.5rem !important;
+  }
+  
+  h2 {
+    font-size: 32px !important;
+    line-height: 2rem !important;
+  }
+  
+  h3 {
+    font-size: 28px !important;
+    line-height: 1.75rem !important;
+  }
+  
+  h4 {
+    font-size: 24px !important;
+    line-height: 1.5rem !important;
+  }
+  
+  h5 {
+    font-size: 20px !important;
+    line-height: 1.25rem !important;
+  }
+  
+  h6 {
+    font-size: 18px !important;
+    line-height: 1.25rem !important;
+  }
+}
+
 /* Mobile responsive overrides to prevent layout shift */
 @media (max-width: 767px) {
   h1 {
