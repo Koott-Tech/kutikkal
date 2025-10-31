@@ -1345,7 +1345,8 @@ export default function DoctorModal({
                 <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-xs mx-auto">
                   <div className="flex items-center justify-between mb-4">
                     <button
-                      onClick={handlePrevMonth}
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); handlePrevMonth(); }}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
@@ -1354,7 +1355,8 @@ export default function DoctorModal({
                       {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h4>
                     <button
-                      onClick={handleNextMonth}
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); handleNextMonth(); }}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -1386,9 +1388,13 @@ export default function DoctorModal({
                       // Add days of the month
                       for (let day = 1; day <= daysInMonth; day++) {
                         const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                        const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-                        const isToday = isCurrentMonth && day === new Date().getDate();
-                        const isAvailable = day >= new Date().getDate() || !isCurrentMonth;
+                        const today = new Date();
+                        const isSameMonthAsToday =
+                          currentDate.getFullYear() === today.getFullYear() &&
+                          currentDate.getMonth() === today.getMonth();
+                        const isToday = isSameMonthAsToday && day === today.getDate();
+                        // Allow selecting any day in months other than the current month; in the current month, only allow today or future days
+                        const isAvailable = !isSameMonthAsToday || day >= today.getDate();
                         
                         const isSet = Object.keys(availabilityData).some(dateStr => {
                           // Use IST timezone for calendar date comparison

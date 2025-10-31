@@ -109,14 +109,17 @@ const TherapistProfileContent = () => {
     }
   };
 
-  // Fetch psychologist availability for current month with Google Calendar sync
-  const fetchPsychologistAvailability = async (psychologistId) => {
+  // Fetch psychologist availability for a given month (defaults to currentDate) with Google Calendar sync
+  const fetchPsychologistAvailability = async (psychologistId, baseDate = null) => {
     try {
       setLoadingAvailability(true);
       
-      // Get current month dates using local formatting to avoid timezone issues
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
+      // Use provided baseDate or fallback to currentDate
+      const targetDate = baseDate instanceof Date ? baseDate : currentDate;
+      
+      // Get month range using local formatting to avoid timezone issues
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth();
       
       // Format start date (first day of month)
       const startYear = year;
@@ -246,20 +249,24 @@ const TherapistProfileContent = () => {
   const handlePrevMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     setCurrentDate(newDate);
-    
-    // Refetch availability for new month
+    // Clear current day/time selection when changing months
+    setSelectedDate(null);
+    setSelectedTime(null);
+    // Refetch availability for the new month (use the updated date)
     if (selectedDoctor) {
-      fetchPsychologistAvailability(selectedDoctor.id);
+      fetchPsychologistAvailability(selectedDoctor.id, newDate);
     }
   };
 
   const handleNextMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     setCurrentDate(newDate);
-    
-    // Refetch availability for new month
+    // Clear current day/time selection when changing months
+    setSelectedDate(null);
+    setSelectedTime(null);
+    // Refetch availability for the new month (use the updated date)
     if (selectedDoctor) {
-      fetchPsychologistAvailability(selectedDoctor.id);
+      fetchPsychologistAvailability(selectedDoctor.id, newDate);
     }
   };
 
@@ -1309,11 +1316,6 @@ const TherapistProfileContent = () => {
                     
                     return (
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <p className="font-bold text-gray-800 text-sm">TIME SLOTS</p>
-                          <span className="font-bold text-gray-800 text-sm">Available: {availableSlots.length} | Blocked: {blockedSlots.length}</span>
-                        </div>
-                        
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 && (
                           <div className="space-y-2">
@@ -1332,37 +1334,6 @@ const TherapistProfileContent = () => {
                                   {time}
                                 </button>
                               ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Blocked Time Slots */}
-                        {blockedSlots.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-red-700">Blocked Times:</p>
-                            <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
-                              {blockedSlots.map((time) => {
-                                // Check if this slot is blocked by Google Calendar
-                                const slotData = allTimeSlots.find(slot => slot.displayTime === time);
-                                const isGoogleCalendarBlocked = slotData?.reason === 'google_calendar_blocked';
-                                
-                                return (
-                                  <div
-                                    key={time}
-                                    className={`p-2 rounded-lg border text-xs w-full h-10 flex items-center justify-center cursor-not-allowed ${
-                                      isGoogleCalendarBlocked 
-                                        ? 'border-orange-300 bg-orange-50 text-orange-700' 
-                                        : 'border-red-300 bg-red-50 text-red-700'
-                                    }`}
-                                    title={isGoogleCalendarBlocked ? "This time slot is blocked by Google Calendar (external booking)" : "This time slot is booked"}
-                                  >
-                                    {time}
-                                    {isGoogleCalendarBlocked && (
-                                      <span className="ml-1 text-xs">📅</span>
-                                    )}
-                                  </div>
-                                );
-                              })}
                             </div>
                           </div>
                         )}
