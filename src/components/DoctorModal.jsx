@@ -70,6 +70,7 @@ export default function DoctorModal({
       { name: 'Individual Session', price: '', sessions: 1 }
     ],
     specializations: [''],
+    personalities: [''],
     coverImage: null
   });
 
@@ -101,6 +102,21 @@ export default function DoctorModal({
     noon: ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'],
     evening: ['5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'],
     night: ['9:00 PM', '10:00 PM']
+  };
+
+  // Handlers for personalities similar to specializations
+  const addPersonality = () => {
+    setFormData(prev => ({ ...prev, personalities: [...prev.personalities, ''] }));
+  };
+  const removePersonality = (index) => {
+    setFormData(prev => ({ ...prev, personalities: prev.personalities.filter((_, i) => i !== index) }));
+  };
+  const handlePersonalityChange = (index, value) => {
+    setFormData(prev => {
+      const next = [...prev.personalities];
+      next[index] = value;
+      return { ...prev, personalities: next };
+    });
   };
 
   // Fetch packages for a psychologist when editing
@@ -188,6 +204,7 @@ export default function DoctorModal({
           { name: 'Individual Session', price: doctor.price || doctor.individual_session_price || '', sessions: 1 }
         ],
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
+        personalities: doctor.personality_traits || doctor.personalities || [''],
         coverImage: resolveDoctorImage(doctor)
       });
       
@@ -745,6 +762,7 @@ export default function DoctorModal({
         experience_years: parseInt(formData.experience_years) || 0,
         price: formData.price ? Number(formData.price) : undefined,
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
+        personality_traits: formData.personalities.filter(p => p.trim()),
         availability: convertedAvailability,
         packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions),
         // Use single field only
@@ -1247,6 +1265,43 @@ export default function DoctorModal({
             {errors.specializations && (
               <p className="text-red-500 text-sm mt-1">{errors.specializations}</p>
             )}
+          </div>
+
+          {/* Personality Traits */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-medium text-gray-800">Personality Traits</h3>
+              <button
+                type="button"
+                onClick={addPersonality}
+                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4 inline mr-1" />
+                Add Trait
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {formData.personalities.map((p, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={p}
+                    onChange={(e) => handlePersonalityChange(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Energetic, Calm, Empathetic"
+                  />
+                  {formData.personalities.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePersonality(index)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Simple Step-by-Step Availability */}

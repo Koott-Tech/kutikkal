@@ -10,10 +10,14 @@ import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import InfoCards from '@/components/InfoCards';
 import HelpFaq from '@/components/HelpFaq';
+import VideosShowcase from '@/components/VideosShowcase';
+import Reviews from '@/components/Reviews';
+import BlogTeaser from '@/components/BlogTeaser';
 import ImageUpload from '@/components/ImageUpload';
 
-export default function CounsellingPageBuilder({ 
+export default function AssessmentsPageBuilder({ 
   serviceId, 
+  assessmentId,
   initialData = null, 
   onSubmit, 
   onCancel, 
@@ -53,8 +57,8 @@ export default function CounsellingPageBuilder({
     mobile_image_url: '',
     condition_boxes: [
       { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
-      { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
-      { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+      { title: 'Anxiety', description: 'Help managing worry and stress', link: '/assessments/spence-anxiety-scale' },
+      { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/assessments/child-depression-inventory' }
     ],
     info_cards: [
       { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist' },
@@ -110,11 +114,11 @@ export default function CounsellingPageBuilder({
         mobile_image_url: initialData.mobile_image_url || '',
         condition_boxes: initialData.condition_boxes || [
           { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
-          { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
-          { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+          { title: 'Anxiety', description: 'Help managing worry and stress', link: '/assessments/spence-anxiety-scale' },
+          { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/assessments/child-depression-inventory' }
         ],
         info_cards: initialData.info_cards || [
-          { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/counselling' },
+          { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/assessments' },
           { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment', ctaLink: '/assessments' },
           { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching', ctaLink: '/better-parenting' }
         ],
@@ -129,6 +133,15 @@ export default function CounsellingPageBuilder({
       ...prev,
       [field]: value
     }));
+  };
+
+  const slugify = (val) => {
+    return (val || '')
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   };
 
   // Debug formData.benefits and faqs
@@ -172,8 +185,26 @@ export default function CounsellingPageBuilder({
   };
 
   const handleSave = () => {
-    // When editing an existing service, exclude the slug from the update
-    const dataToSave = serviceId ? { ...formData, slug: undefined } : formData;
+    // When editing an existing assessment, exclude the slug from the update
+    const isEdit = !!(serviceId || assessmentId);
+    const slug = slugify(formData.slug || '');
+    const heroTitle = (formData.hero_title || '').trim();
+    if (!isEdit) {
+      if (!slug || !heroTitle) {
+        alert('Please fill Slug and Hero Title before saving.');
+        return;
+      }
+    } else {
+      if (!heroTitle) {
+        alert('Please fill Hero Title before saving.');
+        return;
+      }
+    }
+    const dataToSave = isEdit ? { ...formData, slug: undefined } : { ...formData, slug };
+    if (!isEdit && slug !== formData.slug) {
+      // Persist normalized slug into local state so UI reflects the final link
+      setFormData(prev => ({ ...prev, slug }));
+    }
     onSubmit(dataToSave);
   };
 
@@ -471,7 +502,7 @@ export default function CounsellingPageBuilder({
                       type="text"
                       value={box.link}
                       onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'link', e.target.value)}
-                      placeholder="e.g., /counselling/anxiety-sadness"
+                      placeholder="e.g., /assessments/spence-anxiety-scale"
                       className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -762,7 +793,7 @@ export default function CounsellingPageBuilder({
                     type="text"
                     value={formData.seo_keywords || ''}
                     onChange={(e) => handleInputChange('seo_keywords', e.target.value)}
-                    placeholder="e.g., child anxiety, kids counselling, therapy for children"
+                    placeholder="e.g., child anxiety, kids assessments, therapy for children"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">Main keywords for this page (3-5 recommended)</p>
@@ -985,7 +1016,7 @@ export default function CounsellingPageBuilder({
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Menu Category
+                        Menu Category (Assessments)
                       </label>
                       <select
                         value={formData.category}
@@ -993,11 +1024,10 @@ export default function CounsellingPageBuilder({
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select Category</option>
-                        <option value="emotional">Emotional & Mental Health</option>
-                        <option value="development">Child Development & Learning</option>
-                        <option value="behaviour">Behaviour & Confidence</option>
-                        <option value="stress">Stress & Academic Support</option>
-                        <option value="trauma">Trauma & Healing</option>
+                        <option value="adhd">ADHD</option>
+                        <option value="ebs">Emotional & Behavioral Screening</option>
+                        <option value="intelligence">Intelligence Test</option>
+                        <option value="projective">Projective Tests</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">Choose which submenu this page will appear under in the header</p>
                     </div>
@@ -1057,18 +1087,6 @@ export default function CounsellingPageBuilder({
                       🖼️ Images
                     </button>
                     <button
-                      onClick={() => handleElementClick('videos')}
-                      className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      🎥 Video Reviews
-                    </button>
-                    <button
-                      onClick={() => handleElementClick('reviews')}
-                      className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                      ⭐ Text Reviews
-                    </button>
-                    <button
                       onClick={() => handleElementClick('seo')}
                       className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >
@@ -1114,12 +1132,12 @@ export default function CounsellingPageBuilder({
                 {showSidebar ? 'Hide Editor' : 'Show Editor'}
               </button>
               <h1 className="text-xs md:text-sm font-light text-gray-400 truncate">
-                {formData.slug ? `/counselling/${formData.slug}` : 'New Counselling Page'}
+                {formData.slug ? `/assessments/${formData.slug}` : 'New Assessment Page'}
               </h1>
             </div>
             <div className="flex items-center space-x-2 w-full sm:w-auto">
               <button
-                onClick={() => window.open(`/counselling/${formData.slug}`, '_blank')}
+                onClick={() => window.open(`/assessments/${formData.slug}`, '_blank')}
                 disabled={!formData.slug}
                 className="flex-1 sm:flex-none px-3 md:px-4 py-2 border border-gray-300 rounded-md text-xs md:text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -1195,13 +1213,6 @@ export default function CounsellingPageBuilder({
               />
             ))}
 
-            {/* Condition Boxes - removed */}
-
-            {/* Info Cards */}
-            {renderEditableElement('info_cards', (
-              <InfoCards cmsData={{ items: formData.info_cards }} />
-            ))}
-
             {/* Videos (preview) */}
             {renderEditableElement('videos', (
               <div className="mt-8">
@@ -1214,6 +1225,13 @@ export default function CounsellingPageBuilder({
               <div className="mt-8">
                 <Reviews cmsData={{ reviews: formData.reviews || [] }} />
               </div>
+            ))}
+
+            {/* Condition Boxes - removed */}
+
+            {/* Info Cards */}
+            {renderEditableElement('info_cards', (
+              <InfoCards cmsData={{ items: formData.info_cards }} />
             ))}
 
             {/* FAQs */}

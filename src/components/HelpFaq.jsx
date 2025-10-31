@@ -46,18 +46,17 @@ export default function HelpFaq({ cmsData = null }) {
   // Use CMS data if available, otherwise fall back to hardcoded data
   const faqData = cmsData && cmsData.faqs && cmsData.faqs.length > 0 ? 
     (() => {
-      const midpoint = Math.ceil(cmsData.faqs.length / 2);
       return [
         {
           title: "Getting Started",
-          items: cmsData.faqs.slice(0, midpoint).map(faq => ({
+          items: cmsData.faqs.slice(0, 3).map(faq => ({
             q: faq.question,
             a: faq.answer
           }))
         },
         {
           title: "Understanding Therapy",
-          items: cmsData.faqs.slice(midpoint).map(faq => ({
+          items: cmsData.faqs.slice(3, 6).map(faq => ({
             q: faq.question,
             a: faq.answer
           }))

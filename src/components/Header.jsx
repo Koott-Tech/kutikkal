@@ -21,16 +21,21 @@ export default function Header() {
   const [isMobileBetterParentingOpen, setIsMobileBetterParentingOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
+  const [isAssessmentsOpen, setIsAssessmentsOpen] = useState(false);
+  const [isMobileAssessmentsOpen, setIsMobileAssessmentsOpen] = useState(false);
+  const [isMobileAssessmentsSubmenuOpen, setIsMobileAssessmentsSubmenuOpen] = useState({
+    adhd: false,
+    ebs: false,
+    intelligence: false,
+    projective: false,
+  });
   const [isMobileSubmenuOpen, setIsMobileSubmenuOpen] = useState({
     emotional: false,
     development: false,
     behaviour: false,
     stress: false,
     trauma: false,
-    adhd: false,
-    emotionalAssessments: false,
-    intelligence: false,
-    projective: false
+    adhd: false
   });
   const [counsellingMenuItems, setCounsellingMenuItems] = useState({
     emotional: [],
@@ -38,6 +43,13 @@ export default function Header() {
     behaviour: [],
     stress: [],
     trauma: []
+  });
+  const [betterParentingMenuItems, setBetterParentingMenuItems] = useState([]);
+  const [assessmentsMenuItems, setAssessmentsMenuItems] = useState({
+    adhd: [],
+    ebs: [],
+    intelligence: [],
+    projective: []
   });
   const [profileData, setProfileData] = useState(null);
   const router = useRouter();
@@ -102,6 +114,12 @@ export default function Header() {
             grouped[category].sort((a, b) => a.order - b.order);
           });
           
+          // Debug: counselling grouped counts
+          try {
+            const counts = Object.fromEntries(Object.entries(grouped).map(([k, v]) => [k, v.length]));
+            console.log('[Header] Counselling grouped counts', counts);
+          } catch (_) {}
+
           setCounsellingMenuItems(grouped);
         }
       } catch (error) {
@@ -112,45 +130,114 @@ export default function Header() {
     fetchCounsellingMenu();
   }, []);
 
+  // Fetch assessments menu items from API (dynamic like counselling)
+  useEffect(() => {
+    const fetchAssessmentsMenu = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/assessments?limit=50`);
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        if (data.success && data.message.assessments) {
+          try {
+            console.log('[Header] Assessments fetch ok', {
+              baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
+              total: (data.message.assessments || []).length,
+              sample: (data.message.assessments || []).slice(0, 3).map(a => ({ slug: a.slug, status: a.status, category: a.category, order: a.menu_order }))
+            });
+          } catch (_) {}
+          const grouped = {
+            adhd: [],
+            ebs: [],
+            intelligence: [],
+            projective: []
+          };
+          data.message.assessments
+            .filter(item => item.status === 'published' && item.category)
+            .forEach(item => {
+              if (grouped[item.category]) {
+                grouped[item.category].push({
+                  name: item.seo_title?.replace(' - Little Care', '') || item.hero_title,
+                  url: `/assessments/${item.slug}`,
+                  order: item.menu_order || 0
+                });
+              }
+            });
+          Object.keys(grouped).forEach(category => {
+            grouped[category].sort((a, b) => a.order - b.order);
+          });
+          // Debug: assessments grouped counts
+          try {
+            const counts = Object.fromEntries(Object.entries(grouped).map(([k, v]) => [k, v.length]));
+            console.log('[Header] Assessments grouped counts', counts);
+          } catch (_) {}
+          setAssessmentsMenuItems(grouped);
+        }
+      } catch (error) {
+        // Silently fail
+      }
+    };
+    fetchAssessmentsMenu();
+  }, []);
+
+  // Fetch better parenting menu (flat, ordered)
+  useEffect(() => {
+    const fetchBetterParentingMenu = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/better-parenting?limit=50`);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.success && data.message.pages) {
+          const items = (data.message.pages || [])
+            .filter(p => p.status === 'published')
+            .map(p => ({
+              name: p.seo_title?.replace(' - Little Care', '') || p.hero_title,
+              url: `/better-parenting/${p.slug}`,
+              order: p.menu_order || 0
+            }))
+            .sort((a, b) => a.order - b.order);
+          try { console.log('[Header] BetterParenting items', items.length); } catch(_) {}
+          setBetterParentingMenuItems(items);
+        }
+      } catch (_) {}
+    };
+    fetchBetterParentingMenu();
+  }, []);
+
   // Close submenu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close submenus
-      if (clickedSubmenu && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
         setClickedSubmenu(null);
       }
       
       // Close main dropdowns - exclude navigation buttons
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
-          !event.target.closest('.assessments-dropdown') &&
-          !event.target.closest('.better-parenting-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
-        setIsBetterParentingOpen(false);
       }
     };
 
     const handleTouchOutside = (event) => {
       // Close submenus
-      if (clickedSubmenu && !event.target.closest('.counselling-dropdown') && !event.target.closest('.assessments-dropdown')) {
+      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
         setClickedSubmenu(null);
       }
       
       // Close main dropdowns - exclude navigation buttons
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
-          !event.target.closest('.assessments-dropdown') &&
-          !event.target.closest('.better-parenting-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
-        setIsBetterParentingOpen(false);
       }
     };
 
@@ -621,28 +708,7 @@ export default function Header() {
                       {/* Other Services */}
                       <div className="px-4 pt-3">
                         <div className="space-y-2">
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
-                            onClick={() => {
-                              router.push('/assessments');
-                            }}
-                          >
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Assessments</span>
-                          </div>
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
-                            onClick={() => {
-                              router.push('/better-parenting');
-                            }}
-                          >
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Better Parenting</span>
-                          </div>
+                          
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
                             onClick={() => {
@@ -659,193 +725,119 @@ export default function Header() {
                     </div>
                   )}
                 </li>
+
+                {/* Assessments Dropdown (desktop) - moved just after Counselling */}
                 <li className="relative group">
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      if (isForProvidersOpen) {
-                        setIsForProvidersOpen(false);
+                      if (isAssessmentsOpen) {
+                        setIsAssessmentsOpen(false);
                       } else {
-                        setIsForProvidersOpen(true);
+                        setIsAssessmentsOpen(true);
                         setIsFindCareOpen(false);
+                        setIsForProvidersOpen(false);
                         setIsAboutOpen(false);
                         setIsResourcesOpen(false);
                         setIsBetterParentingOpen(false);
                       }
                     }}
                   >
-                  <span className="header-nav-item inline-block">Assessments</span>
-                    <ChevronUpIcon className={`transition-transform ${isForProvidersOpen ? 'rotate-180' : ''}`} />
+                    <span className="header-nav-item inline-block">Assessments</span>
+                    <ChevronUpIcon className={`transition-transform ${isAssessmentsOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
-                  
-                  {/* Assessments Dropdown */}
-                  {isForProvidersOpen && (
-                    <div className="assessments-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
+
+                  {isAssessmentsOpen && (
+                    <div className="header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-3">
-                          {/* ADHD Assessments */}
-                          <div
-                            className="relative"
-                            onMouseEnter={() => {
-                              setActiveSubmenu('adhd');
-                              setClickedSubmenu(null);
-                            }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                          {/* ADHD */}
+                          <div className="relative"
+                            onMouseEnter={() => { setActiveSubmenu('assess-adhd'); setClickedSubmenu(null); }}
+                            onMouseLeave={(e) => { const rt = e.relatedTarget; if (!rt || !e.currentTarget.contains(rt)) setActiveSubmenu(null); }}
                           >
-                            <div
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => {
-                                setClickedSubmenu(clickedSubmenu === 'adhd' ? null : 'adhd');
-                                setActiveSubmenu(null);
-                              }}
-                            >
-                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD Assessments</h6>
-                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                               </svg>
-                             </div>
-                            {(activeSubmenu === 'adhd' || clickedSubmenu === 'adhd') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                                {[
-                                  { name: "ADHD Vanderbilt", url: "/assessments/adhd-vanderbilt" },
-                                  { name: "ADHD Conners 3", url: "/assessments/adhd-conners-3" }
-                                ].map((assessment, index) => (
-                                  <div
-                                    key={index}
-                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
-                                    onClick={() => {
-                                      router.push(assessment.url);
-                                      setClickedSubmenu(null);
-                                    }}
-                                  >
-                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
-                           </div>
+                            <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-adhd' ? null : 'assess-adhd'); setActiveSubmenu(null); }}>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD</h6>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </div>
+                            {(activeSubmenu === 'assess-adhd' || clickedSubmenu === 'assess-adhd') && (
+                              <div className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('assess-adhd')} onMouseLeave={() => setActiveSubmenu(null)}>
+                                {assessmentsMenuItems.adhd.map((item, idx) => (
+                                  <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
+                                    onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
+                                    <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
+                                  </div>
                                 ))}
                               </div>
                             )}
                           </div>
 
                           {/* Emotional & Behavioral Screening */}
-                          <div
-                            className="relative"
-                            onMouseEnter={() => {
-                              setActiveSubmenu('emotional');
-                              setClickedSubmenu(null);
-                            }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                          <div className="relative"
+                            onMouseEnter={() => { setActiveSubmenu('assess-ebs'); setClickedSubmenu(null); }}
+                            onMouseLeave={(e) => { const rt = e.relatedTarget; if (!rt || !e.currentTarget.contains(rt)) setActiveSubmenu(null); }}
                           >
-                            <div
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => {
-                                setClickedSubmenu(clickedSubmenu === 'emotional' ? null : 'emotional');
-                                setActiveSubmenu(null);
-                              }}
-                            >
+                            <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-ebs' ? null : 'assess-ebs'); setActiveSubmenu(null); }}>
                               <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h6>
-                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                               </svg>
-                             </div>
-                            {(activeSubmenu === 'emotional' || clickedSubmenu === 'emotional') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                                {[
-                                  { name: "BASC-3", url: "/assessments/basc-3" },
-                                  { name: "Child Depression Inventory", url: "/assessments/child-depression-inventory" },
-                                  { name: "Spence Anxiety Scale", url: "/assessments/spence-anxiety-scale" }
-                                ].map((assessment, index) => (
-                                  <div
-                                    key={index}
-                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
-                                    onClick={() => {
-                                      router.push(assessment.url);
-                                      setClickedSubmenu(null);
-                                    }}
-                                  >
-                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
-                           </div>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </div>
+                            {(activeSubmenu === 'assess-ebs' || clickedSubmenu === 'assess-ebs') && (
+                              <div className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('assess-ebs')} onMouseLeave={() => setActiveSubmenu(null)}>
+                                {assessmentsMenuItems.ebs.map((item, idx) => (
+                                  <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
+                                    onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
+                                    <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
+                                  </div>
                                 ))}
                               </div>
                             )}
                           </div>
 
-                          {/* Intelligence Tests */}
-                          <div
-                            className="relative"
-                            onMouseEnter={() => {
-                              setActiveSubmenu('intelligence');
-                              setClickedSubmenu(null);
-                            }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
+                          {/* Intelligence Test */}
+                          <div className="relative"
+                            onMouseEnter={() => { setActiveSubmenu('assess-intelligence'); setClickedSubmenu(null); }}
+                            onMouseLeave={(e) => { const rt = e.relatedTarget; if (!rt || !e.currentTarget.contains(rt)) setActiveSubmenu(null); }}
                           >
-                            <div
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                             onClick={() => {
-                                setClickedSubmenu(clickedSubmenu === 'intelligence' ? null : 'intelligence');
-                                setActiveSubmenu(null);
-                              }}
-                            >
-                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Tests</h6>
-                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                               </svg>
-                             </div>
-                            {(activeSubmenu === 'intelligence' || clickedSubmenu === 'intelligence') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                                {[
-                                  { name: "VSMS", url: "/assessments/vsms" }
-                                ].map((assessment, index) => (
-                                  <div
-                                    key={index}
-                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
-                                    onClick={() => {
-                                      router.push(assessment.url);
-                                      setClickedSubmenu(null);
-                                    }}
-                                  >
-                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
-                           </div>
-                                ))}
-                         </div>
-                            )}
-                       </div>
-                       
-                          {/* Projective Tests */}
-                          <div
-                            className="relative"
-                            onMouseEnter={() => {
-                              setActiveSubmenu('projective');
-                              setClickedSubmenu(null);
-                            }}
-                            onMouseLeave={() => setActiveSubmenu(null)}
-                          >
-                            <div
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                              onClick={() => {
-                                setClickedSubmenu(clickedSubmenu === 'projective' ? null : 'projective');
-                                setActiveSubmenu(null);
-                              }}
-                            >
-                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h6>
-                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
+                            <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-intelligence' ? null : 'assess-intelligence'); setActiveSubmenu(null); }}>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Test</h6>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
-                            {(activeSubmenu === 'projective' || clickedSubmenu === 'projective') && (
-                              <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50">
-                                {[
-                                  { name: "CAT (Child Apperception Test)", url: "/assessments/cat" },
-                                  { name: "Child Sentence Completion Test", url: "/assessments/child-sentence-completion" }
-                                ].map((assessment, index) => (
-                                  <div
-                                    key={index}
-                                    className="py-2 cursor-pointer hover:bg-gray-50 px-4"
-                                    onClick={() => {
-                                      router.push(assessment.url);
-                                      setClickedSubmenu(null);
-                                    }}
-                                  >
-                                    <span className="text-gray-700 text-sm">{assessment.name}</span>
+                            {(activeSubmenu === 'assess-intelligence' || clickedSubmenu === 'assess-intelligence') && (
+                              <div className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('assess-intelligence')} onMouseLeave={() => setActiveSubmenu(null)}>
+                                {assessmentsMenuItems.intelligence.map((item, idx) => (
+                                  <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
+                                    onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
+                                    <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Projective Tests */}
+                          <div className="relative"
+                            onMouseEnter={() => { setActiveSubmenu('assess-projective'); setClickedSubmenu(null); }}
+                            onMouseLeave={(e) => { const rt = e.relatedTarget; if (!rt || !e.currentTarget.contains(rt)) setActiveSubmenu(null); }}
+                          >
+                            <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
+                              onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-projective' ? null : 'assess-projective'); setActiveSubmenu(null); }}>
+                              <h6 className="text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h6>
+                              <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            </div>
+                            {(activeSubmenu === 'assess-projective' || clickedSubmenu === 'assess-projective') && (
+                              <div className="absolute left-full top-0 -ml-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 py-2 z-50"
+                                onMouseEnter={() => setActiveSubmenu('assess-projective')} onMouseLeave={() => setActiveSubmenu(null)}>
+                                {assessmentsMenuItems.projective.map((item, idx) => (
+                                  <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
+                                    onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
+                                    <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
                                   </div>
                                 ))}
                               </div>
@@ -853,48 +845,11 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Quick Actions */}
-                       <div className="px-4 pt-3">
-                         <div className="space-y-2">
-                          <div
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
-                            onClick={() => {
-                              router.push('/free-assessment');
-                            }}
-                          >
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Get a Free Consultation</span>
-                           </div>
-                          <div
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
-                            onClick={() => {
-                              router.push('/assessments');
-                            }}
-                          >
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">View All Assessments</span>
-                          </div>
-                          <div
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3"
-                            onClick={() => {
-                              handleFAQClick();
-                            }}
-                          >
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">FAQ</span>
-                           </div>
-                         </div>
-                       </div>
                     </div>
                   )}
                 </li>
+                
+                {/* Better Parenting */}
                 <li className="relative group">
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
@@ -915,40 +870,14 @@ export default function Header() {
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
 
-                  {/* Better Parenting Dropdown */}
                   {isBetterParentingOpen && (
-                    <div className="better-parenting-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
-                      <div className="px-6 pb-4 border-b border-gray-200">
-                        <div className="space-y-2">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => router.push('/better-parenting')}>
-                            <span className="text-gray-900 text-sm font-semibold">BETTER PARENTING</span>
+                    <div className="header-dropdown absolute top-full left-0 mt-4 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                      <div className="px-4 space-y-2">
+                        {betterParentingMenuItems.map((item, idx) => (
+                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3" onClick={() => { router.push(item.url); setIsBetterParentingOpen(false); }}>
+                            <span className="text-gray-700 text-sm">{item.name}</span>
                           </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/early-parent-postpartum-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Early Parent and Postpartum Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/parenting-coaching-counselling'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Parenting Coaching and Counselling</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/parent-child-joint-sessions'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Parent-Child Joint Sessions</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/child-development-behaviour-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Child Development and Behaviour Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/help-for-all-kinds-of-parents'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Help for All Kinds of Parents</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/group-community-support'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Group and Community Support</span></div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/better-parenting/care-for-parents'); setIsBetterParentingOpen(false); }}><span className="text-gray-700 text-sm">Care for Parents</span></div>
-                        </div>
-                      </div>
-
-                      {/* Quick Actions */}
-                      <div className="px-4 pt-3">
-                        <div className="space-y-2">
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={() => router.push('/free-assessment')}>
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                            <span className="text-gray-700 text-sm">Get a Free Consultation</span>
-                          </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={() => router.push('/guide')}>
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2" /></svg>
-                            <span className="text-gray-700 text-sm">View Therapists</span>
-                          </div>
-                          <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200 flex items-center gap-3" onClick={handleFAQClick}>
-                            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <span className="text-gray-700 text-sm">FAQ</span>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -1039,6 +968,7 @@ export default function Header() {
                     </div>
                   )}
                 </li>
+
               </ul>
             </nav>
           </div>
@@ -1397,24 +1327,7 @@ export default function Header() {
                         </div>
                         
                         <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                            onClick={() => {
-                              router.push('/assessments');
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Assessments</span>
-                          </div>
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                            onClick={() => {
-                              router.push('/better-parenting');
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Better Parenting</span>
-                          </div>
+                          
                           <div 
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                             onClick={() => {
@@ -1430,7 +1343,121 @@ export default function Header() {
                   )}
                 </div>
 
-                {/* Better Parenting Dropdown */}
+                {/* Better Parenting (mobile) removed */}
+
+                {/* Assessments (mobile) */}
+                <div className="border-b border-gray-100">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
+                    onClick={() => {
+                      if (isMobileAssessmentsOpen) {
+                        setIsMobileAssessmentsOpen(false);
+                      } else {
+                        setIsMobileAssessmentsOpen(true);
+                        setIsMobileFindCareOpen(false);
+                        setIsMobileForProvidersOpen(false);
+                        setIsMobileAboutOpen(false);
+                        setIsMobileResourcesOpen(false);
+                        setIsMobileBetterParentingOpen(false);
+                      }
+                    }}
+                  >
+                    <span className="text-lg font-medium text-gray-900 header-nav-item">Assessments</span>
+                    <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileAssessmentsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+
+                  {isMobileAssessmentsOpen && (
+                    <div className="ml-4 space-y-2 py-2">
+                      <div className="px-4 py-2">
+                        <div className="space-y-2">
+                          {/* ADHD */}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, adhd: !prev.adhd }))}
+                          >
+                            <h6 className="text-gray-900">ADHD</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.adhd ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                          {isMobileAssessmentsSubmenuOpen.adhd && (
+                            <div className="ml-2 space-y-1">
+                              {assessmentsMenuItems.adhd.map((item, idx) => (
+                                <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                                  <span className="text-gray-700 text-sm">{item.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Emotional & Behavioral Screening */}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, ebs: !prev.ebs }))}
+                          >
+                            <h6 className="text-gray-900">Emotional & Behavioral Screening</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.ebs ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                          {isMobileAssessmentsSubmenuOpen.ebs && (
+                            <div className="ml-2 space-y-1">
+                              {assessmentsMenuItems.ebs.map((item, idx) => (
+                                <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                                  <span className="text-gray-700 text-sm">{item.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Intelligence Test */}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, intelligence: !prev.intelligence }))}
+                          >
+                            <h6 className="text-gray-900">Intelligence Test</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.intelligence ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                          {isMobileAssessmentsSubmenuOpen.intelligence && (
+                            <div className="ml-2 space-y-1">
+                              {assessmentsMenuItems.intelligence.map((item, idx) => (
+                                <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                                  <span className="text-gray-700 text-sm">{item.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Projective Tests */}
+                          <div 
+                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, projective: !prev.projective }))}
+                          >
+                            <h6 className="text-gray-900">Projective Tests</h6>
+                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.projective ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                          {isMobileAssessmentsSubmenuOpen.projective && (
+                            <div className="ml-2 space-y-1">
+                              {assessmentsMenuItems.projective.map((item, idx) => (
+                                <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                                  <span className="text-gray-700 text-sm">{item.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Better Parenting (mobile) */}
                 <div className="border-b border-gray-100">
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
@@ -1451,221 +1478,15 @@ export default function Header() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
-                  {isMobileBetterParentingOpen && (
-                    <div className="ml-4 space-y-3 py-2">
-                      <div className="text-gray-900 text-sm font-semibold">BETTER PARENTING</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/early-parent-postpartum-support'); setIsMobileMenuOpen(false); }}>Early Parent and Postpartum Support</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/parenting-coaching-counselling'); setIsMobileMenuOpen(false); }}>Parenting Coaching and Counselling</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/parent-child-joint-sessions'); setIsMobileMenuOpen(false); }}>Parent-Child Joint Sessions</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/child-development-behaviour-support'); setIsMobileMenuOpen(false); }}>Child Development and Behaviour Support</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/help-for-all-kinds-of-parents'); setIsMobileMenuOpen(false); }}>Help for All Kinds of Parents</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/group-community-support'); setIsMobileMenuOpen(false); }}>Group and Community Support</div>
-                      <div className="text-gray-700 text-sm cursor-pointer" onClick={() => { router.push('/better-parenting/care-for-parents'); setIsMobileMenuOpen(false); }}>Care for Parents</div>
-                      <div className="border-t border-gray-200 pt-3 space-y-2">
-                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/free-assessment'); setIsMobileMenuOpen(false); }}>Get a Free Consultation</div>
-                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push('/guide'); setIsMobileMenuOpen(false); }}>View Therapists</div>
-                        <div className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { handleFAQClick(); setIsMobileMenuOpen(false); }}>FAQ</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                {/* Assessments Dropdown */}
-                <div className="border-b border-gray-100">
-                  <div 
-                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-3"
-                    onClick={() => {
-                      if (isMobileForProvidersOpen) {
-                        setIsMobileForProvidersOpen(false);
-                      } else {
-                        setIsMobileForProvidersOpen(true);
-                        setIsMobileFindCareOpen(false);
-                        setIsMobileAboutOpen(false);
-                        setIsMobileResourcesOpen(false);
-                        setIsMobileBetterParentingOpen(false);
-                      }
-                    }}
-                  >
-                    <span className="text-lg font-medium text-gray-900 header-nav-item">Assessments</span>
-                    <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileForProvidersOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                  
-                  {/* Assessments Dropdown Content */}
-                  {isMobileForProvidersOpen && (
+                  {isMobileBetterParentingOpen && (
                     <div className="ml-4 space-y-2 py-2">
                       <div className="px-4 py-2 space-y-2">
-                        {/* ADHD Assessments */}
-                        <div>
-                          <div 
-                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => toggleMobileSubmenu('adhd')}
-                          >
-                            <h6 className="text-gray-900">ADHD Assessments</h6>
-                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.adhd ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        {betterParentingMenuItems.map((item, idx) => (
+                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                            <span className="text-gray-700 text-sm">{item.name}</span>
                           </div>
-                          {isMobileSubmenuOpen.adhd && (
-                            <div className="ml-2 space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/adhd-vanderbilt');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">ADHD Vanderbilt</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/adhd-conners-3');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">ADHD Conners 3</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Emotional & Behavioral Screening */}
-                        <div>
-                          <div 
-                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => toggleMobileSubmenu('emotionalAssessments')}
-                          >
-                            <h6 className="text-gray-900">Emotional & Behavioral Screening</h6>
-                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.emotionalAssessments ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                          {isMobileSubmenuOpen.emotionalAssessments && (
-                            <div className="ml-2 space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/basc-3');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Behaviour Assessment System (BASC-3)</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/child-depression-inventory');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Child Depression Inventory</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/spence-anxiety-scale');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Spence Anxiety Scale</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Intelligence Tests */}
-                        <div>
-                          <div 
-                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => toggleMobileSubmenu('intelligence')}
-                          >
-                            <h6 className="text-gray-900">Intelligence Tests</h6>
-                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.intelligence ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                          {isMobileSubmenuOpen.intelligence && (
-                            <div className="ml-2 space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/vsms');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">VSMS</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Projective Tests */}
-                        <div>
-                          <div 
-                            className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => toggleMobileSubmenu('projective')}
-                          >
-                            <h6 className="text-gray-900">Projective Tests</h6>
-                            <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.projective ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                          {isMobileSubmenuOpen.projective && (
-                            <div className="ml-2 space-y-1">
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/cat');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">CAT (Child Apperception Test)</span>
-                              </div>
-                              <div 
-                                className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                                onClick={() => {
-                                  router.push('/assessments/child-sentence-completion');
-                                  setIsMobileMenuOpen(false);
-                                }}
-                              >
-                                <span className="text-gray-700 text-sm">Child Sentence Completion Test</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              router.push('/free-assessment');
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm font-medium">Get a Free Consultation</span>
-                          </div>
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              router.push('/guide');
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm font-medium">View Therapists</span>
-                          </div>
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
-                            onClick={() => {
-                              handleFAQClick();
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm font-medium">FAQ</span>
-                          </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                   )}

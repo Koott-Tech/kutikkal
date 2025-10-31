@@ -14,6 +14,9 @@ const Guide = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selected, setSelected] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  // Modal animation state
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
+  const [isClosingDoctorModal, setIsClosingDoctorModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
@@ -51,6 +54,23 @@ const Guide = () => {
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  // Open modal when a doctor is selected
+  useEffect(() => {
+    if (selected !== null && selected !== undefined) {
+      setIsClosingDoctorModal(false);
+      setShowDoctorModal(true);
+    }
+  }, [selected]);
+
+  const closeDoctorModal = () => {
+    setIsClosingDoctorModal(true);
+    // Wait for exit animation before unmounting
+    setTimeout(() => {
+      setShowDoctorModal(false);
+      setSelected(null);
+    }, 220);
+  };
 
   // Prevent background scroll when modal is open
   React.useEffect(() => {
@@ -184,9 +204,8 @@ const Guide = () => {
               margin-top: 3.2rem;
               display: grid;
               grid-template-columns: repeat(3, 1fr);
-              gap: 20px;
-              row-gap: 48px;
-              padding: 0 2rem;
+              gap: 4px !important; /* unified row/column gap */
+              padding: 0 6rem !important; /* more side padding */
               justify-items: center;
             }
             .guide-video-card {
@@ -199,25 +218,26 @@ const Guide = () => {
               height: 360px;
               border-radius: 10px;
               overflow: hidden;
-              box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+              box-shadow: none !important;
               background: #fff;
               border: 2px solid #e0e7ef;
               position: relative;
+              margin: 0 !important; /* ensure no extra row spacing */
             }
             .guide-video-card:hover {
               transform: scale(1.08) translateY(-12px);
               z-index: 10;
-              box-shadow: 0 16px 48px rgba(39,174,96,0.22), 0 4px 16px rgba(0,0,0,0.12);
+              box-shadow: none !important;
             }
             
             /* Medium laptop view - 4 cards per row */
             @media (min-width: 1025px) and (max-width: 1199px) {
               .guide-cards-container {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 18px;
-                row-gap: 44px;
+                gap: 4px !important; /* base gap */
+                row-gap: 10px !important; /* slightly larger vertical spacing */
                 max-width: 1400px;
-                padding: 0 2rem;
+                padding: 0 5rem !important; /* more side padding */
               }
               .guide-video-card {
                 max-width: 280px;
@@ -225,6 +245,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.06) translateY(-10px);
+                box-shadow: none !important;
               }
             }
             
@@ -232,10 +253,10 @@ const Guide = () => {
             @media (min-width: 1200px) {
               .guide-cards-container {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 24px;
-                row-gap: 52px;
+                gap: 6px !important; /* base gap */
+                row-gap: 12px !important; /* slightly larger vertical spacing */
                 max-width: 1600px;
-                padding: 0 2.5rem;
+                padding: 0 7rem !important; /* more side padding */
               }
               .guide-video-card {
                 max-width: 300px;
@@ -243,6 +264,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.08) translateY(-12px);
+                box-shadow: none !important;
               }
             }
             
@@ -250,9 +272,8 @@ const Guide = () => {
             @media (max-width: 1024px) and (min-width: 769px) {
               .guide-cards-container {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-                row-gap: 40px;
-                padding: 0 1.5rem;
+                gap: 4px !important; /* unified row/column gap */
+                padding: 0 4rem !important; /* more side padding */
               }
               .guide-video-card {
                 max-width: 320px;
@@ -260,6 +281,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.06) translateY(-10px);
+                box-shadow: none !important;
               }
             }
             
@@ -267,9 +289,8 @@ const Guide = () => {
             @media (max-width: 900px) and (min-width: 769px) {
               .guide-cards-container {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-                row-gap: 36px;
-                padding: 0 1rem;
+                gap: 4px !important; /* unified row/column gap */
+                padding: 0 3rem !important; /* more side padding */
               }
               .guide-video-card {
                 max-width: 280px;
@@ -277,6 +298,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.05) translateY(-8px);
+                box-shadow: none !important;
               }
             }
             
@@ -284,9 +306,8 @@ const Guide = () => {
             @media (max-width: 768px) {
               .guide-cards-container {
                 grid-template-columns: 1fr;
-                gap: 24px;
-                row-gap: 40px;
-                padding: 0 1.5rem;
+                gap: 6px !important; /* unified row/column gap */
+                padding: 0 3rem !important; /* more side padding */
                 max-width: 480px;
                 margin-left: auto;
                 margin-right: auto;
@@ -298,6 +319,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.04) translateY(-8px);
+                box-shadow: none !important;
               }
               /* Increase doctor name size on mobile */
               .guide-video-card .doctor-card-name {
@@ -308,9 +330,8 @@ const Guide = () => {
             /* Small mobile view - 1 card per row with smaller cards */
             @media (max-width: 480px) {
               .guide-cards-container {
-                gap: 20px;
-                row-gap: 36px;
-                padding: 0 1rem;
+                gap: 3px !important; /* unified row/column gap */
+                padding: 0 2.5rem !important; /* more side padding */
                 max-width: 420px;
               }
               .guide-video-card {
@@ -319,6 +340,7 @@ const Guide = () => {
               }
               .guide-video-card:hover {
                 transform: scale(1.03) translateY(-6px);
+                box-shadow: none !important;
               }
             }
           `}</style>
@@ -476,13 +498,22 @@ const Guide = () => {
                     gap: 0,
                     width: "80%"
                   }}>
-                    <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
-                    {/* Expertise bubbles - All as chips */}
+                    <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', paddingLeft: 10 }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
+                    {/* Expertise bubbles - Personality chips only */}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                      {/* Specialization chips first */}
-                      {doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 && doc.area_of_expertise.slice(0, 2).map((exp, i) => (
-                        <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
-                      ))}
+                      {/* Personality chips (replaces specialization) */}
+                      {(() => {
+                        const rawTraits = doc.personality_traits || doc.personalityTraits || doc.personalities || null;
+                        let traits = [];
+                        if (Array.isArray(rawTraits)) {
+                          traits = rawTraits;
+                        } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
+                          traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
+                        }
+                        return traits.slice(0, 1).map((trait, i) => (
+                          <span key={`p_${i}`} style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.85rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.2px solid rgba(255,255,255,0.18)' }}>{trait}</span>
+                        ));
+                      })()}
                       {/* Price chip (matches specialization chip style) */}
                       <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
                       {/* Experience chip */}
@@ -525,8 +556,8 @@ const Guide = () => {
         </div>
 
         {/* Modal Popup for Doctor Details - Hidden on mobile */}
-        {selected !== null && (
-          <div className="doctor-modal-overlay" style={{
+        {showDoctorModal && (
+          <div className={`doctor-modal-overlay ${isClosingDoctorModal ? 'closing' : ''}`} style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -539,63 +570,95 @@ const Guide = () => {
             justifyContent: "center",
             transition: "background 0.2s"
           }}
-            onClick={() => setSelected(null)}
+            onClick={closeDoctorModal}
           >
             <style>{`
+              .doctor-modal-overlay { opacity: 0; animation: overlayFadeIn 200ms ease forwards; }
+              .doctor-modal-overlay.closing { animation: overlayFadeOut 200ms ease forwards; }
+              @keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes overlayFadeOut { from { opacity: 1; } to { opacity: 0; } }
               @media (max-width: 768px) {
                 .doctor-modal-overlay {
                   display: flex !important;
-                  padding: 16px;
-                  align-items: flex-start;
+                  padding: 0 !important; /* remove outer padding including bottom */
+                  align-items: flex-end; /* stick modal to bottom */
                   overflow-y: auto;
+                  height: 100dvh !important; /* ensure full dynamic viewport height on mobile */
                 }
               }
             `}</style>
-            <div className="doctor-modal" onClick={e => e.stopPropagation()}>
+            <div className={`doctor-modal ${isClosingDoctorModal ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
               <style>{`
                 .doctor-modal {
-                  width: 70vw;
+                  width: clamp(560px, 70vw, 900px);
                   max-width: 900px;
-                  height: 85vh;
-                  max-height: 800px;
+                  height: clamp(500px, 70vh, 680px);
+                  max-height: 680px;
                   background: #fff;
                   border-radius: 10px;
                   box-shadow: 0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12);
                   display: grid;
-                  grid-template-columns: 1fr 1fr;
+                  grid-template-columns: 45% 55%;
                   grid-template-rows: 1fr auto;
-                  gap: 0;
+                  gap: 2px;
                   overflow: hidden;
                   position: relative;
+                  opacity: 0;
+                  transform: translateY(8px) scale(0.98);
+                  animation: modalIn 220ms ease forwards;
+                }
+                /* Responsive desktop: scale modal down gently as width shrinks */
+                @media (max-width: 1200px) and (min-width: 769px) {
+                  .doctor-modal {
+                    width: clamp(520px, 80vw, 860px); /* allow container to shrink with viewport */
+                    max-width: 860px;
+                    height: clamp(480px, 68vh, 650px);
+                    max-height: 650px;
+                    transform: translateY(0) scale(0.98);
+                  }
+                  .doctor-modal-image img,
+                  .doctor-modal-img {
+                    object-fit: contain !important; /* avoid aggressive crop/zoom */
+                  }
+                }
+                .doctor-modal.closing { animation: modalOut 200ms ease forwards; }
+                @keyframes modalIn { 
+                  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+                  to { opacity: 1; transform: translateY(0) scale(1); }
+                }
+                @keyframes modalOut { 
+                  from { opacity: 1; transform: translateY(0) scale(1); }
+                  to { opacity: 0; transform: translateY(8px) scale(0.98); }
                 }
                 
                 .doctor-modal-image {
                   flex: 1;
-                  background: transparent;
                   display: flex;
                   align-items: flex-start;
                   justify-content: flex-start;
                   overflow: hidden;
-                  padding: 12px 40px 34px 14px;
+                  /* Top | Right | Bottom | Left. Further increased bottom padding */
+                  padding: 12px clamp(6px, 1.2vw, 12px) clamp(24px, 5vw, 64px) 12px;
                   border-radius: 10px;
                 }
                 .doctor-modal-image img,
                 .doctor-modal-img {
                   border-radius: 10px !important;
-                  object-fit: cover !important;
+                  object-fit: contain !important;
                 }
                 
-                /* Ensure laptop view uses cover for border radius visibility */
+                /* Ensure laptop view keeps image contained to avoid zoom/crop */
                 @media (min-width: 1024px) {
                   .doctor-modal-image img,
                   .doctor-modal-img {
-                    object-fit: cover !important;
+                    object-fit: contain !important;
+                    object-position: left center !important; /* keep minimal left gap on narrow widths */
                     border-radius: 10px !important;
                   }
                 }
                 .doctor-modal-content {
                   flex: 1;
-                  padding: 40px 48px 40px 12px;
+                  padding: clamp(24px, 3.5vw, 40px) clamp(28px, 4vw, 48px) clamp(24px, 3.5vw, 40px) 12px; /* responsive top/right/bottom */
                   display: flex;
                   flex-direction: column;
                   justify-content: flex-start;
@@ -615,7 +678,7 @@ const Guide = () => {
                   gap: 16px;
                   justify-content: center;
                   align-items: center;
-                  margin-top: 32px;
+                  margin-top: 16px;
                   flex-wrap: wrap;
                 }
                 .doctor-modal-button {
@@ -632,7 +695,7 @@ const Guide = () => {
                 @media (min-width: 1024px) and (max-width: 1440px) {
                   .doctor-modal-buttons {
                     gap: 14px;
-                    margin-top: 28px;
+                    margin-top: 14px;
                   }
                   .doctor-modal-button {
                     padding: 11px 22px;
@@ -665,14 +728,14 @@ const Guide = () => {
                     max-height: 750px;
                   }
                   .doctor-modal-image {
-                    padding: 12px 32px 30px 12px;
+                    padding: 12px clamp(6px, 1.4vw, 12px) 36px 12px; /* further increased bottom padding on tablet */
                   }
                   .doctor-modal-content {
                     padding: 32px 40px 32px 12px;
                   }
                   .doctor-modal-buttons {
                     gap: 8px;
-                    margin-top: 24px;
+                    margin-top: 12px;
                   }
                   .doctor-modal-button {
                     padding: 10px 18px;
@@ -685,28 +748,47 @@ const Guide = () => {
                 @media (min-width: 769px) {
                   .doctor-modal {
                     display: grid !important;
-                    grid-template-columns: 1fr 1fr !important;
+                    grid-template-columns: 45% 55% !important;
+                  }
+                  /* Add subtle bottom fade above buttons on right content */
+                  .doctor-modal-content::after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: -1px;
+                    height: 20px;
+                    pointer-events: none;
+                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.96));
+                    z-index: 1;
                   }
                 }
                 
                 @media (max-width: 768px) {
                   .doctor-modal {
-                    width: 100%;
-                    max-width: 100%;
+                    position: fixed;
+                    left: 0;
+                    right: 0;
+                    bottom: 0; /* stick to bottom */
+                    width: 100vw;
+                    max-width: 100vw;
                     height: auto;
-                    max-height: 98vh;
+                    max-height: 100dvh; /* allow full viewport height */
                     display: flex !important;
                     flex-direction: column !important;
                     grid-template-columns: none !important;
                     grid-template-rows: none !important;
-                    border-radius: 0;
+                    border-radius: 10px 10px 0 0; /* bottom corners square to meet bottom edge */
+                    box-shadow: none; /* remove outer shadow on mobile */
+                    margin: 0 !important; /* remove outer margins */
                   }
                   .doctor-modal-image {
                     flex: none;
                     width: 100%;
-                    height: 320px;
-                    padding: 0;
-                    min-height: 320px;
+                    height: 500px;
+                    /* Top same as left (12px); further increased bottom padding on mobile */
+                    padding: 12px clamp(6px, 2.5vw, 12px) clamp(40px, 10vw, 80px) 12px;
+                    min-height: 500px;
                     overflow: hidden;
                     transform: none !important;
                     zoom: 1 !important;
@@ -717,8 +799,8 @@ const Guide = () => {
                     height: 100% !important;
                     max-width: 100% !important;
                     max-height: 100% !important;
-                    object-fit: contain !important;
-                    object-position: center !important;
+                    object-fit: cover !important;
+                    object-position: center top !important;
                     transform: none !important;
                     zoom: 1 !important;
                     scale: 1 !important;
@@ -730,7 +812,7 @@ const Guide = () => {
                     padding: 24px 20px;
                     gap: 12px;
                     overflow-y: auto;
-                    max-height: calc(98vh - 320px - 120px);
+                    max-height: calc(98vh - 500px - 120px);
                   }
                   .doctor-modal-title {
                     font-size: 24px !important;
@@ -740,8 +822,21 @@ const Guide = () => {
                     order: 3;
                     width: 100%;
                     padding: 16px 20px;
-                    border-top: 1px solid #eee;
+                    border-top: none;
                     margin-top: auto;
+                    position: relative;
+                  }
+                  /* Soft fade/blur above buttons so last line looks gently faded */
+                  .doctor-modal-buttons-container::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: -20px;
+                    height: 20px;
+                    pointer-events: none;
+                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95));
+                    z-index: 1;
                   }
                   .doctor-modal-image {
                     order: 1;
@@ -788,7 +883,7 @@ const Guide = () => {
                   .doctor-modal-button:nth-child(2),
                   .find-guide-button {
                     flex: 1 1 auto;
-                    padding: 10px 8px !important;
+                    padding: 14px 20px !important; /* increased mobile padding */
                     font-size: 14px;
                     min-width: 0;
                   }
@@ -796,7 +891,7 @@ const Guide = () => {
                   @media (min-width: 769px) {
                     .doctor-modal-button:nth-child(2),
                     .find-guide-button {
-                      padding: 14px 100px !important;
+                      padding: 16px 120px !important; /* increased desktop padding */
                     }
                   }
                 }
@@ -826,6 +921,10 @@ const Guide = () => {
                     height: auto;
                     display: inline-block;
                   }
+                  /* Increase separation between side buttons and center CTA on laptop */
+                  .find-guide-button {
+                    margin: 0 86px !important;
+                  }
                 }
               `}</style>
               {/* Close X Button */}
@@ -847,7 +946,7 @@ const Guide = () => {
                   transition: "all 0.2s",
                   zIndex: 20
                 }}
-                onClick={() => setSelected(null)}
+                onClick={closeDoctorModal}
                 onMouseEnter={(e) => {
                   e.target.style.background = "rgba(255,255,255,1)";
                   e.target.style.borderColor = "#ff6b6b";
@@ -869,7 +968,7 @@ const Guide = () => {
                     src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url}
                     alt={`${doctors[selected]?.name || doctors[selected]?.first_name} profile`}
                     className="doctor-modal-img"
-                    style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "10px", transform: "none" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: "10px", transform: "none" }}
                     onError={(e) => {
                       // Fallback to initials if image fails to load
                       e.target.style.display = 'none';
@@ -919,19 +1018,19 @@ const Guide = () => {
                     )}
                     {doctors[selected]?.price && (
                       <h6 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 12, lineHeight: '1.2' }}>
-                        <span>Price</span>
+                        <span>Starting from</span>
                         <span style={{ color: "#27ae60" }}>₹{doctors[selected].price}</span>
                       </h6>
                     )}
                   </div>
                 )}
                 
-                {/* Specialization */}
+                {/* Specialization (replaces Personality in modal) */}
                 {(() => {
                   const expertiseArray = doctors[selected]?.area_of_expertise && Array.isArray(doctors[selected].area_of_expertise) && doctors[selected].area_of_expertise.length > 0 
                     ? doctors[selected].area_of_expertise 
                     : [];
-                  
+
                   return expertiseArray.length > 0 ? (
                     <div style={{ marginBottom: 8, marginTop: 8 }}>
                       <h6 style={{ marginBottom: 8, marginTop: 0, fontWeight: 600 }}>Specialization</h6>
@@ -954,8 +1053,7 @@ const Guide = () => {
                 })()}
                 
                 {/* Description */}
-                <h6 style={{ marginBottom: 0, marginTop: 0, fontWeight: 600 }}>Description</h6>
-                <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.3' }}>
+                <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.2' }}>
                   {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
                 </p>
                 
@@ -978,7 +1076,7 @@ const Guide = () => {
 
                 <button
                   className="doctor-modal-button find-guide-button"
-                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '14px 100px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
                 >
                   Find your Guide

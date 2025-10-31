@@ -9,16 +9,23 @@ export default function VideosShowcase({ cmsData = null }) {
     { src: "/intro_2.mp4", poster: "/testimonial4.PNG" },
   ];
   const videos = (cmsData?.videos && cmsData.videos.length) ? cmsData.videos : defaultVideos;
-  // Build display list with one extra card at both ends, matching side sizes
-  const displayVideos = [
-    videos[0],
-    videos[0],
-    videos[1],
-    videos[2],
-    videos[2],
-  ];
+  // Build display list of 5 slots, allow per-video position (0..4). Fallback to simple spread.
+  let displayVideos = new Array(5);
+  videos.forEach((v) => {
+    if (v && typeof v.position === 'number' && v.position >= 0 && v.position <= 4) {
+      displayVideos[v.position] = v;
+    }
+  });
+  // Fill gaps with available videos in order
+  let fillIdx = 0;
+  for (let i = 0; i < 5; i++) {
+    if (!displayVideos[i]) {
+      displayVideos[i] = videos[fillIdx % videos.length];
+      fillIdx++;
+    }
+  }
   
-  const [playingVideo, setPlayingVideo] = useState(2); // Center (index 2) plays by default in 5-card layout
+  const [playingVideo, setPlayingVideo] = useState(typeof cmsData?.featuredIndex === 'number' ? cmsData.featuredIndex : 2); // default center
   const videoRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
   const scrollerRef = useRef(null);
 
@@ -62,12 +69,14 @@ export default function VideosShowcase({ cmsData = null }) {
     <section className="w-full pt-12 md:pt-16 pb-6 md:pb-8" style={{ marginTop: '96px' }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="px-4 sm:px-6 mb-10 md:mb-14 text-center">
-          <p className="text-center md:text-center mt-2 text-sm md:text-base">
-            Let's Watch
-          </p>
+          {cmsData?.videosSubheading && (
+            <p className="text-center md:text-center mt-2 text-sm md:text-base">
+              {cmsData.videosSubheading}
+            </p>
+          )}
           <div className="mt-3 text-center md:text-center px-4">
             <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-              See More of What We Do
+              {cmsData?.videosHeading || 'See More of What We Do'}
             </h3>
           </div>
         </div>

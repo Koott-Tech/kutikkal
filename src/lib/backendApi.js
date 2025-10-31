@@ -828,6 +828,67 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+
+  // Assessment Services Management
+  async getAssessments(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/assessments/admin?${queryParams}`);
+  },
+
+  async getAssessment(id) {
+    return apiRequest(`/assessments/admin/${id}`);
+  },
+
+  async createAssessment(assessmentData) {
+    return apiRequest('/assessments/admin', {
+      method: 'POST',
+      body: JSON.stringify(assessmentData),
+    });
+  },
+
+  async updateAssessment(id, assessmentData) {
+    return apiRequest(`/assessments/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(assessmentData),
+    });
+  },
+
+  async deleteAssessment(id) {
+    return apiRequest(`/assessments/admin/${id}`, {
+      method: 'DELETE',
+    });
+  },
+  
+  // Better Parenting CMS (admin)
+  async getBetterParentingPages(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => { if (value) queryParams.append(key, value); });
+    return apiRequest(`/better-parenting/admin?${queryParams}`);
+  },
+  async getBetterParentingPage(id) {
+    return apiRequest(`/better-parenting/admin/${id}`);
+  },
+  async createBetterParentingPage(data) {
+    return apiRequest('/better-parenting/admin', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  async updateBetterParentingPage(id, data) {
+    return apiRequest(`/better-parenting/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  async deleteBetterParentingPage(id) {
+    return apiRequest(`/better-parenting/admin/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Superadmin API

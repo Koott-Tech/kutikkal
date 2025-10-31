@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Footer({ isHomePage = false, isCmsPage = false }) {
     const [openSections, setOpenSections] = useState({});
+    const [counsellingMenu, setCounsellingMenu] = useState({
+        emotional: [],
+        development: [],
+        behaviour: [],
+        stress: [],
+        trauma: []
+    });
 
     const toggleSection = (section) => {
         setOpenSections(prev => ({
@@ -11,6 +18,36 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
             [section]: !prev[section]
         }));
     };
+
+    // Fetch counselling menu from API (same source as header)
+    useEffect(() => {
+        async function fetchCounselling() {
+            try {
+                const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                const res = await fetch(`${base}/api/counselling?limit=50`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                const services = Array.isArray(data) ? data : (data?.message || data?.services || []);
+                const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
+                services.forEach((s) => {
+                    const title = s?.name || s?.title || '';
+                    const slug = s?.slug || '';
+                    const category = (s?.category || '').toLowerCase();
+                    const item = { title, url: `/counselling/${slug}` };
+                    if (category.includes('emotional') || category.includes('mental')) grouped.emotional.push(item);
+                    else if (category.includes('development') || category.includes('learning')) grouped.development.push(item);
+                    else if (category.includes('behaviour') || category.includes('behavior')) grouped.behaviour.push(item);
+                    else if (category.includes('stress') || category.includes('academic')) grouped.stress.push(item);
+                    else if (category.includes('trauma') || category.includes('healing')) grouped.trauma.push(item);
+                    else grouped.emotional.push(item);
+                });
+                setCounsellingMenu(grouped);
+            } catch (_) {
+                // swallow
+            }
+        }
+        fetchCounselling();
+    }, []);
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
@@ -100,7 +137,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                         <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('counselling')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
                             >
                                 <h5 className="text-white">Counselling</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -121,11 +158,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_emotional ? 'block' : 'hidden'}`}>
-                                        <li><a href="/counselling/anxiety-sadness" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Anxiety Counselling</a></li>
-                                        <li><a href="/counselling/depression" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Depression Counselling</a></li>
-                                        <li><a href="/counselling/big-emotions" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Big Emotions (CBT – Kids)</a></li>
-                                        <li><a href="/counselling/overthinking-ocd" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Overthinking & OCD</a></li>
-                                        <li><a href="/counselling/fear-phobias-support" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Fear & Phobias Support</a></li>
+                                        {counsellingMenu.emotional.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
                                     </ul>
                                 </div>
                                 {/* Category: Child Development & Learning */}
@@ -140,10 +175,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_development ? 'block' : 'hidden'}`}>
-                                        <li><a href="/counselling/adhd-attention" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">ADHD or Attention Struggles</a></li>
-                                        <li><a href="/counselling/learning-difficulties" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Learning Difficulties (Remedial)</a></li>
-                                        <li><a href="/counselling/autism-support" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Autism Support</a></li>
-                                        <li><a href="/counselling/communication-social-skills" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Communication & Social Skills</a></li>
+                                        {counsellingMenu.development.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
                                     </ul>
                                 </div>
                                 {/* Category: Behaviour & Confidence */}
@@ -158,8 +192,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_behaviour ? 'block' : 'hidden'}`}>
-                                        <li><a href="/counselling/behavioral-coaching" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Behavioral Coaching</a></li>
-                                        <li><a href="/counselling/confidence-self-esteem" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Confidence & Self-Esteem</a></li>
+                                        {counsellingMenu.behaviour.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
                                     </ul>
                                 </div>
                                 {/* Category: Stress & Academic Support */}
@@ -174,7 +209,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_stress ? 'block' : 'hidden'}`}>
-                                        <li><a href="/counselling/exam-fear-study-stress" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Exam Fear & Study Stress</a></li>
+                                        {counsellingMenu.stress.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
                                     </ul>
                                 </div>
                                 {/* Category: Trauma & Healing */}
@@ -189,97 +226,19 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_trauma ? 'block' : 'hidden'}`}>
-                                        <li><a href="/counselling/grief-loss" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Grief & Loss</a></li>
-                                        <li><a href="/counselling/trauma-abuses" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Trauma & Abuses</a></li>
-                                        <li><a href="/counselling/family-conflict-recovery" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Family Conflict Recovery</a></li>
+                                        {counsellingMenu.trauma.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        {/* Assessments */}
-                        <div className="space-y-5 lg:ml-4 xl:ml-8">
-                            <button
-                                onClick={() => toggleSection('assessments')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
-                            >
-                                <h5 className="text-white">Assessments</h5>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <h5 className="hidden md:block text-white mb-8">Assessments</h5>
-                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
-                                {/* Category: ADHD Assessments */}
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => toggleSection('a_adhd')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
-                                    >
-                                        <span>ADHD Assessments</span>
-                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_adhd ? 'block' : 'hidden'}`}>
-                                        <li><a href="/assessments/adhd-vanderbilt" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">ADHD Vanderbilt</a></li>
-                                        <li><a href="/assessments/adhd-conners-3" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">ADHD Conners 3</a></li>
-                                    </ul>
-                                </div>
-                                {/* Category: Emotional & Behavioral Screening */}
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => toggleSection('a_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-semibold text-white/90 text-left cursor-pointer gap-2"
-                                    >
-                                        <span className="text-left">Emotional & Behavioral</span>
-                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 text-left ${openSections.a_emotional ? 'block' : 'hidden'}`}>
-                                        <li><a href="/assessments/basc-3" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">BASC-3</a></li>
-                                        <li><a href="/assessments/child-depression-inventory" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Child Depression Inventory</a></li>
-                                        <li><a href="/assessments/spence-anxiety-scale" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Spence Anxiety Scale</a></li>
-                                    </ul>
-                                </div>
-                                {/* Category: Intelligence Tests */}
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => toggleSection('a_intelligence')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
-                                    >
-                                        <span>Intelligence Tests</span>
-                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
-                                        <li><a href="/assessments/vsms" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">VSMS</a></li>
-                                    </ul>
-                                </div>
-                                {/* Category: Projective Tests */}
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => toggleSection('a_projective')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
-                                    >
-                                        <span>Projective Tests</span>
-                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-1 ${openSections.a_projective ? 'block' : 'hidden'}`}>
-                                        <li><a href="/assessments/cat" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">CAT (Child Apperception Test)</a></li>
-                                        <li><a href="/assessments/child-sentence-completion" className="text-white hover:text-green-200 transition-colors duration-200 text-sm">Child Sentence Completion Test</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Assessments removed */}
                         {/* About Us */}
                         <div className="space-y-5 lg:ml-8 xl:ml-16">
                             <button
                                 onClick={() => toggleSection('about')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
                             >
                                 <h5 className="text-white">About Us</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -298,7 +257,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                         <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('resources')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
                             >
                                 <h5 className="text-white">Resources</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -310,7 +269,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
                                 <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
                                 <li><a href="/free-assessment" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Free assessment</a></li>
-                                <li><a href="/assessments" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Tools</a></li>
+                                
                             </ul>
                         </div>
                     </div>
