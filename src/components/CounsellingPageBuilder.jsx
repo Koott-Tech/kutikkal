@@ -11,6 +11,8 @@ import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import InfoCards from '@/components/InfoCards';
 import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
+import VideosShowcase from '@/components/VideosShowcase';
+import Reviews from '@/components/Reviews';
 
 export default function CounsellingPageBuilder({ 
   serviceId, 
