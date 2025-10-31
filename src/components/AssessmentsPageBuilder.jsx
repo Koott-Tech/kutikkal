@@ -14,6 +14,8 @@ import VideosShowcase from '@/components/VideosShowcase';
 import Reviews from '@/components/Reviews';
 import BlogTeaser from '@/components/BlogTeaser';
 import ImageUpload from '@/components/ImageUpload';
+import TherapistCarousel from '@/components/TherapistCarousel';
+import { publicApi } from '@/lib/backendApi';
 
 export default function AssessmentsPageBuilder({ 
   serviceId, 
@@ -72,6 +74,7 @@ export default function AssessmentsPageBuilder({
   const [activeElement, setActiveElement] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [therapists, setTherapists] = useState([]);
 
   useEffect(() => {
     if (initialData) {
@@ -127,6 +130,18 @@ export default function AssessmentsPageBuilder({
       });
     }
   }, [initialData]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await publicApi.getPsychologists();
+        const list = data?.data?.psychologists || [];
+        if (mounted) setTherapists(list.slice(0, 6));
+      } catch (_) {}
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -527,8 +542,39 @@ export default function AssessmentsPageBuilder({
                     <textarea value={card.description} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'description', e.target.value)} rows={3} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon</label>
+                    <select
+                      value={card.icon || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">None</option>
+                      <option value="speech-bubble">Speech bubble</option>
+                      <option value="pill">Pill</option>
+                      <option value="combination">Combination</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon Color</label>
+                    <select
+                      value={card.iconColor || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'iconColor', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Default</option>
+                      <option value="purple">Purple</option>
+                      <option value="green">Green</option>
+                      <option value="blue">Blue</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA</label>
                     <input type="text" value={card.cta} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'cta', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA Link (URL)</label>
+                    <input type="text" placeholder="e.g., /assessments or /assessments/adhd" value={card.ctaLink || card.link || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <p className="text-xs text-gray-500 mt-1">Used as anchor href for the button</p>
                   </div>
                 </div>
               </div>
@@ -1178,6 +1224,7 @@ export default function AssessmentsPageBuilder({
                     </h3>
                   </div>
                 </div>
+                <TherapistCarousel therapists={therapists} />
               </div>
             ))}
 

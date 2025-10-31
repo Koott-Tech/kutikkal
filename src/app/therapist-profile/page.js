@@ -481,7 +481,7 @@ const TherapistProfileContent = () => {
       const clientId = slotReservation.data.clientId;
       const amount = slotReservation.data.price;
       const sessionType = selectedPackage.session_count > 1 ? 'Package Session' : 'Individual Session';
-      
+
       // Debug logging
       console.log('🔍 Payment Debug Info:', {
         scheduledDate,
@@ -498,7 +498,7 @@ const TherapistProfileContent = () => {
         clientProfile: clientProfile,
         slotReservation: slotReservation.data
       });
-      
+
       const paymentData = {
         scheduledDate: scheduledDate,
         scheduledTime: scheduledTime,
@@ -548,8 +548,8 @@ const TherapistProfileContent = () => {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = paymentResponse.data.redirectUrl;
-        form.target = '_self'; // Changed from '_blank' to '_self' to open in same window
-        form.style.display = 'none'; // Hide the form
+        form.target = '_self';
+        form.style.display = 'none';
 
         // Add PayU parameters
         Object.entries(paymentResponse.data.payuParams).forEach(([key, value]) => {
@@ -565,21 +565,19 @@ const TherapistProfileContent = () => {
         console.log('🚀 Submitting form to PayU...');
         form.submit();
         
-        // Don't remove the form immediately - let it submit first
+        // Cleanup
         setTimeout(() => {
           if (document.body.contains(form)) {
             document.body.removeChild(form);
           }
         }, 1000);
 
-        // Show success message for session creation
+        // UI success state
         setBookingSuccess(true);
-        // Reset selections
         setSelectedDate(null);
         setSelectedTime(null);
         setSelectedPackage(null);
         setSelectedPrice(null);
-        // Show success message
         setTimeout(() => setBookingSuccess(false), 5000);
       } else {
         console.error('❌ Payment response failed:', paymentResponse);
@@ -1293,7 +1291,8 @@ const TherapistProfileContent = () => {
                                 // Find next available date
                                 const nextAvailable = Object.entries(psychologistAvailability)
                                   .find(([date, availability]) => 
-                                    new Date(date) > selectedDate && availability.available && availability.timeSlots?.length > 0
+                                    new Date(date) > selectedDate &&
+                                    ((availability.availableSlots && availability.availableSlots > 0) || (availability.timeSlots && availability.timeSlots.length > 0))
                                   );
                                 if (nextAvailable) {
                                   setSelectedDate(new Date(nextAvailable[0]));
@@ -1320,21 +1319,7 @@ const TherapistProfileContent = () => {
                           <div className="space-y-2">
                             <p className="text-sm font-medium text-green-700">Available Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
-                              {availableSlots
-                                .filter((time) => {
-                                  // Hide past time slots if selected date is today
-                                  if (!selectedDate) return true;
-                                  const now = new Date();
-                                  const isToday = selectedDate.getFullYear() === now.getFullYear() &&
-                                                 selectedDate.getMonth() === now.getMonth() &&
-                                                 selectedDate.getDate() === now.getDate();
-                                  if (!isToday) return true;
-                                  const [hh, mm] = time.split(':');
-                                  const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
-                                  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-                                  return slotMinutes > nowMinutes;
-                                })
-                                .map((time) => (
+                              {availableSlots.map((time) => (
                                 <button
                                   key={time}
                                   onClick={() => handleTimeSelect(time)}

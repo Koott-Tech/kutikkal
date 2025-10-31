@@ -4,6 +4,8 @@ import HelpFaq from '@/components/HelpFaq';
 import ScrollToTop from '@/components/ScrollToTop';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
+import TherapistCarousel from '@/components/TherapistCarousel';
+import { publicApi } from '@/lib/backendApi';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,6 +29,10 @@ export default async function AssessmentDynamicPage({ params }) {
   const { slug } = await params;
   const data = await fetchAssessment(slug);
 
+  // Fetch therapists (6 cards)
+  const therapistsData = await publicApi.getPsychologists().catch(() => ({ data: { psychologists: [] } }));
+  const therapists = therapistsData?.data?.psychologists?.slice(0, 6) || [];
+
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';
   const imageUrl = data?.hero_image_url || '';
@@ -45,6 +51,17 @@ export default async function AssessmentDynamicPage({ params }) {
         }}
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
+      {/* Therapist grid under hero */}
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
+        <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
+          <div className="mt-3 text-center md:text-center px-4">
+            <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+              {data?.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
+            </h3>
+          </div>
+        </div>
+        <TherapistCarousel therapists={therapists} />
+      </div>
       {/* Benefits (render with safe defaults like counselling) */}
       <div className="mt-8">
         <BenefitsSection 

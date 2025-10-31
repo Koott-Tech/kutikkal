@@ -498,8 +498,39 @@ export default function CounsellingPageBuilder({
                     <textarea value={card.description} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'description', e.target.value)} rows={3} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon</label>
+                    <select
+                      value={card.icon || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">None</option>
+                      <option value="speech-bubble">Speech bubble</option>
+                      <option value="pill">Pill</option>
+                      <option value="combination">Combination</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon Color</label>
+                    <select
+                      value={card.iconColor || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'iconColor', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Default</option>
+                      <option value="purple">Purple</option>
+                      <option value="green">Green</option>
+                      <option value="blue">Blue</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA</label>
                     <input type="text" value={card.cta} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'cta', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA Link (URL)</label>
+                    <input type="text" placeholder="e.g., /counselling or /assessments/adhd" value={card.ctaLink || card.link || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <p className="text-xs text-gray-500 mt-1">Used as anchor href for the button</p>
                   </div>
                 </div>
               </div>

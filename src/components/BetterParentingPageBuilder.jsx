@@ -12,6 +12,8 @@ import Reviews from '@/components/Reviews';
 import BlogTeaser from '@/components/BlogTeaser';
 import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
+import TherapistCarousel from '@/components/TherapistCarousel';
+import { publicApi } from '@/lib/backendApi';
 
 export default function BetterParentingPageBuilder({ pageId, initialData = null, onSubmit, onCancel, loading = false }) {
   const [formData, setFormData] = useState({
@@ -31,6 +33,11 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
     right_image_url: '',
     mobile_image_url: '',
     faqs: [],
+    condition_boxes: [
+      { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
+      { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
+      { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+    ],
     therapists_heading: '',
     info_cards: [],
     videos: [],
@@ -46,6 +53,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
   const [activeElement, setActiveElement] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [therapists, setTherapists] = useState([]);
 
   useEffect(() => {
     if (initialData) {
@@ -66,6 +74,11 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
         right_image_url: initialData.right_image_url || '',
         mobile_image_url: initialData.mobile_image_url || '',
         faqs: initialData.faqs || [],
+        condition_boxes: initialData.condition_boxes || [
+          { title: 'ADHD', description: 'Support for attention and focus challenges', link: '/assessments/adhd-vanderbilt' },
+          { title: 'Anxiety', description: 'Help managing worry and stress', link: '/counselling/anxiety-sadness' },
+          { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
+        ],
         therapists_heading: initialData.therapists_heading || '',
         info_cards: initialData.info_cards || [],
         videos: initialData.videos || [],
@@ -79,6 +92,18 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
       });
     }
   }, [initialData]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await publicApi.getPsychologists();
+        const list = data?.data?.psychologists || [];
+        if (mounted) setTherapists(list.slice(0, 6));
+      } catch (_) {}
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -167,8 +192,39 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                     <textarea value={card.description || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'description', e.target.value)} rows={3} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon</label>
+                    <select
+                      value={card.icon || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'icon', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">None</option>
+                      <option value="speech-bubble">Speech bubble</option>
+                      <option value="pill">Pill</option>
+                      <option value="combination">Combination</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Icon Color</label>
+                    <select
+                      value={card.iconColor || ''}
+                      onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'iconColor', e.target.value)}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Default</option>
+                      <option value="purple">Purple</option>
+                      <option value="green">Green</option>
+                      <option value="blue">Blue</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA</label>
                     <input type="text" value={card.cta || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'cta', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA Link (URL)</label>
+                    <input type="text" placeholder="e.g., /better-parenting or /counselling" value={card.ctaLink || card.link || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <p className="text-xs text-gray-500 mt-1">Used as anchor href for the button</p>
                   </div>
                 </div>
               </div>
@@ -220,6 +276,33 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea value={benefit.description} onChange={(e) => handleArrayItemUpdate('benefits', i, 'description', e.target.value)} rows={2} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      case 'condition_boxes':
+        return (
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="text-base md:text-lg font-semibold">Edit Condition Boxes</h3>
+            {formData.condition_boxes.map((box, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="text-sm md:text-base font-medium">Box {index + 1}</h4>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" value={box.title} onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'title', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea value={box.description} onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'description', e.target.value)} rows={2} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                    <input type="text" value={box.link} onChange={(e) => handleArrayItemUpdate('condition_boxes', index, 'link', e.target.value)} placeholder="e.g., /counselling/anxiety-sadness" className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                 </div>
               </div>
@@ -453,13 +536,13 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                   <div className="space-y-2">
                     <button onClick={() => handleElementClick('hero')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🎯 Hero Section</button>
                     <button onClick={() => handleElementClick('benefits')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">✨ Benefits</button>
-                    <button onClick={() => handleElementClick('types')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">📚 Sections</button>
-                    <button onClick={() => handleElementClick('therapists')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">👩‍⚕️ Therapists Heading</button>
-                    <button onClick={() => handleElementClick('info_cards')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🧩 Info Cards</button>
-                    <button onClick={() => handleElementClick('videos')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🎥 Video Reviews</button>
-                    <button onClick={() => handleElementClick('reviews')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">⭐ Text Reviews</button>
+                    <button onClick={() => handleElementClick('types')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🎭 Therapy Types</button>
+                    <button onClick={() => handleElementClick('condition_boxes')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">📦 Condition Boxes</button>
                     <button onClick={() => handleElementClick('faqs')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">❓ FAQs</button>
                     <button onClick={() => handleElementClick('images')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🖼️ Images</button>
+                    <button onClick={() => handleElementClick('videos')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🎥 Video Reviews</button>
+                    <button onClick={() => handleElementClick('reviews')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">⭐ Text Reviews</button>
+                    <button onClick={() => handleElementClick('info_cards')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🧩 Info Cards</button>
                     <button onClick={() => handleElementClick('seo')} className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">🔍 SEO Settings</button>
                   </div>
                 </div>
@@ -493,6 +576,26 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
 
           <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} />
 
+          {/* Therapists heading and grid under hero */}
+          {renderEditableElement('therapists', (
+            <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
+              <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
+                <div className="mt-3 text-center md:text-center px-4">
+                  <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+                    {formData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
+                  </h3>
+                </div>
+              </div>
+              <TherapistCarousel therapists={therapists} />
+            </div>
+          ))}
+
+          {/* How It Works */}
+          <div className="mt-8">
+            <HowItWorks />
+          </div>
+
+          {/* Benefits Section */}
           {renderEditableElement('benefits', (
             <BenefitsSection 
               therapyType="better-parenting"
@@ -505,12 +608,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
             />
           ))}
 
-          {/* How It Works & Consultation */}
-          <div className="mt-8">
-            <HowItWorks />
-          </div>
-          {/* Consultation Banner removed */}
-
+          {/* Therapy Types */}
           {renderEditableElement('types', (
             <TherapyTypesSplit 
               therapyType="better-parenting"
@@ -536,16 +634,9 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
             </div>
           ))}
 
-          {renderEditableElement('therapists', (
-            <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
-              <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
-                <div className="mt-3 text-center md:text-center px-4">
-                  <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-                    {formData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
-                  </h3>
-                </div>
-              </div>
-            </div>
+          {/* Info Cards */}
+          {renderEditableElement('info_cards', (
+            <InfoCards cmsData={{ items: formData.info_cards }} />
           ))}
 
           {renderEditableElement('info_cards', (
