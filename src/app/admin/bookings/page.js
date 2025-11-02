@@ -26,6 +26,7 @@ import {
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
+import AdminManualBookingModal from '@/components/AdminManualBookingModal';
 import { cache } from '@/lib/cache';
 
 export default function BookingsPage() {
@@ -38,6 +39,7 @@ export default function BookingsPage() {
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -119,6 +121,12 @@ export default function BookingsPage() {
       )
     );
     showSuccess('Session rescheduled successfully!', 'Reschedule Success');
+  };
+
+  const handleManualBookingSuccess = (newBooking) => {
+    // Add new booking to the list and refresh
+    loadBookings();
+    showSuccess('Manual booking created successfully!', 'Booking Created');
   };
 
 
@@ -285,6 +293,13 @@ export default function BookingsPage() {
             Manage therapy sessions and appointments across the platform
           </p>
         </div>
+        <button
+          onClick={() => setIsManualBookingOpen(true)}
+          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          Create Manual Booking
+        </button>
       </div>
 
       {/* Filters and Search */}
@@ -730,6 +745,13 @@ export default function BookingsPage() {
         onClose={() => setIsRescheduleOpen(false)}
         session={selectedSession}
         onRescheduleSuccess={handleRescheduleSuccess}
+      />
+
+      {/* Admin Manual Booking Modal */}
+      <AdminManualBookingModal
+        isOpen={isManualBookingOpen}
+        onClose={() => setIsManualBookingOpen(false)}
+        onBookingSuccess={handleManualBookingSuccess}
       />
 
     </div>

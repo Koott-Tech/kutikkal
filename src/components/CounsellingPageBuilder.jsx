@@ -1102,6 +1102,12 @@ export default function CounsellingPageBuilder({
                       ⭐ Text Reviews
                     </button>
                     <button
+                      onClick={() => handleElementClick('info_cards')}
+                      className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      🧩 Info Cards
+                    </button>
+                    <button
                       onClick={() => handleElementClick('seo')}
                       className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >

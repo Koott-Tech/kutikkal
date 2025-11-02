@@ -5,6 +5,7 @@ import ScrollToTop from '@/components/ScrollToTop';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import TherapistCarousel from '@/components/TherapistCarousel';
+import InfoCards from '@/components/InfoCards';
 import { publicApi } from '@/lib/backendApi';
 
 export const dynamic = 'force-dynamic';
@@ -82,6 +83,12 @@ export default async function AssessmentDynamicPage({ params }) {
           }} 
         />
       </div>
+      {/* Info Cards */}
+      {(data?.info_cards && data.info_cards.length > 0) && (
+        <div className="mt-8">
+          <InfoCards cmsData={{ items: data.info_cards }} />
+        </div>
+      )}
       <div className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <HelpFaq />

@@ -639,10 +639,6 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
             <InfoCards cmsData={{ items: formData.info_cards }} />
           ))}
 
-          {renderEditableElement('info_cards', (
-            <InfoCards cmsData={{ items: formData.info_cards }} />
-          ))}
-
           {/* Blog teaser (preview) */}
           {(formData.blog_teaser_enabled !== false) && (
             <div className="mt-12 md:mt-16">

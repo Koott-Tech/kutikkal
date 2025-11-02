@@ -266,7 +266,7 @@ export default async function CounsellingDynamicPage({ params }) {
       {/* Info Cards under Types of Therapy */}
       <div className="-mt-8 md:-mt-24">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
-          <InfoCards cmsData={{ items: serviceData.info_cards }} hideIcons />
+          <InfoCards cmsData={{ items: serviceData.info_cards }} />
         </div>
       </div>
       {/* Reviews */}

@@ -735,6 +735,14 @@ export const adminApi = {
     return apiRequest(`/admin/psychologists/${psychologistId}/calendar-events?startDate=${startDate}&endDate=${endDate}`);
   },
 
+  // Create manual booking (admin only)
+  async createManualBooking(bookingData) {
+    return apiRequest('/admin/bookings/manual', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    });
+  },
+
   // Free Assessment Timeslots API
   async getFreeAssessmentTimeslots() {
     return apiRequest('/free-assessment-timeslots');
