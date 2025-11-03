@@ -6,8 +6,8 @@ import Footer from './Footer';
 export default function FooterWrapper() {
   const pathname = usePathname();
   
-  // Don't show footer on admin, superadmin, finance, staff, psychologist, and client dashboard pages
-  const hideFooterPaths = ['/admin', '/superadmin', '/finance', '/staff', '/psychologist', '/profile'];
+  // Don't show footer on admin, superadmin, finance, staff, psychologist, client dashboard, login, and register pages
+  const hideFooterPaths = ['/admin', '/superadmin', '/finance', '/staff', '/psychologist', '/profile', '/login', '/register'];
   const shouldHideFooter = hideFooterPaths.some(path => pathname.startsWith(path));
   
   if (shouldHideFooter) {

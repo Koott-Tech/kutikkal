@@ -81,71 +81,29 @@ export default function RegisterPage() {
     router.push('/login');
   };
 
-  // Hide footer on register page
-  useEffect(() => {
-    const footer = document.querySelector('footer');
-    if (footer) {
-      footer.style.display = 'none';
-    }
-
-    // Cleanup function to show footer when leaving the page
-    return () => {
-      if (footer) {
-        footer.style.display = '';
-      }
-    };
-  }, []);
-
   return (
     <div 
       className="register-page"
       style={{ 
         display: "flex", 
-        height: "90vh",
+        minHeight: "100vh",
+        height: "100vh",
         fontFamily: "Arial, Helvetica, sans-serif",
-        paddingTop: "80px" /* offset fixed header */
+        overflow: "hidden"
       }}
     >
       {/* Left Side - Large Image */}
       <div style={{ 
         flex: "1",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        backgroundImage: "url('/signup.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
         overflow: "hidden"
       }} className="hidden md:flex">
-        {/* Background Pattern */}
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"50\" cy=\"10\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"10\" cy=\"60\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"90\" cy=\"40\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>')",
-          opacity: 0.3
-        }}></div>
-        
-        {/* Content */}
-        <div style={{
-          textAlign: "center",
-          color: "white",
-          zIndex: 1,
-          position: "relative",
-          padding: "2rem"
-        }}>
-          <h6 className="text-5xl font-bold mb-4">
-            Join Kuttikal
-          </h6>
-          <p style={{
-            fontSize: "1.25rem",
-            opacity: 0.9,
-            maxWidth: "500px",
-            lineHeight: "1.6"
-          }}>
-            Create your account quickly with just email and password.
-          </p>
-        </div>
       </div>
 
       {/* Right Side - Registration Form (no blue container) */}
@@ -154,7 +112,7 @@ export default function RegisterPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1rem",
+        padding: "clamp(0.75rem, 2vw, 1rem)",
         background: "#ffffff"
       }}>
         <div style={{
@@ -163,16 +121,43 @@ export default function RegisterPage() {
         }}>
           <div style={{
             textAlign: "center",
-            marginBottom: "2rem"
+            marginBottom: "1rem",
+            position: "relative"
           }}>
+            <button 
+              onClick={() => router.push('/')}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                marginBottom: "0.5rem",
+                marginTop: "0",
+                display: "inline-block",
+                position: "relative",
+                top: "clamp(-3rem, -6vw, -1.5rem)"
+              }}
+            >
+              <div 
+                style={{ 
+                  width: "180px", 
+                  height: "60px", 
+                  backgroundImage: "url('/mainlogo.webp')", 
+                  backgroundSize: "contain", 
+                  backgroundRepeat: "no-repeat", 
+                  backgroundPosition: "center",
+                  margin: "0 auto"
+                }}
+              />
+            </button>
             <h6 className="text-3xl font-bold text-gray-900 mb-1">
               Sign Up
             </h6>
             <p style={{
               color: "#6b7280",
-              fontSize: "0.875rem"
+              fontSize: "0.875rem",
+              marginTop: "0.25rem"
             }}>
-              Just email and password to get started
+              Create your account to get started
             </p>
             
             {/* Registration Policy Note removed */}
@@ -185,16 +170,16 @@ export default function RegisterPage() {
               color: "#dc2626",
               padding: "0.75rem",
               borderRadius: "0.5rem",
-              marginBottom: "1rem",
+              marginBottom: "0.75rem",
               fontSize: "0.875rem"
             }}>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ spaceY: "1rem" }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* Email */}
-            <div style={{ marginBottom: "1rem" }}>
+            <div>
               <label style={{
                 display: "block",
                 fontSize: "0.875rem",
@@ -222,7 +207,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: "1rem" }}>
+            <div>
               <label style={{
                 display: "block",
                 fontSize: "0.875rem",
@@ -250,7 +235,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Confirm Password */}
-            <div style={{ marginBottom: "1rem" }}>
+            <div>
               <label style={{
                 display: "block",
                 fontSize: "0.875rem",
@@ -283,7 +268,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               style={{
                 width: "100%",
-                background: isLoading ? "#9ca3af" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                backgroundColor: isLoading ? "#9ca3af" : "#3f2e73",
                 color: "white",
                 border: "none",
                 borderRadius: "0.5rem",
@@ -291,12 +276,22 @@ export default function RegisterPage() {
                 fontSize: "1rem",
                 fontWeight: "600",
                 cursor: isLoading ? "not-allowed" : "pointer",
-                transition: "transform 0.2s",
-                marginTop: "0.5rem",
+                transition: "all 0.2s",
+                marginTop: "0.25rem",
                 opacity: isLoading ? 0.7 : 1
               }}
-              onMouseEnter={(e) => !isLoading && (e.target.style.transform = "translateY(-1px)")}
-              onMouseLeave={(e) => !isLoading && (e.target.style.transform = "translateY(0)")}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.target.style.backgroundColor = "#1d1733";
+                  e.target.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.target.style.backgroundColor = "#3f2e73";
+                  e.target.style.transform = "translateY(0)";
+                }
+              }}
             >
               {isLoading ? "Creating Account..." : "Create Account"}
             </button>
@@ -304,7 +299,7 @@ export default function RegisterPage() {
             {/* Login Link */}
             <div style={{
               textAlign: "center",
-              marginTop: "1rem",
+              marginTop: "0.75rem",
               fontSize: "0.875rem",
               color: "#6b7280"
             }}>
@@ -315,10 +310,12 @@ export default function RegisterPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#667eea",
+                  color: "#3f2e73",
                   cursor: "pointer",
                   fontWeight: "500"
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; }}
               >
                 Sign in
               </button>
@@ -329,7 +326,7 @@ export default function RegisterPage() {
           <div style={{
             display: "flex",
             alignItems: "center",
-            margin: "1.5rem 0"
+            margin: "0.75rem 0"
           }}>
             <div style={{
               flex: "1",

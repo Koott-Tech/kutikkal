@@ -11,6 +11,13 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
         stress: [],
         trauma: []
     });
+    const [assessmentsMenu, setAssessmentsMenu] = useState({
+        adhd: [],
+        ebs: [],
+        intelligence: [],
+        projective: []
+    });
+    const [betterParentingMenu, setBetterParentingMenu] = useState([]);
 
     const toggleSection = (section) => {
         setOpenSections(prev => ({
@@ -47,6 +54,59 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
             }
         }
         fetchCounselling();
+    }, []);
+
+    // Fetch assessments menu from API (same source/format as header)
+    useEffect(() => {
+        async function fetchAssessments() {
+            try {
+                const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                const res = await fetch(`${base}/api/assessments?limit=50`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                const list = (data?.message?.assessments) || [];
+                const grouped = { adhd: [], ebs: [], intelligence: [], projective: [] };
+                list
+                    .filter(item => item?.status === 'published' && item?.category)
+                    .forEach(item => {
+                        const name = item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '';
+                        const url = `/assessments/${item?.slug}`;
+                        const entry = { title: name, url, order: item?.menu_order || 0 };
+                        const cat = (item?.category || '').toLowerCase();
+                        if (grouped[cat]) grouped[cat].push(entry);
+                    });
+                Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => a.order - b.order));
+                setAssessmentsMenu(grouped);
+            } catch (_) {
+                // swallow
+            }
+        }
+        fetchAssessments();
+    }, []);
+
+    // Fetch better parenting pages (flat list, ordered)
+    useEffect(() => {
+        async function fetchBetterParenting() {
+            try {
+                const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+                const res = await fetch(`${base}/api/better-parenting?limit=50`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                const pages = (data?.message?.pages) || [];
+                const items = pages
+                    .filter(p => p?.status === 'published')
+                    .map(p => ({
+                        title: p?.seo_title?.replace(' - Little Care', '') || p?.hero_title || p?.title || '',
+                        url: `/better-parenting/${p?.slug}`,
+                        order: p?.menu_order || 0
+                    }))
+                    .sort((a, b) => a.order - b.order);
+                setBetterParentingMenu(items);
+            } catch (_) {
+                // swallow
+            }
+        }
+        fetchBetterParenting();
     }, []);
     return (
         <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
@@ -233,9 +293,110 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 </div>
                             </div>
                         </div>
-                        {/* Assessments removed */}
+                        {/* Assessments (mirrors header groups) */}
+                        <div className="space-y-5">
+                            <button
+                                onClick={() => toggleSection('assessments')}
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                            >
+                                <h5 className="text-white">Assessments</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h5 className="hidden md:block text-white mb-8">Assessments</h5>
+                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
+                                {/* ADHD Assessments */}
+                                <div className="space-y-1">
+                                    <button
+                                        onClick={() => toggleSection('a_adhd')}
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                    >
+                                        <span>ADHD</span>
+                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_adhd ? 'block' : 'hidden'}`}>
+                                        {assessmentsMenu.adhd.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {/* EBS Assessments */}
+                                <div className="space-y-1 mt-2">
+                                    <button
+                                        onClick={() => toggleSection('a_ebs')}
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                    >
+                                        <span>Emotional & Behavioural Scales</span>
+                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_ebs ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_ebs ? 'block' : 'hidden'}`}>
+                                        {assessmentsMenu.ebs.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {/* Intelligence Assessments */}
+                                <div className="space-y-1 mt-2">
+                                    <button
+                                        onClick={() => toggleSection('a_intelligence')}
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                    >
+                                        <span>Intelligence</span>
+                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
+                                        {assessmentsMenu.intelligence.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                {/* Projective Assessments */}
+                                <div className="space-y-1 mt-2">
+                                    <button
+                                        onClick={() => toggleSection('a_projective')}
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                    >
+                                        <span>Projective</span>
+                                        <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_projective ? 'block' : 'hidden'}`}>
+                                        {assessmentsMenu.projective.map((item) => (
+                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Better Parenting (flat list) */}
+                        <div className="space-y-5">
+                            <button
+                                onClick={() => toggleSection('better_parenting')}
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                            >
+                                <h5 className="text-white">Better Parenting</h5>
+                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.better_parenting ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <h5 className="hidden md:block text-white mb-8">Better Parenting</h5>
+                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
+                                {betterParentingMenu.map((item) => (
+                                    <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-sm">{item.title}</a></li>
+                                ))}
+                            </ul>
+                        </div>
                         {/* About Us */}
-                        <div className="space-y-5 lg:ml-8 xl:ml-16">
+                        <div className="space-y-5">
                             <button
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"

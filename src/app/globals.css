@@ -27,6 +27,8 @@ body {
   max-width: 100vw; /* Prevent overflow beyond viewport */
   min-height: 100vh; /* Ensure minimum height */
   position: relative; /* Prevent white space issues */
+  margin: 0; /* Remove default margins */
+  padding: 0; /* Remove default padding */
 }
 
 /* Headings use DM Sans from Google Fonts */
@@ -219,6 +221,13 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  margin: 0; /* Remove default margins */
+  padding: 0; /* Remove default padding */
+}
+
+html {
+  height: 100%; /* Ensure html takes full height */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Ensure increased letter-spacing for body text */
@@ -275,10 +284,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Login page specific styles */
-.login-page {
-  height: 90vh !important;
-  min-height: 90vh !important;
+/* Login page specific styles - removed to allow full height */
+.login-page,
+.register-page {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Android-specific fixes to prevent white space on swipe */

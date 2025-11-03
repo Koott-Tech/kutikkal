@@ -43,9 +43,8 @@ export function AuthProvider({ children }) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login';
-            }
+            // Do NOT hard-redirect here to avoid unexpected redirects on public pages/home
+            // Let route-level guards handle navigation after auth loads
             setIsLoading(false);
             return;
           }

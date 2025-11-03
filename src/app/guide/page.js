@@ -596,6 +596,7 @@ const Guide = () => {
                   max-height: 680px;
                   background: #fff;
                   border-radius: 10px;
+                  background-clip: padding-box; /* ensure rounded corners render cleanly */
                   box-shadow: 0 12px 48px rgba(39,174,96,0.18), 0 4px 16px rgba(0,0,0,0.12);
                   display: grid;
                   grid-template-columns: 45% 55%;
@@ -636,15 +637,27 @@ const Guide = () => {
                   display: flex;
                   align-items: flex-start;
                   justify-content: flex-start;
-                  overflow: hidden;
+                  overflow: hidden; /* clip image to container radius */
                   /* Top | Right | Bottom | Left. Further increased bottom padding */
                   padding: 12px clamp(6px, 1.2vw, 12px) clamp(24px, 5vw, 64px) 12px;
                   border-radius: 10px;
+                  border-top-left-radius: 10px;
+                  border-bottom-left-radius: 10px;
+                  background-clip: padding-box;
                 }
                 .doctor-modal-image img,
                 .doctor-modal-img {
-                  border-radius: 10px !important;
+                  border-radius: 10px !important; /* round all image corners to avoid sharp top-right */
+                  border-top-left-radius: 10px !important;
+                  border-top-right-radius: 10px !important;
+                  border-bottom-left-radius: 10px !important;
+                  border-bottom-right-radius: 10px !important;
                   object-fit: contain !important;
+                }
+                /* Ensure right panel honors top-right rounding */
+                .doctor-modal-content {
+                  border-top-right-radius: 10px;
+                  background: #fff;
                 }
                 
                 /* Ensure laptop view keeps image contained to avoid zoom/crop */
@@ -652,8 +665,16 @@ const Guide = () => {
                   .doctor-modal-image img,
                   .doctor-modal-img {
                     object-fit: contain !important;
-                    object-position: left center !important; /* keep minimal left gap on narrow widths */
+                    object-position: left top !important; /* anchor image to top to avoid extra top whitespace */
                     border-radius: 10px !important;
+                    /* Increase visual height slightly to eliminate bottom gap while keeping width */
+                    height: calc(100% + 28px) !important;
+                    width: auto !important;
+                    max-width: none !important;
+                  }
+                  /* Reduce only bottom padding to remove white gap, keep top padding same */
+                  .doctor-modal-image {
+                    padding: 12px clamp(6px, 1.2vw, 12px) clamp(16px, 2.2vw, 28px) 12px !important;
                   }
                 }
                 .doctor-modal-content {
@@ -666,6 +687,11 @@ const Guide = () => {
                   position: relative;
                   overflow-y: auto;
                   max-height: 100%;
+                  /* Ensure right side respects rounded corners */
+                  border-top-right-radius: 10px;
+                  border-bottom-right-radius: 10px;
+                  overflow: hidden; /* clip inner content to reveal radius visually */
+                  background-clip: padding-box;
                 }
                 .doctor-modal-title {
                   font-weight: 700;
@@ -749,6 +775,11 @@ const Guide = () => {
                   .doctor-modal {
                     display: grid !important;
                     grid-template-columns: 45% 55% !important;
+                    column-gap: 12px; /* add visible gap between image and text */
+                  }
+                  /* Make the image column span both rows so it fills full height and avoids white gap below */
+                  .doctor-modal-image {
+                    grid-row: 1 / span 2;
                   }
                   /* Add subtle bottom fade above buttons on right content */
                   .doctor-modal-content::after {

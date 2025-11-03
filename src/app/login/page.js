@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/AuthContext";
 import { authApi } from "../../lib/backendApi";
-import ForgotPasswordModal from "../../components/ForgotPasswordModal";
 import GoogleSignIn from "../../components/GoogleSignIn";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,8 +13,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: email, 2: OTP
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
   const { login } = useAuth();
+  const { showError, showSuccess } = useNotification();
   
   // Get return URL from query parameters
   const [returnUrl, setReturnUrl] = useState("");
@@ -90,78 +95,113 @@ export default function LoginPage() {
     router.push('/');
   };
 
-  // Hide footer on login page
-  useEffect(() => {
-    const footer = document.querySelector('footer');
-    if (footer) {
-      footer.style.display = 'none';
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError("Please enter your email address");
+      return;
     }
 
-    // Cleanup function to show footer when leaving the page
-    return () => {
-      if (footer) {
-        footer.style.display = '';
-      }
-    };
-  }, []);
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await authApi.sendPasswordResetOTP(email);
+      setForgotPasswordStep(2);
+      showSuccess("OTP sent to your email address", "Check Your Email");
+    } catch (error) {
+      console.error("Send OTP error:", error);
+      const errorMessage = error.message || "Failed to send OTP. Please try again.";
+      setError(errorMessage);
+      showError(errorMessage, "Error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!otp.trim()) {
+      setError("Please enter the OTP");
+      return;
+    }
+    
+    if (!newPassword.trim()) {
+      setError("Please enter a new password");
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await authApi.resetPassword(email, otp, newPassword);
+      showSuccess("Password reset successfully! You can now log in with your new password.", "Success");
+      // Reset forgot password state and go back to login
+      setShowForgotPassword(false);
+      setForgotPasswordStep(1);
+      setOtp("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      console.error("Reset password error:", error);
+      const errorMessage = error.message || "Failed to reset password. Please try again.";
+      setError(errorMessage);
+      showError(errorMessage, "Error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
+    setForgotPasswordStep(1);
+    setOtp("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+  };
+
+  const handleForgotPasswordClick = () => {
+    setShowForgotPassword(true);
+    setForgotPasswordStep(1);
+    setError("");
+  };
 
   return (
     <div 
       className="login-page"
       style={{ 
         display: "flex", 
-        height: "90vh",
+        minHeight: "100vh",
+        height: "100vh",
         fontFamily: "Arial, Helvetica, sans-serif",
-        paddingTop: "80px" /* offset fixed header */
+        overflow: "hidden"
       }}
     >
       {/* Left Side - Large Image */}
       <div style={{ 
         flex: "1",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        backgroundImage: "url('/signin.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
         overflow: "hidden"
       }} className="hidden md:flex">
-        {/* Background Pattern */}
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"50\" cy=\"10\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"10\" cy=\"60\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"90\" cy=\"40\" r=\"0.5\" fill=\"rgba(255,255,255,0.1)\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>')",
-          opacity: 0.3
-        }}></div>
-        
-        {/* Content */}
-        <div style={{
-          textAlign: "center",
-          color: "white",
-          zIndex: 1,
-          position: "relative",
-          padding: "2rem"
-        }}>
-          <div style={{
-            fontSize: "4rem",
-            marginBottom: "1rem",
-            opacity: 0.9
-          }}>
-            🧠
-          </div>
-          <h6 className="text-4xl font-bold mb-4 leading-tight">
-            Welcome Back
-          </h6>
-          <p style={{
-            fontSize: "1.2rem",
-            opacity: 0.9,
-            maxWidth: "400px",
-            lineHeight: "1.6"
-          }}>
-            Continue your journey to better mental health with our trusted providers
-          </p>
-        </div>
       </div>
 
       {/* Right Side - Login Form */}
@@ -170,7 +210,7 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1rem",
+        padding: "clamp(0.75rem, 2vw, 1rem)",
         background: "#fff"
       }}>
         <div style={{
@@ -180,38 +220,373 @@ export default function LoginPage() {
                      {/* Header */}
            <div style={{
              textAlign: "center",
-             marginBottom: "1.5rem"
+             marginBottom: "1rem",
+             position: "relative"
            }}>
             <button 
               onClick={handleBackToHome}
               style={{
                 background: "none",
                 border: "none",
-                fontSize: "1.5rem",
-                fontWeight: "600",
-                color: "#1a1a1a",
                 cursor: "pointer",
-                marginBottom: "1rem"
+                marginBottom: "0.5rem",
+                marginTop: "0",
+                display: "inline-block",
+                position: "relative",
+                top: "clamp(-3rem, -6vw, -1.5rem)"
               }}
             >
-                              LittleMinds
+              <div 
+                style={{ 
+                  width: "180px", 
+                  height: "60px", 
+                  backgroundImage: "url('/mainlogo.webp')", 
+                  backgroundSize: "contain", 
+                  backgroundRepeat: "no-repeat", 
+                  backgroundPosition: "center",
+                  margin: "0 auto"
+                }}
+              />
             </button>
-            <h6 className="text-3xl font-bold text-gray-900 mb-2">
-              Sign in to your account
+            <h6 className="text-3xl font-bold text-gray-900 mb-1">
+              {showForgotPassword ? (forgotPasswordStep === 1 ? "Forgot Password" : "Reset Password") : "Sign in to your account"}
             </h6>
             <p style={{
               color: "#666",
-              fontSize: "1rem"
+              fontSize: "1rem",
+              marginTop: "0.25rem"
             }}>
-              Welcome back! Please enter your details.
+              {showForgotPassword ? (forgotPasswordStep === 1 ? "Enter your email to receive reset instructions" : "Enter OTP and new password") : "Welcome back! Please enter your details."}
             </p>
           </div>
 
+          {/* Forgot Password Form */}
+          {showForgotPassword && forgotPasswordStep === 1 && (
+            <form onSubmit={handleSendOTP} style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem"
+            }}>
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.5rem"
+                }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#3f2e73"}
+                  onBlur={(e) => e.target.style.borderColor = "#d1d5db"}
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              {error && (
+                <div style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#dc2626",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.875rem"
+                }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <button
+                  type="button"
+                  onClick={handleBackToLogin}
+                  style={{
+                    flex: 1,
+                    padding: "0.875rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    color: "#374151",
+                    backgroundColor: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#f9fafb";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "#fff";
+                  }}
+                >
+                  Back to Login
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    flex: 1,
+                    backgroundColor: isLoading ? "#9ca3af" : "#3f2e73",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "0.5rem",
+                    padding: "0.875rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    transition: "all 0.2s",
+                    opacity: isLoading ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = "#1d1733";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = "#3f2e73";
+                    }
+                  }}
+                >
+                  {isLoading ? "Sending..." : "Send OTP"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Reset Password Form (OTP Step) */}
+          {showForgotPassword && forgotPasswordStep === 2 && (
+            <form onSubmit={handleResetPassword} style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.75rem"
+            }}>
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.5rem"
+                }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  disabled
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: "1rem",
+                    backgroundColor: "#f9fafb",
+                    color: "#6b7280",
+                    boxSizing: "border-box"
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.5rem"
+                }}>
+                  OTP Code
+                </label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength="6"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#3f2e73"}
+                  onBlur={(e) => e.target.style.borderColor = "#d1d5db"}
+                  placeholder="Enter 6-digit OTP"
+                />
+                <p style={{
+                  fontSize: "0.75rem",
+                  color: "#6b7280",
+                  marginTop: "0.25rem"
+                }}>
+                  Check your email for the 6-digit code
+                </p>
+              </div>
+
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.5rem"
+                }}>
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#3f2e73"}
+                  onBlur={(e) => e.target.style.borderColor = "#d1d5db"}
+                  placeholder="Enter new password"
+                />
+              </div>
+
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.875rem",
+                  fontWeight: "600",
+                  color: "#374151",
+                  marginBottom: "0.5rem"
+                }}>
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                    boxSizing: "border-box"
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = "#3f2e73"}
+                  onBlur={(e) => e.target.style.borderColor = "#d1d5db"}
+                  placeholder="Confirm new password"
+                />
+              </div>
+
+              {error && (
+                <div style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#dc2626",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.875rem"
+                }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotPasswordStep(1);
+                    setOtp("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setError("");
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.875rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    color: "#374151",
+                    backgroundColor: "#fff",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "0.5rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#f9fafb";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "#fff";
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  style={{
+                    flex: 1,
+                    backgroundColor: isLoading ? "#9ca3af" : "#3f2e73",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "0.5rem",
+                    padding: "0.875rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: "600",
+                    cursor: isLoading ? "not-allowed" : "pointer",
+                    transition: "all 0.2s",
+                    opacity: isLoading ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = "#1d1733";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading) {
+                      e.target.style.backgroundColor = "#3f2e73";
+                    }
+                  }}
+                >
+                  {isLoading ? "Resetting..." : "Reset Password"}
+                </button>
+              </div>
+            </form>
+          )}
+
                      {/* Login Form */}
+           {!showForgotPassword && (
            <form onSubmit={handleSubmit} style={{
              display: "flex",
              flexDirection: "column",
-             gap: "1rem"
+             gap: "0.75rem"
            }}>
             {/* Email Field */}
             <div>
@@ -324,14 +699,16 @@ export default function LoginPage() {
               </label>
               <button
                 type="button"
-                onClick={() => setShowForgotPassword(true)}
+                onClick={handleForgotPasswordClick}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#667eea",
+                  color: "#3f2e73",
                   cursor: "pointer",
                   fontWeight: "500"
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; }}
               >
                 Forgot password?
               </button>
@@ -357,7 +734,7 @@ export default function LoginPage() {
               type="submit"
               disabled={isLoading}
               style={{
-                background: isLoading ? "#9ca3af" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                backgroundColor: isLoading ? "#9ca3af" : "#3f2e73",
                 color: "white",
                 border: "none",
                 borderRadius: "0.5rem",
@@ -365,12 +742,22 @@ export default function LoginPage() {
                 fontSize: "1rem",
                 fontWeight: "600",
                 cursor: isLoading ? "not-allowed" : "pointer",
-                transition: "transform 0.2s",
-                marginTop: "0.5rem",
+                transition: "all 0.2s",
+                marginTop: "0.25rem",
                 opacity: isLoading ? 0.7 : 1
               }}
-              onMouseEnter={(e) => !isLoading && (e.target.style.transform = "translateY(-1px)")}
-              onMouseLeave={(e) => !isLoading && (e.target.style.transform = "translateY(0)")}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.target.style.backgroundColor = "#1d1733";
+                  e.target.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.target.style.backgroundColor = "#3f2e73";
+                  e.target.style.transform = "translateY(0)";
+                }
+              }}
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
@@ -379,7 +766,7 @@ export default function LoginPage() {
              <div style={{
                display: "flex",
                alignItems: "center",
-               margin: "1rem 0"
+               margin: "0.75rem 0"
              }}>
               <div style={{
                 flex: "1",
@@ -415,7 +802,7 @@ export default function LoginPage() {
             {/* Sign Up Link */}
               <div style={{
                 textAlign: "center",
-                marginTop: "1rem",
+                marginTop: "0.75rem",
                 fontSize: "0.875rem",
                 color: "#6b7280"
               }}>
@@ -426,34 +813,20 @@ export default function LoginPage() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#667eea",
+                  color: "#3f2e73",
                   cursor: "pointer",
                   fontWeight: "500"
                 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; }}
               >
                 Sign up
               </button>
             </div>
-            
-            {/* Registration Info */}
-            <div style={{
-              textAlign: "center",
-              marginTop: "0.5rem",
-              fontSize: "0.75rem",
-              color: "#9ca3af"
-            }}>
-              Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators.
-            </div>
           </form>
+          )}
         </div>
       </div>
-
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal
-        isOpen={showForgotPassword}
-        onClose={() => setShowForgotPassword(false)}
-        onBackToLogin={() => setShowForgotPassword(false)}
-      />
     </div>
   );
 }

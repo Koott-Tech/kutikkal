@@ -108,11 +108,11 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
               <Mail className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h6>
                 {step === 1 && "Forgot Password"}
                 {step === 2 && "Reset Password"}
                 {step === 3 && "Success"}
-              </h2>
+              </h6>
               <p className="text-sm text-gray-600">
                 {step === 1 && "Enter your email to receive reset instructions"}
                 {step === 2 && "Enter OTP and new password"}
@@ -164,7 +164,20 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: isLoading ? "#9ca3af" : "#3f2e73"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading) {
+                      e.currentTarget.style.backgroundColor = "#1d1733";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isLoading) {
+                      e.currentTarget.style.backgroundColor = "#3f2e73";
+                    }
+                  }}
                 >
                   {isLoading ? "Sending..." : "Send OTP"}
                 </button>
@@ -272,7 +285,16 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
 
               <button
                 onClick={onBackToLogin}
-                className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 text-sm font-medium text-white border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2"
+                style={{
+                  backgroundColor: "#3f2e73"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1d1733";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#3f2e73";
+                }}
               >
                 Back to Login
               </button>
