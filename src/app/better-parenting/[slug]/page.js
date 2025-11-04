@@ -74,17 +74,24 @@ export default async function BetterParentingDynamicPage({ params }) {
       <div className="mt-8">
         <HowItWorks />
       </div>
-      {/* Consultation Banner removed */}
-      {(data?.videos && data.videos.length > 0) && (
-        <div className="mt-8">
-          <VideosShowcase cmsData={{ videos: data.videos }} />
-        </div>
-      )}
-      {(data?.reviews && data.reviews.length > 0) && (
-        <div className="mt-8">
-          <Reviews cmsData={{ reviews: data.reviews }} />
-        </div>
-      )}
+      {/* Videos showcase */}
+      <div className="mt-8">
+        <VideosShowcase cmsData={{ 
+          videos: (data?.videos || []).map(video => ({
+            src: video.url || video.src,
+            poster: video.thumbnailUrl || video.poster,
+            title: video.title,
+            position: video.position
+          })),
+          videosHeading: data?.videos_heading,
+          videosSubheading: data?.videos_subheading,
+          featuredIndex: data?.videos_featured_index
+        }} />
+      </div>
+      {/* Reviews */}
+      <div className="mt-8">
+        <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
+      </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="mt-8">
           <InfoCards cmsData={{ items: data.info_cards }} />

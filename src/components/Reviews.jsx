@@ -31,9 +31,8 @@ export default function Reviews({ cmsData = null }) {
     ? cmsData.reviews
     : defaultReviews;
 
-  const isStatic = reviews.length <= 2;
-  // duplicate list only when we want seamless loop
-  const loopReviews = isStatic ? reviews : [...reviews, ...reviews, ...reviews];
+  // Always use marquee/scrolling for better UX - duplicate reviews for seamless loop
+  const loopReviews = reviews.length > 0 ? [...reviews, ...reviews, ...reviews] : defaultReviews;
 
   return (
     <section className="w-screen py-0 mt-10 md:mt-0">
@@ -56,15 +55,15 @@ export default function Reviews({ cmsData = null }) {
           <p className="text-sm md:text-base text-gray-600 mt-2 mb-14">Real experiences from families like yours</p>
         </div>
 
-        {/* Static grid when few items; marquee when many */}
-        {isStatic ? (
-          <div className="flex flex-wrap justify-center gap-4">
-            {reviews.map((r, idx) => {
+        {/* Always show scrolling marquee */}
+        <div className="relative overflow-hidden" style={{ marginBottom: '0px' }}>
+          <div className="marquee">
+            {loopReviews.map((r, idx) => {
               const avatarSrc = r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG');
               const displayName = r.author || r.name || 'Parent';
               const handle = r.handle;
               return (
-                <div key={idx} className="w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+                <div key={idx} className="min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                       {avatarSrc ? (
@@ -83,35 +82,7 @@ export default function Reviews({ cmsData = null }) {
               );
             })}
           </div>
-        ) : (
-          <div className="relative overflow-hidden" style={{ marginBottom: '0px' }}>
-            <div className="marquee">
-              {loopReviews.map((r, idx) => {
-                const avatarSrc = r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG');
-                const displayName = r.author || r.name || 'Parent';
-                const handle = r.handle;
-                return (
-                  <div key={idx} className="min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {avatarSrc ? (
-                          <Image src={avatarSrc} alt={displayName} width={40} height={40} className="object-cover" />
-                        ) : (
-                          <span className="text-gray-500 text-sm">🙂</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 text-sm md:text-base">{displayName}</div>
-                        {handle && (<div className="text-gray-500 text-xs md:text-sm">{handle}</div>)}
-                      </div>
-                    </div>
-                    <p className="text-gray-800 text-sm md:text-base leading-relaxed">{r.text}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        </div>
         {/* space below the carousel */}
         
       </div>

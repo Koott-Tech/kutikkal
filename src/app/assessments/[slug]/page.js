@@ -6,6 +6,8 @@ import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import TherapistCarousel from '@/components/TherapistCarousel';
 import InfoCards from '@/components/InfoCards';
+import Reviews from '@/components/Reviews';
+import VideosShowcase from '@/components/VideosShowcase';
 import { publicApi } from '@/lib/backendApi';
 
 export const dynamic = 'force-dynamic';
@@ -83,15 +85,33 @@ export default async function AssessmentDynamicPage({ params }) {
           }} 
         />
       </div>
+      {/* Videos showcase */}
+      <div className="mt-8">
+        <VideosShowcase cmsData={{ 
+          videos: (data?.videos || []).map(video => ({
+            src: video.url || video.src,
+            poster: video.thumbnailUrl || video.poster,
+            title: video.title,
+            position: video.position
+          })),
+          videosHeading: data?.videos_heading,
+          videosSubheading: data?.videos_subheading,
+          featuredIndex: data?.videos_featured_index
+        }} />
+      </div>
       {/* Info Cards */}
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="mt-8">
           <InfoCards cmsData={{ items: data.info_cards }} />
         </div>
       )}
+      {/* Reviews */}
+      <div className="mt-8">
+        <Reviews cmsData={{ reviews: data?.reviews || [] }} />
+      </div>
       <div className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <HelpFaq />
+          <HelpFaq cmsData={{ faqs: data?.faqs || [] }} />
         </div>
       </div>
     </div>

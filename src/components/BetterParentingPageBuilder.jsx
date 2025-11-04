@@ -115,6 +115,8 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
     const newItem = field === 'benefits' ? { title: '', description: '', iconUrl: '' }
       : field === 'types' ? { title: '', description: '' }
       : field === 'faqs' ? { question: '', answer: '' }
+      : field === 'videos' ? { title: '', url: '', thumbnailUrl: '' }
+      : field === 'reviews' ? { author: '', text: '', avatarUrl: '' }
       : { title: '', description: '' };
     setFormData(prev => ({ ...prev, [field]: [...prev[field], newItem] }));
   };
@@ -425,6 +427,10 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
               <h3 className="text-base md:text-lg font-semibold">Text Reviews</h3>
               <button onClick={() => handleArrayItemAdd('reviews')} className="bg-blue-500 text-white px-3 py-1 rounded text-xs md:text-sm hover:bg-blue-600">Add Review</button>
             </div>
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Section Heading</label>
+              <input type="text" value={formData.reviews_heading || ''} onChange={(e)=>handleInputChange('reviews_heading', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="What parents say" />
+            </div>
             {(formData.reviews || []).map((rev, i) => (
               <div key={i} className="border border-gray-200 rounded-lg p-3 md:p-4">
                 <div className="flex justify-between items-start mb-3">
@@ -630,7 +636,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
           {/* Reviews (preview) */}
           {renderEditableElement('reviews', (
             <div className="mt-8">
-              <Reviews cmsData={{ reviews: formData.reviews || [] }} />
+              <Reviews cmsData={{ reviews: formData.reviews || [], title: formData.reviews_heading }} />
             </div>
           ))}
 
