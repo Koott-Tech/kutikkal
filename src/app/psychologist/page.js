@@ -107,10 +107,15 @@ export default function PsychologistDashboard() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h6 className="font-semibold text-gray-900">Dashboard</h6>
-          <p className="mt-2 text-sm text-gray-700">
-            Welcome back! Here&apos;s an overview of your practice.
-          </p>
+          {(() => {
+            const first = user?.first_name || user?.firstName || '';
+            const last = user?.last_name || user?.lastName || '';
+            const fallback = user?.name || user?.email || 'Psychologist';
+            const display = (first || last) ? `${first} ${last}`.trim() : fallback;
+            return (
+              <h6 className="font-semibold text-gray-900">{display}</h6>
+            );
+          })()}
         </div>
       </div>
 

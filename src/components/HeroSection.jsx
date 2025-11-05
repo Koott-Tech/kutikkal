@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import GuideModal from "@/components/GuideModal";
 
 export default function HeroSection({ therapyType = "individual", cmsData = null }) {
+  const [showGuide, setShowGuide] = useState(false);
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -176,6 +179,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                   style={{ backgroundColor: '#3f2e73' }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+                  onClick={() => setShowGuide(true)}
                 >
                   Get started
                 </button>
@@ -246,6 +250,9 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
           </div>
         </div>
       </section>
+      {showGuide && (
+        <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
+      )}
     </div>
   );
 }

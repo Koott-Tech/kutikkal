@@ -69,6 +69,7 @@ export default function AssessmentsPageBuilder({
     ],
     videos: [],
     reviews: [],
+    assigned_doctor_ids: [],
   });
 
   const [activeElement, setActiveElement] = useState(null);
@@ -127,6 +128,7 @@ export default function AssessmentsPageBuilder({
         ],
         videos: initialData.videos || [],
         reviews: initialData.reviews || [],
+        assigned_doctor_ids: initialData.assigned_doctor_ids || [],
       });
     }
   }, [initialData]);
@@ -137,7 +139,7 @@ export default function AssessmentsPageBuilder({
       try {
         const data = await publicApi.getPsychologists();
         const list = data?.data?.psychologists || [];
-        if (mounted) setTherapists(list.slice(0, 6));
+        if (mounted) setTherapists(list); // Load ALL therapists, not just first 6
       } catch (_) {}
     })();
     return () => { mounted = false; };
@@ -362,6 +364,15 @@ export default function AssessmentsPageBuilder({
                 className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+            <div className="mt-4">
+              <ImageUpload
+                currentImageUrl={formData.benefits_image_url}
+                onImageUpload={(url) => handleInputChange('benefits_image_url', url)}
+                imageType="benefits"
+                slug={formData.slug}
+                label="Benefits Section Image"
+              />
+            </div>
             {formData.benefits.map((benefit, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4">
                 <div className="flex justify-between items-start mb-3">
@@ -435,6 +446,15 @@ export default function AssessmentsPageBuilder({
                 onChange={(e) => handleInputChange('types_title', e.target.value)}
                 placeholder="e.g., Types of Therapy"
                 className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="mt-4">
+              <ImageUpload
+                currentImageUrl={formData.right_image_url}
+                onImageUpload={(url) => handleInputChange('right_image_url', url)}
+                imageType="types"
+                slug={formData.slug}
+                label="Types Section Image"
               />
             </div>
             {formData.types.map((type, index) => (
@@ -791,6 +811,56 @@ export default function AssessmentsPageBuilder({
           </div>
         );
 
+      case 'assigned_doctors':
+        return (
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="text-base md:text-lg font-semibold">Assign Doctors for Assessment Booking</h3>
+            <p className="text-xs md:text-sm text-gray-600">Select up to 2 doctors. Their availability will be combined in the booking calendar.</p>
+            {therapists.length === 0 ? (
+              <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-800">No doctors available. Please add doctors first in the Doctors section.</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {therapists.map((doc) => {
+                    const isSelected = formData.assigned_doctor_ids?.includes(doc.id);
+                    return (
+                      <label key={doc.id} className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            const current = formData.assigned_doctor_ids || [];
+                            const updated = e.target.checked
+                              ? [...current.slice(0, 1), doc.id].slice(0, 2) // Keep max 2, add new
+                              : current.filter(id => id !== doc.id);
+                            handleInputChange('assigned_doctor_ids', updated);
+                          }}
+                          disabled={!isSelected && formData.assigned_doctor_ids?.length >= 2}
+                          className="rounded border-gray-300"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{doc.first_name} {doc.last_name}</div>
+                          <div className="text-xs text-gray-500">{doc.area_of_expertise?.join(', ') || 'No specialties'}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+                {formData.assigned_doctor_ids?.length === 2 && (
+                  <p className="text-xs text-amber-600">Maximum 2 doctors selected. Uncheck one to select another.</p>
+                )}
+                {formData.assigned_doctor_ids?.length > 0 && (
+                  <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                    <p className="text-xs text-blue-800 font-medium">Selected: {formData.assigned_doctor_ids.length} of 2 doctors</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        );
+
       case 'seo':
         return (
           <div className="space-y-6">
@@ -1101,6 +1171,12 @@ export default function AssessmentsPageBuilder({
                       className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                     >
                       🎯 Hero Section
+                    </button>
+                    <button
+                      onClick={() => handleElementClick('assigned_doctors')}
+                      className="w-full text-left px-3 py-2 md:py-2.5 text-sm md:text-base border border-gray-200 rounded-md hover:bg-gray-50 transition-colors bg-blue-50 border-blue-200"
+                    >
+                      👨‍⚕️ Assigned Doctors
                     </button>
                     <button
                       onClick={() => handleElementClick('benefits')}

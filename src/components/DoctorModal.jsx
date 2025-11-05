@@ -501,9 +501,11 @@ export default function DoctorModal({
       return;
     }
 
-    // Use IST timezone to avoid date shifting
-    const istDate = new Date(selectedDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
-    const dateStr = istDate.toISOString().split('T')[0];
+    // Build YYYY-MM-DD directly from the selected date without timezone conversions
+    const y = selectedDate.getFullYear();
+    const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const d = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
     const timeSlotsByPeriod = {
       morning: [],
       noon: [],
@@ -730,21 +732,16 @@ export default function DoctorModal({
     }
 
     try {
-      // Convert availability data to the format expected by the backend
+      // Convert availability data to per-date format, preserving exact dates as selected
       const convertedAvailability = Object.entries(availabilityData).map(([dateStr, data]) => {
-        // Use Indian Standard Time (IST) - UTC+5:30
-        const date = new Date(dateStr + 'T00:00:00.000+05:30'); // IST timezone
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
-        const allSlots = [
-          ...data.timeSlots.morning,
-          ...data.timeSlots.noon,
-          ...data.timeSlots.evening,
-          ...data.timeSlots.night
-        ];
-        
         return {
-          day: dayName,
-          slots: allSlots
+          date: dateStr,
+          timeSlots: {
+            morning: Array.isArray(data.timeSlots.morning) ? data.timeSlots.morning : [],
+            noon: Array.isArray(data.timeSlots.noon) ? data.timeSlots.noon : [],
+            evening: Array.isArray(data.timeSlots.evening) ? data.timeSlots.evening : [],
+            night: Array.isArray(data.timeSlots.night) ? data.timeSlots.night : [],
+          }
         };
       });
 

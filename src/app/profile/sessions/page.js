@@ -251,7 +251,7 @@ export default function SessionsPage() {
                         {/* Main Content */}
                         <div className="flex gap-5 items-start">
                           {/* Avatar - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && (
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
                             <div className="flex-shrink-0">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
@@ -273,7 +273,9 @@ export default function SessionsPage() {
                               {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                             </p>
                             <h6 className="text-gray-900 font-bold mb-2">
-                              {session.session_type === 'free_assessment'
+                              {session.session_type === 'assessment' || session.type === 'assessment'
+                                ? `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
+                                : session.session_type === 'free_assessment'
                                 ? 'Free Assessment'
                                 : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
                             </h6>
@@ -355,7 +357,7 @@ export default function SessionsPage() {
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-blue-50/30">
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && (
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
                           <div className="flex-shrink-0">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
@@ -397,7 +399,16 @@ export default function SessionsPage() {
                               </div>
                               
                               <h5 className="text-gray-900 font-semibold mb-3">
-                                {session.session_type === 'free_assessment'
+                                {session.session_type === 'assessment' || session.type === 'assessment'
+                                  ? (
+                                    <span className="flex items-center gap-2">
+                                      <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+                                        Assessment
+                                      </span>
+                                      {session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}
+                                    </span>
+                                  )
+                                  : session.session_type === 'free_assessment'
                                   ? (
                                     <span className="flex items-center gap-2">
                                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
@@ -526,7 +537,7 @@ export default function SessionsPage() {
                         {/* Main Content */}
                         <div className="flex gap-5 items-start">
                           {/* Avatar - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && (
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
                             <div className="flex-shrink-0">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
@@ -548,7 +559,9 @@ export default function SessionsPage() {
                               {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                             </p>
                             <h6 className="text-gray-900 font-bold mb-2">
-                              {session.session_type === 'free_assessment' ? 'Free Assessment' : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
+                              {session.session_type === 'assessment' || session.type === 'assessment'
+                                ? `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
+                                : session.session_type === 'free_assessment' ? 'Free Assessment' : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
                             </h6>
                           </div>
                         </div>
@@ -595,7 +608,7 @@ export default function SessionsPage() {
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-shadow bg-green-50/30">
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && (
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
                           <div className="flex-shrink-0">
                               {session.psychologist?.cover_image_url ? (
                                 <img 

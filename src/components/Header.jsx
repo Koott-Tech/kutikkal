@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
+import GuideModal from "@/components/GuideModal";
+import AuthModal from "@/components/AuthModal";
 import { authApi } from "../lib/backendApi";
 
 export default function Header() {
@@ -19,6 +21,8 @@ export default function Header() {
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
   const [isMobileBetterParentingOpen, setIsMobileBetterParentingOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
   const [isAssessmentsOpen, setIsAssessmentsOpen] = useState(false);
@@ -53,6 +57,7 @@ export default function Header() {
   });
   const [profileData, setProfileData] = useState(null);
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
 
   // Fetch profile data for authenticated users
@@ -299,12 +304,15 @@ export default function Header() {
   };
 
   const handleLoginClick = () => {
-    router.push('/login');
+    setShowAuthModal(true);
   };
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    // If on therapist profile page, stay there; otherwise redirect to home
+    if (!pathname?.includes('/therapist-profile')) {
+      router.push('/');
+    }
     setIsUserMenuOpen(false);
   };
 
@@ -377,6 +385,7 @@ export default function Header() {
   };
 
   return (
+    <>
     <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
       <style jsx>{`
         @media (max-width: 767px) {
@@ -1033,7 +1042,7 @@ export default function Header() {
               </button>
             )}
             <button 
-              onClick={() => router.push('/')} 
+              onClick={() => setShowGuide(true)} 
               className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
               style={{ backgroundColor: '#3f2e73' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -1141,7 +1150,8 @@ export default function Header() {
                   {/* Get Started Button */}
                   <button 
                     onClick={() => {
-                      router.push('/');
+                      setIsMobileMenuOpen(false);
+                      setShowGuide(true);
                     }}
                     className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
                     style={{ backgroundColor: '#3f2e73' }}
@@ -1602,6 +1612,13 @@ export default function Header() {
         )}
       </div>
     </header>
+    {showGuide && (
+      <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
+    )}
+    {showAuthModal && (
+      <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
+    )}
+    </>
   );
 }
 

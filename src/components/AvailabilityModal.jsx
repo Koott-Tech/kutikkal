@@ -88,8 +88,12 @@ export default function AvailabilityModal({ isOpen, onClose, onAddAvailability }
       const isPast = date < today;
       const isToday = date.getTime() === today.getTime();
       
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      
       days.push({
-        date: date.toISOString().split('T')[0],
+        date: `${y}-${m}-${d}`,
         day: date.getDate(),
         isCurrentMonth,
         isPast,

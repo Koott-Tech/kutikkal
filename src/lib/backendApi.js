@@ -389,6 +389,31 @@ export const clientApi = {
     });
   },
 
+  // Reserve assessment slot for payment
+  async reserveAssessmentSlot(data) {
+    return apiRequest('/clients/assessments/reserve-slot', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Book assessment session (after payment)
+  async bookAssessment(data) {
+    return apiRequest('/clients/assessments/book', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Get assessment sessions
+  async getAssessmentSessions(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    return apiRequest(`/clients/assessments/sessions?${queryParams}`);
+  },
+
   // Reserve time slot for payment
   async reserveSlot(data) {
     return apiRequest('/clients/reserve-slot', {
@@ -453,9 +478,31 @@ export const psychologistApi = {
 
   // Complete session with summary, report, and notes
   async completeSession(sessionId, sessionData) {
-    return apiRequest(`/sessions/${sessionId}/complete`, {
-      method: 'PUT',
+    return apiRequest(`/psychologists/sessions/${sessionId}/complete`, {
+      method: 'POST',
       body: JSON.stringify(sessionData),
+    });
+  },
+
+  // Delete regular session
+  async deleteSession(sessionId) {
+    return apiRequest(`/psychologists/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Schedule pending assessment session
+  async scheduleAssessmentSession(assessmentSessionId, scheduleData) {
+    return apiRequest(`/psychologists/assessment-sessions/${assessmentSessionId}/schedule`, {
+      method: 'POST',
+      body: JSON.stringify(scheduleData),
+    });
+  },
+
+  // Delete assessment session
+  async deleteAssessmentSession(assessmentSessionId) {
+    return apiRequest(`/psychologists/assessment-sessions/${assessmentSessionId}`, {
+      method: 'DELETE',
     });
   },
 
@@ -728,6 +775,14 @@ export const adminApi = {
   // Get psychologist availability for reschedule
   async getPsychologistAvailabilityForReschedule(psychologistId, startDate, endDate) {
     return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
+  },
+
+  // Set availability for a psychologist (admin)
+  async setPsychologistAvailability({ psychologist_id, date, time_slots, is_available = true }) {
+    return apiRequest('/availability/set', {
+      method: 'POST',
+      body: JSON.stringify({ psychologist_id, date, time_slots, is_available })
+    });
   },
 
   // Get psychologist calendar events

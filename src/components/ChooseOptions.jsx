@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import GuideModal from "@/components/GuideModal";
 
 export default function ChooseOptions() {
+  const [showGuide, setShowGuide] = useState(false);
+  const [defaultCategory, setDefaultCategory] = useState(null);
   const cards = [
     {
       id: 1,
@@ -44,6 +48,11 @@ export default function ChooseOptions() {
       imageClass: "object-cover object-[50%_100%] scale-110"
     }
   ];
+
+  const openGuide = (categoryKey) => {
+    setDefaultCategory(categoryKey);
+    setShowGuide(true);
+  };
 
   return (
     <section className="w-full py-2 px-4 md:px-4 mt-12 md:mt-20">
@@ -174,7 +183,11 @@ export default function ChooseOptions() {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`card-container relative bg-white rounded-[20px] overflow-hidden flex flex-col h-[500px] md:h-[500px] min-h-[500px] md:min-h-[500px] max-h-[500px] md:max-h-[500px] flex-shrink-0`}
+              className={`card-container relative bg-white rounded-[20px] overflow-hidden flex flex-col h-[500px] md:h-[500px] min-h-[500px] md:min-h-[500px] max-h-[500px] md:max-h-[500px] flex-shrink-0 cursor-pointer`}
+              onClick={() => {
+                const mapping = { 1: 'counselling', 2: 'assessments', 3: 'better-parenting' };
+                openGuide(mapping[card.id]);
+              }}
               style={{ height: '500px' }}
             >
               {/* Colored background that matches image width */}
@@ -240,6 +253,9 @@ export default function ChooseOptions() {
             </div>
           ))}
         </div>
+        {showGuide && (
+          <GuideModal open={showGuide} onClose={() => setShowGuide(false)} defaultCategory={defaultCategory} />
+        )}
       </div>
     </section>
   );

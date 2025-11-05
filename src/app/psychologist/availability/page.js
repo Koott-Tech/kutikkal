@@ -173,12 +173,18 @@ export default function PsychologistAvailability() {
         return;
       }
 
-      // Normalize date to YYYY-MM-DD (ISO8601 date)
+      // Normalize date to YYYY-MM-DD using local components (no timezone conversion)
       const normalizedDate = (() => {
         try {
+          if (typeof updatedData.date === 'string' && /\d{4}-\d{2}-\d{2}/.test(updatedData.date)) {
+            return updatedData.date;
+          }
           const d = new Date(updatedData.date);
           if (Number.isNaN(d.getTime())) return updatedData.date; // fallback
-          return d.toISOString().split('T')[0];
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
         } catch (_) {
           return updatedData.date;
         }
@@ -350,12 +356,13 @@ export default function PsychologistAvailability() {
                       <div>
                         <div className="flex justify-between items-center mb-3">
                           <p className="font-medium text-gray-900">
-                            {new Date(day.date).toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
+                            {(() => {
+                              const [yy, mm, dd] = String(day.date).split('-').map(Number);
+                              const localDate = !Number.isNaN(yy) && !Number.isNaN(mm) && !Number.isNaN(dd)
+                                ? new Date(yy, mm - 1, dd)
+                                : new Date(day.date);
+                              return localDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                            })()}
                           </p>
                           <div className="flex space-x-2">
                             <button 
@@ -405,12 +412,13 @@ export default function PsychologistAvailability() {
                       <div>
                         <div className="flex justify-between items-center mb-3">
                           <p className="font-medium text-gray-900">
-                            {new Date(day.date).toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              year: 'numeric', 
-                              month: 'long', 
-                              day: 'numeric' 
-                            })}
+                            {(() => {
+                              const [yy, mm, dd] = String(day.date).split('-').map(Number);
+                              const localDate = !Number.isNaN(yy) && !Number.isNaN(mm) && !Number.isNaN(dd)
+                                ? new Date(yy, mm - 1, dd)
+                                : new Date(day.date);
+                              return localDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                            })()}
                           </p>
                           <div className="flex space-x-2">
                             <button 

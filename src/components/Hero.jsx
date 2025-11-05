@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import GuideModal from "@/components/GuideModal";
 
 export default function Hero() {
-  const router = useRouter();
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleGetStartedClick = () => {
-    router.push('/guide');
+    setShowGuide(true);
   };
 
   const handleHowItWorksClick = () => {
@@ -150,6 +151,9 @@ export default function Hero() {
           </div>
         </section>
       </div>
+      {showGuide && (
+        <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
+      )}
     </div>
   );
 }

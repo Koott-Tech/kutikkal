@@ -260,6 +260,15 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
               <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Section Title</label>
               <input type="text" value={formData.benefits_title} onChange={(e) => handleInputChange('benefits_title', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
+            <div className="mt-4">
+              <ImageUpload
+                currentImageUrl={formData.benefits_image_url}
+                onImageUpload={(url) => handleInputChange('benefits_image_url', url)}
+                imageType="benefits"
+                slug={formData.slug}
+                label="Benefits Section Image"
+              />
+            </div>
             {formData.benefits.map((benefit, i) => (
               <div key={i} className="border border-gray-200 rounded-lg p-3 md:p-4">
                 <div className="flex justify-between items-start mb-3">
@@ -321,6 +330,15 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
             <div>
               <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Section Title</label>
               <input type="text" value={formData.types_title} onChange={(e) => handleInputChange('types_title', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="mt-4">
+              <ImageUpload
+                currentImageUrl={formData.right_image_url}
+                onImageUpload={(url) => handleInputChange('right_image_url', url)}
+                imageType="types"
+                slug={formData.slug}
+                label="Types Section Image"
+              />
             </div>
             {formData.types.map((item, i) => (
               <div key={i} className="border border-gray-200 rounded-lg p-3 md:p-4">

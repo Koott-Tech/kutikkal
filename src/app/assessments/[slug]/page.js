@@ -5,6 +5,9 @@ import ScrollToTop from '@/components/ScrollToTop';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import TherapistCarousel from '@/components/TherapistCarousel';
+import AssessmentInfoCard from '@/components/AssessmentInfoCard';
+import NextDynamic from 'next/dynamic';
+const AssessmentBookingModal = NextDynamic(() => import('@/components/AssessmentBookingModal'), { ssr: false });
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
@@ -54,17 +57,20 @@ export default async function AssessmentDynamicPage({ params }) {
         }}
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
-      {/* Therapist grid under hero */}
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
-        <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
-          <div className="mt-3 text-center md:text-center px-4">
-            <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-              {data?.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
-            </h3>
-          </div>
-        </div>
-        <TherapistCarousel therapists={therapists} />
-      </div>
+      {/* Assessment info card under hero (replaces doctor cards) */}
+      <AssessmentInfoCard cmsData={{
+        slug,
+        id: data?.id, // Pass assessment ID from database
+        title: data?.assessment_card_title,
+        description: data?.assessment_card_description,
+        sessionsInfo: data?.assessment_card_sessions_info,
+        typesHeading: data?.assessment_card_types_heading,
+        certifiedLabel: data?.assessment_card_certified_label,
+        nonCertifiedLabel: data?.assessment_card_non_certified_label,
+        assigned_doctor_ids: data?.assigned_doctor_ids || [],
+      }} />
+      {/* Booking Modal trigger state handled inside modal via portal-like overlay; use global state by lifting if needed */}
+      {/* Here we render modal only when query or global trigger is used; for now modal opens from card by navigation replacement previously – will be opened by modifying the card next */}
       {/* Benefits (render with safe defaults like counselling) */}
       <div className="mt-8">
         <BenefitsSection 

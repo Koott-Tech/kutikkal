@@ -16,12 +16,14 @@ import {
   Package,
   DollarSign,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from "lucide-react";
 
 import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
 import SessionNotesModal from "../../../components/SessionNotesModal";
+import ScheduleAssessmentSessionModal from "../../../components/ScheduleAssessmentSessionModal";
 import { useNotification } from "../../../contexts/NotificationContext";
 
 export default function PsychologistSessions() {
@@ -40,6 +42,8 @@ export default function PsychologistSessions() {
   const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedNotesSession, setSelectedNotesSession] = useState(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
 
 
   useEffect(() => {
@@ -52,7 +56,8 @@ export default function PsychologistSessions() {
     try {
       setIsLoading(true);
       setError(null);
-      const sessionsData = await psychologistApi.getSessions();
+      // Request a high limit to ensure we get all sessions including pending ones
+      const sessionsData = await psychologistApi.getSessions({ limit: 1000 });
       setSessions(sessionsData.data?.sessions || []);
     } catch (err) {
       console.error('Error loading sessions:', err);
@@ -73,12 +78,32 @@ export default function PsychologistSessions() {
     }
   };
 
+  const handleDeleteSession = async (session) => {
+    try {
+      if (!confirm('Are you sure you want to delete this session?')) return;
+      await psychologistApi.deleteSession(session.id);
+      await loadSessions();
+      showSuccess('Session deleted successfully');
+    } catch (err) {
+      console.error('Error deleting session:', err);
+      setError(err.message);
+      showError(`Failed to delete session: ${err.message}`, 'Delete Error');
+    }
+  };
+
   const handleCompleteSession = async (sessionId, sessionData) => {
     try {
       setError(null);
       setCompletingSessions(prev => new Set(prev).add(sessionId));
       
-      await psychologistApi.completeSession(sessionId, sessionData);
+      // Map the form data from SessionCompletionModal to backend expected format
+      const mappedData = {
+        session_summary: sessionData.summary || sessionData.session_summary || '',
+        session_notes: sessionData.summary_notes || sessionData.session_notes || '',
+        status: sessionData.status || 'completed'
+      };
+      
+      await psychologistApi.completeSession(sessionId, mappedData);
       
       // Show success feedback
       setSuccessMessage('Session finished successfully with summary and notes!');
@@ -229,10 +254,48 @@ export default function PsychologistSessions() {
   const upcomingSessions = sessions.filter(s => 
     (s.status === 'booked' || s.status === 'rescheduled') && excludeFreeAssessment(s)
   );
+  const pendingSessions = sessions.filter(s => {
+    const isPending = s.status === 'pending';
+    const isAssessment = s.session_type === 'assessment' || s.type === 'assessment';
+    const isNotFreeAssessment = excludeFreeAssessment(s);
+    return isPending && isAssessment && isNotFreeAssessment;
+  });
   const completedSessions = sessions.filter(s => s.status === 'completed' && excludeFreeAssessment(s));
   const pastSessions = sessions.filter(s => 
     (s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show') && excludeFreeAssessment(s)
   );
+
+  // Debug: Log pending sessions
+  console.log('🔍 All sessions:', sessions.length);
+  console.log('🔍 All sessions details:', sessions.map(s => ({
+    id: s.id,
+    status: s.status,
+    session_type: s.session_type,
+    type: s.type,
+    psychologist_id: s.psychologist_id,
+    scheduled_date: s.scheduled_date,
+    assessment_title: s.assessment_title || s.assessment?.hero_title
+  })));
+  
+  // Debug: Check each filter condition
+  const allAssessmentSessions = sessions.filter(s => s.session_type === 'assessment' || s.type === 'assessment');
+  const allPendingSessions = sessions.filter(s => s.status === 'pending');
+  const allNotFreeAssessment = sessions.filter(s => excludeFreeAssessment(s));
+  
+  console.log('🔍 Assessment sessions:', allAssessmentSessions.length);
+  console.log('🔍 Pending sessions (any):', allPendingSessions.length);
+  console.log('🔍 Not free assessment:', allNotFreeAssessment.length);
+  
+  console.log('🔍 Pending assessment sessions:', pendingSessions.length);
+  console.log('🔍 Pending sessions details:', pendingSessions.map(s => ({
+    id: s.id,
+    status: s.status,
+    session_type: s.session_type,
+    type: s.type,
+    psychologist_id: s.psychologist_id,
+    scheduled_date: s.scheduled_date,
+    assessment_title: s.assessment_title || s.assessment?.hero_title
+  })));
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -284,6 +347,72 @@ export default function PsychologistSessions() {
         </div>
       )}
 
+      {/* Pending Assessment Sessions */}
+      <div className="mt-8">
+        <p className="font-medium text-gray-900 mb-4">
+          Pending Assessment Sessions ({pendingSessions.length})
+        </p>
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <p className="font-medium text-gray-900">Sessions Requiring Schedule</p>
+            <p className="text-sm text-gray-500 mt-1">These assessment sessions need to be scheduled</p>
+          </div>
+          {pendingSessions.length === 0 ? (
+            <div className="px-6 py-8 text-center">
+              <Package className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm font-medium text-gray-900">No pending assessment sessions</p>
+              <p className="mt-1 text-sm text-gray-500">
+                All assessment sessions have been scheduled.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {pendingSessions.map((session) => (
+                <div key={session.id} className="px-6 py-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                          <Package className="h-5 w-5 text-purple-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {session.client?.first_name} {session.client?.last_name}
+                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Assessment
+                          </span>
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Assessment: {session.assessment_title || session.assessment?.hero_title || 'Assessment'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Client: {session.client?.phone_number || 'No phone'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        Pending Schedule
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedScheduleSession(session);
+                          setShowScheduleModal(true);
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Schedule Session
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Upcoming Sessions */}
       <div className="mt-8">
         <p className="font-medium text-gray-900 mb-4">
@@ -320,19 +449,39 @@ export default function PsychologistSessions() {
                               Free Assessment
                             </span>
                           )}
+                          {session.session_type === 'assessment' && (
+                            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              Assessment
+                            </span>
+                          )}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          Child: {session.client?.child_name} ({session.client?.child_age} years)
-                        </p>
+                        {session.session_type === 'assessment' ? (
+                          <p className="text-sm text-gray-500">
+                            Assessment: {session.assessment_title || session.assessment?.hero_title || 'Assessment'}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            Child: {session.client?.child_name} ({session.client?.child_age} years)
+                          </p>
+                        )}
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
-                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {new Date(session.scheduled_date).toLocaleDateString()}
-                          </span>
-                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {formatTime(session.scheduled_time)}
-                          </span>
+                          {session.scheduled_date && session.scheduled_time ? (
+                            <>
+                              <span className="flex items-center text-xs sm:text-sm text-gray-500">
+                                <Calendar className="h-4 w-4 mr-1" />
+                                {new Date(session.scheduled_date).toLocaleDateString()}
+                              </span>
+                              <span className="flex items-center text-xs sm:text-sm text-gray-500">
+                                <Clock className="h-4 w-4 mr-1" />
+                                {formatTime(session.scheduled_time)}
+                              </span>
+                            </>
+                          ) : session.status === 'pending' ? (
+                            <span className="flex items-center text-xs sm:text-sm text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              Pending Schedule
+                            </span>
+                          ) : null}
                           {session.status === 'reschedule_requested' && (
                             <span className="flex items-center text-xs sm:text-sm text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
                               <AlertCircle className="h-4 w-4 mr-1" />
@@ -382,6 +531,13 @@ export default function PsychologistSessions() {
                         className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         View Details
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSession(session)}
+                        className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        title="Delete session"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                       {/* Only show Finish button for non-completed sessions */}
                       {session.status !== 'completed' && (
@@ -571,6 +727,19 @@ export default function PsychologistSessions() {
           setSelectedNotesSession(null);
         }}
         session={selectedNotesSession}
+      />
+
+      {/* Schedule Assessment Session Modal */}
+      <ScheduleAssessmentSessionModal
+        isOpen={showScheduleModal}
+        onClose={() => {
+          setShowScheduleModal(false);
+          setSelectedScheduleSession(null);
+        }}
+        session={selectedScheduleSession}
+        onScheduleSuccess={() => {
+          loadSessions(); // Reload sessions after scheduling
+        }}
       />
 
       {/* Session Details Modal */}

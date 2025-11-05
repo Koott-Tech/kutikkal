@@ -87,7 +87,7 @@ function PaymentSuccessContent() {
         <h1 style={{ color: '#ef4444' }}>❌ Payment Error</h1>
         <p style={{ color: '#6b7280', marginBottom: '20px' }}>{error}</p>
         <button
-          onClick={() => router.push('/profile')}
+          onClick={() => router.push('/profile/sessions')}
           style={{
             backgroundColor: '#3b82f6',
             color: 'white',
@@ -141,7 +141,7 @@ function PaymentSuccessContent() {
       
       <div style={{ marginTop: '30px' }}>
         <button
-          onClick={() => router.push('/profile')}
+          onClick={() => router.push('/profile/sessions')}
           style={{
             backgroundColor: '#3b82f6',
             color: 'white',

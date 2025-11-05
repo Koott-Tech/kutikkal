@@ -408,29 +408,10 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                             </button>
                             <h5 className="hidden md:block text-white mb-8">About Us</h5>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
-                                <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Our story</a></li>
+                                <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Company</a></li>
+                                <li><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Career</a></li>
                                 <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
-                                <li><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Careers</a></li>
-                                <li><a href="/contact" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Contact</a></li>
-                            </ul>
-                        </div>
-                        {/* Resources */}
-                        <div className="space-y-5">
-                            <button
-                                onClick={() => toggleSection('resources')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
-                            >
-                                <h5 className="text-white">Resources</h5>
-                                <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.resources ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <h5 className="hidden md:block text-white mb-8">Resources</h5>
-                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.resources ? 'block' : 'hidden md:block'}`}>
                                 <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
-                                <li><a href="/resources" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Guides</a></li>
-                                <li><a href="/free-assessment" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Free assessment</a></li>
-                                
                             </ul>
                         </div>
                     </div>

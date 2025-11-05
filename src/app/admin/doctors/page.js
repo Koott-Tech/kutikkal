@@ -56,17 +56,18 @@ export default function DoctorsPage() {
   const loadDoctors = async () => {
     try {
       setIsLoading(true);
-      console.log('Loading psychologists directly from psychologists table...');
+      // console.log('Loading psychologists directly from psychologists table...');
       
       // Use the dedicated psychologists endpoint
       const response = await adminApi.getPsychologists();
       
-      console.log('API Response:', response);
+      // Avoid logging entire doctor objects in admin console for privacy and performance
+      // console.log('API Response OK');
       
       if (response && response.success && response.data && response.data.users) {
         // Backend returns psychologists in users array format
         const doctorsData = response.data.users;
-        console.log('Doctors data loaded:', doctorsData);
+        // console.log('Doctors loaded:', doctorsData.map(d => ({ id: d.id || d.psychologist_id, name: d.name })));
         setDoctors(doctorsData);
       } else {
         console.warn('Invalid response structure:', response);

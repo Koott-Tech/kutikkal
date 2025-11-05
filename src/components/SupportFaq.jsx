@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function SupportFaq() {
   const items = [
@@ -31,6 +31,10 @@ export default function SupportFaq() {
   ];
 
   const [active, setActive] = useState(0);
+  const [imageMounted, setImageMounted] = useState(true);
+  const [currentSrc, setCurrentSrc] = useState('/ourpromise1.webp');
+  const [prevSrc, setPrevSrc] = useState(null);
+  const [isImageTransitioning, setIsImageTransitioning] = useState(false);
 
   const gradients = [
     "linear-gradient(180deg, #f5f3ff 0%, #ede9fe 50%, #ffffff 100%)",
@@ -42,6 +46,29 @@ export default function SupportFaq() {
   function toggle(idx) {
     setActive((prev) => (prev === idx ? -1 : idx));
   }
+
+  const resolvedSrcByIndex = useMemo(() => ({
+    0: '/ourpromise1.webp',
+    1: '/ourpromise2.png',
+    2: '/ourpromise3.png',
+    3: '/ourpromise4.png',
+  }), []);
+
+  useEffect(() => {
+    // Determine new source based on active index
+    const nextSrc = resolvedSrcByIndex[active] || (items[active]?.image || '/ourpromise1.webp');
+    if (nextSrc !== currentSrc) {
+      setPrevSrc(currentSrc);
+      setCurrentSrc(nextSrc);
+      setIsImageTransitioning(true);
+      // Ensure smooth crossfade timing
+      const t = setTimeout(() => {
+        setIsImageTransitioning(false);
+        setPrevSrc(null);
+      }, 700);
+      return () => clearTimeout(t);
+    }
+  }, [active, currentSrc, items, resolvedSrcByIndex]);
 
   return (
     <section className="w-full flex items-center mt-20 our-promise-section" style={{ height: 'auto' }}>
@@ -170,33 +197,23 @@ export default function SupportFaq() {
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
         <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>
-          {/* Left: Image that changes per selection */}
+          {/* Left: Image with true crossfade between previous and next */}
             <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
-            <img
-              key={(
-                active === 3 ? '/ourpromise4.png' :
-                active === 2 ? '/ourpromise3.png' :
-                active === 1 ? '/ourpromise2.png' :
-                items[active >= 0 ? active : 0]?.image
-              ) || 'fallback'}
-              src={
-                active === 3 ? '/ourpromise4.png' :
-                active === 2 ? '/ourpromise3.png' :
-                active === 1 ? '/ourpromise2.png' :
-                active === 0 ? '/ourpromise1.webp' :
-                items[active >= 0 ? active : 0]?.image
-              }
-              alt={
-                active === 3 ? 'Our Promise 4' :
-                active === 2 ? 'Our Promise 3' :
-                active === 1 ? 'Our Promise 2' :
-                active === 0 ? 'Our Promise 1' :
-                items[active >= 0 ? active : 0]?.title
-              }
-              className="w-full h-full object-contain transition-opacity duration-300 ease-in-out rounded-[10px]"
-              style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
-            />
-          </div>
+              {prevSrc && (
+                <img
+                  src={prevSrc}
+                  alt="Previous"
+                  className={`absolute inset-0 w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                  style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
+                />
+              )}
+              <img
+                src={currentSrc}
+                alt="Current"
+                className={`relative w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-100' : 'opacity-100'}`}
+                style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
+              />
+            </div>
 
           {/* Right: FAQ Accordion */}
           <div className="w-full" style={{ height: '500px' }}>
@@ -249,11 +266,12 @@ export default function SupportFaq() {
                         <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
 
-                      {/* Smoothly expanding answer */}
+                      {/* Smoothly expanding answer with subtle fade-up */}
                       <div
-                        className={`overflow-hidden transition-all duration-500 ${open ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                        className={`overflow-hidden transition-all ${open ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                        style={{ transitionDuration: '600ms' }}
                       >
-                        <p className="text-sm text-gray-800 mb-4">{item.body}</p>
+                        <p className={`text-sm text-gray-800 mb-4 transition-transform duration-500 ease-out ${open ? 'translate-y-0' : 'translate-y-2'}`}>{item.body}</p>
                         {open && (
                           <button className="inline-flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-gray-900 cursor-pointer group relative">
                             <span className="relative">

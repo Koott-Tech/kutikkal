@@ -4,10 +4,13 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
 import { clientApi, paymentApi } from '../../lib/backendApi';
+import backendApi from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation';
 import ContactCompletionWarning from '../../components/ContactCompletionWarning';
+import AuthModal from '@/components/AuthModal';
+import QuickContactModal from '@/components/QuickContactModal';
 
 // Separate component that uses useSearchParams
 const TherapistProfileContent = () => {
@@ -301,7 +304,23 @@ const TherapistProfileContent = () => {
     // Keep selected package intact when time changes
   };
 
+  const [showAuth, setShowAuth] = useState(false);
+  const [showQuickContact, setShowQuickContact] = useState(false);
+
   const handleBookSession = async () => {
+    // 1) Auth check first → show login/signup popup if needed
+    if (!isAuthenticated || !user) {
+      setShowAuth(true);
+      return;
+    }
+
+    // 2) Role check (avoid reading user.role directly)
+    if (!hasRole('client')) {
+      showError('Only clients can book sessions.', 'Access Denied');
+      return;
+    }
+
+    // 3) Basic selections
     if (!selectedDate || !selectedTime) {
       showWarning('Please select a date and time', 'Selection Required');
       return;
@@ -318,20 +337,6 @@ const TherapistProfileContent = () => {
       return;
     }
 
-    // Check if user is authenticated and is a client
-    if (!isAuthenticated) {
-      showWarning('Please log in to book a session. Only clients can book sessions.', 'Authentication Required');
-      const returnUrl = `/therapist-profile?doctor=${doctorIndex}`;
-      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
-      return;
-    }
-
-    // Check if user is a client
-    if (!hasRole('client')) {
-      showError('Only clients can book sessions. You are logged in as a ' + user.role, 'Access Denied');
-      return;
-    }
-
     // Declare clientProfile at function level so it's accessible throughout
     let clientProfile = null;
 
@@ -343,9 +348,7 @@ const TherapistProfileContent = () => {
       console.log('🔍 Client profile data:', clientProfile);
       
       if (!isClientContactComplete(clientProfile)) {
-        const incompleteFields = getIncompleteContactFields(clientProfile);
-        setIncompleteContactFields(incompleteFields);
-        setShowContactWarning(true);
+        setShowQuickContact(true);
         return;
       }
     } catch (error) {
@@ -380,34 +383,22 @@ const TherapistProfileContent = () => {
         scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
       }
 
-      // Real-time Google Calendar check before booking
+      // Real-time Google Calendar check before booking (call backend with auth)
       try {
         console.log('🔍 Performing real-time Google Calendar check before booking...');
-        const checkResponse = await fetch(`/api/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        if (checkResponse.ok) {
-          const checkData = await checkResponse.json();
-          if (checkData.success && checkData.data.length > 0) {
-            // Check if the selected time conflicts with Google Calendar events
-            const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
-            const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000); // 1 hour session
-            
-            const hasConflict = checkData.data.some(event => {
-              const eventStart = new Date(event.start);
-              const eventEnd = new Date(event.end);
-              return (sessionStart < eventEnd && sessionEnd > eventStart);
-            });
-            
-            if (hasConflict) {
-              showError('This time slot is no longer available due to an external booking. Please select another time.', 'Time Slot Unavailable');
-              setIsBooking(false);
-              return;
-            }
+        const checkData = await backendApi.get(`/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`);
+        if (checkData?.success && Array.isArray(checkData.data) && checkData.data.length > 0) {
+          const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
+          const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000);
+          const hasConflict = checkData.data.some(event => {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+            return (sessionStart < eventEnd && sessionEnd > eventStart);
+          });
+          if (hasConflict) {
+            showError('This time slot is no longer available due to an external booking. Please select another time.', 'Time Slot Unavailable');
+            setIsBooking(false);
+            return;
           }
         }
       } catch (checkError) {
@@ -443,10 +434,10 @@ const TherapistProfileContent = () => {
         if (!sessionResponse.success) {
           if (sessionResponse.statusCode === 401) {
             showError('Session expired. Please log in again.', 'Authentication Error');
-            router.push('/login');
+            setShowAuth(true);
           } else if (sessionResponse.statusCode === 403) {
             showError('Only clients can book sessions. Please log in with a client account.', 'Access Denied');
-            router.push('/login');
+            setShowAuth(true);
           } else if (sessionResponse.statusCode === 404) {
             showError('Client profile not found. Please complete your profile first.', 'Profile Not Found');
             router.push('/profile');
@@ -471,10 +462,10 @@ const TherapistProfileContent = () => {
       if (!slotReservation.success) {
         if (slotReservation.statusCode === 401) {
           showError('Session expired. Please log in again.', 'Authentication Error');
-          router.push('/login');
+          setShowAuth(true);
         } else if (slotReservation.statusCode === 403) {
           showError('Only clients can book sessions. Please log in with a client account.', 'Access Denied');
-          router.push('/login');
+          setShowAuth(true);
         } else if (slotReservation.statusCode === 404) {
           showError('Client profile not found. Please complete your profile first.', 'Profile Not Found');
           router.push('/profile');
@@ -515,7 +506,7 @@ const TherapistProfileContent = () => {
         packageId: selectedPackage.id,
         sessionType: sessionType,
         clientName: `${clientProfile?.first_name || ''} ${clientProfile?.last_name || ''}`,
-        clientEmail: user?.email,
+        clientEmail: user?.email || clientProfile?.email || `${clientId}@little.care`,
         clientPhone: clientProfile?.phone_number
       };
 
@@ -1219,7 +1210,12 @@ const TherapistProfileContent = () => {
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
                       const dateAvailability = psychologistAvailability[dateStr];
-                    const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
+                    const isPsychologistAvailable = dateAvailability && (
+                      (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0) ||
+                      (Array.isArray(dateAvailability.timeSlots) && dateAvailability.timeSlots.some(slot => slot.available))
+                    );
+                    const hasDateRecord = !!dateAvailability;
+                    const noSlots = hasDateRecord && !isPsychologistAvailable;
                     
                     // Only treat as available/highlight if it is not a past date
                     const isActuallyAvailable = isPsychologistAvailable && isAvailable;
@@ -1243,7 +1239,9 @@ const TherapistProfileContent = () => {
                               : isActuallyAvailable
                                 ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
                               : isAvailable
-                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                ? noSlots
+                                  ? 'bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-pointer'
+                                  : 'hover:bg-gray-100 text-gray-500 cursor-pointer'
                                 : 'text-gray-300 cursor-not-allowed'
                         }`}
                         title={isPsychologistAvailable ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
@@ -1252,8 +1250,8 @@ const TherapistProfileContent = () => {
                         {isActuallyAvailable && (
                           <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
                         )}
-                        {!isActuallyAvailable && isAvailable && (
-                          <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
+                        {noSlots && isAvailable && (
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full mx-auto mt-1"></div>
                         )}
                       </div>
                     );
@@ -1456,7 +1454,7 @@ const TherapistProfileContent = () => {
               {!isAuthenticated() ? (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-blue-700 text-sm text-center">
-                    🔐 Please <button onClick={() => router.push('/login')} className="underline font-semibold">log in</button> to book a session
+                    🔐 Please <button onClick={() => setShowAuth(true)} className="underline font-semibold">log in</button> to book a session
                   </p>
                 </div>
               ) : !hasRole('client') ? (
@@ -1470,9 +1468,9 @@ const TherapistProfileContent = () => {
               {/* Book Button */}
               <button 
                 onClick={handleBookSession}
-                disabled={!selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking || !isAuthenticated() || !hasRole('client')}
+                disabled={!selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking}
                 className={`w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm ${
-                  !selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking || !isAuthenticated() || !hasRole('client')
+                  !selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking
                     ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     : 'bg-green-500 text-white hover:bg-green-600'
                 }`}
@@ -1616,15 +1614,61 @@ const TherapistProfileContent = () => {
       )}
 
       {/* Contact Completion Warning Modal */}
+      {/* Legacy warning kept but unused in flow; quick contact replaces it */}
       <ContactCompletionWarning
-        isOpen={showContactWarning}
-        onClose={() => setShowContactWarning(false)}
-        incompleteFields={incompleteContactFields}
-        onCompleteProfile={() => {
-          setShowContactWarning(false);
-          router.push('/profile?tab=contact');
-        }}
+        isOpen={false}
+        onClose={() => {}}
+        incompleteFields={[]}
+        onCompleteProfile={() => {}}
       />
+
+      {/* Auth modal for unauthenticated booking */}
+      {showAuth && (
+        <AuthModal
+          open={showAuth}
+          redirectOnSignup={false}
+          onAuthSuccess={async () => {
+            // After successful signup/login, check if contact details are complete
+            setShowAuth(false);
+            setTimeout(async () => {
+              try {
+                const clientProfileResponse = await clientApi.getProfile();
+                const clientProfile = clientProfileResponse.data;
+                if (!isClientContactComplete(clientProfile)) {
+                  // Show quick contact modal to collect profile details
+                  setShowQuickContact(true);
+                } else {
+                  // Profile complete → proceed with booking if selections made; otherwise just stay
+                  if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
+                    handleBookSession();
+                  }
+                }
+              } catch (e) {
+                // If check fails, do nothing; user can retry booking
+                console.error('Error checking profile after auth:', e);
+              }
+            }, 300);
+          }}
+          onClose={() => {
+            setShowAuth(false);
+          }}
+        />
+      )}
+
+      {/* Quick contact modal to collect minimal details */}
+      {showQuickContact && (
+        <QuickContactModal
+          open={showQuickContact}
+          onClose={() => setShowQuickContact(false)}
+          onSaved={() => {
+            setShowQuickContact(false);
+            // After saving contact details, proceed with booking if selections made; else user can click Book again
+            if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
+              handleBookSession();
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

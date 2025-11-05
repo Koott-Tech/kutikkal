@@ -99,9 +99,8 @@ export default function ContactPage() {
     try {
       setIsSavingProfile(true);
       
-      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number || 
-          !profileForm.child_name || !profileForm.child_age) {
-        setProfileSaveMsg('Please fill in all required fields: First Name, Last Name, Phone Number, Child Name, and Child Age.');
+      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number) {
+        setProfileSaveMsg('Please fill in all required fields: First Name, Last Name, and Phone Number.');
         return;
       }
 
@@ -246,27 +245,24 @@ export default function ContactPage() {
 
         {hasRole('client') && (
           <div className="border-t pt-6">
-            <h6 className="text-gray-900 mb-4">Child Information</h6>
+            <h6 className="text-gray-900 mb-4">Child Information (Optional)</h6>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Child Name <span className="text-red-500">*</span>
+                  Child Name
                 </label>
                 <input
                   type="text"
                   name="child_name"
                   value={profileForm.child_name}
                   onChange={handleProfileInputChange}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !profileForm.child_name ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
                   placeholder="Your child's name"
-                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Child Age <span className="text-red-500">*</span>
+                  Child Age
                 </label>
                 <input
                   type="number"
@@ -275,11 +271,8 @@ export default function ContactPage() {
                   max="18"
                   value={profileForm.child_age}
                   onChange={handleProfileInputChange}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    !profileForm.child_age ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
                   placeholder="Age"
-                  required
                 />
               </div>
             </div>
