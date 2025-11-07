@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import { Calendar, Clock, X, AlertCircle, Package } from "lucide-react";
-import { psychologistApi } from "../lib/backendApi";
+import { psychologistApi, publicApi } from "../lib/backendApi";
 import { useNotification } from "../contexts/NotificationContext";
 
 export default function ScheduleAssessmentSessionModal({ 
@@ -15,8 +15,10 @@ export default function ScheduleAssessmentSessionModal({
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [availability, setAvailability] = useState({});
+  const [doctorId, setDoctorId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [assignedDoctors, setAssignedDoctors] = useState([]); // [{id, name}]
 
   useEffect(() => {
     if (isOpen && session) {
@@ -24,12 +26,15 @@ export default function ScheduleAssessmentSessionModal({
       setSelectedDate(null);
       setSelectedTime(null);
       setCurrentDate(new Date());
+      setDoctorId(session.psychologist_id);
       fetchAvailability();
+      loadAssignedDoctors();
     }
   }, [isOpen, session]);
 
   const fetchAvailability = async () => {
-    if (!session?.psychologist_id) return;
+    const targetId = doctorId || session?.psychologist_id;
+    if (!targetId) return;
     
     setIsLoading(true);
     try {
@@ -46,7 +51,8 @@ export default function ScheduleAssessmentSessionModal({
       
       const response = await psychologistApi.getAvailability({
         startDate: `${startYear}-${startMonth}-${startDay}`,
-        endDate: `${endYear}-${endMonth}-${endDay}`
+        endDate: `${endYear}-${endMonth}-${endDay}`,
+        psychologist_id: targetId
       });
 
       const availData = response.data || [];
@@ -70,11 +76,69 @@ export default function ScheduleAssessmentSessionModal({
     }
   };
 
+  const loadAssignedDoctors = async () => {
+    try {
+      // 1) If full objects are present on the session, prefer those (names included)
+      const objectCandidates = [
+        session?.assigned_psychologists,
+        session?.assessment?.assigned_psychologists
+      ];
+      for (const arr of objectCandidates) {
+        if (Array.isArray(arr) && arr.length && typeof arr[0] === 'object') {
+          const normalized = arr.map(p => ({
+            id: p.id || p.psychologist_id || p.user_id || p.uid,
+            name: p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.email || 'Psychologist'
+          })).filter(d => d.id);
+          if (normalized.length) {
+            setAssignedDoctors(normalized);
+            return;
+          }
+        }
+      }
+
+      // 2) Otherwise, try to derive doctor IDs
+      let ids = [];
+      const idCandidates = [
+        session?.assigned_doctor_ids,
+        session?.assessment?.doctor_ids,
+        session?.assessment?.assigned_doctor_ids
+      ];
+      for (const arr of idCandidates) {
+        if (Array.isArray(arr) && arr.length) { ids = arr; break; }
+        if (typeof arr === 'string') {
+          try { const parsed = JSON.parse(arr); if (Array.isArray(parsed)) { ids = parsed; break; } } catch (_) {}
+        }
+      }
+      if ((!ids || ids.length === 0) && session?.psychologist_id) {
+        ids = [session.psychologist_id];
+      }
+      ids = (ids || []).filter(Boolean).slice(0, 5);
+
+      if (ids.length === 0) {
+        setAssignedDoctors([]);
+        return;
+      }
+
+      // Fetch public psychologists and map names (filter by either id or user_id)
+      const res = await publicApi.getPsychologists();
+      const all = res?.data?.psychologists || [];
+      const mapped = ids.map(id => {
+        const doc = all.find(d => d.id === id || d.user_id === id);
+        const name = doc?.name || `${doc?.first_name || ''} ${doc?.last_name || ''}`.trim() || doc?.email || String(id);
+        return { id: doc?.id || id, name };
+      });
+      setAssignedDoctors(mapped);
+    } catch (e) {
+      console.warn('Failed to load assigned doctors:', e);
+      setAssignedDoctors([]);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && session) {
       fetchAvailability();
     }
-  }, [currentDate, isOpen, session]);
+  }, [currentDate, isOpen, session, doctorId]);
 
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
@@ -130,7 +194,8 @@ export default function ScheduleAssessmentSessionModal({
     try {
       const scheduleData = {
         scheduled_date: dateStr(selectedDate),
-        scheduled_time: selectedTime
+        scheduled_time: selectedTime,
+        ...(doctorId && doctorId !== session.psychologist_id ? { target_psychologist_id: doctorId } : {})
       };
 
       await psychologistApi.scheduleAssessmentSession(session.id, scheduleData);
@@ -200,6 +265,47 @@ export default function ScheduleAssessmentSessionModal({
                   Pending Schedule
                 </span>
               </p>
+            </div>
+            <div className="sm:col-span-3">
+              <label className="text-sm font-medium text-gray-700">Select Doctor</label>
+              {assignedDoctors && assignedDoctors.length > 0 ? (
+                <div className="flex gap-2 items-center">
+                  <select
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={doctorId || ''}
+                    onChange={(e)=> setDoctorId(e.target.value || null)}
+                  >
+                    {assignedDoctors.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={fetchAvailability}
+                    className="mt-1 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                  >
+                    Load Availability
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={doctorId || ''}
+                    onChange={(e)=> setDoctorId(e.target.value.trim() || null)}
+                    placeholder="Psychologist ID"
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={fetchAvailability}
+                    className="mt-1 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                  >
+                    Load Availability
+                  </button>
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Choose one of the assigned doctors to schedule this session.</p>
             </div>
           </div>
         </div>

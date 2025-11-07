@@ -461,6 +461,14 @@ export default function PsychologistAssessments() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {assessmentProgress[`${session.assessment_id}_${session.client_id}`]?.pending.length > 0 && (
+                        <button
+                          onClick={() => openScheduleModal(session)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                        >
+                          Book Next Session
+                        </button>
+                      )}
                       <button
                         onClick={() => handleViewDetails(session)}
                         className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

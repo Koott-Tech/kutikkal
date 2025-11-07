@@ -510,7 +510,6 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
                   const exists = Object.prototype.hasOwnProperty.call(availabilityMap, ds);
                   const times = Array.isArray(availabilityMap[ds]) ? availabilityMap[ds] : [];
                   const has = times.length > 0;
-                  const noSlots = exists && !has; // date present but zero slots → highlight
                   const isPast = ds < todayStr;
                   const selected = selectedDate && dateStr(selectedDate) === ds;
                   
@@ -530,9 +529,7 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
                           ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
                           : has && !isPast
                             ? 'border-gray-300 hover:bg-gray-50 bg-blue-50'
-                            : noSlots && !isPast
-                              ? 'border-yellow-300 bg-yellow-50 text-yellow-700'
-                              : 'border-gray-200 text-gray-300'
+                            : 'border-gray-200 text-gray-300'
                       }`}
                     >
                       {d.getDate()}

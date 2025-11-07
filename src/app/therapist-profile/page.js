@@ -1214,8 +1214,6 @@ const TherapistProfileContent = () => {
                       (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0) ||
                       (Array.isArray(dateAvailability.timeSlots) && dateAvailability.timeSlots.some(slot => slot.available))
                     );
-                    const hasDateRecord = !!dateAvailability;
-                    const noSlots = hasDateRecord && !isPsychologistAvailable;
                     
                     // Only treat as available/highlight if it is not a past date
                     const isActuallyAvailable = isPsychologistAvailable && isAvailable;
@@ -1239,9 +1237,7 @@ const TherapistProfileContent = () => {
                               : isActuallyAvailable
                                 ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
                               : isAvailable
-                                ? noSlots
-                                  ? 'bg-yellow-50 text-yellow-700 border border-yellow-300 cursor-pointer'
-                                  : 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
                                 : 'text-gray-300 cursor-not-allowed'
                         }`}
                         title={isPsychologistAvailable ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
@@ -1249,9 +1245,6 @@ const TherapistProfileContent = () => {
                         {day}
                         {isActuallyAvailable && (
                           <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
-                        )}
-                        {noSlots && isAvailable && (
-                          <div className="w-2 h-2 bg-yellow-400 rounded-full mx-auto mt-1"></div>
                         )}
                       </div>
                     );
