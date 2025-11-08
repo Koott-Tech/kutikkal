@@ -10,9 +10,6 @@ export default function RefundPolicyPage() {
     return (
         <div className={`bg-white text-gray-900 ${styles.page}`}>
             <div className="max-w-5xl mx-auto px-6 py-16 lg:px-8 lg:py-24">
-                <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
-                    Refund &amp; Cancellation Policy
-                </p>
                 <h3 className={`${styles.title} mt-2 text-gray-900`}>
                     LittleCare Refund &amp; Cancellation Policy
                 </h3>
