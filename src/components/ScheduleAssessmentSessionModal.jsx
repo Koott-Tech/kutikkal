@@ -78,58 +78,27 @@ export default function ScheduleAssessmentSessionModal({
 
   const loadAssignedDoctors = async () => {
     try {
-      // 1) If full objects are present on the session, prefer those (names included)
-      const objectCandidates = [
-        session?.assigned_psychologists,
-        session?.assessment?.assigned_psychologists
-      ];
-      for (const arr of objectCandidates) {
-        if (Array.isArray(arr) && arr.length && typeof arr[0] === 'object') {
-          const normalized = arr.map(p => ({
-            id: p.id || p.psychologist_id || p.user_id || p.uid,
-            name: p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.email || 'Psychologist'
-          })).filter(d => d.id);
-          if (normalized.length) {
-            setAssignedDoctors(normalized);
-            return;
-          }
-        }
-      }
-
-      // 2) Otherwise, try to derive doctor IDs
-      let ids = [];
-      const idCandidates = [
-        session?.assigned_doctor_ids,
-        session?.assessment?.doctor_ids,
-        session?.assessment?.assigned_doctor_ids
-      ];
-      for (const arr of idCandidates) {
-        if (Array.isArray(arr) && arr.length) { ids = arr; break; }
-        if (typeof arr === 'string') {
-          try { const parsed = JSON.parse(arr); if (Array.isArray(parsed)) { ids = parsed; break; } } catch (_) {}
-        }
-      }
-      if ((!ids || ids.length === 0) && session?.psychologist_id) {
-        ids = [session.psychologist_id];
-      }
-      ids = (ids || []).filter(Boolean).slice(0, 5);
-
-      if (ids.length === 0) {
-        setAssignedDoctors([]);
-        return;
-      }
-
-      // Fetch public psychologists and map names (filter by either id or user_id)
+      // Load ALL psychologists from the system (not just assigned ones)
+      // This allows any psychologist to schedule sessions with any psychologist
       const res = await publicApi.getPsychologists();
       const all = res?.data?.psychologists || [];
-      const mapped = ids.map(id => {
-        const doc = all.find(d => d.id === id || d.user_id === id);
-        const name = doc?.name || `${doc?.first_name || ''} ${doc?.last_name || ''}`.trim() || doc?.email || String(id);
-        return { id: doc?.id || id, name };
-      });
+      
+      // Map all psychologists to dropdown options
+      const mapped = all.map(doc => ({
+        id: doc.id || doc.user_id,
+        name: doc.name || `${doc.first_name || ''} ${doc.last_name || ''}`.trim() || doc.email || 'Psychologist'
+      })).filter(d => d.id); // Remove any without valid ID
+      
       setAssignedDoctors(mapped);
+      
+      // Set default to current psychologist if session has one, otherwise first in list
+      if (session?.psychologist_id && !doctorId) {
+        setDoctorId(session.psychologist_id);
+      } else if (mapped.length > 0 && !doctorId) {
+        setDoctorId(mapped[0].id);
+      }
     } catch (e) {
-      console.warn('Failed to load assigned doctors:', e);
+      console.warn('Failed to load psychologists:', e);
       setAssignedDoctors([]);
     }
   };
@@ -190,12 +159,17 @@ export default function ScheduleAssessmentSessionModal({
       return;
     }
 
+    if (!doctorId) {
+      showError('Please select a psychologist', 'Selection Required');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const scheduleData = {
         scheduled_date: dateStr(selectedDate),
         scheduled_time: selectedTime,
-        ...(doctorId && doctorId !== session.psychologist_id ? { target_psychologist_id: doctorId } : {})
+        target_psychologist_id: doctorId // Always required - assign to selected psychologist
       };
 
       await psychologistApi.scheduleAssessmentSession(session.id, scheduleData);
@@ -305,7 +279,7 @@ export default function ScheduleAssessmentSessionModal({
                   </button>
                 </div>
               )}
-              <p className="text-xs text-gray-500 mt-1">Choose one of the assigned doctors to schedule this session.</p>
+              <p className="text-xs text-gray-500 mt-1">Select any psychologist from the system to schedule this session with.</p>
             </div>
           </div>
         </div>

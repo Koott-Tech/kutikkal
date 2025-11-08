@@ -15,13 +15,18 @@ import {
   Clock,
   FileText,
   MessageSquare,
-  Shield
+  Shield,
+  Package,
+  ChevronDown,
+  ChevronRight,
+  Layers
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import SecurityNotificationCenter from '@/components/SecurityNotificationCenter';
 
 export default function AdminLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCmsMenuOpen, setIsCmsMenuOpen] = useState(false);
   const { user, isAuthenticated, hasRole, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
 
@@ -39,6 +44,18 @@ export default function AdminLayout({ children }) {
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
 
+  // Keep CMS menu open if user is on any CMS page
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      const cmsPaths = ['/admin/blogs', '/admin/counselling', '/admin/assessments', '/admin/better-parenting'];
+      const isOnCmsPage = cmsPaths.some(path => currentPath.startsWith(path));
+      if (isOnCmsPage) {
+        setIsCmsMenuOpen(true);
+      }
+    }
+  }, []);
+
   const handleLogout = () => {
     logout();
     router.push('/login');
@@ -49,10 +66,18 @@ export default function AdminLayout({ children }) {
     { name: 'Doctors', href: '/admin/doctors', icon: UserCheck },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
-    { name: 'Blogs', href: '/admin/blogs', icon: FileText },
-    { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
-    { name: 'Assessments', href: '/admin/assessments', icon: FileText },
-    { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
+    { name: 'Assessment Sessions', href: '/admin/assessment-sessions', icon: Package },
+    { 
+      name: 'CMS', 
+      icon: Layers, 
+      hasSubmenu: true,
+      submenu: [
+        { name: 'Blogs', href: '/admin/blogs', icon: FileText },
+        { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
+        { name: 'Assessment Pages', href: '/admin/assessments', icon: FileText },
+        { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
+      ]
+    },
     { name: 'Free Assessment', href: '/admin/free-assessment-timeslots', icon: Clock },
     { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
@@ -96,14 +121,59 @@ export default function AdminLayout({ children }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
+              
+              // Handle CMS menu with submenu
+              if (item.hasSubmenu && item.submenu) {
+                return (
+                  <div key={item.name}>
+                    <button
+                      onClick={() => setIsCmsMenuOpen(!isCmsMenuOpen)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                    >
+                      <div className="flex items-center">
+                        <Icon className="h-5 w-5 mr-3" />
+                        {item.name}
+                      </div>
+                      {isCmsMenuOpen ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
+                    
+                    {/* Submenu */}
+                    {isCmsMenuOpen && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.submenu.map((subItem) => {
+                          const SubIcon = subItem.icon;
+                          return (
+                            <a
+                              key={subItem.name}
+                              href={subItem.href}
+                              className="flex items-center px-4 py-2 text-sm text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                              onClick={() => setIsSidebarOpen(false)}
+                            >
+                              <SubIcon className="h-4 w-4 mr-3" />
+                              {subItem.name}
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              
+              // Regular menu item
               return (
                 <a
                   key={item.name}
                   href={item.href}
                   className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  onClick={() => setIsSidebarOpen(false)}
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {item.name}

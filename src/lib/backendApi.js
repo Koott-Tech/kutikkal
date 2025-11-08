@@ -414,6 +414,14 @@ export const clientApi = {
     return apiRequest(`/clients/assessments/sessions?${queryParams}`);
   },
 
+  // Reschedule assessment session (client)
+  async rescheduleAssessmentSession(assessmentSessionId, data) {
+    return apiRequest(`/clients/assessments/sessions/${assessmentSessionId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
   // Reserve time slot for payment
   async reserveSlot(data) {
     return apiRequest('/clients/reserve-slot', {
@@ -503,6 +511,14 @@ export const psychologistApi = {
   async deleteAssessmentSession(assessmentSessionId) {
     return apiRequest(`/psychologists/assessment-sessions/${assessmentSessionId}`, {
       method: 'DELETE',
+    });
+  },
+
+  // Reschedule assessment session (psychologist)
+  async rescheduleAssessmentSession(assessmentSessionId, data) {
+    return apiRequest(`/psychologists/assessment-sessions/${assessmentSessionId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   },
 
@@ -775,6 +791,35 @@ export const adminApi = {
   // Get psychologist availability for reschedule
   async getPsychologistAvailabilityForReschedule(psychologistId, startDate, endDate) {
     return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
+  },
+
+  // Get all reschedule requests
+  async getRescheduleRequests(status) {
+    const query = status ? `?status=${status}` : '';
+    return apiRequest(`/admin/reschedule-requests${query}`);
+  },
+
+  // Approve assessment reschedule request
+  async approveAssessmentRescheduleRequest(notificationId, data) {
+    return apiRequest(`/admin/reschedule-requests/assessment/${notificationId}/approve`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Reschedule assessment session (admin)
+  async rescheduleAssessmentSession(assessmentSessionId, data) {
+    return apiRequest(`/admin/assessment-sessions/${assessmentSessionId}/reschedule`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete assessment session (admin)
+  async deleteAssessmentSession(assessmentSessionId) {
+    return apiRequest(`/admin/assessment-sessions/${assessmentSessionId}`, {
+      method: 'DELETE',
+    });
   },
 
   // Set availability for a psychologist (admin)
@@ -1153,6 +1198,14 @@ export const messagesApi = {
 
 // Payment API
 export const paymentApi = {
+  // Create cash payment
+  async createCashPayment(paymentData) {
+    return apiRequest('/payment/cash', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  },
+
   // Create payment order
   async createPaymentOrder(paymentData) {
     return apiRequest('/payment/create-order', {

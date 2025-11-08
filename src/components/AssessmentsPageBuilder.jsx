@@ -70,6 +70,7 @@ export default function AssessmentsPageBuilder({
     videos: [],
     reviews: [],
     assigned_doctor_ids: [],
+    allow_cash_payment: false,
   });
 
   const [activeElement, setActiveElement] = useState(null);
@@ -129,6 +130,7 @@ export default function AssessmentsPageBuilder({
         videos: initialData.videos || [],
         reviews: initialData.reviews || [],
         assigned_doctor_ids: initialData.assigned_doctor_ids || [],
+        allow_cash_payment: initialData.allow_cash_payment || false,
       });
     }
   }, [initialData]);
@@ -856,6 +858,20 @@ export default function AssessmentsPageBuilder({
                     <p className="text-xs text-blue-800 font-medium">Selected: {formData.assigned_doctor_ids.length} of 2 doctors</p>
                   </div>
                 )}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <label className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.allow_cash_payment || false}
+                      onChange={(e) => handleInputChange('allow_cash_payment', e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <div>
+                      <div className="font-medium text-sm">Allow Cash Payment</div>
+                      <div className="text-xs text-gray-500">Enable cash payment option in booking calendar</div>
+                    </div>
+                  </label>
+                </div>
               </>
             )}
           </div>

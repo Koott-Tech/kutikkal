@@ -34,6 +34,58 @@ export default function PsychologistAssessments() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
 
+  const getPackageKey = (session) => {
+    if (!session) return '';
+    const { assessment_id, client_id, payment_id } = session;
+    return payment_id ? `${assessment_id}_${payment_id}` : `${assessment_id}_${client_id}`;
+  };
+
+  const renderProgressBadge = (session) => {
+    const packageKey = getPackageKey(session);
+    const progress = assessmentProgress[packageKey];
+    if (!progress) return null;
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        {progress.completed}/{progress.total} sessions
+      </span>
+    );
+  };
+
+  const hasPendingForNext = (session) => {
+    if (session.status !== 'completed' || !session?.psychologist_id || !user?.id) return false;
+
+    const packageKey = getPackageKey(session);
+    const progress = assessmentProgress[packageKey];
+    if (!progress || !Array.isArray(progress.allSessions) || progress.allSessions.length === 0) {
+      return false;
+    }
+
+    // Only the psychologist who owned the completed session can move the flow forward
+    if (String(session.psychologist_id) !== String(user.id)) {
+      return false;
+    }
+
+    const sessionsOrdered = [...progress.allSessions];
+    const currentIndex = sessionsOrdered.findIndex((s) => s.id === session.id);
+    if (currentIndex === -1) return false;
+
+    const nextSessions = sessionsOrdered.slice(currentIndex + 1);
+    if (nextSessions.length === 0) return false;
+
+    // If any later session is already scheduled (has date & time), this session shouldn't show "Book Next Session"
+    const hasFutureScheduled = nextSessions.some(
+      (s) => s.scheduled_date && s.scheduled_time
+    );
+    if (hasFutureScheduled) return false;
+
+    // Allow booking next only when there's an actual pending session waiting to be scheduled
+    const hasPendingToSchedule = nextSessions.some(
+      (s) => s.status === 'pending' && (!s.scheduled_date || !s.scheduled_time)
+    );
+
+    return hasPendingToSchedule;
+  };
+
   useEffect(() => {
     if (user) {
       loadAssessments();
@@ -44,94 +96,82 @@ export default function PsychologistAssessments() {
     try {
       setIsLoading(true);
       setError(null);
-      // Fetch all sessions (includes assessment sessions)
       const sessionsData = await psychologistApi.getSessions({ limit: 1000 });
       const allSessions = sessionsData.data?.sessions || [];
-      
-      // Filter only assessment sessions
-      const assessmentSessions = allSessions.filter(s => 
+
+      const assessmentSessionsAll = allSessions.filter(s => 
         s.session_type === 'assessment' || s.type === 'assessment'
       );
 
-      // Group by assessment_id AND client_id (or payment_id) to get correct count per package
-      // Each assessment package has exactly 3 sessions (1 booked + 2 pending)
-      const TOTAL_SESSIONS_PER_PACKAGE = 3;
-      const assessmentMap = new Map();
-      const progressMap = {};
-      
-      assessmentSessions.forEach(session => {
-        const assessmentId = session.assessment_id;
-        const clientId = session.client_id;
-        const paymentId = session.payment_id;
-        
-        if (!assessmentId || !clientId) return;
-        
-        // Create a unique key for each assessment package (assessment + client combination)
-        // Use payment_id if available (all 3 sessions share the same payment_id)
-        const packageKey = paymentId ? `${assessmentId}_${paymentId}` : `${assessmentId}_${clientId}`;
-        
-        // Initialize progress tracking for this assessment package
-        if (!progressMap[packageKey]) {
-          progressMap[packageKey] = {
-            completed: 0,
-            total: TOTAL_SESSIONS_PER_PACKAGE, // fixed denominator 3
-            pending: [],
-            firstSession: null,
-            assessment_id: assessmentId,
-            client_id: clientId
-          };
-        }
-        // Do not increment total; keep fixed at 3
-        
-        // Track completed sessions
-        if (session.status === 'completed') {
-          progressMap[packageKey].completed++;
-        }
-        
-        // Track pending sessions (for scheduling next session)
-        if (session.status === 'pending') {
-          progressMap[packageKey].pending.push(session);
-        }
-        
-        // Track the first session (session_number === 1 or earliest scheduled_date)
-        if (!progressMap[packageKey].firstSession) {
-          progressMap[packageKey].firstSession = session;
-        } else {
-          const existingSession = progressMap[packageKey].firstSession;
-          // Prefer session with session_number === 1
-          if (session.session_number === 1) {
-            progressMap[packageKey].firstSession = session;
-          } else if (existingSession.session_number !== 1) {
-            // If neither is session 1, prefer the earliest scheduled date
-            const existingDate = existingSession.scheduled_date ? new Date(existingSession.scheduled_date) : new Date(0);
-            const currentDate = session.scheduled_date ? new Date(session.scheduled_date) : new Date(0);
-            if (currentDate < existingDate) {
-              progressMap[packageKey].firstSession = session;
-            }
-          }
-        }
+      const packages = new Map();
+      assessmentSessionsAll.forEach(session => {
+        if (!session.assessment_id || !session.client_id) return;
+        const packageKey = getPackageKey(session);
+        if (!packageKey) return;
+        if (!packages.has(packageKey)) packages.set(packageKey, []);
+        packages.get(packageKey).push(session);
       });
-      
-      // Convert to array using first session for each assessment package
-      const firstSessions = Object.values(progressMap)
-        .map(progress => progress.firstSession)
-        .filter(session => session !== null)
-        .sort((a, b) => {
+
+      const TOTAL_SESSIONS_PER_PACKAGE = 3;
+      const visibleAssessmentSessions = [];
+      const progressMap = {};
+
+      packages.forEach((sessionsInPackage, packageKey) => {
+        if (!sessionsInPackage.length) return;
+
+        const sortedByNumber = [...sessionsInPackage].sort((a, b) => {
+          const numA = typeof a.session_number === 'number' ? a.session_number : 99;
+          const numB = typeof b.session_number === 'number' ? b.session_number : 99;
+          if (numA !== numB) return numA - numB;
           const dateA = a.scheduled_date ? new Date(a.scheduled_date) : new Date(0);
           const dateB = b.scheduled_date ? new Date(b.scheduled_date) : new Date(0);
-          return dateB - dateA; // Descending order
+          return dateA - dateB;
         });
-      
-      // Create a map for easy lookup by assessment_id + client_id
-      const progressByAssessment = {};
-      Object.values(progressMap).forEach(progress => {
-        const key = `${progress.assessment_id}_${progress.client_id}`;
-        progressByAssessment[key] = progress;
+
+        const ownerSession = [...sortedByNumber]
+          .reverse()
+          .find(s => s.psychologist_id);
+
+        const ownerPsychId = ownerSession?.psychologist_id || null;
+        const isOwner = ownerPsychId === user.id;
+        const hasAssignedToDoc = sortedByNumber.some(s => s.psychologist_id === user.id);
+
+        if (!isOwner && !hasAssignedToDoc) {
+          return;
+        }
+
+        const sessionsForDoc = isOwner
+          ? sortedByNumber
+          : sortedByNumber.filter(s => s.psychologist_id === user.id);
+
+        visibleAssessmentSessions.push(...sessionsForDoc);
+
+        const completedCount = sortedByNumber.filter(s => s.status === 'completed').length;
+        const pendingForOwner = isOwner
+          ? sortedByNumber.filter(s => s.status === 'pending' && (!s.scheduled_date || !s.scheduled_time))
+          : [];
+
+        const sample = sortedByNumber[0];
+        progressMap[packageKey] = {
+          completed: completedCount,
+          total: TOTAL_SESSIONS_PER_PACKAGE,
+          pending: pendingForOwner,
+          allSessions: sortedByNumber,
+          assessment_id: sample.assessment_id,
+          client_id: sample.client_id,
+          payment_id: sample.payment_id,
+          owner_psychologist_id: ownerPsychId
+        };
       });
-      
-      setAssessments(firstSessions);
-      // Store progress by assessment_id + client_id for easy lookup
-      setAssessmentProgress(progressByAssessment);
+
+      const sortedAssessments = visibleAssessmentSessions.sort((a, b) => {
+        const dateA = a.scheduled_date ? new Date(a.scheduled_date) : new Date(0);
+        const dateB = b.scheduled_date ? new Date(b.scheduled_date) : new Date(0);
+        return dateB - dateA;
+      });
+
+      setAssessments(sortedAssessments);
+      setAssessmentProgress(progressMap);
     } catch (err) {
       console.error('Error loading assessments:', err);
       setError(err.message);
@@ -190,7 +230,7 @@ export default function PsychologistAssessments() {
   };
 
   const openScheduleModal = (session) => {
-    const packageKey = `${session.assessment_id}_${session.client_id}`;
+    const packageKey = getPackageKey(session);
     const progress = assessmentProgress[packageKey];
     
     // Find the next pending session to schedule
@@ -286,10 +326,24 @@ export default function PsychologistAssessments() {
     );
   }
 
-  const upcomingAssessments = assessments.filter(a => 
-    a.status === 'booked' || a.status === 'reserved'
-  );
-  const completedAssessments = assessments.filter(a => a.status === 'completed');
+  // Upcoming assessments: booked/reserved sessions OR completed sessions that have pending sessions
+  const upcomingAssessments = assessments.filter(a => {
+    if (a.status === 'booked' || a.status === 'reserved') return true;
+    // Also include completed sessions if there are pending sessions to schedule
+    if (a.status === 'completed') {
+      const progress = assessmentProgress[getPackageKey(a)];
+      return progress && progress.pending.length > 0;
+    }
+    return false;
+  });
+  
+  // Completed assessments: all 3 sessions are completed (no pending sessions)
+  const completedAssessments = assessments.filter(a => {
+    if (a.status !== 'completed') return false;
+    const progress = assessmentProgress[getPackageKey(a)];
+    // Show as completed only if all 3 sessions are completed (no pending sessions)
+    return progress && progress.completed === 3 && progress.pending.length === 0;
+  });
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -347,11 +401,7 @@ export default function PsychologistAssessments() {
                           <p className="text-sm font-medium text-gray-700">
                             {session.assessment_title || session.assessment?.hero_title || 'Assessment'}
                           </p>
-                          {assessmentProgress[`${session.assessment_id}_${session.client_id}`] && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {assessmentProgress[`${session.assessment_id}_${session.client_id}`].completed}/{assessmentProgress[`${session.assessment_id}_${session.client_id}`].total} sessions
-                            </span>
-                          )}
+                          {renderProgressBadge(session)}
                         </div>
                         <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
@@ -381,7 +431,8 @@ export default function PsychologistAssessments() {
                           {completingSessions.has(session.id) ? 'Completing...' : 'Complete Session'}
                         </button>
                       )}
-                      {assessmentProgress[`${session.assessment_id}_${session.client_id}`]?.pending.length > 0 && (
+                      {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
+                      {hasPendingForNext(session) && (
                         <button
                           onClick={() => openScheduleModal(session)}
                           className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
@@ -442,11 +493,7 @@ export default function PsychologistAssessments() {
                           <p className="text-sm font-medium text-gray-700">
                             {session.assessment_title || session.assessment?.hero_title || 'Assessment'}
                           </p>
-                          {assessmentProgress[`${session.assessment_id}_${session.client_id}`] && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {assessmentProgress[`${session.assessment_id}_${session.client_id}`].completed}/{assessmentProgress[`${session.assessment_id}_${session.client_id}`].total} sessions
-                            </span>
-                          )}
+                          {renderProgressBadge(session)}
                         </div>
                         <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
@@ -461,7 +508,8 @@ export default function PsychologistAssessments() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {assessmentProgress[`${session.assessment_id}_${session.client_id}`]?.pending.length > 0 && (
+                      {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
+                      {hasPendingForNext(session) && (
                         <button
                           onClick={() => openScheduleModal(session)}
                           className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"

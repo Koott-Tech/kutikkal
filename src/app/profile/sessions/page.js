@@ -234,7 +234,12 @@ export default function SessionsPage() {
                     .map((session) => (
                       <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                         {/* Status Badge */}
-                        <div className="flex justify-end mb-3">
+                        <div className="flex justify-end mb-3 gap-2">
+                          {(session.session_type === 'assessment' || session.type === 'assessment') && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              Assessment
+                            </span>
+                          )}
                           {isSessionExpired(session) ? (
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
                               Time Expired

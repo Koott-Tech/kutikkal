@@ -21,7 +21,8 @@ import {
   MapPin,
   RefreshCw,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -111,6 +112,36 @@ export default function BookingsPage() {
   const handleReschedule = (session) => {
     setSelectedSession(session);
     setIsRescheduleOpen(true);
+  };
+
+  const handleDeleteSession = async (session) => {
+    if (!confirm(`Are you sure you want to delete this session? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Check if it's an assessment session or regular session
+      if (session.session_type === 'assessment' || session.type === 'assessment') {
+        // Delete assessment session via admin API
+        await adminApi.deleteAssessmentSession(session.id);
+      } else {
+        // Delete regular session
+        await sessionsApi.deleteSession(session.id);
+      }
+
+      // Remove from list
+      setBookings(prevBookings => prevBookings.filter(booking => booking.id !== session.id));
+      showSuccess('Session deleted successfully!', 'Delete Success');
+      
+      // Close details modal if it's open for this session
+      if (selectedSession && selectedSession.id === session.id) {
+        setIsSessionDetailsOpen(false);
+        setSelectedSession(null);
+      }
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      showError(`Failed to delete session: ${error.message}`, 'Delete Error');
+    }
   };
 
   const handleRescheduleSuccess = (updatedSession) => {
@@ -377,10 +408,20 @@ export default function BookingsPage() {
                             Free Assessment
                           </span>
                         )}
+                        {(booking.session_type === 'assessment' || booking.type === 'assessment') && (
+                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Assessment
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500">
                         {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}
                       </div>
+                      {(booking.session_type === 'assessment' || booking.type === 'assessment') && booking.assessment_title && (
+                        <div className="text-xs text-gray-400">
+                          {booking.assessment_title}
+                        </div>
+                      )}
                       {booking.package && (
                         <div className="text-xs text-gray-400">
                           Package: {booking.package.package_type}
@@ -447,6 +488,15 @@ export default function BookingsPage() {
                         >
                           <RefreshCw className="h-4 w-4 mr-1" />
                           Reschedule
+                        </button>
+                      )}
+                      {booking.status !== 'completed' && (
+                        <button
+                          onClick={() => handleDeleteSession(booking)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          title="Delete session"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       )}
                     </div>

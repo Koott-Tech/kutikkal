@@ -188,18 +188,15 @@ export default function ContactPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name <span className="text-red-500">*</span>
+              Last Name
             </label>
             <input
               type="text"
               name="last_name"
               value={profileForm.last_name}
               onChange={handleProfileInputChange}
-              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                !profileForm.last_name ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
               placeholder="Enter your last name"
-              required
             />
           </div>
         </div>

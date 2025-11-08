@@ -439,9 +439,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                             <p className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="#" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
-                                <a href="#" className="hover:text-white transition-colors">PRIVACY POLICY</a>
-                                <a href="#" className="hover:text-white transition-colors">THERAPY AGREEMENT</a>
-                                <a href="#" className="hover:text-white transition-colors">REFUND POLICY</a>
+                                <a href="/privacy-policy" className="hover:text-white transition-colors">PRIVACY POLICY</a>
+                                <a href="/therapy-agreement" className="hover:text-white transition-colors">THERAPY AGREEMENT</a>
+                                <a href="/refund-policy" className="hover:text-white transition-colors">REFUND POLICY</a>
                             </div>
                         </div>
                     </div>

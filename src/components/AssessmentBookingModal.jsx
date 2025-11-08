@@ -25,6 +25,7 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
   const [availabilityMap, setAvailabilityMap] = useState({}); // { [date]: Array<{ time, doctorId }> }
   const [loading, setLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('online'); // 'online' or 'cash'
 
   // Helper function to format dates as YYYY-MM-DD using local formatting (IST)
   const dateStr = (d) => {
@@ -370,9 +371,26 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
         clientEmail: user?.email || clientProfile?.email || `${slotReservation.data.clientId}@little.care`,
         clientPhone: clientProfile?.phone_number,
         assessmentSessionId: slotReservation.data.assessmentSessionId,
-        assessmentType: 'assessment'
+        assessmentType: 'assessment',
+        paymentMethod: paymentMethod // 'online' or 'cash'
       };
 
+      // If cash payment, handle directly without PayU redirect
+      if (paymentMethod === 'cash') {
+        const cashPaymentResponse = await paymentApi.createCashPayment(paymentData);
+        if (cashPaymentResponse.success) {
+          showSuccess('Assessment booked successfully! Payment will be collected in cash.', 'Booking Successful');
+          onClose();
+          // Refresh page or reload data
+          window.location.reload();
+        } else {
+          showError(cashPaymentResponse.message || 'Failed to process cash payment. Please try again.', 'Payment Error');
+        }
+        setIsBooking(false);
+        return;
+      }
+
+      // Online payment - redirect to PayU
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       if (paymentResponse.success) {
@@ -489,7 +507,40 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
           </div>
           
           {/* Right side - Calendar */}
-          <div className="flex flex-col">
+          <div className="flex flex-col space-y-4">
+            {/* Payment Method Selection - Only show if cash payment is allowed */}
+            {assessment?.allow_cash_payment && selectedDate && selectedTime && (
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Payment Method</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="online"
+                      checked={paymentMethod === 'online'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="text-purple-600"
+                    />
+                    <span className="text-sm">Online Payment</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="cash"
+                      checked={paymentMethod === 'cash'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="text-purple-600"
+                    />
+                    <span className="text-sm">Cash Payment</span>
+                  </label>
+                </div>
+                {paymentMethod === 'cash' && (
+                  <p className="text-xs text-gray-500 mt-2">Payment will be collected in cash at the time of session.</p>
+                )}
+              </div>
+            )}
             <div className="rounded-2xl border border-gray-200 bg-white p-4">
               {/* Calendar header */}
               <div className="flex items-center justify-between mb-3">
