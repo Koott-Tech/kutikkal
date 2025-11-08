@@ -35,9 +35,14 @@ export default function PsychologistAssessments() {
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
 
   const getPackageKey = (session) => {
-    if (!session) return '';
-    const { assessment_id, client_id, payment_id } = session;
-    return payment_id ? `${assessment_id}_${payment_id}` : `${assessment_id}_${client_id}`;
+    if (!session) return "";
+    const { package_id, assessment_id, client_id, payment_id } = session;
+
+    if (package_id) return `pkg_${package_id}`;
+    if (payment_id) return `${assessment_id}_${payment_id}`;
+    if (client_id) return `${assessment_id}_${client_id}`;
+
+    return `${assessment_id || "assessment"}_${session.id}`;
   };
 
   const renderProgressBadge = (session) => {

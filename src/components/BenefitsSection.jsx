@@ -212,9 +212,14 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
     title: cmsData.title || content[therapyType]?.title || content.individual.title,
     benefits: cmsData.benefits && cmsData.benefits.length > 0 ? cmsData.benefits : (content[therapyType]?.benefits || content.individual.benefits)
   } : (content[therapyType] || content.individual);
-  
-  // Get image URL from CMS data or use default
-  const benefitsImageUrl = cmsData?.benefitsImageUrl || '/rightside5th.png';
+
+  // Prefer CMS-provided image (support both camelCase and snake_case keys) and fall back to default asset
+  const benefitsImageUrl =
+    cmsData?.benefitsImageUrl ||
+    cmsData?.benefits_image_url ||
+    cmsData?.imageUrl ||
+    cmsData?.image_url ||
+    '/rightside5th.png';
   
   const [isExpanded, setIsExpanded] = useState(showAllBenefits);
 
