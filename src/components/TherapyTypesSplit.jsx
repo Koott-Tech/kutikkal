@@ -116,12 +116,11 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
   } : (content[therapyType] || content.individual);
   return (
     <section className="w-full mt-16 md:mt-20 mb-0 md:mb-8 px-4 sm:px-6 md:px-10 pt-8 md:pt-12">
-      <div className="min-h-[100vh] w-full overflow-hidden shadow-sm">
+      <div className="w-full overflow-hidden">
         <div className="flex flex-col md:grid md:grid-cols-2">
           {/* Content Area - with background */}
           <div
-            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative"
-            style={{ background: "#d3e9d1" }}
+            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#d3e9d1]"
           >
             <h3 
               className="mb-2"

@@ -145,9 +145,18 @@ export default function PsychologistAssessments() {
           return;
         }
 
-        const sessionsForDoc = isOwner
-          ? sortedByNumber
-          : sortedByNumber.filter(s => s.psychologist_id === user.id);
+        let sessionsForDoc = sortedByNumber.filter(s => s.psychologist_id === user.id);
+
+        // If no sessions directly assigned to the current psychologist but they are the owner,
+        // fall back to showing only their most recent assigned session (if any) to preserve context.
+        if (sessionsForDoc.length === 0 && isOwner) {
+          const latestOwnedSession = [...sortedByNumber]
+            .reverse()
+            .find(s => s.psychologist_id === user.id);
+          if (latestOwnedSession) {
+            sessionsForDoc = [latestOwnedSession];
+          }
+        }
 
         visibleAssessmentSessions.push(...sessionsForDoc);
 
