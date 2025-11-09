@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { authApi } from "@/lib/backendApi";
+import { authApi, clientApi } from "@/lib/backendApi";
+import { isClientContactComplete } from "@/lib/contactValidation";
 import GoogleSignIn from "@/components/GoogleSignIn";
 
-export default function AuthModal({ open, onClose, defaultTab = "login", redirectOnSignup = true, onAuthSuccess }) {
-  const router = useRouter();
+export default function AuthModal({
+  open,
+  onClose,
+  defaultTab = "login",
+  onAuthSuccess,
+  onRequireContactInfo
+}) {
   const { login } = useAuth();
 
   const [activeTab, setActiveTab] = useState(defaultTab); // 'login' | 'signup'
@@ -59,6 +64,7 @@ export default function AuthModal({ open, onClose, defaultTab = "login", redirec
       const data = await authApi.login({ email, password });
       login(data.data.user, data.data.token);
       try { await onAuthSuccess?.(data.data.user); } catch (_) {}
+      await maybePromptContactInfo();
       closeAndReset();
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
@@ -86,15 +92,25 @@ export default function AuthModal({ open, onClose, defaultTab = "login", redirec
       const data = await authApi.registerClient({ email: signup.email, password: signup.password, role: "client" });
       login(data.data.user, data.data.token);
       try { await onAuthSuccess?.(data.data.user); } catch (_) {}
+      await maybePromptContactInfo();
       closeAndReset();
-      if (redirectOnSignup) {
-        router.push("/profile?tab=contact");
-      }
     } catch (err) {
       const msg = err?.message || "Registration failed. Please try again.";
       setError(msg);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const maybePromptContactInfo = async () => {
+    try {
+      const response = await clientApi.getProfile();
+      const profile = response?.data;
+      if (!isClientContactComplete(profile)) {
+        onRequireContactInfo?.(profile);
+      }
+    } catch (contactErr) {
+      console.warn("Unable to verify contact information:", contactErr);
     }
   };
 

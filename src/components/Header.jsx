@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "../contexts/AuthContext";
 import GuideModal from "@/components/GuideModal";
 import AuthModal from "@/components/AuthModal";
+import QuickContactModal from "@/components/QuickContactModal";
 import { authApi } from "../lib/backendApi";
 
 export default function Header() {
@@ -22,6 +23,7 @@ export default function Header() {
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
   const [isMobileBetterParentingOpen, setIsMobileBetterParentingOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showQuickContact, setShowQuickContact] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [clickedSubmenu, setClickedSubmenu] = useState(null);
@@ -59,6 +61,15 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const shouldShow = sessionStorage.getItem("showQuickContact");
+    if (shouldShow === "true") {
+      setShowQuickContact(true);
+      sessionStorage.removeItem("showQuickContact");
+    }
+  }, []);
 
   // Fetch profile data for authenticated users
   useEffect(() => {
@@ -1616,8 +1627,17 @@ export default function Header() {
       <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
     )}
     {showAuthModal && (
-      <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onRequireContactInfo={() => setShowQuickContact(true)}
+      />
     )}
+    <QuickContactModal
+      open={showQuickContact}
+      onClose={() => setShowQuickContact(false)}
+      onSaved={() => setShowQuickContact(false)}
+    />
     </>
   );
 }

@@ -1635,10 +1635,9 @@ const TherapistProfileContent = () => {
 
       {/* Auth modal for unauthenticated booking */}
       {showAuth && (
-        <AuthModal
-          open={showAuth}
-          redirectOnSignup={false}
-          onAuthSuccess={async () => {
+      <AuthModal
+        open={showAuth}
+        onAuthSuccess={async () => {
             // After successful signup/login, check if contact details are complete
             setShowAuth(false);
             setTimeout(async () => {

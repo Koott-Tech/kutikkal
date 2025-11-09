@@ -658,7 +658,6 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
       {showAuth && (
         <AuthModal
           open={showAuth}
-          redirectOnSignup={false}
           onAuthSuccess={async () => {
             // After successful signup/login, check if contact details are complete
             setShowAuth(false);
