@@ -390,23 +390,35 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
       }
 
       // Online payment - open PayU popup window
+      let payuWindow = null;
+      const openPayuWindow = () => window.open(
+        '',
+        'PayUCheckout',
+        'width=520,height=720,menubar=0,toolbar=0,location=1,status=1,scrollbars=1,resizable=1'
+      );
+      if (paymentMethod === 'online') {
+        payuWindow = openPayuWindow();
+
+        if (!payuWindow || payuWindow.closed) {
+          showError('Payment window was blocked. Please allow pop-ups for this site and try again.', 'Payment Error');
+          setIsBooking(false);
+          return;
+        }
+        try {
+          payuWindow.document.write('<p style="font-family: sans-serif; padding: 16px;">Loading PayU checkout…</p>');
+        } catch (writeErr) {
+          console.warn('Unable to write placeholder content to PayU window:', writeErr);
+        }
+      }
+
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       if (paymentResponse.success) {
         if (!paymentResponse.data?.redirectUrl) {
           showError('Payment gateway error: missing redirect URL', 'Payment Error');
-          setIsBooking(false);
-          return;
-        }
-
-        const payuWindow = window.open(
-          '',
-          'PayUCheckout',
-          'width=520,height=720,menubar=0,toolbar=0,location=1,status=1,scrollbars=1,resizable=1'
-        );
-
-        if (!payuWindow) {
-          showError('Payment window was blocked. Please allow pop-ups and try again.', 'Payment Error');
+          if (payuWindow && !payuWindow.closed) {
+            payuWindow.close();
+          }
           setIsBooking(false);
           return;
         }
@@ -435,12 +447,26 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
         }, 1000);
       } else {
         showError('Failed to create payment order. Please try again.', 'Payment Error');
+        if (payuWindow && !payuWindow.closed) {
+          payuWindow.close();
+        }
         setIsBooking(false);
       }
       
     } catch (error) {
       console.error('Assessment booking error:', error);
       showError(error?.message || 'Failed to book assessment. Please try again.', 'Booking Error');
+      // Close PayU window if it was opened
+      if (typeof window !== 'undefined') {
+        try {
+          const existingWindow = window.open('', 'PayUCheckout');
+          if (existingWindow && !existingWindow.closed) {
+            existingWindow.close();
+          }
+        } catch (closeError) {
+          console.warn('Unable to close PayU window after error:', closeError);
+        }
+      }
     } finally {
       setIsBooking(false);
     }
