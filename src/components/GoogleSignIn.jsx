@@ -47,11 +47,14 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
       const { type, success, payload } = event.data;
       if (type !== 'supabase:auth-result') return;
 
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.close();
-      }
-
       if (success) {
+        if (popupRef.current && !popupRef.current.closed) {
+          try {
+            popupRef.current.close();
+          } catch (closeError) {
+            console.warn('Unable to close auth popup:', closeError);
+          }
+        }
         try {
           if (payload?.user && payload?.token) {
             login(payload.user, payload.token);
@@ -67,7 +70,7 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
           if (targetUrl && targetUrl !== window.location.href) {
             window.location.href = targetUrl;
           } else {
-            window.location.reload();
+            router.refresh();
           }
         } else {
           router.refresh();

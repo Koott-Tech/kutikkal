@@ -167,7 +167,10 @@ function AuthCallbackContent() {
             console.warn('Unable to verify contact details after login:', profileError);
           }
 
-          const isPopupMode = mode === 'popup' && typeof window !== 'undefined' && (window.opener || window.parent !== window);
+          const isPopupMode =
+            mode === 'popup' &&
+            typeof window !== 'undefined' &&
+            (window.opener || window.parent !== window);
 
           if (isPopupMode) {
             try {
@@ -189,9 +192,6 @@ function AuthCallbackContent() {
               console.warn('Failed to post auth success message to opener:', postMessageError);
             }
             setStatus('Authentication successful! You may close this window.');
-            setTimeout(() => {
-              window.close();
-            }, 500);
           } else if (safeReturnUrl) {
             if (safeReturnUrl.startsWith('http')) {
               window.location.href = safeReturnUrl;
