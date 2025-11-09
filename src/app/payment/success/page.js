@@ -27,16 +27,59 @@ function PaymentSuccessContent() {
     console.log('Cache bust - latest version deployed');
 
     // Set payment data from URL parameters
-    setPaymentData({
+    const payload = {
       txnid: txnid || 'N/A',
       amount: amount || 'N/A',
       productinfo: productinfo || 'Payment completed',
       firstname: firstname || 'N/A',
       email: email || 'N/A',
-      status: status || 'success'
-    });
+      status: status || 'success',
+      hash: hash || ''
+    };
+
+    setPaymentData(payload);
+
+    // Notify parent window when running inside iframe (modal checkout)
+    if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+      window.parent.postMessage(
+        {
+          type: 'PAYU_PAYMENT_RESULT',
+          status: 'success',
+          payload
+        },
+        window.location.origin
+      );
+    }
 
     setLoading(false);
+
+    if (typeof window !== 'undefined') {
+      const opener = window.opener;
+      if (opener && !opener.closed) {
+        try {
+          opener.postMessage(
+            {
+              type: 'PAYU_PAYMENT_REFRESH',
+              status: 'success',
+              payload
+            },
+            window.location.origin
+          );
+        } catch (postMessageError) {
+          console.warn('Unable to postMessage to opener:', postMessageError);
+        }
+
+        try {
+          opener.location.reload();
+        } catch (reloadError) {
+          console.warn('Unable to reload opener window:', reloadError);
+        }
+
+        setTimeout(() => {
+          window.close();
+        }, 1000);
+      }
+    }
   }, [searchParams]);
 
   if (loading) {

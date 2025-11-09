@@ -24,12 +24,50 @@ export default function PaymentFailure() {
       console.log('🔍 Payment Failure Params:', { txnid, status, error_code, error_Message });
 
       if (txnid) {
-        setPaymentDetails({
+        const details = {
           transactionId: txnid,
           status: status,
           errorCode: error_code,
           errorMessage: error_Message
-        });
+        };
+
+        setPaymentDetails(details);
+
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(
+            {
+              type: 'PAYU_PAYMENT_RESULT',
+              status: 'failure',
+              payload: details
+            },
+            window.location.origin
+          );
+        }
+
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage(
+              {
+                type: 'PAYU_PAYMENT_REFRESH',
+                status: 'failure',
+                payload: details
+              },
+              window.location.origin
+            );
+          } catch (postMessageErr) {
+            console.warn('Unable to postMessage to opener on failure:', postMessageErr);
+          }
+
+          try {
+            window.opener.location.reload();
+          } catch (reloadErr) {
+            console.warn('Unable to reload opener window on failure:', reloadErr);
+          }
+
+          setTimeout(() => {
+            window.close();
+          }, 1000);
+        }
       } else {
         setError('Invalid payment response');
       }

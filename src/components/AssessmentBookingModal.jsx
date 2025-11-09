@@ -8,7 +8,6 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { publicApi, clientApi, paymentApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
 import { useRouter } from 'next/navigation';
-import backendApi from '@/lib/backendApi';
 
 export default function AssessmentBookingModal({ open, onClose, assessment, doctorIds = [] }) {
   const { user, isAuthenticated, hasRole } = useAuth();
@@ -390,25 +389,50 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
         return;
       }
 
-      // Online payment - redirect to PayU
+      // Online payment - open PayU popup window
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       if (paymentResponse.success) {
-        // Redirect to PayU payment page
+        if (!paymentResponse.data?.redirectUrl) {
+          showError('Payment gateway error: missing redirect URL', 'Payment Error');
+          setIsBooking(false);
+          return;
+        }
+
+        const payuWindow = window.open(
+          '',
+          'PayUCheckout',
+          'width=520,height=720,menubar=0,toolbar=0,location=1,status=1,scrollbars=1,resizable=1'
+        );
+
+        if (!payuWindow) {
+          showError('Payment window was blocked. Please allow pop-ups and try again.', 'Payment Error');
+          setIsBooking(false);
+          return;
+        }
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = paymentResponse.data.redirectUrl;
-        
-        Object.entries(paymentResponse.data.payuParams).forEach(([key, value]) => {
+        form.target = 'PayUCheckout';
+        form.style.display = 'none';
+
+        Object.entries(paymentResponse.data.payuParams || {}).forEach(([key, value]) => {
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = key;
-          input.value = value;
+          input.value = value ?? '';
           form.appendChild(input);
         });
-        
+
         document.body.appendChild(form);
         form.submit();
+
+        setTimeout(() => {
+          if (document.body.contains(form)) {
+            document.body.removeChild(form);
+          }
+        }, 1000);
       } else {
         showError('Failed to create payment order. Please try again.', 'Payment Error');
         setIsBooking(false);

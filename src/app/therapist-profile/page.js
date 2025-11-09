@@ -515,68 +515,60 @@ const TherapistProfileContent = () => {
       console.log('🔍 Payment Response:', paymentResponse);
 
       if (paymentResponse.success) {
-        console.log('✅ Payment response successful, redirecting to PayU...');
+        console.log('✅ Payment response successful, opening PayU popup...');
         console.log('🔗 Redirect URL:', paymentResponse.data.redirectUrl);
         console.log('📋 PayU Params:', paymentResponse.data.payuParams);
-        
-        // Validate redirect URL before using it
+
         if (!paymentResponse.data.redirectUrl) {
           console.error('❌ No redirect URL provided');
           showError('Payment gateway error: No redirect URL');
+          setIsBooking(false);
           return;
         }
-        
+
         try {
-          console.log('🔍 Attempting to validate URL:', paymentResponse.data.redirectUrl);
-          console.log('🔍 URL type:', typeof paymentResponse.data.redirectUrl);
-          console.log('🔍 URL length:', paymentResponse.data.redirectUrl?.length);
           new URL(paymentResponse.data.redirectUrl);
-          console.log('✅ URL validation successful');
         } catch (urlError) {
           console.error('❌ Invalid redirect URL:', paymentResponse.data.redirectUrl, urlError);
-          console.error('❌ URL Error details:', urlError.message);
           showError('Payment gateway error: Invalid URL');
+          setIsBooking(false);
           return;
         }
-        
-        // Add a small delay to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Create and submit form to PayU
+
+        const payuWindow = window.open(
+          '',
+          'PayUCheckout',
+          'width=520,height=720,menubar=0,toolbar=0,location=1,status=1,scrollbars=1,resizable=1'
+        );
+
+        if (!payuWindow) {
+          showError('Payment window was blocked. Please allow pop-ups and try again.', 'Payment Error');
+          setIsBooking(false);
+          return;
+        }
+
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = paymentResponse.data.redirectUrl;
-        form.target = '_self';
+        form.target = 'PayUCheckout';
         form.style.display = 'none';
 
-        // Add PayU parameters
-        Object.entries(paymentResponse.data.payuParams).forEach(([key, value]) => {
+        Object.entries(paymentResponse.data.payuParams || {}).forEach(([key, value]) => {
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = key;
-          input.value = value;
+          input.value = value ?? '';
           form.appendChild(input);
         });
 
-        // Append form to body and submit
         document.body.appendChild(form);
-        console.log('🚀 Submitting form to PayU...');
         form.submit();
-        
-        // Cleanup
+
         setTimeout(() => {
           if (document.body.contains(form)) {
             document.body.removeChild(form);
           }
         }, 1000);
-
-        // UI success state
-        setBookingSuccess(true);
-        setSelectedDate(null);
-        setSelectedTime(null);
-        setSelectedPackage(null);
-        setSelectedPrice(null);
-        setTimeout(() => setBookingSuccess(false), 5000);
       } else {
         console.error('❌ Payment response failed:', paymentResponse);
         showError(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`, 'Payment Error');
@@ -1662,6 +1654,7 @@ const TherapistProfileContent = () => {
           }}
         />
       )}
+
     </div>
   );
 };
