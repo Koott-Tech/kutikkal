@@ -510,25 +510,6 @@ const TherapistProfileContent = () => {
         clientPhone: clientProfile?.phone_number
       };
 
-      let payuWindow = null;
-      const openPayuWindow = () => window.open(
-        '',
-        'PayUCheckout',
-        'width=520,height=720,menubar=0,toolbar=0,location=1,status=1,scrollbars=1,resizable=1'
-      );
-
-      payuWindow = openPayuWindow();
-      if (!payuWindow || payuWindow.closed) {
-        showError('Payment window was blocked. Please allow pop-ups for this site and try again.', 'Payment Error');
-        setIsBooking(false);
-        return;
-      }
-      try {
-        payuWindow.document.write('<p style="font-family: sans-serif; padding: 16px;">Loading PayU checkout…</p>');
-      } catch (writeErr) {
-        console.warn('Unable to write placeholder content to PayU window:', writeErr);
-      }
-
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       console.log('🔍 Payment Response:', paymentResponse);
@@ -541,9 +522,6 @@ const TherapistProfileContent = () => {
         if (!paymentResponse.data.redirectUrl) {
           console.error('❌ No redirect URL provided');
           showError('Payment gateway error: No redirect URL');
-          if (payuWindow && !payuWindow.closed) {
-            payuWindow.close();
-          }
           setIsBooking(false);
           return;
         }
@@ -553,9 +531,6 @@ const TherapistProfileContent = () => {
         } catch (urlError) {
           console.error('❌ Invalid redirect URL:', paymentResponse.data.redirectUrl, urlError);
           showError('Payment gateway error: Invalid URL');
-          if (payuWindow && !payuWindow.closed) {
-            payuWindow.close();
-          }
           setIsBooking(false);
           return;
         }
@@ -563,7 +538,6 @@ const TherapistProfileContent = () => {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = paymentResponse.data.redirectUrl;
-        form.target = 'PayUCheckout';
         form.style.display = 'none';
 
         Object.entries(paymentResponse.data.payuParams || {}).forEach(([key, value]) => {
@@ -585,23 +559,10 @@ const TherapistProfileContent = () => {
       } else {
         console.error('❌ Payment response failed:', paymentResponse);
         showError(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`, 'Payment Error');
-        if (payuWindow && !payuWindow.closed) {
-          payuWindow.close();
-        }
       }
     } catch (error) {
       console.error('Booking error:', error);
       showError('Booking failed. Please try again.', 'Booking Error');
-      if (typeof window !== 'undefined') {
-        try {
-          const existingWindow = window.open('', 'PayUCheckout');
-          if (existingWindow && !existingWindow.closed) {
-            existingWindow.close();
-          }
-        } catch (closeError) {
-          console.warn('Unable to close PayU window after error:', closeError);
-        }
-      }
     } finally {
       setIsBooking(false);
     }

@@ -53,33 +53,6 @@ function PaymentSuccessContent() {
 
     setLoading(false);
 
-    if (typeof window !== 'undefined') {
-      const opener = window.opener;
-      if (opener && !opener.closed) {
-        try {
-          opener.postMessage(
-            {
-              type: 'PAYU_PAYMENT_REFRESH',
-              status: 'success',
-              payload
-            },
-            window.location.origin
-          );
-        } catch (postMessageError) {
-          console.warn('Unable to postMessage to opener:', postMessageError);
-        }
-
-        try {
-          opener.location.reload();
-        } catch (reloadError) {
-          console.warn('Unable to reload opener window:', reloadError);
-        }
-
-        setTimeout(() => {
-          window.close();
-        }, 1000);
-      }
-    }
   }, [searchParams]);
 
   if (loading) {
@@ -142,7 +115,7 @@ function PaymentSuccessContent() {
             fontWeight: '500'
           }}
         >
-          Go to Profile
+          View Sessions
         </button>
       </div>
     );
@@ -197,7 +170,7 @@ function PaymentSuccessContent() {
             marginRight: '10px'
           }}
         >
-          Go to Profile
+          View Sessions
         </button>
         <button
           onClick={() => router.push('/')}
