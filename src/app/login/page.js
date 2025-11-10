@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import AuthModal from '@/components/AuthModal';
@@ -35,6 +35,14 @@ function resolveRedirectTarget(searchParams, user) {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -101,4 +109,14 @@ export default function LoginPage() {
   );
 }
 
+function LoginFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto" />
+        <p className="mt-4 text-sm text-gray-600">Loading login…</p>
+      </div>
+    </div>
+  );
+}
 
