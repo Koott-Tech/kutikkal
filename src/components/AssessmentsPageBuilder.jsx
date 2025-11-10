@@ -208,22 +208,18 @@ export default function AssessmentsPageBuilder({
     const isEdit = !!(serviceId || assessmentId);
     const slug = slugify(formData.slug || '');
     const heroTitle = (formData.hero_title || '').trim();
-    if (!isEdit) {
-      if (!slug || !heroTitle) {
-        alert('Please fill Slug and Hero Title before saving.');
-        return;
-      }
-    } else {
-      if (!heroTitle) {
-        alert('Please fill Hero Title before saving.');
-        return;
-      }
+    if (!slug) {
+      alert('Please fill Slug before saving.');
+      return;
     }
-    const dataToSave = isEdit ? { ...formData, slug: undefined } : { ...formData, slug };
-    if (!isEdit && slug !== formData.slug) {
-      // Persist normalized slug into local state so UI reflects the final link
+    if (!heroTitle) {
+      alert('Please fill Hero Title before saving.');
+      return;
+    }
+    if (slug !== formData.slug) {
       setFormData(prev => ({ ...prev, slug }));
     }
+    const dataToSave = { ...formData, slug };
     onSubmit(dataToSave);
   };
 
@@ -1120,18 +1116,16 @@ export default function AssessmentsPageBuilder({
                   <div className="space-y-2">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Slug {serviceId && <span className="text-xs text-gray-500">(Cannot be changed after creation)</span>}
+                        Slug
                       </label>
                       <input
                         type="text"
                         value={formData.slug}
                         onChange={(e) => handleInputChange('slug', e.target.value)}
-                        disabled={!!serviceId}
-                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${serviceId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., adhd-assessment"
                       />
-                      {serviceId && (
-                        <p className="text-xs text-gray-500 mt-1">The URL slug cannot be changed after the page is created to prevent broken links.</p>
-                      )}
+                      <p className="text-xs text-gray-500 mt-1">Used in the page URL. Only lowercase letters, numbers, and hyphens.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">

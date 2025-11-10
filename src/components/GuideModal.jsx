@@ -91,7 +91,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
       if (key === 'counselling') {
         const res = await fetch(`${base}/api/counselling?limit=50`, { cache: 'no-store' });
         const json = await res.json();
-        const services = json?.message?.services || [];
+        const services = json?.data?.services || json?.message?.services || json?.services || [];
         const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
         services
           .filter(s => s.status === 'published' && s.category)
@@ -111,7 +111,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
       } else if (key === 'assessments') {
         const res = await fetch(`${base}/api/assessments?limit=50`, { cache: 'no-store' });
         const json = await res.json();
-        const assessments = json?.message?.assessments || json?.message || [];
+        const assessments = json?.data?.assessments || json?.message?.assessments || json?.assessments || json?.message || [];
         const grouped = { adhd: [], ebs: [], intelligence: [], projective: [] };
         (assessments || [])
           .filter(a => a.status === 'published' && a.category)
@@ -131,7 +131,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
       } else if (key === 'better-parenting') {
         const res = await fetch(`${base}/api/better-parenting?limit=50`, { cache: 'no-store' });
         const json = await res.json();
-        const pages = json?.message?.pages || [];
+        const pages = json?.data?.pages || json?.message?.pages || json?.pages || [];
         const items = pages.filter(p => p.status === 'published').map(p => ({
           title: p.seo_title || p.hero_title || p.slug,
           slug: p.slug,
@@ -243,7 +243,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                             <div className="text-sm md:text-base font-semibold text-gray-900">
                               {(selected === 'counselling' ? counsellingCategoryHeadings[cat] : assessmentsCategoryHeadings[cat]) || cat}
                             </div>
-                            <div className="text-xs text-gray-500">{items.length}</div>
+                            <div className="text-gray-400">→</div>
                           </div>
                         </button>
                       )

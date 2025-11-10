@@ -34,20 +34,28 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                 const res = await fetch(`${base}/api/counselling?limit=50`, { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
-                const services = Array.isArray(data) ? data : (data?.message || data?.services || []);
+                const services = Array.isArray(data)
+                    ? data
+                    : (
+                        data?.data?.services
+                        || data?.message?.services
+                        || data?.services
+                        || data?.data
+                        || []
+                    );
                 const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
-                services.forEach((s) => {
-                    const title = s?.name || s?.title || '';
-                    const slug = s?.slug || '';
-                    const category = (s?.category || '').toLowerCase();
-                    const item = { title, url: `/counselling/${slug}` };
-                    if (category.includes('emotional') || category.includes('mental')) grouped.emotional.push(item);
-                    else if (category.includes('development') || category.includes('learning')) grouped.development.push(item);
-                    else if (category.includes('behaviour') || category.includes('behavior')) grouped.behaviour.push(item);
-                    else if (category.includes('stress') || category.includes('academic')) grouped.stress.push(item);
-                    else if (category.includes('trauma') || category.includes('healing')) grouped.trauma.push(item);
-                    else grouped.emotional.push(item);
-                });
+                (services || [])
+                    .filter(item => item?.status === 'published' && item?.category && item?.slug)
+                    .forEach(item => {
+                        const category = item.category.toLowerCase();
+                        if (!grouped[category]) return;
+                        grouped[category].push({
+                            title: item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '',
+                            url: `/counselling/${item.slug}`,
+                            order: item?.menu_order || 0
+                        });
+                    });
+                Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => a.order - b.order));
                 setCounsellingMenu(grouped);
             } catch (_) {
                 // swallow
@@ -64,16 +72,22 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                 const res = await fetch(`${base}/api/assessments?limit=50`, { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
-                const list = (data?.message?.assessments) || [];
+                const list = data?.data?.assessments
+                    || data?.message?.assessments
+                    || data?.assessments
+                    || data?.data
+                    || [];
                 const grouped = { adhd: [], ebs: [], intelligence: [], projective: [] };
-                list
-                    .filter(item => item?.status === 'published' && item?.category)
+                (list || [])
+                    .filter(item => item?.status === 'published' && item?.category && item?.slug)
                     .forEach(item => {
-                        const name = item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '';
-                        const url = `/assessments/${item?.slug}`;
-                        const entry = { title: name, url, order: item?.menu_order || 0 };
-                        const cat = (item?.category || '').toLowerCase();
-                        if (grouped[cat]) grouped[cat].push(entry);
+                        const cat = item.category.toLowerCase();
+                        if (!grouped[cat]) return;
+                        grouped[cat].push({
+                            title: item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '',
+                            url: `/assessments/${item.slug}`,
+                            order: item?.menu_order || 0
+                        });
                     });
                 Object.keys(grouped).forEach(k => grouped[k].sort((a, b) => a.order - b.order));
                 setAssessmentsMenu(grouped);
@@ -92,7 +106,11 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                 const res = await fetch(`${base}/api/better-parenting?limit=50`, { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
-                const pages = (data?.message?.pages) || [];
+                const pages = data?.data?.pages
+                    || data?.message?.pages
+                    || data?.pages
+                    || data?.data
+                    || [];
                 const items = pages
                     .filter(p => p?.status === 'published')
                     .map(p => ({

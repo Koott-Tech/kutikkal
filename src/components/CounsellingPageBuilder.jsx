@@ -133,6 +133,15 @@ export default function CounsellingPageBuilder({
     }));
   };
 
+  const slugify = (val) => {
+    return (val || '')
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
   // Debug formData.benefits and faqs
   console.log('PageBuilder - formData.benefits:', formData.benefits);
   console.log('PageBuilder - formData.benefits.length:', formData.benefits?.length);
@@ -174,8 +183,24 @@ export default function CounsellingPageBuilder({
   };
 
   const handleSave = () => {
-    // When editing an existing service, exclude the slug from the update
-    const dataToSave = serviceId ? { ...formData, slug: undefined } : formData;
+    const normalizedSlug = slugify(formData.slug);
+    const heroTitle = (formData.hero_title || '').trim();
+
+    if (!normalizedSlug) {
+      alert('Please fill the slug before saving.');
+      return;
+    }
+
+    if (!heroTitle) {
+      alert('Please fill Hero Title before saving.');
+      return;
+    }
+
+    if (normalizedSlug !== formData.slug) {
+      setFormData(prev => ({ ...prev, slug: normalizedSlug }));
+    }
+
+    const dataToSave = { ...formData, slug: normalizedSlug };
     onSubmit(dataToSave);
   };
 
@@ -1008,18 +1033,16 @@ export default function CounsellingPageBuilder({
                   <div className="space-y-2">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Slug {serviceId && <span className="text-xs text-gray-500">(Cannot be changed after creation)</span>}
+                        Slug
                       </label>
                       <input
                         type="text"
                         value={formData.slug}
                         onChange={(e) => handleInputChange('slug', e.target.value)}
-                        disabled={!!serviceId}
-                        className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${serviceId ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., child-anxiety-support"
                       />
-                      {serviceId && (
-                        <p className="text-xs text-gray-500 mt-1">The URL slug cannot be changed after the page is created to prevent broken links.</p>
-                      )}
+                      <p className="text-xs text-gray-500 mt-1">Used in the page URL. Only lowercase letters, numbers, and hyphens.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">

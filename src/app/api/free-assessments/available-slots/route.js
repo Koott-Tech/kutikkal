@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
+
     // Validate request.url before using it
     if (!request.url) {
       return NextResponse.json(
@@ -26,13 +26,6 @@ export async function GET(request) {
     
     const date = searchParams.get('date');
     
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'No authentication token provided' },
-        { status: 401 }
-      );
-    }
-
     if (!date) {
       return NextResponse.json(
         { success: false, message: 'Date parameter is required' },
@@ -42,11 +35,13 @@ export async function GET(request) {
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${backendUrl}/free-assessments/available-slots?date=${date}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      headers
     });
 
     const data = await response.json();

@@ -62,6 +62,13 @@ export default function Header() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
 
+  const formatDisplayName = (slug) => {
+    if (!slug) return '';
+    return slug
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const shouldShow = sessionStorage.getItem("showQuickContact");
@@ -119,7 +126,7 @@ export default function Header() {
             .forEach(service => {
               if (grouped[service.category]) {
                 grouped[service.category].push({
-                  name: service.seo_title?.replace(' - Little Care', '') || service.hero_title,
+                  name: formatDisplayName(service.slug),
                   url: `/counselling/${service.slug}`,
                   order: service.menu_order || 0
                 });
@@ -176,7 +183,7 @@ export default function Header() {
             .forEach(item => {
               if (grouped[item.category]) {
                 grouped[item.category].push({
-                  name: item.seo_title?.replace(' - Little Care', '') || item.hero_title,
+                  name: formatDisplayName(item.slug),
                   url: `/assessments/${item.slug}`,
                   order: item.menu_order || 0
                 });
@@ -211,7 +218,7 @@ export default function Header() {
           const items = pages
             .filter(p => p.status === 'published')
             .map(p => ({
-              name: p.seo_title?.replace(' - Little Care', '') || p.hero_title,
+              name: formatDisplayName(p.slug),
               url: `/better-parenting/${p.slug}`,
               order: p.menu_order || 0
             }))
@@ -227,36 +234,46 @@ export default function Header() {
   // Close submenu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      const isInsideDropdown = event.target.closest('.counselling-dropdown') || event.target.closest('.assessments-dropdown');
+
       // Close submenus
-      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
+      if (clickedSubmenu && !isInsideDropdown) {
         setClickedSubmenu(null);
       }
       
       // Close main dropdowns - exclude navigation buttons
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
+          !event.target.closest('.assessments-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
+        setIsAssessmentsOpen(false);
+        setIsBetterParentingOpen(false);
       }
     };
 
     const handleTouchOutside = (event) => {
+      const isInsideDropdown = event.target.closest('.counselling-dropdown') || event.target.closest('.assessments-dropdown');
+
       // Close submenus
-      if (clickedSubmenu && !event.target.closest('.counselling-dropdown')) {
+      if (clickedSubmenu && !isInsideDropdown) {
         setClickedSubmenu(null);
       }
       
       // Close main dropdowns - exclude navigation buttons
       if (!event.target.closest('.header-dropdown') && 
           !event.target.closest('.counselling-dropdown') && 
+          !event.target.closest('.assessments-dropdown') &&
           !event.target.closest('nav')) {
         setIsFindCareOpen(false);
         setIsForProvidersOpen(false);
         setIsAboutOpen(false);
         setIsResourcesOpen(false);
+        setIsAssessmentsOpen(false);
+        setIsBetterParentingOpen(false);
       }
     };
 
@@ -266,7 +283,7 @@ export default function Header() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleTouchOutside);
     };
-  }, [clickedSubmenu, isFindCareOpen, isForProvidersOpen, isAboutOpen, isResourcesOpen]);
+  }, [clickedSubmenu, isFindCareOpen, isForProvidersOpen, isAboutOpen, isResourcesOpen, isAssessmentsOpen, isBetterParentingOpen]);
 
   const handleBlogClick = () => {
     router.push('/blog');
@@ -773,7 +790,7 @@ export default function Header() {
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
 
                   {isAssessmentsOpen && (
-                    <div className="header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
+                    <div className="header-dropdown assessments-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       <div className="px-6 pb-4 border-b border-gray-200">
                         <div className="space-y-3">
                           {/* ADHD */}
@@ -900,6 +917,7 @@ export default function Header() {
                         setIsForProvidersOpen(false);
                         setIsAboutOpen(false);
                         setIsResourcesOpen(false);
+                        setIsAssessmentsOpen(false);
                       }
                     }}
                   >
@@ -932,6 +950,8 @@ export default function Header() {
                         setIsForProvidersOpen(false);
                         setIsBetterParentingOpen(false);
                         setIsResourcesOpen(false);
+                        setIsAssessmentsOpen(false);
+                        setIsBetterParentingOpen(false);
                         setIsAssessmentsOpen(false);
                       }
                     }}

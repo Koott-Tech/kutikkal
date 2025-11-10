@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Clock, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import AuthModal from '@/components/AuthModal';
+import QuickContactModal from '@/components/QuickContactModal';
+import { clientApi } from '@/lib/backendApi';
+import { isClientContactComplete } from '@/lib/contactValidation';
 
 export default function FreeAssessmentPage() {
   const { user, token, authLoading } = useAuth();
@@ -10,6 +14,9 @@ export default function FreeAssessmentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showAuth, setShowAuth] = useState(false);
+  const [showQuickContact, setShowQuickContact] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null);
 
   // Calendar state (like therapist profile)
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -20,8 +27,11 @@ export default function FreeAssessmentPage() {
   const [availableTimeslots, setAvailableTimeslots] = useState([]);
   const [loadingTimeslots, setLoadingTimeslots] = useState(false);
 
+  const canBookFreeAssessment = user ? Boolean(assessmentStatus?.canBook) : true;
+
   // Get assessment status
   const fetchAssessmentStatus = async () => {
+    if (!token) return;
     try {
       setLoading(true);
       console.log('[FreeAssess] fetchAssessmentStatus:start', { tokenPreview: (token || '').slice(0,10) + '...' });
@@ -111,11 +121,11 @@ export default function FreeAssessmentPage() {
       console.log('🔍 Fetching availability for:', startDate, 'to', endDate);
       
       console.log('[FreeAssess] fetchAvailability:range', { startDate, endDate });
-      const response = await fetch(`/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(
+        `/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`,
+        Object.keys(headers).length ? { headers } : undefined
+      );
       
       const data = await response.json();
       console.log('🔍 Availability response:', data);
@@ -154,11 +164,11 @@ export default function FreeAssessmentPage() {
       const dateStr = `${year}-${month}-${day}`;
       
       console.log('[FreeAssess] fetchAvailableTimeslots:dateStr', dateStr);
-      const response = await fetch(`/api/free-assessments/available-slots?date=${dateStr}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(
+        `/api/free-assessments/available-slots?date=${dateStr}`,
+        Object.keys(headers).length ? { headers } : undefined
+      );
       
       const data = await response.json();
       console.log('[FreeAssess] fetchAvailableTimeslots:response', data);
@@ -178,21 +188,20 @@ export default function FreeAssessmentPage() {
     }
   };
 
-  // Book free assessment
-  const bookAssessment = async () => {
-    if (!selectedDate || !selectedTime) {
-      setError('Please select both date and time');
+  const performBooking = async (dateObj, time) => {
+    if (!dateObj || !time) return;
+    if (!token) {
+      setShowAuth(true);
       return;
     }
-
     try {
       setLoading(true);
       setError('');
       setSuccess('');
 
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
 
       const response = await fetch('/api/free-assessments/book', {
@@ -203,19 +212,22 @@ export default function FreeAssessmentPage() {
         },
         body: JSON.stringify({
           scheduledDate: dateStr,
-          scheduledTime: selectedTime
+          scheduledTime: time
         })
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setSuccess('Free assessment booked successfully! Check your email for confirmation.');
         setSelectedDate(null);
         setSelectedTime(null);
         setAvailableTimeslots([]);
-        fetchAssessmentStatus(); // Refresh status
-        fetchFreeAssessmentAvailability(currentDate); // Refresh availability
+        setPendingBooking(null);
+        if (user && token) {
+          fetchAssessmentStatus();
+        }
+        fetchFreeAssessmentAvailability(currentDate);
       } else {
         setError(data.message || 'Failed to book assessment');
       }
@@ -224,6 +236,66 @@ export default function FreeAssessmentPage() {
       setError('Failed to book assessment');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const ensureContactAndBook = async (dateObj, time) => {
+    if (!user || !token) return;
+
+    try {
+      const profileResponse = await clientApi.getProfile();
+      const profile = profileResponse?.data;
+      if (!isClientContactComplete(profile)) {
+        setShowQuickContact(true);
+        return;
+      }
+    } catch (err) {
+      console.error('Error verifying contact information:', err);
+      setShowQuickContact(true);
+      return;
+    }
+
+    await performBooking(dateObj, time);
+  };
+
+  // Book free assessment
+  const bookAssessment = async () => {
+    if (!selectedDate || !selectedTime) {
+      setError('Please select both date and time');
+      return;
+    }
+
+    const bookingDetails = { date: selectedDate, time: selectedTime };
+    setPendingBooking(bookingDetails);
+
+    if (!user || !token) {
+      setShowAuth(true);
+      return;
+    }
+
+    await ensureContactAndBook(bookingDetails.date, bookingDetails.time);
+  };
+
+  const handleAuthSuccess = async () => {
+    setShowAuth(false);
+    await fetchAssessmentStatus();
+    await fetchFreeAssessmentAvailability(currentDate);
+    if (pendingBooking?.date && pendingBooking?.time) {
+      await ensureContactAndBook(pendingBooking.date, pendingBooking.time);
+    }
+  };
+
+  const handleRequireContactInfo = () => {
+    setShowAuth(false);
+    setShowQuickContact(true);
+  };
+
+  const handleQuickContactSaved = async () => {
+    setShowQuickContact(false);
+    await fetchAssessmentStatus();
+    await fetchFreeAssessmentAvailability(currentDate);
+    if (pendingBooking?.date && pendingBooking?.time) {
+      await ensureContactAndBook(pendingBooking.date, pendingBooking.time);
     }
   };
 
@@ -284,11 +356,16 @@ export default function FreeAssessmentPage() {
   };
 
   useEffect(() => {
-    if (!authLoading && token && user) {
+    if (authLoading) return;
+
+    if (user && token) {
       console.log('[FreeAssess] useEffect:init', { user: { id: user?.id, role: user?.role, email: user?.email }, tokenPreview: (token || '').slice(0,10) + '...' });
       fetchAssessmentStatus();
-      fetchFreeAssessmentAvailability(currentDate);
+    } else {
+      setAssessmentStatus(null);
     }
+
+    fetchFreeAssessmentAvailability(currentDate);
   }, [authLoading, token, user]);
 
   if (authLoading) {
@@ -297,18 +374,6 @@ export default function FreeAssessmentPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto" />
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">Please login to access free assessments</h2>
-          <p className="mt-2 text-gray-600">You need to be logged in to book free assessment sessions.</p>
         </div>
       </div>
     );
@@ -325,8 +390,16 @@ export default function FreeAssessmentPage() {
           </p>
         </div>
 
+        {/* Login info for guests */}
+        {!user && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm text-blue-800">
+            Select a date and time that works for you. You'll be prompted to log in or sign up when you click
+            <span className="font-semibold"> Book Free Assessment</span>.
+          </div>
+        )}
+
         {/* Status Card */}
-        {assessmentStatus && (
+        {user && assessmentStatus && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h5 className="font-semibold text-gray-900 mb-4 flex items-center">
               <User className="h-5 w-5 mr-2" />
@@ -373,7 +446,7 @@ export default function FreeAssessmentPage() {
         )}
 
         {/* Existing Assessments */}
-        {assessmentStatus?.assessments && assessmentStatus.assessments.length > 0 && (
+        {user && assessmentStatus?.assessments && assessmentStatus.assessments.length > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h5 className="font-semibold text-gray-900 mb-4">Your Booked Assessments</h5>
             <div className="space-y-4">
@@ -437,13 +510,12 @@ export default function FreeAssessmentPage() {
         )}
 
         {/* Booking Section */}
-        {assessmentStatus?.canBook && (
+        {canBookFreeAssessment && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Calendar */}
             <div className="bg-white rounded-2xl shadow-2xl p-6">
               <div className="text-center mb-4">
                 <h6 className="font-bold text-gray-800 mb-1">Select Your Date</h6>
-                <p className="text-gray-600 text-sm">Choose a date for your free assessment</p>
                 {loadingAvailability && (
                   <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
                     <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
@@ -473,15 +545,15 @@ export default function FreeAssessmentPage() {
               <div className="mb-3 text-xs text-gray-600">
                 <div className="flex items-center justify-center space-x-4">
                   <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-50 border border-green-200 rounded mr-1"></div>
+                    <div className="w-3 h-3 bg-[#f0edff] border border-[#3f2e73] rounded mr-1"></div>
                     <span>Available</span>
                   </div>
                   <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-100 rounded mr-1"></div>
+                    <div className="w-3 h-3 bg-[#eae4ff] rounded mr-1"></div>
                     <span>Today</span>
                   </div>
                   <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded mr-1"></div>
+                    <div className="w-3 h-3 bg-[#3f2e73] rounded mr-1"></div>
                     <span>Selected</span>
                   </div>
                 </div>
@@ -550,26 +622,27 @@ export default function FreeAssessmentPage() {
                           }
                         }}
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
-                          isSelected 
-                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
+                          isSelected
+                            ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
                             : (isToday && shouldHighlight)
-                              ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                              ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
                               : isToday
-                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                              : shouldHighlight
-                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
-                                : isAvailable
-                                  ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
-                                  : 'text-gray-300 cursor-not-allowed'
+                                ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
+                                : shouldHighlight
+                                  ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
+                                  : isAvailable
+                                    ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
+                                    : 'text-gray-300 cursor-not-allowed'
                         }`}
                         title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
                         {shouldHighlight && (
-                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
-                        )}
-                        {!shouldHighlight && isAvailable && (
-                          <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
+                          <div
+                            className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
+                              isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                            }`}
+                          ></div>
                         )}
                       </div>
                     );
@@ -582,36 +655,17 @@ export default function FreeAssessmentPage() {
 
             {/* Right Side - Time Selection and Booking */}
             <div className="bg-white rounded-2xl shadow-2xl p-6">
-              <div className="text-center mb-4">
-                <h6 className="font-bold text-gray-800 mb-1">Select Your Time</h6>
-                <p className="text-gray-600 text-sm">Choose a time slot for your free assessment</p>
-              </div>
-
-              {/* Selected Date Display */}
-              {selectedDate && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800">
-                    Selected Date: {selectedDate.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-              )}
-
               {/* Available Time Slots */}
               {selectedDate && (
                 <div className="mb-6">
-                  <h6 className="font-semibold text-gray-800 mb-3">Available Time Slots</h6>
+                  <h6 className="font-semibold text-gray-800 mb-3">Time Slots</h6>
                   {loadingTimeslots ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       <span className="ml-2 text-gray-600">Loading timeslots...</span>
                     </div>
                   ) : availableTimeslots.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       {availableTimeslots
                         .filter((timeslot) => {
                           // Hide past time slots if selected date is today
@@ -636,22 +690,17 @@ export default function FreeAssessmentPage() {
                             key={index}
                             onClick={() => !isFullyBooked && handleTimeSelect(timeslot.time)}
                             disabled={isFullyBooked}
-                            className={`p-3 text-sm rounded-lg border transition-colors ${
+                            className={`p-2 text-xs rounded-lg border transition-colors ${
                               isSelected
-                                ? 'bg-blue-500 text-white border-blue-500'
+                                ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
                                 : isFullyBooked
                                   ? 'bg-red-100 text-red-600 border-red-300 cursor-not-allowed'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                                  : 'bg-white text-[#3f2e73] border-[#3f2e73] hover:bg-[#f0edff]'
                             }`}
                             title={isFullyBooked ? 'Fully booked' : `Available: ${remainingSlots} slots left`}
                           >
                             <div className="text-center">
                               <div>{timeslot.displayTime || formatTime(timeslot.time)}</div>
-                              {!isFullyBooked && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {remainingSlots} slot{remainingSlots !== 1 ? 's' : ''} left
-                                </div>
-                              )}
                               {isFullyBooked && (
                                 <div className="text-xs text-red-500 mt-1">Fully booked</div>
                               )}
@@ -661,7 +710,9 @@ export default function FreeAssessmentPage() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-gray-500 text-sm italic">No available time slots for this date</p>
+                    <div className="flex items-center justify-center h-32 text-gray-500 text-sm italic">
+                      No available time slots for this date
+                    </div>
                   )}
                 </div>
               )}
@@ -720,6 +771,21 @@ export default function FreeAssessmentPage() {
           </div>
         </div>
       </div>
+      {showAuth && (
+        <AuthModal
+          open={showAuth}
+          onClose={() => setShowAuth(false)}
+          onAuthSuccess={handleAuthSuccess}
+          onRequireContactInfo={handleRequireContactInfo}
+        />
+      )}
+      {showQuickContact && (
+        <QuickContactModal
+          open={showQuickContact}
+          onClose={() => setShowQuickContact(false)}
+          onSaved={handleQuickContactSaved}
+        />
+      )}
     </div>
   );
 }

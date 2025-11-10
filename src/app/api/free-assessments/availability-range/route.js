@@ -24,15 +24,6 @@ export async function GET(request) {
     
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'No authentication token found' },
-        { status: 401 }
-      );
-    }
-
     if (!startDate || !endDate) {
       return NextResponse.json(
         { success: false, message: 'Start date and end date are required' },
@@ -43,10 +34,14 @@ export async function GET(request) {
     // Determine backend URL based on environment
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
+    const headers = {};
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${backendUrl}/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers
     });
 
     const data = await response.json();

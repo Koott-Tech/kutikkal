@@ -135,18 +135,20 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
   const handleElementClick = (type) => setActiveElement({ type });
 
   const handleSave = () => {
-    const isEdit = !!pageId;
     const slug = slugify(formData.slug || '');
     const heroTitle = (formData.hero_title || '').trim();
-    if (!isEdit) {
-      if (!slug || !heroTitle) { alert('Please fill Slug and Hero Title before saving.'); return; }
-    } else {
-      if (!heroTitle) { alert('Please fill Hero Title before saving.'); return; }
+    if (!slug) {
+      alert('Please fill Slug before saving.');
+      return;
     }
-    const dataToSave = isEdit ? { ...formData, slug: undefined } : { ...formData, slug };
-    if (!isEdit && slug !== formData.slug) {
+    if (!heroTitle) {
+      alert('Please fill Hero Title before saving.');
+      return;
+    }
+    if (slug !== formData.slug) {
       setFormData(prev => ({ ...prev, slug }));
     }
+    const dataToSave = { ...formData, slug };
     onSubmit(dataToSave);
   };
 
@@ -537,8 +539,15 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                   <h3 className="text-xs md:text-sm font-medium text-gray-600 mb-2">Basic Settings</h3>
                   <div className="space-y-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Slug {pageId && <span className="text-xs text-gray-500">(Cannot be changed after creation)</span>}</label>
-                      <input type="text" value={formData.slug} onChange={(e) => handleInputChange('slug', e.target.value)} disabled={!!pageId} className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${pageId ? 'bg-gray-100 cursor-not-allowed' : ''}`} />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                      <input
+                        type="text"
+                        value={formData.slug}
+                        onChange={(e) => handleInputChange('slug', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., calmer-parenting"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Used in the page URL. Only lowercase letters, numbers, and hyphens.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>

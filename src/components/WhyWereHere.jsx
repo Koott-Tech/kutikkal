@@ -9,37 +9,33 @@ export default function WhyWereHere() {
           {/* Left Section - Text Content */}
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
-              Why We're Here
+              This is where Little Care began
             </h2>
             
             <div className="space-y-6 text-[1.125rem] md:text-base text-gray-700 leading-[150%] md:leading-relaxed tracking-[-0.03375rem] md:tracking-tight">
               <p>
-                Each year, more than 65 million Americans seek help for a mental health condition. 
-                And due to a broken and frustrating system, 2 out of 3 of those individuals give up 
-                before ever getting the help they need.
+                Little Care was born from a simple truth — children deserve a space where their emotions
+                are heard, understood, and cared for. As part of the Koott family, we saw how many
+                families struggled to find the right kind of mental health support for their children.
+                That’s when we decided to build something just for them.
               </p>
-              
+
               <p>
-                We can do better. We <strong className="font-medium underline">must</strong> do better. 
-                Our team is here to do just that.
+                We started Little Care to make mental health care for children warm, accessible, and backed
+                by science. From early assessments to child counseling and parenting guidance, every step we
+                take is rooted in compassion and evidence-based care.
               </p>
-              
+
               <p>
-                Our mission is to create a world where every person can access high-quality mental 
-                health care. We recognize that mental health issues can be complex and multifaceted, 
-                and we are dedicated to treating the whole person, not just the symptoms.
+                For us, this isn’t just another initiative — it’s a promise.
               </p>
-              
+
               <p>
-                We're building the future of mental health care; a comprehensive behavioral health 
-                solution that helps every person access high quality care from a licensed professional, 
-                at a time that works for them and at a cost they can afford.
+                A promise to help every child grow with calm minds, kind hearts, and a little care.
               </p>
-              
+
               <p>
-                Our approach to care is evidence-based, outcome-driven and compassionate. 
-                We empower our exceptional provider network to track progress throughout the care 
-                journey to ensure clients achieve their full potential.
+                Thank you for trusting us to be part of your child’s journey.
               </p>
             </div>
           </div>
