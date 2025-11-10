@@ -1050,7 +1050,7 @@ const Guide = () => {
                     {doctors[selected]?.price && (
                       <h6 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 12, lineHeight: '1.2' }}>
                         <span>Starting from</span>
-                        <span style={{ color: "#27ae60" }}>₹{doctors[selected].price}</span>
+                        <span style={{ color: "#3f2e73" }}>₹{doctors[selected].price}</span>
                       </h6>
                     )}
                   </div>
@@ -1094,7 +1094,7 @@ const Guide = () => {
               <div className="doctor-modal-buttons-container" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, padding: '16px 24px' }}>
                 <button
                   className="doctor-modal-button"
-                  style={{ background: 'transparent', border: 'none', color: '#666', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#3f2e73', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
                   onClick={() => {
                     const prevIndex = selected === 0 ? doctors.length - 1 : selected - 1;
                     setSelected(prevIndex);
@@ -1107,7 +1107,7 @@ const Guide = () => {
 
                 <button
                   className="doctor-modal-button find-guide-button"
-                  style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: '#3f2e73', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
                 >
                   Find your Guide
@@ -1115,7 +1115,7 @@ const Guide = () => {
 
                 <button
                   className="doctor-modal-button"
-                  style={{ background: 'transparent', border: 'none', color: '#666', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#3f2e73', fontWeight: 600, fontSize: '14px', padding: '6px 0', cursor: 'pointer' }}
                   onClick={() => {
                     const nextIndex = selected === doctors.length - 1 ? 0 : selected + 1;
                     setSelected(nextIndex);

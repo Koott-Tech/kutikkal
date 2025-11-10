@@ -723,13 +723,10 @@ export default function FreeAssessmentPage() {
                   <button
                     onClick={bookAssessment}
                     disabled={loading}
-                    className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Booking...' : 'Book Free Assessment'}
                   </button>
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    This is a free 20-minute assessment session
-                  </p>
                 </div>
               )}
 

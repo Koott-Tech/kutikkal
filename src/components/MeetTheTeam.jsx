@@ -35,22 +35,22 @@ export default function MeetTheTeam() {
           <div className="flex flex-wrap justify-center gap-8">
             {teamMembers.map((member) => (
               <div key={member.name} className="w-80 bg-white rounded-2xl overflow-hidden">
-                <div className="h-80 w-full overflow-hidden">
-                  <Image
+              <div className="h-80 w-full overflow-hidden">
+                <Image
                     src={member.image}
                     alt={member.name}
-                    width={320}
-                    height={320}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="px-0 py-6">
-                  <h3 className="text-xl font-normal text-gray-900 mb-1">
+                  width={320}
+                  height={320}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div className="px-0 py-6">
+                                 <h3 className="text-xl font-normal text-gray-900 mb-1">
                     {member.name}
-                  </h3>
+                 </h3>
                   <p className="text-gray-600">{member.title}</p>
-                </div>
+            </div>
               </div>
             ))}
           </div>

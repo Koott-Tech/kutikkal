@@ -197,7 +197,12 @@ const TherapistProfileContent = () => {
       setLoading(true);
       const response = await publicApi.getPsychologists();
       if (response.success) {
-        setDoctors(response.data.psychologists);
+        const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
+        const allPsychologists = response.data.psychologists || [];
+        const filteredPsychologists = allPsychologists.filter(
+          (psych) => (psych.email || '').toLowerCase() !== assessmentEmail
+        );
+        setDoctors(filteredPsychologists);
         
         // Handle both index-based and ID-based doctor parameters
         if (doctorIndex !== null) {
@@ -206,7 +211,7 @@ const TherapistProfileContent = () => {
           
           if (isUUID) {
             // If it's a UUID, find the psychologist by ID
-            const psychologist = response.data.psychologists.find(doc => doc.id === doctorIndex);
+            const psychologist = filteredPsychologists.find(doc => doc.id === doctorIndex);
             if (psychologist) {
               setSelectedDoctor(psychologist);
             } else {
@@ -215,8 +220,8 @@ const TherapistProfileContent = () => {
           } else {
             // If it's a number, use it as an index
             const index = parseInt(doctorIndex);
-            if (response.data.psychologists[index]) {
-              setSelectedDoctor(response.data.psychologists[index]);
+            if (!Number.isNaN(index) && filteredPsychologists[index]) {
+              setSelectedDoctor(filteredPsychologists[index]);
             } else {
               setError('Doctor not found');
             }
@@ -720,8 +725,8 @@ const TherapistProfileContent = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
+            <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73] mx-auto mb-4"></div>
           <p className="font-bold text-gray-800 mb-4">Loading Doctor Profile...</p>
         </div>
       </div>
@@ -736,7 +741,7 @@ const TherapistProfileContent = () => {
           <p className="text-gray-600 mb-4">{error || 'Unable to load doctor information'}</p>
           <button 
             onClick={() => router.push('/guide')}
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors duration-200"
+            className="bg-[#3f2e73] hover:bg-[#1d1733] text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Back to Guide
           </button>
@@ -774,16 +779,16 @@ const TherapistProfileContent = () => {
       <div className="bg-white shadow-lg">
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-green-50 to-green-100 p-6 md:p-12 pt-40 md:pt-44 therapist-header-padding" style={{ minHeight: '120px', zIndex: 0 }}>
+          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-[#f5f1ff] to-[#eae4ff] p-6 md:p-12 pt-40 md:pt-44 therapist-header-padding" style={{ minHeight: '120px', zIndex: 0 }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
                 <path d="M50 50 Q100 30 150 50 Q200 70 250 50 Q300 30 350 50" 
-                      fill="none" stroke="#27ae60" strokeWidth="2"/>
+                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
                 <path d="M30 100 Q80 80 130 100 Q180 120 230 100 Q280 80 330 100" 
-                      fill="none" stroke="#27ae60" strokeWidth="2"/>
+                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
                 <path d="M70 150 Q120 130 170 150 Q220 170 270 150 Q320 130 370 150" 
-                      fill="none" stroke="#27ae60" strokeWidth="2"/>
+                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
               </svg>
             </div>
             
@@ -1206,8 +1211,9 @@ const TherapistProfileContent = () => {
                       (Array.isArray(dateAvailability.timeSlots) && dateAvailability.timeSlots.some(slot => slot.available))
                     );
                     
+                    const shouldHighlight = !!isPsychologistAvailable;
                     // Only treat as available/highlight if it is not a past date
-                    const isActuallyAvailable = isPsychologistAvailable && isAvailable;
+                    const isActuallyAvailable = shouldHighlight && isAvailable;
                     
                     calendarDays.push(
                       <div
@@ -1220,22 +1226,26 @@ const TherapistProfileContent = () => {
                         }}
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
                           isSelected
-                            ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer'
+                            ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
                             : (isToday && isActuallyAvailable)
-                              ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                              ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
                               : isToday
-                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
+                                ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
                               : isActuallyAvailable
-                                ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                                ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
                               : isAvailable
-                                ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
                                 : 'text-gray-300 cursor-not-allowed'
                         }`}
                         title={isPsychologistAvailable ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
-                        {isActuallyAvailable && (
-                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
+                        {shouldHighlight && (
+                          <div
+                            className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
+                              isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                            }`}
+                          ></div>
                         )}
                       </div>
                     );
@@ -1250,8 +1260,6 @@ const TherapistProfileContent = () => {
 
               {/* Time Slots */}
               <div className="space-y-4">
-                <p className="font-semibold text-gray-800 mb-3 text-sm">Available Times</p>
-                
                 {selectedDate ? (
                                       (() => {
                       // Use local date formatting to avoid timezone conversion issues
@@ -1301,7 +1309,7 @@ const TherapistProfileContent = () => {
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 && (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium text-green-700">Available Times:</p>
+                            <p className="text-sm font-medium text-[#3f2e73]">Available Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button
@@ -1309,8 +1317,8 @@ const TherapistProfileContent = () => {
                                   onClick={() => handleTimeSelect(time)}
                                   className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
                                     selectedTime === time
-                                      ? 'border-green-500 bg-green-50 text-green-700' 
-                                      : 'border-gray-300 bg-white hover:border-gray-400 text-gray-700'
+                                      ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73]' 
+                                      : 'border-gray-300 bg-white hover:border-[#3f2e73] text-gray-700'
                                   }`}
                                 >
                                   {time}
@@ -1324,12 +1332,9 @@ const TherapistProfileContent = () => {
                   })()
                 ) : (
                   <div className="text-center py-8">
-                    <div className="text-gray-500 text-sm">
-                      <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z" />
-                      </svg>
-                      <p>Select a date to see available times</p>
-                    </div>
+                    <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z" />
+                    </svg>
                   </div>
                 )}
               </div>
@@ -1340,7 +1345,7 @@ const TherapistProfileContent = () => {
                   // Show package information when booking remaining sessions
                   <div>
                     <p className="font-semibold text-gray-800 mb-3 text-sm">Your Package</p>
-                    <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
+                    <div className="p-4 rounded-lg border border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md">
                       <div className="flex justify-between items-start mb-2">
                         <div className="text-left">
                           <span className="font-semibold text-base">
@@ -1349,7 +1354,7 @@ const TherapistProfileContent = () => {
                                 ? clientPackage.package_type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
                                 : 'Package')}
                           </span>
-                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-2 py-1 rounded-full">
                             Remaining Sessions
                           </span>
                         </div>
@@ -1360,7 +1365,7 @@ const TherapistProfileContent = () => {
                         <p className="mt-1 font-medium">
                           {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
                         </p>
-                        <p className="mt-1 text-green-600 font-medium">
+                        <p className="mt-1 text-[#3f2e73] font-medium">
                           Total paid: ${clientPackage.amount_paid}
                         </p>
                       </div>
@@ -1387,8 +1392,8 @@ const TherapistProfileContent = () => {
                       }}
                       className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                         selectedPackage?.id === 'individual'
-                          ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                          : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                          ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                          : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex justify-between items-center">
@@ -1402,7 +1407,7 @@ const TherapistProfileContent = () => {
                     {/* Dynamic Packages from Database */}
                     {loadingPackages ? (
                       <div className="text-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3f2e73] mx-auto"></div>
                         <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
                       </div>
                     ) : packages.length > 0 ? (
@@ -1416,15 +1421,15 @@ const TherapistProfileContent = () => {
                             }}
                             className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                               selectedPackage?.id === pkg.id
-                                ? 'border-green-500 bg-green-50 text-green-700 shadow-md' 
-                                : 'border-gray-300 hover:border-green-300 text-gray-700 hover:shadow-sm'
+                                ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                                : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
                             }`}
                           >
                             <div className="flex justify-between items-center">
                               <div className="text-left">
                                 <span className="font-semibold text-sm">{pkg.name}</span>
                                 {pkg.discount_percentage > 0 && (
-                                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full">
+                                  <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-1 py-0.5 rounded-full">
                                     Save {pkg.discount_percentage}%
                                   </span>
                                 )}
@@ -1461,7 +1466,7 @@ const TherapistProfileContent = () => {
                 className={`w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm ${
                   !selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking
                     ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                    : 'bg-green-500 text-white hover:bg-green-600'
+                    : 'bg-[#3f2e73] text-white hover:bg-[#1d1733]'
                 }`}
               >
                 {isBooking ? 'Booking...' : isBookingRemaining ? 'Book Remaining Session' : `Book ${selectedPackage?.name || 'Session'}`}
