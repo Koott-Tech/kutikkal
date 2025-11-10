@@ -35,8 +35,13 @@ export default function BetterParentingAdminPage() {
     try {
       setLoading(true);
       const res = await adminApi.getBetterParentingPages({ search: debouncedSearch, limit: 20 });
-      if (res?.success) setRows(res.message.pages || []);
-      else setError(res?.message || 'Failed to fetch pages');
+      if (res?.success) {
+        const list = res.data?.pages;
+        setRows(Array.isArray(list) ? list : []);
+      } else {
+        setError(res?.message || 'Failed to fetch pages');
+        setRows([]);
+      }
     } catch (e) {
       setError('Error fetching pages');
     } finally {

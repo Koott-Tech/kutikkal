@@ -28,8 +28,12 @@ export default function EditAssessmentPage() {
       setLoading(true);
       setError('');
       const res = await adminApi.getAssessment(params.id);
-      if (res?.success) setRow(res.message);
-      else setError(res?.message || 'Failed to fetch assessment');
+      if (res?.success) {
+        const assessmentData = res.data || res.message || res;
+        setRow(assessmentData);
+      } else {
+        setError(res?.message || 'Failed to fetch assessment');
+      }
     } catch (e) {
       setError('Error fetching assessment');
     } finally {

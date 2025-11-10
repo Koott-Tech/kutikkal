@@ -43,11 +43,11 @@ export default function EditCounsellingServicePage() {
       const response = await adminApi.getCounsellingService(params.id);
       
       if (response && response.success) {
-        console.log('Edit page - fetched service:', response.message);
-        console.log('Edit page - benefits count:', response.message.benefits?.length);
-        console.log('Edit page - FAQs count:', response.message.faqs?.length);
-        console.log('Edit page - FAQs:', response.message.faqs);
-        setService(response.message);
+        const serviceData = response.data || response.message || response;
+        console.log('Edit page - fetched service:', serviceData);
+        console.log('Edit page - benefits count:', serviceData?.benefits?.length);
+        console.log('Edit page - FAQs count:', serviceData?.faqs?.length);
+        setService(serviceData);
       } else {
         setError(response?.message || 'Failed to fetch service');
       }

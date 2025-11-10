@@ -28,8 +28,12 @@ export default function EditBetterParentingPage() {
       setLoading(true);
       setError('');
       const res = await adminApi.getBetterParentingPage(params.id);
-      if (res?.success) setRow(res.message);
-      else setError(res?.message || 'Failed to fetch page');
+      if (res?.success) {
+        const pageData = res.data || res.message || res;
+        setRow(pageData);
+      } else {
+        setError(res?.message || 'Failed to fetch page');
+      }
     } catch (e) {
       setError('Error fetching page');
     } finally {

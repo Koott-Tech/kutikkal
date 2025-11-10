@@ -447,11 +447,11 @@ const TherapistProfileContent = () => {
           return;
         }
 
-      setBookingSuccess(true);
-      setSelectedDate(null);
-      setSelectedTime(null);
-      setSelectedPackage(null);
-      setSelectedPrice(null);
+        setBookingSuccess(true);
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setSelectedPackage(null);
+        setSelectedPrice(null);
 
       // Redirect to sessions page after booking succeeds
       router.push('/profile/sessions');

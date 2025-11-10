@@ -103,7 +103,8 @@ export default function Header() {
         
         const data = await response.json();
         
-        if (data.success && data.message.services) {
+        const services = data?.data?.services || data?.message?.services;
+        if (data.success && Array.isArray(services)) {
           // Group services by category
           const grouped = {
             emotional: [],
@@ -113,7 +114,7 @@ export default function Header() {
             trauma: []
           };
           
-          data.message.services
+          services
             .filter(service => service.status === 'published' && service.category)
             .forEach(service => {
               if (grouped[service.category]) {
@@ -155,7 +156,8 @@ export default function Header() {
           return;
         }
         const data = await response.json();
-        if (data.success && data.message.assessments) {
+        const assessments = data?.data?.assessments || data?.message?.assessments;
+        if (data.success && Array.isArray(assessments)) {
           try {
             console.log('[Header] Assessments fetch ok', {
               baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
@@ -169,7 +171,7 @@ export default function Header() {
             intelligence: [],
             projective: []
           };
-          data.message.assessments
+          assessments
             .filter(item => item.status === 'published' && item.category)
             .forEach(item => {
               if (grouped[item.category]) {
@@ -204,8 +206,9 @@ export default function Header() {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/better-parenting?limit=50`);
         if (!response.ok) return;
         const data = await response.json();
-        if (data.success && data.message.pages) {
-          const items = (data.message.pages || [])
+        const pages = data?.data?.pages || data?.message?.pages;
+        if (data.success && Array.isArray(pages)) {
+          const items = pages
             .filter(p => p.status === 'published')
             .map(p => ({
               name: p.seo_title?.replace(' - Little Care', '') || p.hero_title,
@@ -459,6 +462,7 @@ export default function Header() {
                         setIsAboutOpen(false);
                         setIsResourcesOpen(false);
                         setIsBetterParentingOpen(false);
+                        setIsAssessmentsOpen(false);
                       }
                     }}
                   >
@@ -865,6 +869,20 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
+                      <div className="px-6 pt-4">
+                        <button
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                          onClick={() => {
+                            router.push('/free-assessment');
+                            setIsAssessmentsOpen(false);
+                          }}
+                        >
+                          <span>Free 20 Min Assessment</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </li>
@@ -914,6 +932,7 @@ export default function Header() {
                         setIsForProvidersOpen(false);
                         setIsBetterParentingOpen(false);
                         setIsResourcesOpen(false);
+                        setIsAssessmentsOpen(false);
                       }
                     }}
                   >
@@ -960,6 +979,7 @@ export default function Header() {
                         setIsForProvidersOpen(false);
                         setIsAboutOpen(false);
                         setIsBetterParentingOpen(false);
+                        setIsAssessmentsOpen(false);
                       }
                     }}
                   >

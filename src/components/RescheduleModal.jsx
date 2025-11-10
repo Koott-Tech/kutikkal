@@ -361,7 +361,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               <div>
                 <div className="mb-3 sm:mb-4">
                   <h6 className="text-xs sm:text-sm font-semibold text-gray-900">
-                    Select New Time
+                  Select New Time
                   </h6>
                   {selectedDate && (
                     <p className="text-[10px] sm:text-xs text-gray-500">
@@ -410,20 +410,20 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
                   
                   return (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                      {availableSlots.map((time) => (
-                        <button
-                          key={time}
-                          onClick={() => handleTimeSelect(time)}
-                          className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
-                            selectedTime === time
-                              ? 'border-green-500 bg-green-50 text-green-700' 
-                              : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                            {availableSlots.map((time) => (
+                              <button
+                                key={time}
+                                onClick={() => handleTimeSelect(time)}
+                                className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
+                                  selectedTime === time
+                                    ? 'border-green-500 bg-green-50 text-green-700' 
+                                    : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            ))}
                     </div>
                   );
                 })()}

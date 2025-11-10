@@ -67,10 +67,12 @@ export default function CounsellingAdminPage() {
         limit: 20
       });
       
-      if (response && response.success) {
-        setServices(response.message.services || []);
+      if (response?.success) {
+        const list = response.data?.services;
+        setServices(Array.isArray(list) ? list : []);
       } else {
         setError(response?.message || 'Failed to fetch services');
+        setServices([]);
       }
     } catch (err) {
       const errorMsg = err?.message || 'Error fetching services';

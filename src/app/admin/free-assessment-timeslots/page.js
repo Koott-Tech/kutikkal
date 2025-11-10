@@ -133,6 +133,7 @@ export default function FreeAssessmentTimeslotsPage() {
 
   // Load booked free assessments for admin list
   const fetchBookedAssessments = async () => {
+    if (!token) return;
     try {
       setLoading(true);
       console.log('[Admin/FreeAssess] fetchBooked:start');
@@ -145,12 +146,30 @@ export default function FreeAssessmentTimeslotsPage() {
       const data = await response.json();
       console.log('[Admin/FreeAssess] fetchBooked:response', data);
       if (data.success) {
-        setBookedAssessments(data.data.assessments || []);
+        const list =
+          data?.data?.assessments ||
+          data?.message?.assessments ||
+          [];
+        setBookedAssessments(Array.isArray(list) ? list : []);
+      } else {
+        setBookedAssessments([]);
+        setError(data.message || 'Failed to fetch booked free assessments.');
       }
     } catch (error) {
       console.error('Error fetching booked free assessments:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyMeetLink = async (link) => {
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setSuccess('Meet link copied to clipboard.');
+    } catch (copyError) {
+      console.error('Failed to copy meet link:', copyError);
+      setError('Failed to copy meet link.');
     }
   };
 
@@ -725,14 +744,27 @@ export default function FreeAssessmentTimeslotsPage() {
                       <td className="px-3 py-2 whitespace-nowrap">{a.scheduledDate}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{a.scheduledTime}</td>
                       <td className="px-3 py-2 whitespace-nowrap">{a.client ? `${a.client.first_name || ''} ${a.client.last_name || ''}`.trim() : '—'}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{a.psychologist ? `${a.psychologist.first_name} ${a.psychologist.last_name}` : 'Unassigned'}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {a.psychologist ? (
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {`${a.psychologist.first_name || ''} ${a.psychologist.last_name || ''}`.trim() || 'Assessment Specialist'}
+                            </div>
+                            {a.psychologist.email && (
+                              <div className="text-xs text-gray-500">{a.psychologist.email}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">Unassigned</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         {a.meetLink ? (
                           <button
-                            onClick={() => navigator.clipboard.writeText(a.meetLink)}
-                            className="text-blue-600 hover:text-blue-800 underline"
+                            onClick={() => window.open(a.meetLink, '_blank', 'noopener')}
+                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors"
                           >
-                            Copy link
+                            Copy Meet
                           </button>
                         ) : (
                           <span className="text-gray-500">—</span>

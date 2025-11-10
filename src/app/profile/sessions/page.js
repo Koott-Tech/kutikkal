@@ -317,13 +317,13 @@ export default function SessionsPage() {
                                 Reschedule
                               </button>
                                   {getMeetLink(session) && (
-                                    <button
+                              <button
                                       onClick={() => handleJoinMeet(session)}
                                       className="flex-1 text-green-700 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors"
-                                    >
+                              >
                                       Join Meet
-                                    </button>
-                                  )}
+                              </button>
+                          )}
                             </>
                           )}
                           
@@ -414,7 +414,7 @@ export default function SessionsPage() {
                                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                                         Free Assessment
                                       </span>
-                                      Free assessment (doctor to be assigned)
+                                      Free assessment
                                     </span>
                                   )
                                   : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
@@ -426,7 +426,7 @@ export default function SessionsPage() {
                                 </p>
                               )}
                               
-                              {session.price && (
+                              {Number(session.price) > 0 && (
                                 <p className="text-gray-600 mb-2">
                                   Price: ${session.price}
                                 </p>
@@ -451,13 +451,13 @@ export default function SessionsPage() {
                                     {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
                                   </button>
                                   {getMeetLink(session) && (
-                                    <button
+                                  <button
                                       onClick={() => handleJoinMeet(session)}
                                       className="text-green-700 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors cursor-pointer"
-                                    >
+                                  >
                                       Join Meet
-                                    </button>
-                                  )}
+                                  </button>
+                              )}
                                 </>
                               )}
                               
@@ -628,7 +628,7 @@ export default function SessionsPage() {
                                 </p>
                               )}
                               
-                              {session.price && (
+                              {Number(session.price) > 0 && (
                                 <p className="text-gray-600 mb-2">
                                   Price: ${session.price}
                                 </p>
@@ -707,15 +707,15 @@ export default function SessionsPage() {
             </div>
             
             <div className="px-6 py-4">
-              <div className="space-y-4">
-                <div>
+                <div className="space-y-4">
+                  <div>
                   <h6 className="text-gray-900">Session Details</h6>
-                  <p className="text-gray-600">
-                    {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
-                  </p>
-                </div>
-                
-                <div>
+                    <p className="text-gray-600">
+                      {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
+                    </p>
+                  </div>
+                  
+                    <div>
                   <h6 className="text-gray-900">Session Summary</h6>
                   {getSummary(selectedReport) ? (
                     <p className="text-gray-600">{getSummary(selectedReport)}</p>
@@ -732,19 +732,19 @@ export default function SessionsPage() {
                 )}
 
                 {getSummaryNotes(selectedReport) && (
-                  <div>
+                    <div>
                     <h6 className="text-gray-900">Additional Notes</h6>
                     <p className="text-gray-600">{getSummaryNotes(selectedReport)}</p>
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {selectedReport.feedback && (
-                  <div>
+                  {selectedReport.feedback && (
+                    <div>
                     <h6 className="text-gray-900">Feedback</h6>
-                    <p className="text-gray-600">{selectedReport.feedback}</p>
-                  </div>
-                )}
-              </div>
+                      <p className="text-gray-600">{selectedReport.feedback}</p>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
         </div>
