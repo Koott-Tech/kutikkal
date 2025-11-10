@@ -23,7 +23,6 @@ export default function SessionsPage() {
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [isSummaryView, setIsSummaryView] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -113,6 +112,10 @@ export default function SessionsPage() {
     }
   };
 
+  const getSummary = (session) => session?.summary || session?.session_summary || '';
+  const getReport = (session) => session?.report || session?.session_report || '';
+  const getSummaryNotes = (session) => session?.summary_notes || session?.session_notes || '';
+
   const handleMessageClick = async (session) => {
     try {
       const response = await messagesApi.createConversation(session.id);
@@ -129,6 +132,21 @@ export default function SessionsPage() {
     setSessionToReschedule(session);
     setShowRescheduleModal(true);
   };
+  const getMeetLink = (session) =>
+    session?.google_meet_link || session?.google_meet_join_url || session?.google_meet_start_url || session?.google_calendar_link;
+
+  const handleJoinMeet = (session) => {
+    const meetUrl = getMeetLink(session);
+    if (!meetUrl) {
+      alert('No Google Meet link available for this session yet.');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const url = meetUrl.startsWith('http') ? meetUrl : `https://${meetUrl}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
 
   const handleRescheduleRequest = async (session) => {
     try {
@@ -146,15 +164,8 @@ export default function SessionsPage() {
     setSessionToReschedule(null);
   };
 
-  const handleViewSummary = (session) => {
-    setSelectedReport(session);
-    setIsSummaryView(true);
-    setShowReportModal(true);
-  };
-
   const handleViewFullReport = (session) => {
     setSelectedReport(session);
-    setIsSummaryView(false);
     setShowReportModal(true);
   };
 
@@ -206,11 +217,11 @@ export default function SessionsPage() {
             <p className="text-gray-600 mb-4 sm:mb-6">You haven&apos;t booked any sessions yet.</p>
             <button
               onClick={() => router.push('/guide')}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
             >
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="hidden sm:inline">Browse Therapists & Book Your First Session</span>
-              <span className="sm:hidden">Browse Therapists</span>
+              <span className="hidden sm:inline">View Therapists</span>
+              <span className="sm:hidden">View Therapists</span>
             </button>
           </div>
         ) : (
@@ -289,8 +300,8 @@ export default function SessionsPage() {
                         
                         {/* Action Buttons */}
                         <div className="flex gap-2 mt-6">
-                          {/* Regular Session Buttons */}
-                          {session.session_type !== 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
+                              {/* Action Buttons for booked/rescheduled sessions */}
+                              {['booked', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
                             <>
                               <button
                                 onClick={() => handleMessageClick(session)}
@@ -305,30 +316,14 @@ export default function SessionsPage() {
                               >
                                 Reschedule
                               </button>
-                              <button
-                                onClick={() => handleRescheduleRequest(session)}
-                                className="flex-1 text-orange-600 border border-orange-300 px-2 py-1 rounded text-xs font-medium hover:bg-orange-50 transition-colors"
-                              >
-                                Help
-                              </button>
-                            </>
-                          )}
-                          
-                          {/* Free Assessment Buttons */}
-                          {session.session_type === 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
-                            <>
-                              <button
-                                onClick={() => handleRescheduleClick(session)}
-                                className="flex-1 text-blue-600 border border-blue-300 px-2 py-1 rounded text-xs font-medium hover:bg-blue-50 transition-colors"
-                              >
-                                Reschedule
-                              </button>
-                              <button
-                                onClick={() => handleRescheduleRequest(session)}
-                                className="flex-1 text-orange-600 border border-orange-300 px-2 py-1 rounded text-xs font-medium hover:bg-orange-50 transition-colors"
-                              >
-                                Help
-                              </button>
+                                  {getMeetLink(session) && (
+                                    <button
+                                      onClick={() => handleJoinMeet(session)}
+                                      className="flex-1 text-green-700 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors"
+                                    >
+                                      Join Meet
+                                    </button>
+                                  )}
                             </>
                           )}
                           
@@ -439,8 +434,8 @@ export default function SessionsPage() {
                             </div>
                             
                             <div className="flex flex-wrap gap-2">
-                              {/* Regular Session Buttons */}
-                              {session.session_type !== 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
+                              {/* Action Buttons for booked/rescheduled sessions */}
+                              {['booked', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
                                 <>
                                   <button
                                     onClick={() => handleMessageClick(session)}
@@ -455,30 +450,14 @@ export default function SessionsPage() {
                                   >
                                     {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
                                   </button>
-                                  <button
-                                    onClick={() => handleRescheduleRequest(session)}
-                                    className="text-orange-600 hover:text-orange-900 text-xs sm:text-sm font-medium border border-orange-300 px-2 py-1 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
-                                  >
-                                    Help
-                                  </button>
-                                </>
-                              )}
-                              
-                              {/* Free Assessment Buttons */}
-                              {session.session_type === 'free_assessment' && session.status === 'booked' && !isSessionExpired(session) && (
-                                <>
-                                  <button
-                                    onClick={() => handleRescheduleClick(session)}
-                                    className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm font-medium border border-blue-300 px-2 py-1 rounded-md hover:bg-blue-50 transition-colors cursor-pointer"
-                                  >
-                                    {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
-                                  </button>
-                                  <button
-                                    onClick={() => handleRescheduleRequest(session)}
-                                    className="text-orange-600 hover:text-orange-900 text-xs sm:text-sm font-medium border border-orange-300 px-2 py-1 rounded-md hover:bg-orange-50 transition-colors cursor-pointer"
-                                  >
-                                    Help
-                                  </button>
+                                  {getMeetLink(session) && (
+                                    <button
+                                      onClick={() => handleJoinMeet(session)}
+                                      className="text-green-700 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors cursor-pointer"
+                                    >
+                                      Join Meet
+                                    </button>
+                                  )}
                                 </>
                               )}
                               
@@ -500,14 +479,6 @@ export default function SessionsPage() {
                                 </span>
                               )}
                               
-                              {session.session_summary && (
-                                <button
-                                  onClick={() => handleViewSummary(session)}
-                                  className="text-green-600 hover:text-green-900 text-sm font-medium border border-green-300 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
-                                >
-                                  View Summary Only
-                                </button>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -579,14 +550,6 @@ export default function SessionsPage() {
                           >
                             View Report
                           </button>
-                          {session.summary && (
-                            <button
-                              onClick={() => handleViewSummary(session)}
-                              className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors"
-                            >
-                              View Summary
-                            </button>
-                          )}
                           {!session.feedback && (
                             <button
                               onClick={() => openFeedbackModal(session)}
@@ -679,14 +642,6 @@ export default function SessionsPage() {
                               >
                                 View Complete Report
                               </button>
-                              {session.summary && (
-                                <button
-                                  onClick={() => handleViewSummary(session)}
-                                  className="text-green-600 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors cursor-pointer"
-                                >
-                                  View Summary Only
-                                </button>
-                              )}
                               {!session.feedback && (
                                 <button
                                   onClick={() => openFeedbackModal(session)}
@@ -725,6 +680,7 @@ export default function SessionsPage() {
 
       {showFeedbackModal && (
         <SessionFeedbackModal
+          isOpen={showFeedbackModal}
           session={sessionToFeedback}
           onClose={() => {
             setShowFeedbackModal(false);
@@ -740,9 +696,7 @@ export default function SessionsPage() {
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h3 className="text-gray-900">
-                  {isSummaryView ? 'Session Summary' : 'Complete Session Report'}
-                </h3>
+                <h5 className="text-gray-900">Complete Session Report</h5>
                 <button
                   onClick={() => setShowReportModal(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -753,48 +707,44 @@ export default function SessionsPage() {
             </div>
             
             <div className="px-6 py-4">
-              {isSummaryView ? (
-                <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="text-gray-900 mb-2">Session Summary</h4>
-                    {selectedReport.summary ? (
-                      <p className="text-gray-700 leading-relaxed">{selectedReport.summary}</p>
-                    ) : (
-                      <p className="text-gray-500 italic">No summary available for this session.</p>
-                    )}
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h6 className="text-gray-900">Session Details</h6>
+                  <p className="text-gray-600">
+                    {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-4">
+                
+                <div>
+                  <h6 className="text-gray-900">Session Summary</h6>
+                  {getSummary(selectedReport) ? (
+                    <p className="text-gray-600">{getSummary(selectedReport)}</p>
+                  ) : (
+                    <p className="text-gray-500 italic">No summary available for this session.</p>
+                  )}
+                </div>
+
+                {getReport(selectedReport) && (
                   <div>
-                    <h4 className="text-gray-900">Session Details</h4>
-                    <p className="text-gray-600">
-                      {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
-                    </p>
+                    <h6 className="text-gray-900">Session Report</h6>
+                    <p className="text-gray-600">{getReport(selectedReport)}</p>
                   </div>
-                  
-                  {selectedReport.summary && (
-                    <div>
-                      <h4 className="text-gray-900">Session Summary</h4>
-                      <p className="text-gray-600">{selectedReport.summary}</p>
-                    </div>
-                  )}
+                )}
 
-                  {selectedReport.report && (
-                    <div>
-                      <h4 className="text-gray-900">Session Report</h4>
-                      <p className="text-gray-600">{selectedReport.report}</p>
-                    </div>
-                  )}
+                {getSummaryNotes(selectedReport) && (
+                  <div>
+                    <h6 className="text-gray-900">Additional Notes</h6>
+                    <p className="text-gray-600">{getSummaryNotes(selectedReport)}</p>
+                  </div>
+                )}
 
-                  {selectedReport.feedback && (
-                    <div>
-                      <h4 className="text-gray-900">Feedback</h4>
-                      <p className="text-gray-600">{selectedReport.feedback}</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                {selectedReport.feedback && (
+                  <div>
+                    <h6 className="text-gray-900">Feedback</h6>
+                    <p className="text-gray-600">{selectedReport.feedback}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

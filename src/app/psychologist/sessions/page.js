@@ -44,6 +44,7 @@ export default function PsychologistSessions() {
   const [selectedNotesSession, setSelectedNotesSession] = useState(null);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
+  const [feedbackToView, setFeedbackToView] = useState(null);
 
 
   useEffect(() => {
@@ -98,10 +99,14 @@ export default function PsychologistSessions() {
       
       // Map the form data from SessionCompletionModal to backend expected format
       const mappedData = {
-        session_summary: sessionData.summary || sessionData.session_summary || '',
-        session_notes: sessionData.summary_notes || sessionData.session_notes || '',
-        status: sessionData.status || 'completed'
+        summary: sessionData.summary?.trim?.() || '',
+        report: sessionData.report?.trim?.() || '',
+        summary_notes: sessionData.summary_notes?.trim?.() || ''
       };
+      
+      if (!mappedData.summary || !mappedData.report || !mappedData.summary_notes) {
+        throw new Error('Summary, report, and summary notes are required.');
+      }
       
       await psychologistApi.completeSession(sessionId, mappedData);
       
@@ -141,6 +146,21 @@ export default function PsychologistSessions() {
   const openSessionNotesModal = (session) => {
     setSelectedNotesSession(session);
     setShowNotesModal(true);
+  };
+
+  const getMeetLink = (session) =>
+    session?.google_meet_link || session?.google_meet_join_url || session?.google_meet_start_url || session?.google_calendar_link;
+
+  const handleJoinMeet = (session) => {
+    const meetUrl = getMeetLink(session);
+    if (!meetUrl) {
+      alert('No Google Meet link is available for this session yet.');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const url = meetUrl.startsWith('http') ? meetUrl : `https://${meetUrl}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
 
@@ -469,6 +489,14 @@ export default function PsychologistSessions() {
                       >
                         View Details
                       </button>
+                      {getMeetLink(session) && (
+                        <button
+                          onClick={() => handleJoinMeet(session)}
+                          className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-green-300 text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          Join Meet
+                        </button>
+                      )}
                       {/* Only show Finish button for non-completed sessions */}
                       {session.status !== 'completed' && (
                         <button
@@ -494,12 +522,9 @@ export default function PsychologistSessions() {
                         </button>
                       )}
                       
-                      {/* Show "Completed" badge for completed sessions */}
+                      {/* Completed session actions */}
                       {session.status === 'completed' && (
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-100">
-                            Completed
-                          </span>
                           <button
                             onClick={() => openSessionNotesModal(session)}
                             className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -508,6 +533,14 @@ export default function PsychologistSessions() {
                             <FileText className="h-3 w-3 mr-1" />
                             View Notes
                           </button>
+                          {session.feedback && (
+                            <button
+                              onClick={() => setFeedbackToView(session)}
+                              className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-purple-300 text-[11px] sm:text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                            >
+                              View Feedback
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -563,12 +596,6 @@ export default function PsychologistSessions() {
                             <Clock className="h-4 w-4 mr-1" />
                             {formatTime(session.scheduled_time)}
                           </span>
-                          {session.status === 'completed' && session.updated_at && (
-                            <span className="flex items-center text-xs sm:text-sm text-green-600">
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Completed {new Date(session.updated_at).toLocaleDateString()}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -613,12 +640,9 @@ export default function PsychologistSessions() {
                         </button>
                       )}
                       
-                      {/* Show "Completed" badge for completed sessions */}
+                      {/* Completed session actions */}
                       {session.status === 'completed' && (
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-100">
-                            Completed
-                          </span>
                           <button
                             onClick={() => openSessionNotesModal(session)}
                             className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -627,6 +651,14 @@ export default function PsychologistSessions() {
                             <FileText className="h-3 w-3 mr-1" />
                             View Notes
                           </button>
+                          {session.feedback && (
+                            <button
+                              onClick={() => setFeedbackToView(session)}
+                              className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-purple-300 text-[11px] sm:text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                            >
+                              View Feedback
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -808,6 +840,36 @@ export default function PsychologistSessions() {
               <button
                 onClick={closeDetailsModal}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {feedbackToView && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <h5 className="text-sm font-semibold text-gray-900">Client Feedback</h5>
+              <button
+                onClick={() => setFeedbackToView(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-600 whitespace-pre-line">
+                {feedbackToView.feedback || 'No feedback provided.'}
+              </p>
+            </div>
+            <div className="flex justify-end px-5 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setFeedbackToView(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Close
               </button>

@@ -20,7 +20,23 @@ export default function PackagesPage() {
       setIsLoading(true);
       if (hasRole('client')) {
         const packagesData = await clientApi.getClientPackages();
-        setClientPackages(packagesData.data?.clientPackages || []);
+        const rawPackages = packagesData.data?.clientPackages || [];
+        const normalized = rawPackages.map(pkg => {
+          const totalSessions = Number.isFinite(pkg.total_sessions)
+            ? pkg.total_sessions
+            : Number(pkg.package?.session_count) || 0;
+
+          const remainingSessions = Number.isFinite(pkg.remaining_sessions)
+            ? pkg.remaining_sessions
+            : Math.max(totalSessions - 1, 0);
+
+          return {
+            ...pkg,
+            total_sessions: totalSessions,
+            remaining_sessions: remainingSessions
+          };
+        });
+        setClientPackages(normalized);
       }
     } catch (err) {
       console.error('Error loading packages:', err);

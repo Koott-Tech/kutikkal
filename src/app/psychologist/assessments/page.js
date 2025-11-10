@@ -200,10 +200,14 @@ export default function PsychologistAssessments() {
       setCompletingSessions(prev => new Set(prev).add(sessionId));
       
       const mappedData = {
-        session_summary: sessionData.summary || sessionData.session_summary || '',
-        session_notes: sessionData.summary_notes || sessionData.session_notes || '',
-        status: sessionData.status || 'completed'
+        summary: sessionData.summary?.trim?.() || '',
+        report: sessionData.report?.trim?.() || '',
+        summary_notes: sessionData.summary_notes?.trim?.() || ''
       };
+
+      if (!mappedData.summary || !mappedData.report || !mappedData.summary_notes) {
+        throw new Error('Summary, report, and summary notes are required.');
+      }
       
       await psychologistApi.completeSession(sessionId, mappedData);
       showSuccess('Assessment session completed successfully!');

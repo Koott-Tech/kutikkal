@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '../lib/supabaseClient';
@@ -11,86 +11,6 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
 
   // Get singleton Supabase client
   const supabase = getSupabaseClient();
-  const popupRef = useRef(null);
-  const returnUrlRef = useRef(null);
-
-  const resolvedReturnUrl = useMemo(() => {
-    if (returnUrl) return returnUrl;
-    if (typeof window === 'undefined') return '/';
-    return window.location.href;
-  }, [returnUrl]);
-
-  useEffect(() => {
-    returnUrlRef.current = resolvedReturnUrl;
-  }, [resolvedReturnUrl]);
-
-  useEffect(() => {
-    const handleAuthResult = (event) => {
-      if (!event?.data || typeof window === 'undefined') return;
-      if (!event.data?.type?.startsWith?.('supabase:auth-')) return;
-
-      const allowedOrigins = [window.location.origin];
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        try {
-          const supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin;
-          allowedOrigins.push(supabaseOrigin);
-        } catch (error) {
-          console.warn('Unable to parse Supabase origin for message verification:', error);
-        }
-      }
-
-      if (!allowedOrigins.includes(event.origin)) {
-        console.warn('Blocked message from untrusted origin:', event.origin);
-        return;
-      }
-
-      const { type, success, payload } = event.data;
-      if (type !== 'supabase:auth-result') return;
-
-      if (success) {
-        if (popupRef.current && !popupRef.current.closed) {
-          try {
-            popupRef.current.close();
-          } catch (closeError) {
-            console.warn('Unable to close auth popup:', closeError);
-          }
-        }
-        try {
-          if (payload?.user && payload?.token) {
-            login(payload.user, payload.token);
-          }
-        } catch (error) {
-          console.warn('Unable to hydrate AuthContext from popup result:', error);
-        }
-
-        onSuccess?.();
-
-        const targetUrl = payload?.returnUrl || returnUrlRef.current || (typeof window !== 'undefined' ? window.location.href : '/');
-        if (typeof window !== 'undefined') {
-          if (targetUrl && targetUrl !== window.location.href) {
-            window.location.href = targetUrl;
-          } else {
-            router.refresh();
-          }
-        } else {
-          router.refresh();
-        }
-      } else {
-        const message = payload?.error || 'Google Sign-In failed.';
-        onError?.(new Error(message));
-      }
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('message', handleAuthResult);
-    }
-
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('message', handleAuthResult);
-      }
-    };
-  }, [login, onError, onSuccess, router]);
 
   const handleGoogleSignIn = async () => {
     if (!supabase) {
@@ -105,42 +25,14 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
       console.log('🔍 Redirect URL:', `${window.location.origin}/auth/callback`);
       console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
       
-      const popupFeatures = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=480,height=640';
-      let popupWindow = null;
-      if (typeof window !== 'undefined') {
-        const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
-        const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
-        const width = window.innerWidth || document.documentElement.clientWidth || screen.width;
-        const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
-
-        const popupWidth = 480;
-        const popupHeight = 640;
-        const left = width / 2 - popupWidth / 2 + dualScreenLeft;
-        const top = height / 2 - popupHeight / 2 + dualScreenTop;
-
-        popupWindow = window.open(
-          '',
-          'kuttikal-google-auth',
-          `${popupFeatures},left=${left},top=${top}`
-        );
-      }
-
-      const callbackUrl = new URL(`${window.location.origin}/auth/callback`);
-      callbackUrl.searchParams.set('mode', 'popup');
-      if (typeof window !== 'undefined') {
-        callbackUrl.searchParams.set('sourceOrigin', encodeURIComponent(window.location.origin));
-      }
-      callbackUrl.searchParams.set('returnUrl', encodeURIComponent(resolvedReturnUrl));
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl.toString(),
+          redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          },
-          skipBrowserRedirect: true,
+          }
         }
       });
 
@@ -152,23 +44,7 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
           name: error.name
         });
         if (onError) onError(new Error(error.message));
-        if (popupWindow && !popupWindow.closed) {
-          popupWindow.close();
-        }
         return;
-      }
-
-      if (data?.url) {
-        if (popupWindow) {
-          popupWindow.location.href = data.url;
-          popupWindow.focus();
-          popupRef.current = popupWindow;
-        } else {
-          window.location.href = data.url;
-        }
-      } else if (popupWindow && !popupWindow.closed) {
-        popupWindow.close();
-        onError?.(new Error('Unable to start Google Sign-In popup.'));
       }
 
       console.log('✅ Supabase Google Sign-In initiated:', data);

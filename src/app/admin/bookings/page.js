@@ -22,7 +22,8 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Trash2
+  Trash2,
+  MessageSquare
 } from 'lucide-react';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -41,6 +42,7 @@ export default function BookingsPage() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [feedbackToView, setFeedbackToView] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -335,6 +337,40 @@ export default function BookingsPage() {
 
       {/* Filters and Search */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+          <p className="text-sm text-gray-600">
+            Showing{' '}
+            <span className="font-semibold text-gray-900">{totalItems}</span>{' '}
+            {totalItems === 1 ? 'booking' : 'bookings'}
+            {filterStatus !== 'all' && (
+              <>
+                {' '}with status{' '}
+                <span className="font-medium text-gray-900">
+                  {filterStatus === 'no_show'
+                    ? 'No Show'
+                    : filterStatus.replace('_', ' ')}
+                </span>
+              </>
+            )}
+            {filterDate && (
+              <>
+                {' '}on{' '}
+                <span className="font-medium text-gray-900">
+                  {new Date(filterDate).toLocaleDateString()}
+                </span>
+              </>
+            )}
+            {searchTerm && (
+              <>
+                {' '}matching "
+                <span className="font-medium text-gray-900">
+                  {searchTerm}
+                </span>
+                "
+              </>
+            )}
+          </p>
+        </div>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -490,6 +526,15 @@ export default function BookingsPage() {
                           Reschedule
                         </button>
                       )}
+                      {booking.feedback && (
+                        <button
+                          onClick={() => setFeedbackToView(booking)}
+                          className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          View Feedback
+                        </button>
+                      )}
                       {booking.status !== 'completed' && (
                         <button
                           onClick={() => handleDeleteSession(booking)}
@@ -519,6 +564,45 @@ export default function BookingsPage() {
               : 'No therapy sessions have been booked yet.'
             }
           </p>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {feedbackToView && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <h6 className="text-sm font-semibold text-gray-900">Client Feedback</h6>
+              <button
+                onClick={() => setFeedbackToView(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Client</p>
+                <p className="text-sm text-gray-800">
+                  {feedbackToView.client?.first_name} {feedbackToView.client?.last_name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Submitted Feedback</p>
+                <p className="text-sm text-gray-700 whitespace-pre-line">
+                  {feedbackToView.feedback || 'No feedback provided.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end px-5 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setFeedbackToView(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

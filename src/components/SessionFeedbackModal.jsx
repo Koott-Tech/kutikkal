@@ -67,9 +67,7 @@ export default function SessionFeedbackModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">
-              Session Feedback
-            </h2>
+            <h5 className="text-sm font-semibold text-gray-800">Session Feedback</h5>
           </div>
           <button
             onClick={handleClose}
@@ -82,7 +80,7 @@ export default function SessionFeedbackModal({
 
         {/* Session Info */}
         <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-medium text-gray-800 mb-3">Session Details</h3>
+          <h6 className="text-xs font-medium text-gray-800 mb-3">Session Details</h6>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-600">Therapist:</span>

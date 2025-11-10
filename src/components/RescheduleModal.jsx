@@ -230,7 +230,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
       <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-4xl max-h-[100vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Reschedule Session</h2>
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900">Reschedule Session</h4>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -240,30 +240,14 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
         </div>
 
         <div className="p-3 sm:p-6">
-          {/* Current Session Info */}
-          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">Current Session</h3>
-            <p className="text-blue-800 text-xs sm:text-sm">
-              📅 {new Date(session.scheduled_date).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </p>
-            <p className="text-blue-800 text-xs sm:text-sm">
-              🕐 {session.scheduled_time}
-            </p>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
             {/* Calendar - EXACT same structure as therapist profile */}
             <div>
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl p-3 sm:p-6 w-full sm:max-w-md">
                 {/* Calendar Header */}
                 <div className="text-center mb-3 sm:mb-4">
-                  <h3 className="text-base sm:text-lg font-bold text-gray-800 mb-1">Reschedule Session</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">Select a new date and time</p>
+                  <h6 className="text-xs sm:text-sm font-semibold text-gray-800 mb-1">Reschedule Session</h6>
+                  <p className="text-gray-600 text-[10px] sm:text-xs">Select a new date and time</p>
                   {loadingAvailability && (
                     <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
@@ -282,7 +266,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                       <path d="M15 18l-6-6 6-6"/>
                     </svg>
                   </button>
-                  <h4 className="text-xs sm:text-sm font-semibold text-gray-800">{getMonthName(currentDate)}</h4>
+                  <h6 className="text-[10px] sm:text-xs font-semibold text-gray-800">{getMonthName(currentDate)}</h6>
                   <button 
                     onClick={handleNextMonth}
                     className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -369,47 +353,25 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   })()}
                 </div>
                 
-                {/* Calendar Legend */}
-                <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-gray-50 rounded-lg text-xs">
-                  <div className="flex items-center justify-between mb-1 sm:mb-2">
-                    <span className="font-medium text-gray-700 text-xs">Calendar Legend:</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 sm:gap-2 text-xs">
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded border-2 border-green-600"></div>
-                      <span className="font-medium text-xs">Available</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-100 rounded"></div>
-                      <span className="text-xs">Today</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-100 rounded"></div>
-                      <span className="text-xs">Future</span>
-                    </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-300 rounded"></div>
-                      <span className="text-xs">Past</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
             {/* Time Selection - EXACT same as therapist profile */}
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-                  Select New Time
+                <div className="mb-3 sm:mb-4">
+                  <h6 className="text-xs sm:text-sm font-semibold text-gray-900">
+                    Select New Time
+                  </h6>
                   {selectedDate && (
-                    <span className="text-xs sm:text-sm font-normal text-gray-600">
-                      for {selectedDate.toLocaleDateString('en-US', {
+                    <p className="text-[10px] sm:text-xs text-gray-500">
+                      {selectedDate.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric'
                       })}
-                    </span>
+                    </p>
                   )}
-                </h3>
+                </div>
 
                 {!selectedDate ? (
                   <div className="text-center py-8">
@@ -446,54 +408,22 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   // EXACT same time slots calculation as therapist profile
                   const allTimeSlots = dateAvailability.timeSlots || [];
                   const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
-                  const blockedSlots = allTimeSlots.filter(slot => !slot.available).map(slot => slot.displayTime);
                   
                   return (
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <h5 className="font-bold text-gray-800 text-xs sm:text-sm">TIME SLOTS</h5>
-                        <span className="font-bold text-gray-800 text-xs sm:text-sm">Available: {availableSlots.length} | Blocked: {blockedSlots.length}</span>
-                      </div>
-                      
-                      {/* Available Time Slots */}
-                      {availableSlots.length > 0 && (
-                        <div className="space-y-2">
-                          <h6 className="text-xs sm:text-sm font-medium text-green-700">Available Times:</h6>
-                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                            {availableSlots.map((time) => (
-                              <button
-                                key={time}
-                                onClick={() => handleTimeSelect(time)}
-                                className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
-                                  selectedTime === time
-                                    ? 'border-green-500 bg-green-50 text-green-700' 
-                                    : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
-                                }`}
-                              >
-                                {time}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Blocked Time Slots */}
-                      {blockedSlots.length > 0 && (
-                        <div className="space-y-2">
-                          <h6 className="text-xs sm:text-sm font-medium text-red-700">Blocked Times:</h6>
-                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                            {blockedSlots.map((time) => (
-                              <div
-                                key={time}
-                                className="p-1 sm:p-2 rounded-lg border border-red-300 bg-red-50 text-red-700 text-xs w-full h-8 sm:h-10 flex items-center justify-center cursor-not-allowed"
-                                title="This time slot is not available"
-                              >
-                                {time}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                      {availableSlots.map((time) => (
+                        <button
+                          key={time}
+                          onClick={() => handleTimeSelect(time)}
+                          className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
+                            selectedTime === time
+                              ? 'border-green-500 bg-green-50 text-green-700' 
+                              : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      ))}
                     </div>
                   );
                 })()}
@@ -522,7 +452,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               {/* New Session Details Preview */}
               {selectedDate && selectedTime && (
                 <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-semibold text-green-900 mb-2 text-sm sm:text-base">New Session Details</h4>
+                  <h6 className="font-semibold text-green-900 mb-2 text-xs sm:text-sm">New Session Details</h6>
                   <p className="text-blue-800 text-xs sm:text-sm">
                     📅 {selectedDate.toLocaleDateString('en-US', {
                       weekday: 'long',

@@ -447,14 +447,14 @@ const TherapistProfileContent = () => {
           return;
         }
 
-        setBookingSuccess(true);
-        // Reset selections
-        setSelectedDate(null);
-        setSelectedTime(null);
-        setSelectedPackage(null);
-        setSelectedPrice(null);
-        // Show success message
-        setTimeout(() => setBookingSuccess(false), 5000);
+      setBookingSuccess(true);
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setSelectedPackage(null);
+      setSelectedPrice(null);
+
+      // Redirect to sessions page after booking succeeds
+      router.push('/profile/sessions');
         return;
       }
 
@@ -682,19 +682,31 @@ const TherapistProfileContent = () => {
 
   useEffect(() => {
     if (doctorIndex !== null && doctors.length > 0) {
-      const doctor = doctors[parseInt(doctorIndex)];
-      if (doctor) {
-        // Scroll to top when doctor is selected
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        setSelectedDoctor(doctor);
-        // Fetch availability and packages for this psychologist
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorIndex);
+      let doctor = null;
 
-        fetchPsychologistAvailability(doctor.id);
-        fetchPsychologistPackages(doctor.id);
+      if (isUUID) {
+        doctor = doctors.find(doc => doc.id === doctorIndex);
+      } else {
+        const index = parseInt(doctorIndex, 10);
+        if (!Number.isNaN(index)) {
+          doctor = doctors[index];
+        }
+      }
+
+      if (doctor) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setSelectedDoctor(doctor);
       }
     }
   }, [doctorIndex, doctors]);
+
+  useEffect(() => {
+    if (selectedDoctor) {
+      fetchPsychologistAvailability(selectedDoctor.id);
+      fetchPsychologistPackages(selectedDoctor.id);
+    }
+  }, [selectedDoctor]);
 
   // Handle package_id parameter for booking remaining sessions
   useEffect(() => {
@@ -1331,7 +1343,12 @@ const TherapistProfileContent = () => {
                     <div className="p-4 rounded-lg border border-green-500 bg-green-50 text-green-700 shadow-md">
                       <div className="flex justify-between items-start mb-2">
                         <div className="text-left">
-                          <span className="font-semibold text-base">{clientPackage.package_type}</span>
+                          <span className="font-semibold text-base">
+                            {clientPackage.display_name ||
+                              (clientPackage.package_type
+                                ? clientPackage.package_type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+                                : 'Package')}
+                          </span>
                           <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
                             Remaining Sessions
                           </span>

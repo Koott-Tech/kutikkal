@@ -66,7 +66,21 @@ export default function UsersPage() {
         // Filter out psychologists (they're managed in doctors page)
         const clientUsers = response.data.users.filter(user => user.role === 'client');
         console.log('👥 Filtered client users:', clientUsers);
-        setUsers(clientUsers);
+
+        const dedupedClients = [];
+        const seen = new Set();
+
+        clientUsers.forEach((u) => {
+          const key = u.id || u.email;
+          if (!key) return;
+          if (!seen.has(key)) {
+            seen.add(key);
+            dedupedClients.push(u);
+          }
+        });
+
+        console.log('✅ Deduped client users:', dedupedClients);
+        setUsers(dedupedClients);
       } else {
         console.warn('Invalid response structure:', response);
         setUsers([]);

@@ -486,8 +486,8 @@ export const psychologistApi = {
 
   // Complete session with summary, report, and notes
   async completeSession(sessionId, sessionData) {
-    return apiRequest(`/psychologists/sessions/${sessionId}/complete`, {
-      method: 'POST',
+    return apiRequest(`/sessions/${sessionId}/complete`, {
+      method: 'PUT',
       body: JSON.stringify(sessionData),
     });
   },
