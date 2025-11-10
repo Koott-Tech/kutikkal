@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
-import { clientApi } from '@/lib/backendApi';
+import { authApi, clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
 
 export default function AuthCallback() {
@@ -129,42 +129,76 @@ function AuthCallbackContent() {
         if (data.session && data.session.user) {
           console.log('🔍 Supabase auth successful:', data.session.user);
           setStatus('Authentication successful! Redirecting...');
-          
-      // Store user data and immediately update AuthContext
-      const userData = {
-        id: data.session.user.id,
-        email: data.session.user.email,
-        name: data.session.user.user_metadata?.full_name || data.session.user.email,
-        role: 'client' // Default role for Google sign-ins
-      };
-      
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userData', JSON.stringify(userData)); // Also store with userData key for compatibility
-      localStorage.setItem('token', data.session.access_token);
-      localStorage.setItem('authToken', data.session.access_token); // Also store with authToken key for compatibility
-      
-      console.log('🔍 Token stored:', {
-        token: data.session.access_token.substring(0, 20) + '...',
-        userData: userData
-      });
-      
-      // Immediately hydrate AuthContext so downstream pages don't need a manual refresh
-      try {
-        login(userData, data.session.access_token);
-      } catch (e) {
-        console.warn('AuthContext login not available during callback, proceeding with redirect');
-      }
-          
+
+          const accessToken = data.session.access_token;
+          const baseUserData = {
+            id: data.session.user.id,
+            email: data.session.user.email,
+            name: data.session.user.user_metadata?.full_name || data.session.user.email,
+            role: data.session.user.user_metadata?.role || null,
+          };
+
+          localStorage.setItem('token', accessToken);
+          localStorage.setItem('authToken', accessToken);
+
+          let resolvedUserData = { ...baseUserData };
+
           try {
-            const profileResponse = await clientApi.getProfile();
-            const profile = profileResponse?.data;
-            if (!isClientContactComplete(profile)) {
-              if (typeof window !== 'undefined') {
-                sessionStorage.setItem('showQuickContact', 'true');
-              }
+            const profileResponse = await authApi.getProfile({ silent: true });
+            const profileUser = profileResponse?.data?.user;
+            if (profileUser) {
+              const derivedRole =
+                profileUser.role ||
+                profileUser.profile?.role ||
+                resolvedUserData.role ||
+                'client';
+
+              resolvedUserData = {
+                ...resolvedUserData,
+                name:
+                  profileUser.profile?.full_name ||
+                  profileUser.full_name ||
+                  profileUser.name ||
+                  resolvedUserData.name,
+                role: derivedRole,
+              };
             }
-          } catch (profileError) {
-            console.warn('Unable to verify contact details after login:', profileError);
+          } catch (profileLookupError) {
+            console.warn('Unable to load auth profile after login:', profileLookupError);
+            if (!resolvedUserData.role) {
+              resolvedUserData.role = 'client';
+            }
+          }
+
+          localStorage.setItem('user', JSON.stringify(resolvedUserData));
+          localStorage.setItem('userData', JSON.stringify(resolvedUserData)); // Also store with userData key for compatibility
+
+          console.log('🔍 Token stored:', {
+            token: `${accessToken.substring(0, 20)}...`,
+            userData: resolvedUserData,
+          });
+
+          // Immediately hydrate AuthContext so downstream pages don't need a manual refresh
+          try {
+            login(resolvedUserData, accessToken);
+          } catch (e) {
+            console.warn('AuthContext login not available during callback, proceeding with redirect');
+          }
+          
+          if (resolvedUserData.role === 'client') {
+            try {
+              const profileResponse = await clientApi.getProfile();
+              const profile = profileResponse?.data;
+              if (!isClientContactComplete(profile)) {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('showQuickContact', 'true');
+                }
+              }
+            } catch (profileError) {
+              console.warn('Unable to verify contact details after login:', profileError);
+            }
+          } else {
+            console.log('Skipping client contact verification for role:', resolvedUserData.role);
           }
 
           const isPopupMode =
@@ -178,7 +212,7 @@ function AuthCallbackContent() {
                 type: 'supabase:auth-result',
                 success: true,
                 payload: {
-                  user: userData,
+                  user: resolvedUserData,
                   token: data.session.access_token,
                   returnUrl: safeReturnUrl,
                 },

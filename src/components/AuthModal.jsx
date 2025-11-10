@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi, clientApi } from "@/lib/backendApi";
 import { isClientContactComplete } from "@/lib/contactValidation";
@@ -37,23 +37,23 @@ export default function AuthModal({
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [forgotStep, setForgotStep] = useState(1);
 
-  if (!open) return null;
-
-  const closeAndReset = () => {
+  const closeAndReset = useCallback(() => {
     setError("");
     setSuccessMessage("");
     setIsLoading(false);
     setShowForgot(false);
     setForgotStep(1);
     onClose?.();
-  };
+  }, [onClose]);
 
   useEffect(() => {
-    if (open) {
+    if (!open) {
       setMounted(false);
-      const t = requestAnimationFrame(() => setMounted(true));
-      return () => cancelAnimationFrame(t);
+      return;
     }
+    setMounted(false);
+    const t = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(t);
   }, [open]);
 
   const handleLogin = async (e) => {
@@ -62,9 +62,15 @@ export default function AuthModal({
     setError("");
     try {
       const data = await authApi.login({ email, password });
-      login(data.data.user, data.data.token);
-      try { await onAuthSuccess?.(data.data.user); } catch (_) {}
-      await maybePromptContactInfo();
+      const loggedInUser = data?.data?.user;
+      const token = data?.data?.token;
+
+      login(loggedInUser, token);
+      try { await onAuthSuccess?.(loggedInUser); } catch (_) {}
+
+      if (loggedInUser?.role === "client") {
+        await maybePromptContactInfo();
+      }
       closeAndReset();
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
@@ -168,7 +174,11 @@ export default function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 px-2" onClick={(e)=>{ if (e.target === e.currentTarget) closeAndReset(); }}>
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 px-2"
+      onClick={(e)=>{ if (e.target === e.currentTarget) closeAndReset(); }}
+      style={{ display: open ? undefined : "none" }}
+    >
       <div className={`w-full max-w-[520px] rounded-xl bg-white shadow-xl py-3 transition-all duration-500 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         {/* Header with logo and close */}
         <div className="relative px-3 py-3">
