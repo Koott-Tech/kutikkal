@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function BlogTeaser() {
@@ -48,8 +49,65 @@ export default function BlogTeaser() {
     },
   ];
 
+  const carouselRef = useRef(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  useEffect(() => {
+    const node = carouselRef.current;
+    if (!node) return;
+
+    const updateButtons = () => {
+      setCanScrollPrev(node.scrollLeft > 0);
+      setCanScrollNext(node.scrollLeft + node.offsetWidth < node.scrollWidth - 1);
+    };
+
+    updateButtons();
+    node.addEventListener("scroll", updateButtons, { passive: true });
+    window.addEventListener("resize", updateButtons);
+
+    return () => {
+      node.removeEventListener("scroll", updateButtons);
+      window.removeEventListener("resize", updateButtons);
+    };
+  }, []);
+
+  useEffect(() => {
+    const node = carouselRef.current;
+    if (!node || typeof window === "undefined") return;
+
+    const centerFirstSlide = () => {
+      const firstSlide = node.firstElementChild;
+      if (!firstSlide) return;
+      const slideWidth = firstSlide.getBoundingClientRect().width;
+      const offset = Math.max((node.offsetWidth - slideWidth) / 2, 0);
+      const target = Math.max(firstSlide.offsetLeft - offset, 0);
+      if (node.scrollLeft !== target) {
+        node.scrollTo({ left: target, behavior: "auto" });
+      }
+    };
+
+    centerFirstSlide();
+    window.addEventListener("resize", centerFirstSlide);
+
+    return () => {
+      window.removeEventListener("resize", centerFirstSlide);
+    };
+  }, []);
+
+  const scrollCarousel = (dir) => {
+    const node = carouselRef.current;
+    if (!node) return;
+    const firstSlide = node.firstElementChild;
+    const slideWidth = firstSlide?.getBoundingClientRect().width || node.offsetWidth * 0.78;
+    const styles = window.getComputedStyle(node);
+    const gap =
+      parseFloat(styles.getPropertyValue("column-gap") || styles.getPropertyValue("gap")) || 20;
+    node.scrollTo({ left: node.scrollLeft + dir * (slideWidth + gap), behavior: "smooth" });
+  };
+
   return (
-    <section className="w-full mt-12 md:mt-20 px-4 lg:px-6">
+    <section className="w-full mt-24 md:mt-24 px-4 lg:px-6">
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
           .blog-teaser-heading {
@@ -77,8 +135,20 @@ export default function BlogTeaser() {
             font-weight: 600 !important;
             line-height: 0.95 !important;
           }
-          .blog-card {
-            max-width: 250px !important;
+          .blog-grid {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 20px !important;
+            padding-bottom: 12px;
+            padding-left: clamp(18px, 7vw, 32px);
+            padding-right: clamp(18px, 7vw, 32px);
+            margin-inline: 0;
+          }
+          .blog-grid::-webkit-scrollbar {
+            display: none;
           }
           .blog-image {
             height: 120px !important;
@@ -90,14 +160,48 @@ export default function BlogTeaser() {
           .blog-meta {
             font-size: 11px !important;
           }
-          .blog-grid {
-            gap: 20px !important;
+          .blog-card {
+            flex: 0 0 78%;
+            max-width: none !important;
+            scroll-snap-align: center;
           }
-          .grid {
-            gap: 20px !important;
+          .blog-card:first-child {
+            margin-left: calc((100% - 78%) / 2);
           }
-          div[class*="grid"] {
-            gap: 20px !important;
+          .blog-card:last-child {
+            margin-right: calc((100% - 78%) / 2);
+          }
+          .blog-carousel-controls {
+            position: relative;
+            margin-top: 86px;
+            height: 0;
+          }
+          .blog-carousel-controls button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f1f5;
+            color: #1f1f28;
+            border: none;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            position: absolute;
+            top: -68px;
+            z-index: 1;
+          }
+          .blog-carousel-controls button:first-child {
+            left: 12px;
+          }
+          .blog-carousel-controls button:last-child {
+            right: 12px;
+          }
+          .blog-carousel-controls button:disabled {
+            opacity: 0.5;
+          }
+          .blog-carousel-controls button:not(:disabled):active {
+            transform: scale(0.96);
           }
         }
       `}</style>
@@ -123,7 +227,7 @@ export default function BlogTeaser() {
           </div>
         </div>
 
-        <div className="blog-grid mt-8 md:mt-16 lg:mt-20 grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1">
+        <div ref={carouselRef} className="blog-grid mt-24 md:mt-16 lg:mt-20 grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel">
            {posts.map((post) => (
             <article 
               key={post.title} 
@@ -153,6 +257,28 @@ export default function BlogTeaser() {
               </h6>
             </article>
           ))}
+        </div>
+        <div className="blog-carousel-controls md:hidden px-4">
+          <button
+            type="button"
+            aria-label="Previous"
+            onClick={() => scrollCarousel(-1)}
+            disabled={!canScrollPrev}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Next"
+            onClick={() => scrollCarousel(1)}
+            disabled={!canScrollNext}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
       </div>
     </section>

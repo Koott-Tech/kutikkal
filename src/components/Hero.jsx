@@ -20,9 +20,9 @@ export default function Hero() {
   
   return (
     <div className="w-full overflow-hidden mt-12">
-      <div className="mx-auto max-w-[1400px] px-0 md:px-0">
+      <div className="hero-wrapper mx-auto max-w-[1400px] px-0 md:px-0">
         <section 
-          className="text-black p-4 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] overflow-hidden relative"
+          className="hero-section text-black p-4 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] overflow-hidden relative"
           style={{ 
             backgroundColor: '#E4E4F9',
             border: 'none',
@@ -33,8 +33,16 @@ export default function Hero() {
         >
           <style jsx>{`
             @media (max-width: 767px) {
-              section { min-height: auto; padding: 16px !important; padding-bottom: 0 !important; }
-              .hero-image-box { height: 300px; margin-top: 24px; margin-bottom: 0; }
+              .hero-section { min-height: auto; padding: 16px !important; padding-bottom: 0 !important; }
+              .hero-image-box { 
+                height: clamp(215px, 66vw, 300px); 
+                margin-top: 20px; 
+                margin-bottom: 0; 
+                width: calc(100% + 96px); 
+                left: 50%;
+                transform: translateX(-50%);
+              }
+              .hero-mobile-image { object-fit: cover !important; object-position: center bottom !important; }
               .hero-badge-text { font-size: 12px; }
               .hero-badge { margin: 0 auto !important; }
               .hero-title { font-size: 28px !important; line-height: 0.95 !important; margin-top: 16px !important; text-align: center !important; }
@@ -44,7 +52,7 @@ export default function Hero() {
               .hero-buttons button:first-child { max-width: 200px !important; }
             }
             @media (min-width: 768px) and (max-width: 1023px) {
-              section { min-height: clamp(480px, 55vh, 680px); padding: 32px !important; }
+              .hero-section { min-height: clamp(480px, 55vh, 680px); }
               .hero-image-box { 
                 height: 400px;
                 min-height: 400px;
@@ -55,16 +63,47 @@ export default function Hero() {
             }
             @media (min-width: 1024px) {
               /* Tighten desktop min-height so zoom-out doesn't leave bottom gap */
-              section { min-height: clamp(560px, 62vh, 820px); }
+              .hero-section { min-height: clamp(560px, 62vh, 820px); }
               .hero-image-box { 
                 height: 100%; 
                 min-height: 500px;
               }
             }
+            @media (min-width: 1024px) and (max-width: 1280px) {
+              .hero-content-wrapper {
+                position: relative;
+                gap: 32px;
+              }
+              .hero-text {
+                width: 100% !important;
+                max-width: 560px;
+              }
+              .desktop-hero-image {
+                position: relative !important;
+                width: 100% !important;
+                margin-right: 0 !important;
+                margin-bottom: 0 !important;
+                min-height: 420px;
+              }
+              .desktop-hero-image .hero-image-box {
+                position: relative !important;
+                inset: auto !important;
+                height: 100%;
+              }
+            }
+            @media (min-width: 1600px) {
+              .hero-wrapper {
+                max-width: clamp(1400px, 78vw, 1720px);
+              }
+              .hero-section {
+                padding-left: clamp(50px, 6vw, 90px) !important;
+                padding-right: clamp(50px, 6vw, 90px) !important;
+              }
+            }
           `}</style>
-          <div className="flex flex-col md:flex-row w-full" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
+          <div className="flex flex-col md:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
             {/* Left: Text */}
-            <div className="flex flex-col justify-center md:w-[45%] md:order-1 md:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
+            <div className="hero-text flex flex-col justify-center md:w-[45%] md:order-1 md:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
               {/* Badge */}
               <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -120,12 +159,12 @@ export default function Hero() {
 
             {/* Mobile Image */}
             <div className="block md:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2" style={{ marginBottom: '-16px' }}>
-              <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: '280px', border: 'none', outline: 'none', boxShadow: 'none' }}>
+              <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"
                   alt="Hero"
                   fill
-                  className="object-cover object-bottom w-full h-full"
+                  className="hero-mobile-image object-bottom w-full h-full"
                   sizes="100vw"
                   priority
                   style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
@@ -134,9 +173,9 @@ export default function Hero() {
             </div>
 
             {/* Desktop Image */}
-            <div className="hidden md:block md:w-[55%] md:h-full md:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: '500px', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
+            <div className="desktop-hero-image hidden md:block md:w-[55%] md:h-full md:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: '500px', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
               {/* Responsive image box aligned to bottom of column */}
-              <div className="absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
+              <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"
                   alt="Hero"

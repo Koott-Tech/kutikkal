@@ -1,10 +1,12 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function HowItWorks() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
+  const trackRef = useRef(null);
+  const isAdjustingRef = useRef(false);
   const avatars = [
     "/hero.png",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
@@ -45,6 +47,30 @@ export default function HowItWorks() {
     }
   ];
 
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+
+    const centerFirstSlide = () => {
+      const firstSlide = track.querySelector('[data-slide-index="0"]');
+      if (!firstSlide) return;
+      isAdjustingRef.current = true;
+      const containerWidth = container.offsetWidth;
+      const targetCenter = firstSlide.offsetLeft + firstSlide.offsetWidth / 2;
+      container.scrollLeft = Math.max(targetCenter - containerWidth / 2, 0);
+      requestAnimationFrame(() => {
+        isAdjustingRef.current = false;
+      });
+    };
+
+    centerFirstSlide();
+    window.addEventListener("resize", centerFirstSlide);
+    return () => {
+      window.removeEventListener("resize", centerFirstSlide);
+    };
+  }, []);
+
   const nextSlide = () => {
     const newSlide = (currentSlide + 1) % carouselData.length;
     setCurrentSlide(newSlide);
@@ -62,29 +88,45 @@ export default function HowItWorks() {
     scrollToSlide(index);
   };
 
-  // Handle scroll events to sync with navigation dots
   const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const cardWidth = 260; // Mobile card width
-      const gap = 16; // gap-4 = 16px
-      const totalCardWidth = cardWidth + gap;
-      const newSlide = Math.round(scrollLeft / totalCardWidth);
-      setCurrentSlide(Math.min(newSlide, carouselData.length - 1));
-    }
+    const container = scrollContainerRef.current;
+    const track = trackRef.current;
+    if (!container || !track || isAdjustingRef.current) return;
+
+    const containerCenter = container.scrollLeft + container.offsetWidth / 2;
+
+    let closestIndex = 0;
+    let smallestDiff = Infinity;
+    const slides = track.querySelectorAll('[data-slide-index]');
+    slides.forEach((slide) => {
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+      const diff = Math.abs(containerCenter - slideCenter);
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
+        closestIndex = Number(slide.getAttribute("data-slide-index") || 0);
+      }
+    });
+
+    setCurrentSlide(closestIndex);
   };
 
-  // Scroll to specific slide
-  const scrollToSlide = (index) => {
-    if (scrollContainerRef.current) {
-      const cardWidth = 260; // Mobile card width
-      const gap = 16; // gap-4 = 16px
-      const totalCardWidth = cardWidth + gap;
-      scrollContainerRef.current.scrollTo({
-        left: index * totalCardWidth,
-        behavior: 'smooth'
-      });
-    }
+  const scrollToSlide = (index, behavior = 'smooth') => {
+    const container = scrollContainerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+    const target = track.querySelector(`[data-slide-index="${index}"]`);
+    if (!target) return;
+    const containerWidth = container.offsetWidth;
+    const targetCenter = target.offsetLeft + target.offsetWidth / 2;
+    const newScrollLeft = targetCenter - containerWidth / 2;
+    isAdjustingRef.current = true;
+    container.scrollTo({
+      left: newScrollLeft,
+      behavior,
+    });
+    requestAnimationFrame(() => {
+      isAdjustingRef.current = false;
+    });
   };
 
   return (
@@ -118,7 +160,7 @@ export default function HowItWorks() {
           }
           .how-it-works-card {
             height: 280px !important;
-            width: 260px !important;
+            width: clamp(240px, 80vw, 320px) !important;
           }
           .how-it-works-title {
             font-size: 18px !important;
@@ -149,6 +191,32 @@ export default function HowItWorks() {
             margin-top: 10px !important;
           }
         }
+        @media (max-width: 767px) {
+          .how-it-works-carousel {
+            scroll-padding-inline: clamp(18px, 7vw, 32px);
+            padding-bottom: 12px;
+            margin-inline: 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .how-it-works-carousel::-webkit-scrollbar {
+            display: none;
+          }
+          .how-it-works-track {
+            gap: clamp(16px, 5vw, 24px);
+            padding-inline: clamp(18px, 7vw, 32px);
+          }
+          .how-it-works-slide {
+            flex: 0 0 82%;
+            scroll-snap-align: center;
+          }
+          .how-it-works-track > .how-it-works-slide:first-child {
+            margin-left: calc((100% - 82%) / 2);
+          }
+          .how-it-works-track > .how-it-works-slide:last-child {
+            margin-right: calc((100% - 82%) / 2);
+          }
+        }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
         <p className="text-center md:text-center mt-2 text-sm md:text-base">
@@ -174,22 +242,22 @@ export default function HowItWorks() {
         <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Mobile Carousel */}
           <div className="md:hidden w-full">
-            <div className="flex justify-center overflow-hidden">
+            <div className="relative">
               {/* Scrollable Carousel Container */}
               <div 
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
-                className="relative overflow-x-auto overflow-y-hidden rounded-2xl carousel-scroll snap-x snap-mandatory"
-                style={{ width: '260px', scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}
+                className="how-it-works-carousel relative overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
               >
-                <div className="flex gap-4 pb-4">
+                <div ref={trackRef} className="how-it-works-track flex pb-4">
                 {carouselData.map((card, index) => (
                   <div 
-                    key={card.id} 
-                    className="flex-shrink-0 snap-start"
+                    key={`${card.id}-${index}`} 
+                    className="how-it-works-slide flex-shrink-0 snap-center"
+                    data-slide-index={index}
                   >
                     <div
-                      className="how-it-works-card rounded-lg p-4 h-[280px] w-[260px] flex flex-col justify-between card-bg-mobile"
+                      className="how-it-works-card p-4 h-[280px] w-full flex flex-col justify-between card-bg-mobile"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",
@@ -316,7 +384,6 @@ export default function HowItWorks() {
               <button
                 onClick={prevSlide}
                 className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
-                disabled={currentSlide === 0}
               >
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -330,7 +397,6 @@ export default function HowItWorks() {
               <button
                 onClick={nextSlide}
                 className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
-                disabled={currentSlide === carouselData.length - 1}
               >
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
