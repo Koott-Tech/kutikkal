@@ -46,7 +46,7 @@ export async function POST(req) {
     // Determine redirect base URL based on environment
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app');
+      : 'https://little.care');
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
@@ -58,7 +58,7 @@ export async function POST(req) {
     // Determine redirect base URL based on environment
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app');
+      : 'https://little.care');
       
     return NextResponse.redirect(`${baseUrl}/payment/failure?error=processing`, { status: 302 });
   }
@@ -75,7 +75,7 @@ export async function GET(req) {
       // Determine redirect base URL based on environment
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
-        : 'https://kutikkal-one.vercel.app');
+        : 'https://little.care');
         
       return NextResponse.redirect(`${baseUrl}/payment/failure?error=no_url`, { status: 302 });
     }
@@ -89,7 +89,7 @@ export async function GET(req) {
       // Determine redirect base URL based on environment
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
-        : 'https://kutikkal-one.vercel.app');
+        : 'https://little.care');
         
       return NextResponse.redirect(`${baseUrl}/payment/failure?error=invalid_url`, { status: 302 });
     }
@@ -100,9 +100,9 @@ export async function GET(req) {
     console.log('🔍 PayU GET Data:', { txnid, status });
 
     // Determine redirect base URL based on environment
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app');
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:3000' 
+        : 'https://little.care');
 
     // Redirect to success page
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
@@ -114,7 +114,7 @@ export async function GET(req) {
     // Determine redirect base URL based on environment
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
-      : 'https://kutikkal-one.vercel.app');
+      : 'https://little.care');
       
     return NextResponse.redirect(`${baseUrl}/payment/failure?error=processing`, { status: 302 });
   }
