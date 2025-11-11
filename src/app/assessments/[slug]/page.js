@@ -2,9 +2,11 @@ import HeroSection from '@/components/HeroSection';
 import LogosStrip from '@/components/LogosStrip';
 import HelpFaq from '@/components/HelpFaq';
 import ScrollToTop from '@/components/ScrollToTop';
+import HowItWorks from '@/components/HowItWorks';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import AssessmentInfoCard from '@/components/AssessmentInfoCard';
+import TherapistCarousel from '@/components/TherapistCarousel';
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
@@ -40,14 +42,48 @@ async function fetchAssessment(slug, { preview = false } = {}) {
   return null;
 }
 
+async function fetchPublicTherapists(limit = 6) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const response = await fetch(`${baseUrl}/api/public/psychologists`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      const psychologists = json?.data?.psychologists || json?.message?.psychologists || json?.psychologists || [];
+      if (Array.isArray(psychologists)) {
+        return psychologists.slice(0, limit);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching public psychologists:', error);
+  }
+
+  return [];
+}
+
 export default async function AssessmentDynamicPage({ params, searchParams }) {
   const { slug } = await params;
   const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
   const data = await fetchAssessment(slug, { preview: isPreview });
 
+  if (!data) {
+    return (
+      <div className="px-6 py-16 text-center">
+        <h3 className="text-2xl font-medium">Assessment coming soon</h3>
+        <p className="mt-2 text-gray-600">We couldn't load this assessment right now. Please try a different assessment or check back soon.</p>
+      </div>
+    );
+  }
+
+  const therapists = await fetchPublicTherapists(6);
+
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';
   const imageUrl = data?.hero_image_url || '';
+  const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
 
   return (
     <div>
@@ -59,25 +95,33 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           subtext,
           ctaText: data?.hero_cta_text || '',
           imageUrl,
-          features: [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean),
+          features: heroFeatures,
         }}
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
-      {/* Assessment info card under hero (replaces doctor cards) */}
-      <AssessmentInfoCard cmsData={{
-        slug,
-        id: data?.id, // Pass assessment ID from database
-        title: data?.assessment_card_title,
-        description: data?.assessment_card_description,
-        sessionsInfo: data?.assessment_card_sessions_info,
-        typesHeading: data?.assessment_card_types_heading,
-        certifiedLabel: data?.assessment_card_certified_label,
-        nonCertifiedLabel: data?.assessment_card_non_certified_label,
-        assigned_doctor_ids: data?.assigned_doctor_ids || [],
-      }} />
-      {/* Booking Modal trigger state handled inside modal via portal-like overlay; use global state by lifting if needed */}
-      {/* Here we render modal only when query or global trigger is used; for now modal opens from card by navigation replacement previously – will be opened by modifying the card next */}
-      {/* Benefits (render with safe defaults like counselling) */}
+
+      <AssessmentInfoCard
+        cmsData={{
+          slug,
+          id: data?.id,
+          title: data?.assessment_card_title,
+          description: data?.assessment_card_description,
+          sessionsInfo: data?.assessment_card_sessions_info,
+          typesHeading: data?.assessment_card_types_heading,
+          certifiedLabel: data?.assessment_card_certified_label,
+          nonCertifiedLabel: data?.assessment_card_non_certified_label,
+          assigned_doctor_ids: data?.assigned_doctor_ids || [],
+        }}
+      />
+
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
+        <TherapistCarousel therapists={therapists} />
+      </div>
+
+      <div className="mt-8">
+        <HowItWorks />
+      </div>
+
       <div className="mt-8">
         <BenefitsSection 
           cmsData={{ 
@@ -87,17 +131,17 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           }} 
         />
       </div>
-      {/* Types (render with safe defaults like counselling) */}
       <div className="mt-8">
         <TherapyTypesSplit 
+          therapyType={slug}
           cmsData={{ 
             title: data?.types_title || 'What we evaluate', 
             types: data?.types || [],
-            rightImageUrl: data?.right_image_url || ''
+            rightImageUrl: data?.right_image_url || '',
+            buttonText: data?.types_button_text || 'Get started'
           }} 
         />
       </div>
-      {/* Videos showcase */}
       <div className="mt-8">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
@@ -111,13 +155,11 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           featuredIndex: data?.videos_featured_index
         }} />
       </div>
-      {/* Info Cards */}
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="mt-8">
           <InfoCards cmsData={{ items: data.info_cards }} />
         </div>
       )}
-      {/* Reviews */}
       <div className="mt-8">
         <Reviews cmsData={{ reviews: data?.reviews || [] }} />
       </div>

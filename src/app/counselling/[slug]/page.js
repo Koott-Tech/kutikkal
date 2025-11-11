@@ -87,6 +87,11 @@ export async function generateMetadata({ params, searchParams }) {
   return meta;
 }
 
+const removeAssessmentSpecialist = (docs = []) => {
+  const filtered = docs.filter(doc => (doc?.name || doc?.first_name || '').toLowerCase() !== 'assessment specialist');
+  return filtered.length > 0 ? filtered : docs;
+};
+
 async function fetchCounsellingService(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
@@ -125,7 +130,8 @@ async function fetchPublicTherapists(limit = 6) {
       const data = await response.json();
       const psychologists = data?.data?.psychologists || data?.message?.psychologists || data?.psychologists || [];
       if (Array.isArray(psychologists)) {
-        return psychologists.slice(0, limit);
+        const sanitized = removeAssessmentSpecialist(psychologists);
+        return sanitized.slice(0, limit);
       }
     }
   } catch (error) {
@@ -158,6 +164,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
 
   // Fetch therapists (6 cards)
   const therapists = await fetchPublicTherapists(6);
+  const displayTherapists = removeAssessmentSpecialist(therapists);
 
   // Render with CMS data - with safe fallbacks
   return (
@@ -187,11 +194,11 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
             </h3>
           </div>
         </div>
-        <TherapistCarousel therapists={therapists} />
+        <TherapistCarousel therapists={displayTherapists} />
 
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
-          {therapists.map((doc, idx) => {
+          {displayTherapists.map((doc, idx) => {
             const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
             const name = doc.name || doc.first_name || 'Therapist';
             return (

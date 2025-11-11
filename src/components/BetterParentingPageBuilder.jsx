@@ -15,6 +15,11 @@ import ImageUpload from '@/components/ImageUpload';
 import TherapistCarousel from '@/components/TherapistCarousel';
 import { publicApi } from '@/lib/backendApi';
 
+const removeAssessmentSpecialist = (docs = []) => {
+  const filtered = docs.filter(doc => (doc?.name || doc?.first_name || '').toLowerCase() !== 'assessment specialist');
+  return filtered.length > 0 ? filtered : docs;
+};
+
 export default function BetterParentingPageBuilder({ pageId, initialData = null, onSubmit, onCancel, loading = false }) {
   const [formData, setFormData] = useState({
     slug: '',
@@ -99,7 +104,10 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
       try {
         const data = await publicApi.getPsychologists();
         const list = data?.data?.psychologists || [];
-        if (mounted) setTherapists(list.slice(0, 6));
+        if (mounted) {
+          const sanitized = removeAssessmentSpecialist(list);
+          setTherapists(sanitized.slice(0, 6));
+        }
       } catch (_) {}
     })();
     return () => { mounted = false; };
@@ -619,7 +627,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                   </h3>
                 </div>
               </div>
-              <TherapistCarousel therapists={therapists} />
+              <TherapistCarousel therapists={removeAssessmentSpecialist(therapists)} />
             </div>
           ))}
 
