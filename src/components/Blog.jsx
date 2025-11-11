@@ -131,9 +131,9 @@ export default function Blog() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
+          <h2 className="text-5xl md:text-6xl font-semibold text-gray-900 mb-6">
             Our Blog
-          </h6>
+          </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
             Behavioral health information you can trust, verified by clinicians.
           </p>
@@ -144,12 +144,12 @@ export default function Blog() {
           <Link href={`/blog/${featuredPost.slug}`} className="block">
             <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16 group cursor-pointer">
               {/* Image Container */}
-              <div className="relative h-[500px] md:h-[600px] w-full">
+              <div className="relative h-[360px] md:h-[420px] w-full bg-gray-100">
                 <Image
                   src={featuredPost.featured_image_url || "/kids.png"}
                   alt={featuredPost.title}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="object-contain transition-transform duration-300"
                   priority
                 />
                 
@@ -227,12 +227,12 @@ export default function Blog() {
               <Link key={post.id} href={`/blog/${post.slug}`} className="group">
                 <div className="bg-white rounded-xl overflow-hidden py-4 hover:shadow-lg transition-shadow duration-200">
                   {/* Image Container */}
-                  <div className="relative h-48">
+                  <div className="relative h-48 bg-gray-100">
                     <Image
                       src={post.featured_image_url || "/kids.png"}
                       alt={post.title}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-200"
+                      className="object-contain transition-transform duration-200"
                     />
                     
                     {/* Category Badge */}

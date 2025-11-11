@@ -12,12 +12,12 @@ const StructuredContentRenderer = ({ content }) => {
   }
 
   return (
-    <div className="prose prose-lg max-w-none">
+    <div className="prose prose-lg max-w-none space-y-12">
       {content.map((block, index) => {
         switch (block.type) {
                  case 'paragraph':
                    return (
-                     <p key={index} className="mb-6 leading-relaxed">
+                     <p key={index} className="leading-relaxed">
                        {(() => {
                          const parseInlineLinks = (text) => {
                            if (!text) return [{ type: 'text', content: text }];
@@ -86,11 +86,11 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'image':
             return (
-              <div key={index} className="my-8">
+              <div key={index} className="flex justify-center">
                 <img 
                   src={block.src} 
                   alt={block.alt}
-                  className="w-full rounded-lg shadow-md"
+                  className="w-full max-w-3xl max-h-96 object-cover rounded-lg shadow-md"
                   loading="lazy"
                 />
                 {block.caption && (
@@ -103,7 +103,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'bulletList':
             return (
-              <ul key={index} className="list-disc list-inside mb-6 space-y-2 ml-4">
+              <ul key={index} className="list-disc list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className="leading-relaxed">
                     {item}
@@ -114,7 +114,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'numberedList':
             return (
-              <ol key={index} className="list-decimal list-inside mb-6 space-y-2 ml-4">
+              <ol key={index} className="list-decimal list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className="leading-relaxed">
                     {item}
@@ -194,26 +194,10 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                 
                 {/* Content */}
                 <div>
-                  {/* Tags */}
-                  {blog.tags && blog.tags.length > 0 && (
-                    <div className="mb-2">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                        {blog.tags[0]}
-                      </span>
-                    </div>
-                  )}
-                  
                   {/* Title */}
-                  <h6 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
+                  <h6 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-3">
                     {blog.title}
                   </h6>
-                  
-                  {/* Excerpt */}
-                  {blog.excerpt && (
-                    <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                      {blog.excerpt}
-                    </p>
-                  )}
                   
                   {/* Meta */}
                   <div className="flex items-center justify-between text-xs text-gray-500">
@@ -353,25 +337,12 @@ export default function BlogPost({ slug }) {
     <>
       <BlogMetaTags blog={blogPost} />
     <article className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-8">
-          <div className="flex items-center space-x-2 p2 text-gray-600">
-            <Link href="/blog" className="hover:text-indigo-600">Blog</Link>
-            <span>/</span>
-            {blogPost.tags && blogPost.tags.length > 0 ? (
-              <span className="hover:text-indigo-600">{blogPost.tags[0]}</span>
-            ) : (
-              <span>Article</span>
-            )}
-          </div>
-        </nav>
-
+      <div className="max-w-6xl mx-auto px-10 sm:px-12 lg:px-20 xl:px-24 pt-24 pb-12">
         {/* Title & Metadata */}
         <header className="mb-8">
-          <h6 className="mb-4">
+          <h3 className="font-semibold mb-4">
             {blogPost.title}
-          </h6>
+          </h3>
           
           <div className="flex items-center space-x-6 mb-6">
             <span className="p2">
@@ -391,39 +362,30 @@ export default function BlogPost({ slug }) {
             </span>
           </div>
           
-          {/* Tags */}
-          {blogPost.tags && blogPost.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {blogPost.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
-                >
-                  {tag}
-                </span>
-              ))}
-          </div>
-          )}
+        {/* Tags */}
+        {blogPost.tags && blogPost.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {blogPost.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
+              >
+                {tag}
+              </span>
+            ))}
+        </div>
+        )}
         </header>
 
         {/* Featured Image */}
         {blogPost.featured_image_url && (
           <div className="mb-8">
-            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
+            <div className="relative h-[320px] md:h-[380px] rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
               <img
                 src={blogPost.featured_image_url}
-            alt={blogPost.title}
+                alt={blogPost.title}
                 className="max-h-full w-full object-contain"
-          />
-        </div>
-        </div>
-        )}
-
-        {/* Excerpt */}
-        {blogPost.excerpt && (
-          <div className="mb-8">
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <p className="p1">{blogPost.excerpt}</p>
+              />
             </div>
           </div>
         )}
@@ -449,28 +411,9 @@ export default function BlogPost({ slug }) {
           )}
                       </div>
 
-        {/* Author Bio */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h6 className="mb-2">About {blogPost.author_name}</h6>
-            <p className="p1">
-              Professional psychologist and mental health advocate with expertise in child and family therapy.
-            </p>
-          </div>
-        </div>
-
         {/* Latest Blogs Suggestions */}
         <LatestBlogsSection blogs={latestBlogs} currentSlug={slug} />
 
-        {/* Back to Blog */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <Link 
-            href="/blog" 
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            ← Back to All Articles
-          </Link>
-        </div>
       </div>
     </article>
     </>
