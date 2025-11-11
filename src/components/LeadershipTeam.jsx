@@ -15,7 +15,7 @@ export default function LeadershipTeam() {
                 color: '#1d1733'
               }}
             >
-              Advisory board
+              Leadership
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Meet the team shaping our unique approach to mental healthcare.
@@ -37,7 +37,7 @@ export default function LeadershipTeam() {
                 />
               </div>
               <div className="px-0 py-6">
-                                 <h3 className="text-xl font-normal text-gray-900 mb-1">Josh Bruno</h3>
+                <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Josh Bruno</h5>
                  <p className="text-gray-600">CEO</p>
               </div>
             </div>
@@ -55,7 +55,7 @@ export default function LeadershipTeam() {
                 />
               </div>
               <div className="px-0 py-6">
-                                 <h3 className="text-xl font-normal text-gray-900 mb-1">Gabe Diop</h3>
+                <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Gabe Diop</h5>
                  <p className="text-gray-600">Co-founder</p>
               </div>
             </div>
@@ -73,7 +73,7 @@ export default function LeadershipTeam() {
                 />
               </div>
               <div className="px-0 py-6">
-                                 <h3 className="text-xl font-normal text-gray-900 mb-1">Mark Khavkin</h3>
+                <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Mark Khavkin</h5>
                  <p className="text-gray-600">Chief Financial Officer</p>
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function LeadershipTeam() {
                 />
               </div>
               <div className="px-0 py-6">
-                                 <h3 className="text-xl font-normal text-gray-900 mb-1">Tracey Scraba</h3>
+                <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Tracey Scraba</h5>
                  <p className="text-gray-600">General Counsel</p>
               </div>
             </div>

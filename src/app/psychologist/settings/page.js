@@ -190,8 +190,27 @@ export default function PsychologistSettings() {
   };
   
   const handleConnectGoogleCalendar = () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth/google-calendar/callback`;
+  setCalendarError(null);
+
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
+  const redirectUri = (process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI?.trim() ||
+    `${window.location.origin}/auth/google-calendar/callback`);
+
+  if (!clientId) {
+    setCalendarError(
+      'Google Calendar integration is not configured. Please contact support.'
+    );
+    console.error('Google Calendar connect failed: NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing');
+    return;
+  }
+
+  if (!redirectUri) {
+    setCalendarError(
+      'Google Calendar redirect URL is not configured. Please contact support.'
+    );
+    console.error('Google Calendar connect failed: redirect URI is missing');
+    return;
+  }
     const scope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events';
     
     console.log('🔍 Google Calendar Connection Debug:');
@@ -199,13 +218,13 @@ export default function PsychologistSettings() {
     console.log('🔗 Client ID:', clientId);
     console.log('🔗 Redirect URI:', redirectUri);
     
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=${clientId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=code` +
-      `&scope=${encodeURIComponent(scope)}` +
-      `&access_type=offline` +
-      `&prompt=consent`;
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${encodeURIComponent(clientId)}` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&response_type=code` +
+    `&scope=${encodeURIComponent(scope)}` +
+    `&access_type=offline` +
+    `&prompt=consent`;
     
     console.log('🔗 Full Auth URL:', authUrl);
     window.location.href = authUrl;

@@ -46,9 +46,9 @@ export default function MeetTheTeam() {
                 />
               </div>
               <div className="px-0 py-6">
-                                 <h3 className="text-xl font-normal text-gray-900 mb-1">
+                <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">
                     {member.name}
-                 </h3>
+                </h5>
                   <p className="text-gray-600">{member.title}</p>
             </div>
               </div>

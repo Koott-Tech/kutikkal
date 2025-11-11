@@ -133,42 +133,41 @@ export default function BlogsPage() {
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
-      
-      if (selectedBlog) {
-        // Update existing blog
-        const response = await fetch(`${baseUrl}/blogs/admin/${selectedBlog.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(newBlog)
-        });
-        const result = await response.json();
-        if (result.success) {
-          showSuccess('Blog updated successfully');
-          setShowEditModal(false);
-          loadBlogs();
-        }
-      } else {
-        // Create new blog
-        const response = await fetch(`${baseUrl}/blogs/admin`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(newBlog)
-        });
-        const result = await response.json();
-        if (result.success) {
-          showSuccess('Blog created successfully');
-          setShowAddModal(false);
-          loadBlogs();
-        }
+      const isUpdate = Boolean(selectedBlog);
+      const url = isUpdate ? `${baseUrl}/blogs/admin/${selectedBlog.id}` : `${baseUrl}/blogs/admin`;
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newBlog)
+      });
+
+      let result = null;
+      try {
+        result = await response.json();
+      } catch {
+        // Ignore JSON parsing errors; we'll handle via response.ok
       }
-      
-      // Reset form
+
+      if (!response.ok || !result?.success) {
+        const message = result?.message || `Failed to ${isUpdate ? 'update' : 'create'} blog`;
+        showError(message);
+        return;
+      }
+
+      showSuccess(isUpdate ? 'Blog updated successfully' : 'Blog created successfully');
+      if (isUpdate) {
+        setShowEditModal(false);
+      } else {
+        setShowAddModal(false);
+      }
+      loadBlogs();
+
+      // Reset form only after a successful save
       setNewBlog({
         title: '',
         excerpt: '',
