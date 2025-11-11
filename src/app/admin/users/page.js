@@ -236,73 +236,70 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Users Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Users List */}
+      <div className="flex flex-col gap-4">
         {filteredUsers.map((user) => (
-          <div key={user.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h6 className="text-sm font-semibold text-gray-900 mb-1" style={{ fontSize: '14px', fontWeight: '600' }}>
+          <div
+            key={user.id}
+            className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 w-full rounded-[10px]"
+          >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h6 className="text-sm font-semibold text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
                   {user.name || 'No Name'}
                 </h6>
-                <p className="text-sm text-gray-600 mb-2">{user.email}</p>
-                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full capitalize">
-                  {user.role}
-                </span>
+                <p className="text-sm text-gray-600 mt-1">{user.email}</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-600">
+                  {user.profile?.first_name && user.profile?.last_name && (
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      <span>{user.profile.first_name} {user.profile.last_name}</span>
+                    </div>
+                  )}
+                  {user.profile?.phone_number && (
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2" />
+                      <span>{user.profile.phone_number}</span>
+                    </div>
+                  )}
+                  {user.profile?.child_name && (
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      <span>Child: {user.profile.child_name} ({user.profile.child_age} years)</span>
+                    </div>
+                  )}
+                  {user.created_at && (
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* User Info */}
-            <div className="space-y-2 mb-4 text-sm text-gray-600">
-              {user.profile?.first_name && user.profile?.last_name && (
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  <span>{user.profile.first_name} {user.profile.last_name}</span>
-                </div>
-              )}
-              {user.profile?.phone_number && (
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2" />
-                  <span>{user.profile.phone_number}</span>
-                </div>
-              )}
-              {user.profile?.child_name && (
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  <span>Child: {user.profile.child_name} ({user.profile.child_age} years)</span>
-                </div>
-              )}
-              {user.created_at && (
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); openFullProfile(user); }}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1 text-sm"
-              >
-                <Eye className="w-4 h-4" />
-                View Profile
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}
-                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-1 text-sm"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-1 text-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
+              <div className="flex flex-wrap justify-start md:justify-end gap-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); openFullProfile(user); }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1 text-sm"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>View Profile</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}
+                  className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center space-x-1 text-sm"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}
+                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-1 text-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              </div>
             </div>
           </div>
         ))}

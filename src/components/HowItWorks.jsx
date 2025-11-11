@@ -104,7 +104,7 @@ export default function HowItWorks() {
       if (diff < smallestDiff) {
         smallestDiff = diff;
         closestIndex = Number(slide.getAttribute("data-slide-index") || 0);
-      }
+    }
     });
 
     setCurrentSlide(closestIndex);
@@ -126,7 +126,7 @@ export default function HowItWorks() {
     });
     requestAnimationFrame(() => {
       isAdjustingRef.current = false;
-    });
+      });
   };
 
   return (

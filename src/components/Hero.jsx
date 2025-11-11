@@ -28,79 +28,11 @@ export default function Hero() {
             border: 'none',
             outline: 'none',
             margin: 0,
-            borderRadius: '10px'
+            borderRadius: '10px',
+            '--hero-desktop-min-height': 'clamp(540px, 60vh, 780px)',
+            '--hero-desktop-image-min-height': '480px'
           }}
         >
-          <style jsx>{`
-            @media (max-width: 767px) {
-              .hero-section { min-height: auto; padding: 16px !important; padding-bottom: 0 !important; }
-              .hero-image-box { 
-                height: clamp(215px, 66vw, 300px); 
-                margin-top: 20px; 
-                margin-bottom: 0; 
-                width: calc(100% + 96px); 
-                left: 50%;
-                transform: translateX(-50%);
-              }
-              .hero-mobile-image { object-fit: cover !important; object-position: center bottom !important; }
-              .hero-badge-text { font-size: 12px; }
-              .hero-badge { margin: 0 auto !important; }
-              .hero-title { font-size: 28px !important; line-height: 0.95 !important; margin-top: 16px !important; text-align: center !important; }
-              .hero-description { font-size: 16px; margin-top: 16px !important; text-align: center !important; }
-              .hero-buttons { margin-top: 24px !important; gap: 12px !important; }
-              .hero-buttons button { padding: 12px 24px !important; font-size: 16px !important; }
-              .hero-buttons button:first-child { max-width: 200px !important; }
-            }
-            @media (min-width: 768px) and (max-width: 1023px) {
-              .hero-section { min-height: clamp(480px, 55vh, 680px); }
-              .hero-image-box { 
-                height: 400px;
-                min-height: 400px;
-              }
-              .hero-title { font-size: 36px !important; line-height: 1.1 !important; }
-              .hero-description { font-size: 17px !important; }
-              .hero-badge-text { font-size: 13px; }
-            }
-            @media (min-width: 1024px) {
-              /* Tighten desktop min-height so zoom-out doesn't leave bottom gap */
-              .hero-section { min-height: clamp(560px, 62vh, 820px); }
-              .hero-image-box { 
-                height: 100%; 
-                min-height: 500px;
-              }
-            }
-            @media (min-width: 1024px) and (max-width: 1280px) {
-              .hero-content-wrapper {
-                position: relative;
-                gap: 32px;
-              }
-              .hero-text {
-                width: 100% !important;
-                max-width: 560px;
-              }
-              .desktop-hero-image {
-                position: relative !important;
-                width: 100% !important;
-                margin-right: 0 !important;
-                margin-bottom: 0 !important;
-                min-height: 420px;
-              }
-              .desktop-hero-image .hero-image-box {
-                position: relative !important;
-                inset: auto !important;
-                height: 100%;
-              }
-            }
-            @media (min-width: 1600px) {
-              .hero-wrapper {
-                max-width: clamp(1400px, 78vw, 1720px);
-              }
-              .hero-section {
-                padding-left: clamp(50px, 6vw, 90px) !important;
-                padding-right: clamp(50px, 6vw, 90px) !important;
-              }
-            }
-          `}</style>
           <div className="flex flex-col md:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
             {/* Left: Text */}
             <div className="hero-text flex flex-col justify-center md:w-[45%] md:order-1 md:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
@@ -121,7 +53,7 @@ export default function Hero() {
               <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button
                   onClick={handleGetStartedClick}
-                  className="w-full sm:w-fit inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
+                  className="inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
                   style={{ backgroundColor: '#3f2e73' }}
                   type="button"
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -132,7 +64,7 @@ export default function Hero() {
                 <button
                   type="button"
                   onClick={handleHowItWorksClick}
-                  className="w-full sm:w-fit inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative cursor-pointer"
+                  className="inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative cursor-pointer"
                 >
                   <span className="relative">
                     How does it work?
@@ -173,7 +105,7 @@ export default function Hero() {
             </div>
 
             {/* Desktop Image */}
-            <div className="desktop-hero-image hidden md:block md:w-[55%] md:h-full md:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: '500px', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
+            <div className="desktop-hero-image hidden md:block md:w-[55%] md:h-full md:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: 'var(--hero-desktop-image-min-height)', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
               {/* Responsive image box aligned to bottom of column */}
               <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image

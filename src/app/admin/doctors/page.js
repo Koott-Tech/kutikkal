@@ -19,6 +19,36 @@ import PsychologistCalendarView from '@/components/PsychologistCalendarView';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 
+const getDoctorImageUrl = (doctor) => {
+  if (!doctor) return null;
+
+  const possibleFields = [
+    doctor.profile_image_url,
+    doctor.cover_image_url,
+    doctor.profile_image,
+    doctor.photo_url,
+    doctor.avatar_url,
+    doctor.image_url,
+    doctor.image,
+  ];
+
+  for (const field of possibleFields) {
+    if (typeof field === 'string' && field.trim()) {
+      return field;
+    }
+  }
+
+  if (doctor.photos && Array.isArray(doctor.photos) && doctor.photos.length > 0) {
+    return doctor.photos.find(Boolean);
+  }
+
+  if (doctor.media && doctor.media.profile && doctor.media.profile.url) {
+    return doctor.media.profile.url;
+  }
+
+  return null;
+};
+
 export default function DoctorsPage() {
   const { showError, showSuccess } = useNotification();
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -244,44 +274,52 @@ export default function DoctorsPage() {
         </div>
       </div>
 
-      {/* Doctors Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Doctors List */}
+      <div className="flex flex-col gap-4">
         {filteredDoctors.map((doctor) => (
-          <div key={doctor.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="text-lg font-semibold text-gray-900 mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
-                  {doctor.name || 'No Name'}
-                </div>
-                <p className="text-sm text-gray-600 mb-2">{doctor.email}</p>
-                {doctor.area_of_expertise && Array.isArray(doctor.area_of_expertise) && doctor.area_of_expertise.length > 0 && (
-                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                    {doctor.area_of_expertise[0]}
-                  </span>
+          <div
+            key={doctor.id}
+            className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 w-full rounded-[10px]"
+          >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {getDoctorImageUrl(doctor) ? (
+                    <img
+                      src={getDoctorImageUrl(doctor)}
+                      alt={doctor.name || 'Doctor photo'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserCheck className="h-6 w-6 text-gray-500" />
                 )}
-              </div>
             </div>
 
-            {/* Availability Status */}
-            <div className="mb-4">
+                <div className="flex-1">
+                  <h6 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 600 }}>
+                    {doctor.name || 'No Name'}
+                  </h6>
+                  <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
+                  <div className="mt-3 text-sm">
               {doctor.availability && doctor.availability.length > 0 ? (
-                <div className="flex items-center text-sm text-green-600">
+                      <span className="flex items-center text-green-600">
                   <Clock className="h-4 w-4 mr-2" />
                   Available for sessions
-                </div>
+                      </span>
               ) : (
-                <div className="flex items-center text-sm text-gray-500">
+                      <span className="flex items-center text-gray-500">
                   <Clock className="h-4 w-4 mr-2" />
                   No availability schedule set
+                      </span>
+                    )}
+                  </div>
                 </div>
-              )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-start md:justify-end gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); openFullProfile(doctor); }}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center text-sm"
+                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center text-sm"
                 style={{ gap: '8px' }}
               >
                 <Eye className="w-4 h-4" />
@@ -289,7 +327,7 @@ export default function DoctorsPage() {
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center text-sm"
+                  className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center text-sm"
                 style={{ gap: '8px' }}
               >
                 <Calendar className="w-4 h-4" />
@@ -297,7 +335,7 @@ export default function DoctorsPage() {
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }}
-                className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center text-sm"
+                  className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center text-sm"
                 style={{ gap: '8px' }}
               >
                 <Edit className="w-4 h-4" />
@@ -305,12 +343,13 @@ export default function DoctorsPage() {
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDeleteDoctor(doctor); }}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center text-sm"
+                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center text-sm"
                 style={{ gap: '8px' }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
               </button>
+              </div>
             </div>
           </div>
         ))}

@@ -418,33 +418,10 @@ export default function Header() {
   return (
     <>
     <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
-      <style jsx>{`
-        @media (max-width: 767px) {
-          .header-logo-nav-gap {
-            gap: 24px !important;
-          }
-          .header-container {
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-          }
-          .header-main {
-            justify-content: space-between !important;
-          }
-        }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .header-container {
-            padding-left: 24px !important;
-            padding-right: 24px !important;
-          }
-          .header-logo-nav-gap {
-            gap: 16px !important;
-          }
-        }
-      `}</style>
-      <div className="w-full pl-[50px] pr-[50px] header-container">
-        <div className="flex h-16 items-center justify-between header-main">
+      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-[50px]">
+        <div className="flex h-16 items-center justify-between">
           {/* Left group: Brand + Nav */}
-          <div className="flex items-center gap-8 header-logo-nav-gap">
+          <div className="flex items-center gap-5 lg:gap-8">
             <div className="flex items-center">
               <button 
                 onClick={handleHomeClick}
