@@ -650,14 +650,12 @@ export default function BlogsPage() {
                           >
                             <Edit className="h-4 w-4" />
                           </button>
-                          {(hasRole('superadmin')) && (
                             <button
                               onClick={() => handleDeleteClick(blog)}
                               className="text-red-600 hover:text-red-900"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                          )}
                         </div>
                       </td>
                     </tr>

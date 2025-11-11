@@ -4,40 +4,46 @@ import HelpFaq from '@/components/HelpFaq';
 import ScrollToTop from '@/components/ScrollToTop';
 import BenefitsSection from '@/components/BenefitsSection';
 import TherapyTypesSplit from '@/components/TherapyTypesSplit';
-import TherapistCarousel from '@/components/TherapistCarousel';
 import AssessmentInfoCard from '@/components/AssessmentInfoCard';
-import NextDynamic from 'next/dynamic';
-const AssessmentBookingModal = NextDynamic(() => import('@/components/AssessmentBookingModal'), { ssr: false });
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
-import { publicApi } from '@/lib/backendApi';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-async function fetchAssessment(slug) {
+async function fetchAssessment(slug, { preview = false } = {}) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/assessments/${slug}`, {
-      cache: 'no-store'
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const previewSuffix = preview ? '?preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
     });
+
     if (response.ok) {
-      const data = await response.json();
-      if (data.success) return data.message;
+      const json = await response.json();
+      if (json?.success) {
+        const payload = json.data ?? json.message ?? json.assessment ?? json.result ?? json;
+        if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+          if (payload.assessment && typeof payload.assessment === 'object' && !Array.isArray(payload.assessment)) {
+            return payload.assessment;
+          }
+          return payload;
+        }
+      }
     }
-  } catch (e) {
-    // non-blocking
+  } catch (error) {
+    console.error('Error fetching assessment:', error);
   }
+
   return null;
 }
 
-export default async function AssessmentDynamicPage({ params }) {
+export default async function AssessmentDynamicPage({ params, searchParams }) {
   const { slug } = await params;
-  const data = await fetchAssessment(slug);
-
-  // Fetch therapists (6 cards)
-  const therapistsData = await publicApi.getPsychologists().catch(() => ({ data: { psychologists: [] } }));
-  const therapists = therapistsData?.data?.psychologists?.slice(0, 6) || [];
+  const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
+  const data = await fetchAssessment(slug, { preview: isPreview });
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';

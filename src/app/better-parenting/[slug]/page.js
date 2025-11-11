@@ -10,33 +10,80 @@ import InfoCards from '@/components/InfoCards';
 import VideosShowcase from '@/components/VideosShowcase';
 import Reviews from '@/components/Reviews';
 import TherapistCarousel from '@/components/TherapistCarousel';
-import { publicApi } from '@/lib/backendApi';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-async function fetchPage(slug) {
+async function fetchBetterParentingPage(slug, { preview = false } = {}) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/better-parenting/${slug}`, { cache: 'no-store' });
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const previewSuffix = preview ? '?preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/better-parenting/${slug}${previewSuffix}`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+
     if (response.ok) {
-      const data = await response.json();
-      if (data.success) return data.message;
+      const json = await response.json();
+      if (json?.success) {
+        const payload = json.data ?? json.message ?? json.page ?? json.result ?? json;
+        if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+          if (payload.page && typeof payload.page === 'object' && !Array.isArray(payload.page)) {
+            return payload.page;
+          }
+          return payload;
+        }
+      }
     }
-  } catch (e) {}
+  } catch (error) {
+    console.error('Error fetching better parenting page:', error);
+  }
+
   return null;
 }
 
-export default async function BetterParentingDynamicPage({ params }) {
-  const { slug } = await params;
-  const data = await fetchPage(slug);
+async function fetchPublicTherapists(limit = 6) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const response = await fetch(`${baseUrl}/api/public/psychologists`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
 
-  // Fetch therapists (6 cards)
-  const therapistsData = await publicApi.getPsychologists().catch(() => ({ data: { psychologists: [] } }));
-  const therapists = therapistsData?.data?.psychologists?.slice(0, 6) || [];
+    if (response.ok) {
+      const json = await response.json();
+      const psychologists = json?.data?.psychologists || json?.message?.psychologists || json?.psychologists || [];
+      if (Array.isArray(psychologists)) {
+        return psychologists.slice(0, limit);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching public psychologists:', error);
+  }
+
+  return [];
+}
+
+export default async function BetterParentingDynamicPage({ params, searchParams }) {
+  const { slug } = await params;
+  const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
+  const data = await fetchBetterParentingPage(slug, { preview: isPreview });
+
+  if (!data) {
+    return (
+      <div className="px-6 py-16 text-center">
+        <h3 className="text-2xl font-medium">Program coming soon</h3>
+        <p className="mt-2 text-gray-600">We couldn't load this Better Parenting page right now. Please try another topic or check back shortly.</p>
+      </div>
+    );
+  }
+
+  const therapists = await fetchPublicTherapists(6);
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Better Parenting');
   const subtext = data?.hero_subtext || '';
   const imageUrl = data?.hero_image_url || '';
+  const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
 
   return (
     <div>
@@ -48,7 +95,7 @@ export default async function BetterParentingDynamicPage({ params }) {
           subtext,
           ctaText: data?.hero_cta_text || '',
           imageUrl,
-          features: []
+          features: heroFeatures
         }}
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />

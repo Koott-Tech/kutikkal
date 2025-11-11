@@ -7,7 +7,6 @@ import TherapyTypesSplit from '@/components/TherapyTypesSplit';
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
-import { publicApi } from '@/lib/backendApi';
 // Link replaced with plain anchor to avoid client navigation context during SSR
 import HelpFaq from '@/components/HelpFaq';
 import CounsellingNotFound from '@/components/CounsellingNotFound';
@@ -36,39 +35,43 @@ const FALLBACK_META = {
   },
 };
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params, searchParams }) {
   const { slug } = await params;
+  const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
   
     try {
     // Try to fetch from API for dynamic metadata
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/counselling/${slug}`, {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const previewSuffix = isPreview ? '?preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
       cache: 'no-store',
       next: { revalidate: 0 }
     });
     
     if (response.ok) {
       const data = await response.json();
-      if (data.success && data.message) {
-        const service = data.message;
-        // Only use fields that exist in database
-        const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
-        const description = service.hero_subtext || 'Specialized counselling services for children and families.';
-        
-        return {
-          title,
-          description,
-          openGraph: {
+      if (data?.success) {
+        const service = data.data || data.message;
+        if (service && typeof service === 'object' && !Array.isArray(service)) {
+          const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
+          const description = service.hero_subtext || 'Specialized counselling services for children and families.';
+          
+          return {
             title,
             description,
-            type: 'website',
-            siteName: 'Little Care',
-          },
-          twitter: {
-            card: 'summary_large_image',
-            title,
-            description,
-          },
-        };
+            openGraph: {
+              title,
+              description,
+              type: 'website',
+              siteName: 'Little Care',
+            },
+            twitter: {
+              card: 'summary_large_image',
+              title,
+              description,
+            },
+          };
+        }
       }
     }
   } catch (error) {
@@ -84,16 +87,21 @@ export async function generateMetadata({ params }) {
   return meta;
 }
 
-async function fetchCounsellingService(slug) {
+async function fetchCounsellingService(slug, { preview = false } = {}) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/counselling/${slug}`, {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+    const previewSuffix = preview ? '?preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
       cache: 'no-store'
     });
     
     if (response.ok) {
       const data = await response.json();
-      if (data.success) {
-        return data.message;
+      if (data?.success) {
+        const service = data.data || data.message;
+        if (service && typeof service === 'object' && !Array.isArray(service)) {
+          return service;
+        }
       }
     }
   } catch (error) {
@@ -103,8 +111,33 @@ async function fetchCounsellingService(slug) {
   return null;
 }
 
-export default async function CounsellingDynamicPage({ params }) {
+
+
+async function fetchPublicTherapists(limit = 6) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+    const response = await fetch(`${baseUrl}/api/public/psychologists`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const psychologists = data?.data?.psychologists || data?.message?.psychologists || data?.psychologists || [];
+      if (Array.isArray(psychologists)) {
+        return psychologists.slice(0, limit);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching public psychologists:', error);
+  }
+
+  return [];
+}
+
+export default async function CounsellingDynamicPage({ params, searchParams }) {
   const { slug } = await params;
+  const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
 
   // Guard for excluded roots if accessed directly
   if (EXCLUDED.has(slug)) {
@@ -117,15 +150,14 @@ export default async function CounsellingDynamicPage({ params }) {
   }
 
   // Try to fetch from CMS
-  const serviceData = await fetchCounsellingService(slug);
+  const serviceData = await fetchCounsellingService(slug, { preview: isPreview });
   
   if (!serviceData) {
     return <CounsellingNotFound slug={slug} />;
   }
 
   // Fetch therapists (6 cards)
-  const therapistsData = await publicApi.getPsychologists().catch(() => ({ data: { psychologists: [] } }));
-  const therapists = therapistsData?.data?.psychologists?.slice(0, 6) || [];
+  const therapists = await fetchPublicTherapists(6);
 
   // Render with CMS data - with safe fallbacks
   return (

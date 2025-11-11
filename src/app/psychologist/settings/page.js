@@ -218,13 +218,13 @@ export default function PsychologistSettings() {
     console.log('🔗 Client ID:', clientId);
     console.log('🔗 Redirect URI:', redirectUri);
     
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
     `client_id=${encodeURIComponent(clientId)}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    `&response_type=code` +
-    `&scope=${encodeURIComponent(scope)}` +
-    `&access_type=offline` +
-    `&prompt=consent`;
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=code` +
+      `&scope=${encodeURIComponent(scope)}` +
+      `&access_type=offline` +
+      `&prompt=consent`;
     
     console.log('🔗 Full Auth URL:', authUrl);
     window.location.href = authUrl;

@@ -261,11 +261,18 @@ export default function BlogPost({ slug }) {
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     loadBlogPost();
     loadLatestBlogs();
   }, [slug]);
+
+  useEffect(() => {
+    if (notFound) {
+      router.replace('/blog');
+    }
+  }, [notFound, router]);
 
   const loadBlogPost = async () => {
     try {
@@ -278,8 +285,13 @@ export default function BlogPost({ slug }) {
         throw new Error(response.message || 'Failed to load blog post');
       }
     } catch (err) {
-      console.error('Error loading blog post:', err);
-      setError(err.message);
+      if (err?.message && err.message.toLowerCase().includes('not found')) {
+        setNotFound(true);
+        setError('Article not found');
+      } else {
+        console.error('Error loading blog post:', err);
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -397,11 +409,11 @@ export default function BlogPost({ slug }) {
         {/* Featured Image */}
         {blogPost.featured_image_url && (
           <div className="mb-8">
-            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
+            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
               <img
                 src={blogPost.featured_image_url}
             alt={blogPost.title}
-                className="w-full h-full object-cover"
+                className="max-h-full w-full object-contain"
           />
         </div>
         </div>

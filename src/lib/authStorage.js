@@ -17,21 +17,39 @@ const safeParse = (value) => {
   }
 };
 
+const getLocalStorage = () => {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+    return null;
+  }
+  return window.localStorage;
+};
+
+const getSessionStorage = () => {
+  if (typeof window === 'undefined' || typeof window.sessionStorage === 'undefined') {
+    return null;
+  }
+  return window.sessionStorage;
+};
+
 const clearLocal = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-  localStorage.removeItem(REMEMBER_UNTIL_KEY);
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(LEGACY_TOKEN_KEY);
-  localStorage.removeItem(LEGACY_USER_KEY);
+  const storage = getLocalStorage();
+  if (!storage) return;
+  storage.removeItem(TOKEN_KEY);
+  storage.removeItem(USER_KEY);
+  storage.removeItem(REMEMBER_UNTIL_KEY);
+  storage.removeItem(ACCESS_TOKEN_KEY);
+  storage.removeItem(LEGACY_TOKEN_KEY);
+  storage.removeItem(LEGACY_USER_KEY);
 };
 
 const clearSession = () => {
-  sessionStorage.removeItem(TOKEN_KEY);
-  sessionStorage.removeItem(USER_KEY);
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  sessionStorage.removeItem(LEGACY_TOKEN_KEY);
-  sessionStorage.removeItem(LEGACY_USER_KEY);
+  const storage = getSessionStorage();
+  if (!storage) return;
+  storage.removeItem(TOKEN_KEY);
+  storage.removeItem(USER_KEY);
+  storage.removeItem(ACCESS_TOKEN_KEY);
+  storage.removeItem(LEGACY_TOKEN_KEY);
+  storage.removeItem(LEGACY_USER_KEY);
 };
 
 export const clearAuthData = () => {
@@ -45,50 +63,58 @@ export const storeAuthData = ({ token, user, remember }) => {
   clearAuthData();
 
   const serializedUser = JSON.stringify(user ?? {});
+
   if (remember) {
+    const local = getLocalStorage();
+    if (!local) return;
     const expiresAt = Date.now() + REMEMBER_ME_DURATION_MS;
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(ACCESS_TOKEN_KEY, token);
-    localStorage.setItem(LEGACY_TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, serializedUser);
-    localStorage.setItem(LEGACY_USER_KEY, serializedUser);
-    localStorage.setItem(REMEMBER_UNTIL_KEY, String(expiresAt));
+    local.setItem(TOKEN_KEY, token);
+    local.setItem(ACCESS_TOKEN_KEY, token);
+    local.setItem(LEGACY_TOKEN_KEY, token);
+    local.setItem(USER_KEY, serializedUser);
+    local.setItem(LEGACY_USER_KEY, serializedUser);
+    local.setItem(REMEMBER_UNTIL_KEY, String(expiresAt));
   } else {
-    sessionStorage.setItem(TOKEN_KEY, token);
-    sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
-    sessionStorage.setItem(LEGACY_TOKEN_KEY, token);
-    sessionStorage.setItem(USER_KEY, serializedUser);
-    sessionStorage.setItem(LEGACY_USER_KEY, serializedUser);
+    const session = getSessionStorage();
+    if (!session) return;
+    session.setItem(TOKEN_KEY, token);
+    session.setItem(ACCESS_TOKEN_KEY, token);
+    session.setItem(LEGACY_TOKEN_KEY, token);
+    session.setItem(USER_KEY, serializedUser);
+    session.setItem(LEGACY_USER_KEY, serializedUser);
   }
 };
 
 export const loadAuthData = () => {
   if (typeof window === 'undefined') return null;
 
+  const local = getLocalStorage();
+  const session = getSessionStorage();
+
   const now = Date.now();
-  const rememberUntilRaw = localStorage.getItem(REMEMBER_UNTIL_KEY);
+  const rememberUntilRaw = local?.getItem(REMEMBER_UNTIL_KEY);
 
   if (rememberUntilRaw) {
     const rememberUntil = Number(rememberUntilRaw);
     const rememberedToken =
-      localStorage.getItem(TOKEN_KEY) ||
-      localStorage.getItem(ACCESS_TOKEN_KEY) ||
-      localStorage.getItem(LEGACY_TOKEN_KEY);
-    const rememberedUser = safeParse(localStorage.getItem(USER_KEY));
+      local?.getItem(TOKEN_KEY) ||
+      local?.getItem(ACCESS_TOKEN_KEY) ||
+      local?.getItem(LEGACY_TOKEN_KEY);
+    const rememberedUser = safeParse(local?.getItem(USER_KEY));
 
     if (!Number.isFinite(rememberUntil) || now > rememberUntil || !rememberedToken || !rememberedUser) {
       clearLocal();
     } else {
       return { token: rememberedToken, user: rememberedUser, remember: true };
     }
-  } else {
+  } else if (local) {
     // Legacy persisted credentials without explicit remember flag
     const legacyToken =
-      localStorage.getItem(TOKEN_KEY) ||
-      localStorage.getItem(ACCESS_TOKEN_KEY) ||
-      localStorage.getItem(LEGACY_TOKEN_KEY);
+      local.getItem(TOKEN_KEY) ||
+      local.getItem(ACCESS_TOKEN_KEY) ||
+      local.getItem(LEGACY_TOKEN_KEY);
     const legacyUser = safeParse(
-      localStorage.getItem(USER_KEY) || localStorage.getItem(LEGACY_USER_KEY)
+      local.getItem(USER_KEY) || local.getItem(LEGACY_USER_KEY)
     );
     if (legacyToken && legacyUser) {
       return { token: legacyToken, user: legacyUser, remember: true };
@@ -96,11 +122,11 @@ export const loadAuthData = () => {
   }
 
   const sessionToken =
-    sessionStorage.getItem(TOKEN_KEY) ||
-    sessionStorage.getItem(ACCESS_TOKEN_KEY) ||
-    sessionStorage.getItem(LEGACY_TOKEN_KEY);
+    session?.getItem(TOKEN_KEY) ||
+    session?.getItem(ACCESS_TOKEN_KEY) ||
+    session?.getItem(LEGACY_TOKEN_KEY);
   const sessionUser = safeParse(
-    sessionStorage.getItem(USER_KEY) || sessionStorage.getItem(LEGACY_USER_KEY)
+    session?.getItem(USER_KEY) || session?.getItem(LEGACY_USER_KEY)
   );
 
   if (sessionToken && sessionUser) {
