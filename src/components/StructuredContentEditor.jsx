@@ -14,7 +14,8 @@ import {
   Eye,
   EyeOff,
   Upload,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 
 // Utility function to parse markdown-style links in text
@@ -58,18 +59,91 @@ const parseInlineLinks = (text) => {
   return parts.length > 0 ? parts : [{ type: 'text', content: text }];
 };
 
+const DEFAULT_TEXT_STYLE = () => ({
+  bold: false,
+  italic: false,
+  underline: false,
+});
+
+const TOOLBAR_BUTTON_BASE =
+  'flex items-center justify-center w-full h-10 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-gray-700';
+
+const TOOLBAR_BUTTON_ACCENT = `${TOOLBAR_BUTTON_BASE} !bg-green-50 !border-green-300 !text-green-700 hover:!bg-green-100`;
+
+const TOOLBAR_BUTTON_PRIMARY =
+  'flex items-center justify-center w-full h-10 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors';
+
+const STYLE_BUTTON_BASE =
+  'flex items-center justify-center w-9 h-9 border rounded-md text-sm font-semibold transition-colors';
+
+const STYLE_ACTIVE_CLASSES = 'bg-blue-100 border-blue-400 text-blue-700';
+const STYLE_INACTIVE_CLASSES = 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100';
+
+const getTextStyleClasses = (style = {}) => {
+  const classes = [];
+  if (style.bold) classes.push('font-semibold');
+  if (style.italic) classes.push('italic');
+  if (style.underline) classes.push('underline');
+  return classes.join(' ');
+};
+
 const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
   const [showPreview, setShowPreview] = useState(false);
+
+  const toggleStyle = (index, styleKey, targetKey = 'style') => {
+    const block = content[index];
+    const currentStyle = {
+      ...DEFAULT_TEXT_STYLE(),
+      ...(block?.[targetKey] || {}),
+    };
+    const updatedStyle = {
+      ...currentStyle,
+      [styleKey]: !currentStyle[styleKey],
+    };
+    updateBlock(index, {
+      ...block,
+      [targetKey]: updatedStyle,
+    });
+  };
+
+  const renderStyleControls = (style = {}, index, targetKey = 'style') => (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => toggleStyle(index, 'bold', targetKey)}
+        className={`${STYLE_BUTTON_BASE} ${style.bold ? STYLE_ACTIVE_CLASSES : STYLE_INACTIVE_CLASSES}`}
+        title="Bold"
+      >
+        B
+      </button>
+      <button
+        type="button"
+        onClick={() => toggleStyle(index, 'italic', targetKey)}
+        className={`${STYLE_BUTTON_BASE} ${style.italic ? STYLE_ACTIVE_CLASSES : STYLE_INACTIVE_CLASSES}`}
+        title="Italic"
+      >
+        I
+      </button>
+      <button
+        type="button"
+        onClick={() => toggleStyle(index, 'underline', targetKey)}
+        className={`${STYLE_BUTTON_BASE} ${style.underline ? STYLE_ACTIVE_CLASSES : STYLE_INACTIVE_CLASSES}`}
+        title="Underline"
+      >
+        U
+      </button>
+    </div>
+  );
 
   const addBlock = (type) => {
     let newBlock = {};
     
     switch (type) {
       case 'paragraph':
-        newBlock = { type: 'paragraph', content: '' };
+        newBlock = { type: 'paragraph', content: '', style: DEFAULT_TEXT_STYLE() };
         break;
       case 'heading':
-        newBlock = { type: 'heading', level: 2, content: '' };
+        newBlock = { type: 'heading', level: 2, content: '', style: DEFAULT_TEXT_STYLE() };
         break;
       case 'image':
         newBlock = { type: 'image', src: '', alt: '', caption: '' };
@@ -79,6 +153,16 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
         break;
       case 'numberedList':
         newBlock = { type: 'numberedList', items: [''] };
+        break;
+      case 'textBox':
+        newBlock = {
+          type: 'textBox',
+          title: '',
+          level: 3,
+          content: '',
+          titleStyle: DEFAULT_TEXT_STYLE(),
+          bodyStyle: DEFAULT_TEXT_STYLE(),
+        };
         break;
       case 'link':
         newBlock = { type: 'link', href: '', text: '', target: '_self' };
@@ -166,7 +250,7 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
             <span className="text-xs font-medium text-gray-500 uppercase">
               {block.type.replace(/([A-Z])/g, ' $1').trim()}
             </span>
-            {block.type === 'heading' && (
+            {(block.type === 'heading' || block.type === 'textBox') && (
               <select
                 value={block.level}
                 onChange={(e) => updateBlock(index, { ...block, level: parseInt(e.target.value) })}
@@ -219,6 +303,7 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows="3"
             />
+            {renderStyleControls(block.style, index)}
             <div className="text-xs text-gray-500">
               <p className="mb-2">💡 <strong>Tip:</strong> To add links within text, use this format:</p>
               <code className="bg-gray-100 px-2 py-1 rounded text-xs">
@@ -236,6 +321,32 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
             placeholder={`Enter H${block.level} heading...`}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold"
           />
+        )}
+        {block.type === 'heading' && (
+          <div className="mt-2">
+            {renderStyleControls(block.style, index)}
+          </div>
+        )}
+
+        {block.type === 'textBox' && (
+          <div className="space-y-3">
+            <input
+              type="text"
+              value={block.title}
+              onChange={(e) => updateBlock(index, { ...block, title: e.target.value })}
+              placeholder={`Enter H${block.level || 3} heading...`}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold"
+            />
+            {renderStyleControls(block.titleStyle, index, 'titleStyle')}
+            <textarea
+              value={block.content}
+              onChange={(e) => updateBlock(index, { ...block, content: e.target.value })}
+              placeholder="Add supporting paragraph text..."
+              rows="4"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            {renderStyleControls(block.bodyStyle, index, 'bodyStyle')}
+          </div>
         )}
 
         {block.type === 'image' && (
@@ -432,7 +543,7 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
         {content.map((block, index) => (
           <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
             {block.type === 'paragraph' && (
-              <p className="text-gray-700 leading-relaxed">
+              <p className={`text-gray-700 leading-relaxed ${getTextStyleClasses(block.style)}`}>
                 {(() => {
                   const parts = parseInlineLinks(block.content);
                   return parts.map((part, partIndex) => {
@@ -458,7 +569,7 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
             {block.type === 'heading' && (() => {
               const HeadingTag = `h${block.level}`;
               return (
-                <HeadingTag className="text-gray-900 font-semibold">
+                <HeadingTag className={`text-gray-900 font-semibold ${getTextStyleClasses(block.style)}`}>
                   {block.content}
                 </HeadingTag>
               );
@@ -512,6 +623,41 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
                 )}
               </blockquote>
             )}
+
+            {block.type === 'textBox' && (() => {
+              const HeadingTag = `h${block.level || 3}`;
+              const rawBody = parseInlineLinks(block.content || '');
+              const bodyParts = Array.isArray(rawBody)
+                ? rawBody
+                : [{ type: 'text', content: rawBody || '' }];
+              return (
+                <div className="space-y-2">
+                  {block.title && (
+                    <HeadingTag className={`text-gray-900 font-semibold ${getTextStyleClasses(block.titleStyle)}`}>
+                      {block.title}
+                    </HeadingTag>
+                  )}
+                  <p className={`text-gray-700 leading-relaxed ${getTextStyleClasses(block.bodyStyle)}`}>
+                    {bodyParts.map((part, partIndex) => {
+                      if (part.type === 'link') {
+                        return (
+                          <a
+                            key={partIndex}
+                            href={part.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline font-medium"
+                          >
+                            {part.text}
+                          </a>
+                        );
+                      }
+                      return <span key={partIndex}>{part.content}</span>;
+                    })}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         ))}
       </div>
@@ -519,99 +665,106 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:flex lg:items-start lg:gap-6">
       {/* Toolbar */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 bg-gray-50 rounded-lg gap-4">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="lg:sticky lg:top-24 lg:self-start w-full lg:w-[72px] flex flex-col items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex flex-col items-center gap-2 w-full">
           <button
             type="button"
             onClick={() => addBlock('paragraph')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Paragraph"
           >
-            <Type className="h-4 w-4 mr-2" />
-            Paragraph
+            <Type className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('heading')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Heading"
           >
-            <Heading className="h-4 w-4 mr-2" />
-            Heading
+            <Heading className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('image')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Image"
           >
-            <Image className="h-4 w-4 mr-2" />
-            Image
+            <Image className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('bulletList')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Bullet list"
           >
-            <List className="h-4 w-4 mr-2" />
-            Bullet List
+            <List className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('numberedList')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Numbered list"
           >
-            <List className="h-4 w-4 mr-2" />
-            Numbered List
+            <List className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('link')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Link"
           >
-            <Link className="h-4 w-4 mr-2" />
-            Link
+            <Link className="h-5 w-5" aria-hidden />
           </button>
           
           <button
             type="button"
             onClick={() => addBlock('quote')}
-            className="flex items-center px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={TOOLBAR_BUTTON_BASE}
+            title="Quote"
           >
-            <Quote className="h-4 w-4 mr-2" />
-            Quote
+            <Quote className="h-5 w-5" aria-hidden />
           </button>
           
-          <div className="border-l border-gray-300 mx-2 h-6"></div>
+          <button
+            type="button"
+            onClick={() => addBlock('textBox')}
+            className={TOOLBAR_BUTTON_BASE}
+            title="Text box"
+          >
+            <FileText className="h-5 w-5" aria-hidden />
+          </button>
           
           <button
             type="button"
             onClick={insertInlineLink}
-            className="flex items-center px-3 py-2 text-sm bg-green-50 border border-green-300 text-green-700 rounded-lg hover:bg-green-100"
+            className={TOOLBAR_BUTTON_ACCENT}
+            title="Quick link"
           >
-            <Link className="h-4 w-4 mr-2" />
-            Quick Link
+            <Link className="h-5 w-5" aria-hidden />
           </button>
         </div>
         
-        <div className="flex justify-end">
+        <div className="flex justify-end w-full">
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={TOOLBAR_BUTTON_PRIMARY}
+            title={showPreview ? 'Switch to edit mode' : 'Switch to preview mode'}
           >
-            {showPreview ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-            {showPreview ? 'Edit' : 'Preview'}
+            {showPreview ? <EyeOff className="h-5 w-5" aria-hidden /> : <Eye className="h-5 w-5" aria-hidden />}
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="min-h-[500px]">
+      <div className="min-h-[500px] flex-1">
         {showPreview ? renderPreview() : (
           <div className="space-y-4">
             {content.length === 0 ? (

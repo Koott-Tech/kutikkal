@@ -45,7 +45,7 @@ export default function AboutStats() {
             {/* Right: Image */}
             <div className="relative order-2 md:order-2 h-[60vh] md:h-full">
               <Image
-                src="/rightside5th.png"
+                src="/About Us Card 1.webp"
                 alt="Person enjoying a cup"
                 fill
                 className="object-cover"

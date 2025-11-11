@@ -8,9 +8,9 @@ export default function WhyWereHere() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
-              This is where Little Care began
-            </h2>
+            <h3 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
+             We started with a wish <br /> to care a little deeper
+            </h3>
             
             <div className="space-y-6 text-[1.125rem] md:text-base text-gray-700 leading-[150%] md:leading-relaxed tracking-[-0.03375rem] md:tracking-tight">
               <p>
@@ -45,7 +45,7 @@ export default function WhyWereHere() {
             <div className="relative w-full aspect-square rounded-2xl">
               <div className="absolute inset-8 rounded-xl overflow-hidden">
                 <Image
-                  src="/aboutus1.webp"
+                  src="/About Us Card 1.webp"
                   alt="Why We're Here"
                   fill
                   className="object-contain"

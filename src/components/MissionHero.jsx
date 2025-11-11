@@ -20,12 +20,11 @@ export default function MissionHero() {
             className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[110%] md:leading-tight mb-6 max-w-4xl tracking-[-0.195rem]"
             style={{ color: '#1d1733' }}
           >
-            Our mission is to make<br />
-            mental healthcare work for everyone.
+            Our mission is to make care <br /> feel closer, calmer, and real.
           </h1>
           
           <p className="text-[1rem] md:text-lg lg:text-xl text-gray-700 mb-8 max-w-4xl leading-[1.3rem] md:leading-relaxed">
-            Creating a future where high-quality mental healthcare is the standard for all.
+          Because every child deserves care that truly connects.
           </p>
         </div>
 
@@ -34,11 +33,11 @@ export default function MissionHero() {
           <button 
             type="button"
             onClick={handleGetStartedClick}
-            className="px-8 py-3 bg-[#3f2e73] text-white font-normal text-sm rounded-full transition-colors duration-200 shadow-lg"
+            className="px-8 py-3 bg-[#3f2e73] text-white font-semibold text-sm rounded-full transition-colors duration-200 shadow-lg"
             onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1d1733'; }}
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; }}
           >
-            Get Started
+            Explore how we can help
           </button>
         </div>
 

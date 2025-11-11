@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Footer({ isHomePage = false, isCmsPage = false }) {
     const [openSections, setOpenSections] = useState({});
@@ -18,6 +19,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
         projective: []
     });
     const [betterParentingMenu, setBetterParentingMenu] = useState([]);
+    const pathname = usePathname();
 
     const toggleSection = (section) => {
         setOpenSections(prev => ({
@@ -182,9 +184,15 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                         </p>
                         <div className="flex items-center justify-center gap-3">
                             <a
-                                href="https://wa.me/"
+                                href={pathname === '/about' ? "/#choose-your-guide" : "https://wa.me/"}
                                 className="px-5 py-2.5 rounded-3xl font-semibold transition-all duration-200"
                                 style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
+                                onClick={(e) => {
+                                    if (pathname === '/about') {
+                                        e.preventDefault();
+                                        window.location.href = '/#choose-your-guide';
+                                    }
+                                }}
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
                             >

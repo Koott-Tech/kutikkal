@@ -59,8 +59,8 @@ export default function HelpFaq({ cmsData = null }) {
 
         if (cmsData.faqs.length > 3) {
           customSections.push({
-            title: "Understanding Therapy",
-            items: cmsData.faqs.slice(3, 6).map(faq => ({
+          title: "Understanding Therapy",
+          items: cmsData.faqs.slice(3, 6).map(faq => ({
               q: faq.question,
               a: faq.answer
             }))

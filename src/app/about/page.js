@@ -8,12 +8,14 @@ import LeadershipTeam from '@/components/LeadershipTeam';
 export default function About() {
   return (
     <div>
-      
+        <div className="mt-24">
+
       {/* Mission Hero Section */}
       <MissionHero />
-      
+      </div>
       {/* Why We're Here Section */}
-      <WhyWereHere />
+        <WhyWereHere />
+      
       <MeetTheTeam />
       {/* About Stats Section */}
       <AboutStats />
