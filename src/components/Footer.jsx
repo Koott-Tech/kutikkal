@@ -177,10 +177,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                 }}>
                     <div className="text-center max-w-4xl mx-auto">
                         <h4 className="footer-heading mb-2 font-semibold">
-                            Confused where to start?
+                            {pathname === '/about' ? ' We’re  here to listen, guide, and support.' : 'Confused where to start?'}
                         </h4>
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                            Book a free 20 minutes session with our psychologist.
+                            {pathname === '/about'
+                                ? 'Care doesn’t end here.'
+                                : 'Book a free 20 minutes session with our psychologist.'}
                         </p>
                         <div className="flex items-center justify-center gap-3">
                             <a
@@ -196,7 +198,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
                             >
-                                WhatsApp Us
+                                {pathname === '/about' ? 'Start Your Care' : 'WhatsApp Us'}
                             </a>
                             <button 
                                 className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
@@ -204,7 +206,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                             >
-                                Book  Now
+                                {pathname === '/about' ? 'Join Our Team' : 'Book  Now'}
                             </button>
                         </div>
                     </div>

@@ -55,7 +55,10 @@ export default function ChooseOptions() {
   };
 
   return (
-    <section className="w-full py-2 px-4 md:px-4 mt-12 md:mt-20">
+    <section
+      id="choose-your-guide"
+      className="w-full py-2 px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
+    >
       <style jsx>{`
         @media (max-width: 479px) {
           .cards-grid {
