@@ -1265,8 +1265,8 @@ export default function CounsellingPageBuilder({
             {/* Therapy Types */}
             {renderEditableElement('types', (
               <TherapyTypesSplit 
-                key={`types-${JSON.stringify(formData.types)}-${formData.right_image_url}-${formData.types_title}`}
-                therapyType="anxiety-sadness" 
+                key={`types-${JSON.stringify(formData.types)}-${formData.right_image_url}-${formData.types_title}-${formData.slug}`}
+                therapyType={formData.slug || 'anxiety-sadness'}
                 cmsData={{
                   title: formData.types_title,
                   types: formData.types,

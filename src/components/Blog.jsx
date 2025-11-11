@@ -131,7 +131,14 @@ export default function Blog() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-semibold text-gray-900 mb-6">
+          <h2
+            className="font-semibold text-gray-900 mb-6"
+            style={{
+              fontSize: '3.5rem',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em'
+            }}
+          >
             Our Blog
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">

@@ -639,7 +639,8 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
           {/* Benefits Section */}
           {renderEditableElement('benefits', (
             <BenefitsSection 
-              therapyType="better-parenting"
+              key={`benefits-${formData.slug}-${JSON.stringify(formData.benefits)}-${formData.benefits_image_url}-${formData.benefits_title}`}
+              therapyType={formData.slug || 'better-parenting'}
               cmsData={{
                 title: formData.benefits_title,
                 benefits: formData.benefits,
@@ -652,7 +653,8 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
           {/* Therapy Types */}
           {renderEditableElement('types', (
             <TherapyTypesSplit 
-              therapyType="better-parenting"
+              key={`types-${formData.slug}-${JSON.stringify(formData.types)}-${formData.right_image_url}-${formData.types_title}`}
+              therapyType={formData.slug || 'better-parenting'}
               cmsData={{
                 title: formData.types_title,
                 types: formData.types,

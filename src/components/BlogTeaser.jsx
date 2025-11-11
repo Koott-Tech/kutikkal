@@ -6,48 +6,52 @@ import { useRouter } from "next/navigation";
 export default function BlogTeaser() {
   const router = useRouter();
 
-  const handleExploreClick = () => {
-    router.push('/blog');
-  };
-
-  const handleBlogClick = (post) => {
-    // Create a URL-friendly slug from the title
-    const slug = post.title.toLowerCase()
-      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/--+/g, '-') // Replace multiple hyphens with single hyphen
-      .trim();
-    
-    // Navigate to the specific blog post page
-    router.push(`/blog/${slug}`);
-  };
-
-  const posts = [
+  const fallbackPosts = [
     {
       src: "/hero.png",
       alt: "Plant leaves",
-      author: "Alex Bachert",
-      date: "May 23, 2025",
+      author_name: "Alex Bachert",
+      published_at: "2025-05-23",
       title: "The benefits of combining therapy and psychiatry",
       highlight: false,
     },
     {
       src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
       alt: "Smiling person",
-      author: "Liz Talago",
-      date: "March 25, 2025",
+      author_name: "Liz Talago",
+      published_at: "2025-03-25",
       title: "How to find a therapist who's a good fit for you",
       highlight: false,
     },
     {
       src: "/rightside5th.png",
       alt: "Person working online",
-      author: "Alex Bachert",
-      date: "May 19, 2025",
+      author_name: "Alex Bachert",
+      published_at: "2025-05-19",
       title: "What are the benefits of doing therapy online?",
       highlight: true,
     },
   ];
+
+  const [posts, setPosts] = useState(fallbackPosts);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleExploreClick = () => {
+    router.push('/blog');
+  };
+
+  const createSlug = (title = "") =>
+    title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/--+/g, '-')
+      .trim();
+
+  const handleBlogClick = (post) => {
+    const slug = post.slug || createSlug(post.title);
+    router.push(`/blog/${slug}`);
+  };
 
   const carouselRef = useRef(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -70,6 +74,36 @@ export default function BlogTeaser() {
       node.removeEventListener("scroll", updateButtons);
       window.removeEventListener("resize", updateButtons);
     };
+  }, []);
+
+  useEffect(() => {
+    const loadBlogs = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+        const response = await fetch(`${baseUrl}/blogs?status=published&limit=3`, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          if (response.status !== 404) {
+            throw new Error('Failed to load blogs');
+          }
+          return;
+        }
+
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data?.blogs) && result.data.blogs.length > 0) {
+          setPosts(result.data.blogs.slice(0, 3));
+        }
+      } catch (error) {
+        console.error('Error fetching latest blogs:', error);
+        // Fallback to default posts already set
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBlogs();
   }, []);
 
   useEffect(() => {
@@ -96,6 +130,7 @@ export default function BlogTeaser() {
   }, []);
 
   const scrollCarousel = (dir) => {
+    if (isLoading) return;
     const node = carouselRef.current;
     if (!node) return;
     const firstSlide = node.firstElementChild;
@@ -228,35 +263,41 @@ export default function BlogTeaser() {
         </div>
 
         <div ref={carouselRef} className="blog-grid mt-24 md:mt-16 lg:mt-20 grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel">
-           {posts.map((post) => (
+           {posts.map((post) => {
+            const imageSrc = post.featured_image_url || post.src || "/hero.png";
+            const author = post.author_name || post.author || "Kuttikal Team";
+            const date = post.published_at || post.created_at || post.date || '';
+            const altText = post.alt || post.title || "Blog cover image";
+
+            return (
             <article 
-              key={post.title} 
-              className="blog-card group w-full max-w-[300px] md:max-w-[340px] mx-auto md:mx-0 cursor-pointer"
+              key={post.id || post.slug || post.title} 
+              className="blog-card w-full max-w-[300px] md:max-w-[340px] mx-auto md:mx-0 cursor-pointer"
               onClick={() => handleBlogClick(post)}
             >
                <div
-                className={`blog-image relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl ${
+               className={`blog-image relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl bg-gray-100 ${
                    post.highlight ? "ring-4 md:ring-8 ring-sky-100" : ""
                  }`}
                >
                 <Image
-                  src={post.src}
-                  alt={post.alt}
+                  src={imageSrc}
+                  alt={altText}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="object-contain"
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
                 />
               </div>
               <div className="blog-meta mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
-                <span className="p2">{post.author}</span>
+                <span className="p2">{author}</span>
                 <span className="px-1 md:px-2 p2">•</span>
-                <span className="p2">{post.date}</span>
+                <span className="p2">{date ? new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}</span>
               </div>
               <h6 className="blog-title mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base">
                 {post.title}
               </h6>
             </article>
-          ))}
+          )})}
         </div>
         <div className="blog-carousel-controls md:hidden px-4">
           <button
