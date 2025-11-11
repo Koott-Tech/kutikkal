@@ -90,7 +90,7 @@ const StructuredContentRenderer = ({ content }) => {
                 <img 
                   src={block.src} 
                   alt={block.alt}
-                  className="w-full max-w-3xl max-h-96 object-cover rounded-lg shadow-md"
+                  className="w-full max-w-[640px] max-h-96 object-cover rounded-lg shadow-md"
                   loading="lazy"
                 />
                 {block.caption && (
@@ -173,29 +173,29 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
           You might also like
         </h6>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {blogs.map((blog) => (
             <Link 
               key={blog.id} 
               href={`/blog/${blog.slug}`}
-              className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100"
+              className="group block bg-white rounded-lg border border-gray-200"
             >
-              <div className="p-6">
+              <div className="space-y-4">
                 {/* Featured Image */}
                 {blog.featured_image_url && (
-                  <div className="mb-4">
+                  <div className="h-36 bg-gray-100">
                     <img
                       src={blog.featured_image_url}
                       alt={blog.title}
-                      className="w-full h-32 object-cover rounded-md group-hover:scale-105 transition-transform duration-200"
+                      className="w-full h-full object-contain rounded-t-lg"
                     />
                   </div>
                 )}
                 
                 {/* Content */}
-                <div>
+                <div className="px-6 pb-6">
                   {/* Title */}
-                  <h6 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-3">
+                  <h6 className="text-lg font-medium text-gray-900 transition-colors line-clamp-2 mb-3 min-h-[3.5rem]">
                     {blog.title}
                   </h6>
                   
@@ -380,12 +380,14 @@ export default function BlogPost({ slug }) {
         {/* Featured Image */}
         {blogPost.featured_image_url && (
           <div className="mb-8">
-            <div className="relative h-[320px] md:h-[380px] rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-              <img
-                src={blogPost.featured_image_url}
-                alt={blogPost.title}
-                className="max-h-full w-full object-contain"
-              />
+            <div className="flex justify-center">
+              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden bg-gray-100">
+                <img
+                  src={blogPost.featured_image_url}
+                  alt={blogPost.title}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
             </div>
           </div>
         )}
@@ -412,7 +414,7 @@ export default function BlogPost({ slug }) {
                       </div>
 
         {/* Latest Blogs Suggestions */}
-        <LatestBlogsSection blogs={latestBlogs} currentSlug={slug} />
+        <LatestBlogsSection blogs={latestBlogs.slice(0, 2)} currentSlug={slug} />
 
       </div>
     </article>

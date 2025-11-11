@@ -128,7 +128,7 @@ export default function Blog() {
 
   return (
     <section className="min-h-screen w-full bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-16 sm:px-24 lg:px-32 py-16">
         {/* Header Section */}
         <div className="text-center mb-16">
           <h2
@@ -156,7 +156,7 @@ export default function Blog() {
                   src={featuredPost.featured_image_url || "/kids.png"}
                   alt={featuredPost.title}
                   fill
-                  className="object-contain transition-transform duration-300"
+                  className="object-cover"
                   priority
                 />
                 
@@ -229,10 +229,10 @@ export default function Blog() {
 
         {/* Blog Posts Grid */}
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
             {filteredPosts.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                <div className="bg-white rounded-xl overflow-hidden py-4 hover:shadow-lg transition-shadow duration-200">
+                <div className="bg-white rounded-xl overflow-hidden py-4 border border-gray-200">
                   {/* Image Container */}
                   <div className="relative h-48 bg-gray-100">
                     <Image
@@ -253,11 +253,11 @@ export default function Blog() {
                   </div>
                   
                   {/* Text Content */}
-                  <div className="p-6 pl-0">
+                  <div className="px-6 pt-6 pb-4">
                     <div className="text-sm text-gray-500 mb-2" style={{ fontWeight: 50 }}>
                       {post.author_name} • {formatDate(post.published_at || post.created_at)}
                     </div>
-                    <h6 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                    <h6 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
                       {post.title}
                     </h6>
                   </div>
