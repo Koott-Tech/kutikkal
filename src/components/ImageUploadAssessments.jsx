@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { getStoredToken } from '@/lib/authStorage';
 
 export default function ImageUploadAssessments({ currentImageUrl, onImageUpload, imageType, slug, label = "Upload Image" }) {
   const [uploading, setUploading] = useState(false);
@@ -33,7 +34,7 @@ export default function ImageUploadAssessments({ currentImageUrl, onImageUpload,
       formData.append('slug', slug);
       formData.append('imageType', imageType);
 
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       if (!token || token === 'null' || token === 'undefined') throw new Error('Not authenticated. Please log in again.');
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/api/assessments/admin/upload-image`, {

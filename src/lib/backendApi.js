@@ -1,3 +1,5 @@
+import { clearAuthData, getStoredToken } from './authStorage';
+
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
 
 // Global refresh token callback - will be set by AuthContext
@@ -48,10 +50,7 @@ const handleResponse = async (response, options = {}) => {
         
         // Clear auth data
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userData');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          clearAuthData();
           
           // Store error message for login page to display
           const errorMsg = isTokenExpired 
@@ -100,10 +99,7 @@ const handleResponse = async (response, options = {}) => {
         case 403:
           // Auto logout on auth errors even if parsing fails
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthData();
             localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
             window.location.href = '/login';
           }
@@ -156,7 +152,7 @@ async function apiRequest(endpoint, options = {}) {
   }
   
   // Get token from localStorage if available
-  let token = typeof window !== 'undefined' ? (localStorage.getItem('authToken') || localStorage.getItem('token')) : null;
+  let token = typeof window !== 'undefined' ? getStoredToken() : null;
   
   if (!options.silent) {
     console.log('🔍 API Request Debug:', {
@@ -728,7 +724,7 @@ export const adminApi = {
   // Upload image (admin)
   async uploadImage(file) {
     const url = `${BACKEND_BASE_URL}/admin/upload/image`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token = typeof window !== 'undefined' ? getStoredToken() : null;
     const formData = new FormData();
     formData.append('file', file);
     const response = await fetch(url, {

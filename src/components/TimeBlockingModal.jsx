@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Calendar, Clock, AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNotification } from "../contexts/NotificationContext";
+import { getStoredToken } from "@/lib/authStorage";
 
 export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
   const { showError, showSuccess } = useNotification();
@@ -51,7 +52,7 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
   // Fetch all availability for current month to highlight dates with slots
   const fetchMonthAvailability = async () => {
     try {
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) return;
 
       const year = currentMonth.getFullYear();
@@ -174,7 +175,7 @@ export default function TimeBlockingModal({ isOpen, onClose, onBlock }) {
       console.log('Fetching available slots for date:', date);
       
       setIsLoadingSlots(true);
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) {
         console.log('No token found');
         showError('Please log in to view available slots');

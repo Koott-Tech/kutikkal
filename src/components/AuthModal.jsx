@@ -13,7 +13,7 @@ export default function AuthModal({
   onAuthSuccess,
   onRequireContactInfo
 }) {
-  const { login } = useAuth();
+  const { login, isRemembered } = useAuth();
 
   const [activeTab, setActiveTab] = useState(defaultTab); // 'login' | 'signup'
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +25,7 @@ export default function AuthModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(isRemembered ?? false);
 
   // Signup form state
   const [signup, setSignup] = useState({ email: "", password: "", confirmPassword: "" });
@@ -44,6 +45,7 @@ export default function AuthModal({
     setShowForgot(false);
     setForgotStep(1);
     onClose?.();
+    setRememberMe(false);
   }, [onClose]);
 
   useEffect(() => {
@@ -56,6 +58,12 @@ export default function AuthModal({
     return () => cancelAnimationFrame(t);
   }, [open]);
 
+  useEffect(() => {
+    if (open) {
+      setRememberMe(!!isRemembered);
+    }
+  }, [open, isRemembered]);
+
   const handleLogin = async (e) => {
     e?.preventDefault?.();
     setIsLoading(true);
@@ -65,7 +73,7 @@ export default function AuthModal({
       const loggedInUser = data?.data?.user;
       const token = data?.data?.token;
 
-      login(loggedInUser, token);
+      login(loggedInUser, token, { remember: rememberMe });
       try { await onAuthSuccess?.(loggedInUser); } catch (_) {}
 
       if (loggedInUser?.role === "client") {
@@ -96,7 +104,7 @@ export default function AuthModal({
     }
     try {
       const data = await authApi.registerClient({ email: signup.email, password: signup.password, role: "client" });
-      login(data.data.user, data.data.token);
+      login(data.data.user, data.data.token, { remember: rememberMe });
       try { await onAuthSuccess?.(data.data.user); } catch (_) {}
       await maybePromptContactInfo();
       closeAndReset();
@@ -244,7 +252,12 @@ export default function AuthModal({
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" className="h-4 w-4" />
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4"
+                        checked={rememberMe}
+                        onChange={(e)=>setRememberMe(e.target.checked)}
+                      />
                       <span>Remember me</span>
                     </label>
                     <button type="button" onClick={()=>{ setShowForgot(true); setForgotStep(1); setError(""); }} className="text-[#3f2e73] hover:text-black">Forgot password?</button>

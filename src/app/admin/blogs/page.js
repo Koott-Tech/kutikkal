@@ -24,6 +24,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import StructuredContentEditor from '@/components/StructuredContentEditor';
+import { getStoredToken } from '@/lib/authStorage';
 
 export default function BlogsPage() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -82,7 +83,7 @@ export default function BlogsPage() {
       setIsLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       const queryParams = new URLSearchParams();
@@ -131,7 +132,7 @@ export default function BlogsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       const isUpdate = Boolean(selectedBlog);
       const url = isUpdate ? `${baseUrl}/blogs/admin/${selectedBlog.id}` : `${baseUrl}/blogs/admin`;
@@ -197,7 +198,7 @@ export default function BlogsPage() {
 
   const handleDelete = async () => {
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       const response = await fetch(`${baseUrl}/blogs/admin/${selectedBlog.id}`, {
@@ -349,7 +350,7 @@ export default function BlogsPage() {
     setUploadingImage(true);
     
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       const formData = new FormData();
@@ -386,7 +387,7 @@ export default function BlogsPage() {
 
   const handleStructuredContentImageUpload = async (formData) => {
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       formData.append('blogTitle', newBlog.title || 'untitled');

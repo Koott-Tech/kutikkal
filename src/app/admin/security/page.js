@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { getStoredToken } from '@/lib/authStorage';
 
 const SecurityDashboard = () => {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -44,7 +45,7 @@ const SecurityDashboard = () => {
   // Fetch security data
   const fetchSecurityData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       // Check if token exists and is valid
@@ -97,7 +98,7 @@ const SecurityDashboard = () => {
   // Acknowledge alert
   const acknowledgeAlert = async (alertId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       if (!token || token === 'null' || token.length < 10) {
         console.error('❌ Invalid token for acknowledge request');
         return;
@@ -125,7 +126,7 @@ const SecurityDashboard = () => {
   // Export security logs
   const exportLogs = async (format = 'json') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       
       // Check if token exists and is valid
       if (!token || token === 'null' || token.length < 10) {

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
+import { getStoredToken } from '@/lib/authStorage';
 
 export default function ImageUpload({ 
   currentImageUrl, 
@@ -47,7 +48,7 @@ export default function ImageUpload({
       formData.append('imageType', imageType);
 
       // Try both possible token keys
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = getStoredToken();
       
       console.log('📤 Upload - Token check:', {
         hasToken: !!token,

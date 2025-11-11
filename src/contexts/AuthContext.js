@@ -2,6 +2,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { setRefreshTokenCallback } from '../lib/backendApi';
 import { getSupabaseClient } from '../lib/supabaseClient';
+import {
+  clearAuthData,
+  getStoredToken,
+  loadAuthData,
+  storeAuthData,
+} from '@/lib/authStorage';
 
 const AuthContext = createContext();
 
@@ -10,6 +16,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [supabaseClient, setSupabaseClient] = useState(null);
+  const [isRemembered, setIsRemembered] = useState(false);
 
   useEffect(() => {
     // Get singleton Supabase client
@@ -17,13 +24,12 @@ export function AuthProvider({ children }) {
     setSupabaseClient(supabase);
 
     // Check for existing token and user data on app load
-    const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
-    const storedUser = localStorage.getItem('userData') || localStorage.getItem('user');
+    const storedAuth = loadAuthData();
     
-    if (storedToken && storedUser) {
+    if (storedAuth?.token && storedAuth?.user) {
       try {
         // Decode JWT to check expiration
-        const tokenParts = storedToken.split('.');
+        const tokenParts = storedAuth.token.split('.');
         if (tokenParts.length === 3) {
           const payload = JSON.parse(atob(tokenParts[1]));
           const expirationDate = new Date(payload.exp * 1000);
@@ -38,10 +44,7 @@ export function AuthProvider({ children }) {
           // If token is expired, clear auth and redirect to login
           if (now > expirationDate) {
             console.log('⚠️ Token is expired, clearing auth data');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthData();
             localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
             // Do NOT hard-redirect here to avoid unexpected redirects on public pages/home
             // Let route-level guards handle navigation after auth loads
@@ -50,18 +53,16 @@ export function AuthProvider({ children }) {
           }
         }
         
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        setToken(storedAuth.token);
+        setUser(storedAuth.user);
+        setIsRemembered(!!storedAuth.remember);
         
         // Skip Supabase token refresh since we're using backend JWT tokens
         // The backend handles token validation and refresh
         console.log('🔍 Using backend JWT token, skipping Supabase session refresh');
       } catch (error) {
         console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        clearAuthData();
       }
     }
     
@@ -108,10 +109,10 @@ export function AuthProvider({ children }) {
       
       if (data.session && data.session.access_token !== currentToken) {
         console.log('🔍 Token refreshed successfully');
-        // Update stored token
-        localStorage.setItem('token', data.session.access_token);
-        localStorage.setItem('authToken', data.session.access_token);
-        setToken(data.session.access_token);
+        const updatedToken = data.session.access_token;
+        const storedUser = user || loadAuthData()?.user || null;
+        storeAuthData({ token: updatedToken, user: storedUser, remember: isRemembered });
+        setToken(updatedToken);
       }
     } catch (error) {
       console.error('Error refreshing token:', error);
@@ -129,7 +130,7 @@ export function AuthProvider({ children }) {
     console.log('🔍 Using backend JWT token system, no Supabase refresh needed');
     
     // Return the current token if available
-    const currentToken = localStorage.getItem('authToken') || localStorage.getItem('token');
+    const currentToken = getStoredToken();
     if (currentToken) {
       console.log('🔍 Returning current backend JWT token');
       return currentToken;
@@ -146,20 +147,24 @@ export function AuthProvider({ children }) {
     setRefreshTokenCallback(refreshToken);
   }, []);
 
-  const login = (userData, authToken) => {
+  const login = (userData, authToken, options) => {
+    const rememberPreference =
+      typeof options === 'boolean'
+        ? options
+        : options?.remember;
+    const finalRemember = rememberPreference ?? isRemembered ?? true;
+
     setUser(userData);
     setToken(authToken);
-    localStorage.setItem('authToken', authToken);
-    localStorage.setItem('userData', JSON.stringify(userData));
+    setIsRemembered(!!finalRemember);
+    storeAuthData({ token: authToken, user: userData, remember: !!finalRemember });
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    setIsRemembered(false);
+    clearAuthData();
   };
 
   const isAuthenticated = () => {
@@ -184,6 +189,7 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     hasRole,
     hasAnyRole,
+    isRemembered,
   };
 
   return (

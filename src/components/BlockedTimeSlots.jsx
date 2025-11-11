@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Calendar, Clock, X, RefreshCw } from "lucide-react";
 import { useNotification } from "../contexts/NotificationContext";
+import { getStoredToken } from "@/lib/authStorage";
 
 export default function BlockedTimeSlots({ psychologistId }) {
   const { showError, showSuccess } = useNotification();
@@ -18,7 +19,7 @@ export default function BlockedTimeSlots({ psychologistId }) {
       setIsLoading(true);
       
       // Check if user is authenticated
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) {
         console.log('No authentication token found, skipping blocked slots load');
         setBlockedSlots([]);
@@ -63,7 +64,7 @@ export default function BlockedTimeSlots({ psychologistId }) {
       setIsUnblocking(true);
       
       // Check if user is authenticated
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) {
         showError('Please log in to unblock time slots');
         return;

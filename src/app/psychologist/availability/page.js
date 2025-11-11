@@ -6,6 +6,7 @@ import { useNotification } from "../../../contexts/NotificationContext";
 import TimeBlockingModal from "../../../components/TimeBlockingModal";
 import BlockedTimeSlots from "../../../components/BlockedTimeSlots";
 import AvailabilityModal from "../../../components/AvailabilityModal";
+import { getStoredToken } from "@/lib/authStorage";
 import { 
   Plus,
   Edit,
@@ -95,7 +96,7 @@ export default function PsychologistAvailability() {
       console.log('🚫 handleBlockTimeSlots called with:', blockingData);
       
       // Check if user is authenticated
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) {
         showError('Please log in to block time slots');
         return;

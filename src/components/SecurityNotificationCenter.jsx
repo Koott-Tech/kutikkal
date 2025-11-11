@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X, CheckCircle, Clock, Bot, Shield } from 'lucide-react';
+import { getStoredToken } from '@/lib/authStorage';
 
 const SecurityNotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
@@ -11,7 +12,7 @@ const SecurityNotificationCenter = () => {
   // Fetch recent security alerts
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       
       // Check if token exists and is valid
       if (!token || token === 'null' || token.length < 10) {
@@ -39,7 +40,7 @@ const SecurityNotificationCenter = () => {
   // Acknowledge notification
   const acknowledgeNotification = async (alertId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = getStoredToken();
       
       // Check if token exists and is valid
       if (!token || token === 'null' || token.length < 10) {

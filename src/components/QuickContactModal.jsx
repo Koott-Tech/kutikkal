@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function QuickContactModal({ open, onClose, onSaved }) {
-  const { login, token, user } = useAuth();
+  const { login, token, user, isRemembered } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
@@ -69,7 +69,7 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
         const refreshed = await authApi.getProfile({ silent: true });
         const userData = refreshed?.data?.user || refreshed?.data;
         if (userData && token) {
-          login(userData, token);
+          login(userData, token, { remember: isRemembered });
         }
       } catch (e) {
         // ignore refresh errors; booking flow can continue

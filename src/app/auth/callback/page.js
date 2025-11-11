@@ -6,6 +6,7 @@ import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { authApi, clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
+import { storeAuthData } from '@/lib/authStorage';
 
 export default function AuthCallback() {
   return (
@@ -138,9 +139,6 @@ function AuthCallbackContent() {
             role: data.session.user.user_metadata?.role || null,
           };
 
-          localStorage.setItem('token', accessToken);
-          localStorage.setItem('authToken', accessToken);
-
           let resolvedUserData = { ...baseUserData };
 
           try {
@@ -170,17 +168,11 @@ function AuthCallbackContent() {
             }
           }
 
-          localStorage.setItem('user', JSON.stringify(resolvedUserData));
-          localStorage.setItem('userData', JSON.stringify(resolvedUserData)); // Also store with userData key for compatibility
-
-          console.log('🔍 Token stored:', {
-            token: `${accessToken.substring(0, 20)}...`,
-            userData: resolvedUserData,
-          });
+          storeAuthData({ token: accessToken, user: resolvedUserData, remember: true });
 
           // Immediately hydrate AuthContext so downstream pages don't need a manual refresh
           try {
-            login(resolvedUserData, accessToken);
+            login(resolvedUserData, accessToken, { remember: true });
           } catch (e) {
             console.warn('AuthContext login not available during callback, proceeding with redirect');
           }

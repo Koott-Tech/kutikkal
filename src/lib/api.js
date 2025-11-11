@@ -1,3 +1,5 @@
+import { clearAuthData, getStoredToken } from './authStorage';
+
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // Helper function to handle API responses
@@ -20,7 +22,7 @@ async function apiRequest(endpoint, options = {}) {
   const url = `${baseURL}${endpoint}`;
   
   // Get token from localStorage if available
-  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+  const token = typeof window !== 'undefined' ? getStoredToken() : null;
   
   console.log('API Request:', {
     url,

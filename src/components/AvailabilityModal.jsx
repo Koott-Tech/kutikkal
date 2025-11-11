@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Calendar, Clock, Plus, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNotification } from "../contexts/NotificationContext";
+import { getStoredToken } from "@/lib/authStorage";
 
 export default function AvailabilityModal({ isOpen, onClose, onAddAvailability }) {
   const { showError, showSuccess } = useNotification();
@@ -25,7 +26,7 @@ export default function AvailabilityModal({ isOpen, onClose, onAddAvailability }
   const fetchExistingAvailability = async (date) => {
     try {
       setIsLoadingSlots(true);
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = getStoredToken();
       if (!token) {
         showError('Please log in to view availability');
         return;
