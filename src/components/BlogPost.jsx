@@ -362,19 +362,19 @@ export default function BlogPost({ slug }) {
             </span>
           </div>
           
-        {/* Tags */}
-        {blogPost.tags && blogPost.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {blogPost.tags.map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
-              >
-                {tag}
-              </span>
-            ))}
-        </div>
-        )}
+          {/* Tags */}
+          {blogPost.tags && blogPost.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {blogPost.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
+                >
+                  {tag}
+                </span>
+              ))}
+          </div>
+          )}
         </header>
 
         {/* Featured Image */}
@@ -382,12 +382,12 @@ export default function BlogPost({ slug }) {
           <div className="mb-8">
             <div className="flex justify-center">
               <div className="w-full max-w-[640px] rounded-2xl overflow-hidden bg-gray-100">
-                <img
-                  src={blogPost.featured_image_url}
-                  alt={blogPost.title}
+              <img
+                src={blogPost.featured_image_url}
+            alt={blogPost.title}
                   className="w-full h-auto object-cover"
-                />
-              </div>
+          />
+        </div>
             </div>
           </div>
         )}
@@ -411,7 +411,7 @@ export default function BlogPost({ slug }) {
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
                         />
           )}
-                      </div>
+        </div>
 
         {/* Latest Blogs Suggestions */}
         <LatestBlogsSection blogs={latestBlogs.slice(0, 2)} currentSlug={slug} />

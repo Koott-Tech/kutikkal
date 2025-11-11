@@ -270,7 +270,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       )}
       <div className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <HelpFaq cmsData={{ faqs: data?.faqs || [] }} />
+          <HelpFaq cmsData={{ faqs: data?.faqs || [], context: 'better-parenting' }} />
         </div>
       </div>
     </div>

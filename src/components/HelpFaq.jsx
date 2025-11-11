@@ -46,24 +46,38 @@ export default function HelpFaq({ cmsData = null }) {
   // Use CMS data if available, otherwise fall back to hardcoded data
   const faqData = cmsData && cmsData.faqs && cmsData.faqs.length > 0 ? 
     (() => {
-      return [
-        {
+      const customSections = [];
+
+      if (cmsData.context !== 'better-parenting') {
+        customSections.push({
           title: "Getting Started",
           items: cmsData.faqs.slice(0, 3).map(faq => ({
             q: faq.question,
             a: faq.answer
           }))
-        },
-        {
-          title: "Understanding Therapy",
-          items: cmsData.faqs.slice(3, 6).map(faq => ({
+        });
+
+        if (cmsData.faqs.length > 3) {
+          customSections.push({
+            title: "Understanding Therapy",
+            items: cmsData.faqs.slice(3, 6).map(faq => ({
+              q: faq.question,
+              a: faq.answer
+            }))
+          });
+        }
+      } else {
+        customSections.push({
+          title: "Getting Started",
+          items: cmsData.faqs.map(faq => ({
             q: faq.question,
             a: faq.answer
           }))
-        }
-      ];
-    })() : 
-    DATA;
+        });
+      }
+
+      return customSections.length > 0 ? customSections : DATA;
+    })() : DATA;
 
   // Get the left image from CMS data or use default
   const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq.png";

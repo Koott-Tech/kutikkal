@@ -691,7 +691,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
 
           {renderEditableElement('faqs', (
             <div className="mt-24">
-              <HelpFaq cmsData={{ faqs: formData.faqs, leftImageUrl: '' }} />
+          <HelpFaq cmsData={{ faqs: formData.faqs, leftImageUrl: '', context: 'better-parenting' }} />
             </div>
           ))}
 
