@@ -1,117 +1,134 @@
 "use client";
 
 import { useState } from "react";
-import Header from '@/components/Header';
+
+const FAQ_DATA = [
+  {
+    q: "What is Little Care?",
+    a: "Little Care is an online child counselling platform that supports children and parents through therapy, assessments, and emotional wellness sessions — all from the comfort of your home.",
+  },
+  {
+    q: "Who are the therapists at Little Care?",
+    a: "Our team includes consultant psychologists, clinical psychologists, and child therapists with experience in child behaviour, emotional regulation, and developmental support.",
+  },
+  {
+    q: "What age group do you work with?",
+    a: "We primarily work with children aged 4 to 16 years, depending on their emotional and developmental needs.",
+  },
+  {
+    q: "How does online child counselling work?",
+    a: "Sessions take place over Google Meet, designed to be interactive and child-friendly using games, stories, and visual tools to make therapy engaging and comfortable.",
+  },
+  {
+    q: "How do I know which service is right for my child?",
+    a: "If you're unsure where to begin, you can book a free 20-minute consultation with our consultant psychologist. They'll help you understand your child's needs and recommend the best next step.",
+  },
+  {
+    q: "Are parent sessions included?",
+    a: "Yes. Parent sessions are an important part of our process. They help us understand the child better and guide parents on how to support progress at home.",
+  },
+  {
+    q: "How many sessions does my child need?",
+    a: "Every child is unique. The number of sessions depends on the concern and progress",
+  },
+  {
+    q: "Is everything discussed confidential?",
+    a: "Absolutely. We maintain strict confidentiality and privacy for all our clients, in line with ethical standards of psychological practice.",
+  },
+  {
+    q: "What if my child doesn't open up online?",
+    a: "Our therapists are trained to build comfort and trust through playful, engaging methods. Most children adapt quickly once they feel understood.",
+  },
+  {
+    q: "How do I book a session?",
+    a: "You can easily book online through our website or reach out via WhatsApp or email. Our team will guide you through the simple booking process.",
+  },
+];
 
 export default function FAQ() {
-  const [openFaq, setOpenFaq] = useState(null);
-
-  const faqs = [
-    {
-      question: "How do I become a provider with LittleMinds?",
-      answer: "To become a provider with LittleMinds, you'll need to complete our application process which includes credentialing, licensing verification, and a brief interview. Our team will guide you through each step to ensure a smooth onboarding experience."
-    },
-    {
-      question: "What types of providers do you work with?",
-      answer: "We work with licensed therapists, psychologists, psychiatrists, and psychiatric nurse practitioners. We welcome providers from various specialties including individual therapy, couples therapy, family therapy, child therapy, and medication management."
-    },
-    {
-      question: "What are the requirements for joining your network?",
-      answer: "Requirements include active state licensure, malpractice insurance, completion of our credentialing process, and agreement to our provider terms. We also require providers to maintain continuing education requirements and professional standards."
-    },
-    {
-      question: "How does the payment and billing process work?",
-      answer: "We handle all insurance billing and patient payments on your behalf. You'll receive payments directly to your account within 30 days of service completion. We provide detailed reporting and transparent fee structures."
-    },
-    {
-      question: "What technology and support do you provide?",
-      answer: "We provide a comprehensive telehealth platform including secure video sessions, scheduling tools, patient management systems, and 24/7 technical support. Our platform is HIPAA-compliant and designed for ease of use."
-    },
-    {
-      question: "How do you handle patient matching and referrals?",
-      answer: "Our matching system considers patient needs, provider specialties, availability, and preferences. We use advanced algorithms to ensure optimal matches and provide ongoing support for both providers and patients throughout the therapeutic relationship."
-    },
-    {
-      question: "What are the session rates and fee structures?",
-      answer: "Session rates vary based on provider credentials, specialty, and location. We offer competitive rates and transparent fee structures. Our team will provide detailed information about rates during the onboarding process."
-    },
-    {
-      question: "How do you support provider growth and development?",
-      answer: "We offer continuing education opportunities, peer consultation groups, professional development resources, and regular training sessions. We also provide access to our clinical team for case consultation and support."
-    },
-    {
-      question: "What insurance networks do you work with?",
-      answer: "We work with major insurance networks including Aetna, Blue Cross Blue Shield, Cigna, UnitedHealthcare, and many others. We handle all insurance credentialing and billing processes on your behalf."
-    },
-    {
-      question: "How do you ensure quality of care and patient satisfaction?",
-      answer: "We maintain high standards through regular provider reviews, patient feedback systems, and quality assurance protocols. We provide ongoing support and resources to help providers deliver excellent care."
-    }
-  ];
-
-  const toggleFaq = (index) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
+  const [openId, setOpenId] = useState("");
 
   return (
-    <div>
+    <div className="w-full min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="w-full py-20 px-6">
+      <section className="w-full py-16 md:py-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
             Frequently Asked Questions
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Find answers to common questions about becoming a provider with LittleMinds and our services.
+          <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
+            Find answers to common questions about Little Care and our services.
           </p>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="w-full py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div key={index} className="border-t border-gray-200">
-                {/* FAQ Header */}
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-4 text-left bg-white hover:bg-gray-50 transition-colors duration-200 flex items-center justify-between"
-                >
-                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
-                    {faq.question}
-                  </h3>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-                      openFaq === index ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+      <section className="w-full px-4 lg:px-6 pb-16 md:pb-24">
+        <style jsx>{`
+          @media (max-width: 767px) {
+            .faq-heading {
+              font-size: 28px;
+              font-weight: 600;
+              line-height: 0.95;
+            }
+            .faq-answer {
+              font-size: 10.5px;
+              line-height: 1.45;
+            }
+          }
+        `}</style>
+        <div className="mx-auto max-w-4xl">
+          <div className="space-y-0">
+            {FAQ_DATA.map((item, index) => {
+              const id = `${index}`;
+              const open = openId === id;
+              return (
+                <div key={id} className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => setOpenId(open ? "" : id)}
+                    className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {/* FAQ Content */}
-                {openFaq === index && (
-                  <div className="px-6 pb-4 bg-white">
-                    <div className="pt-4">
-                      <p className="text-gray-600 leading-relaxed">
-                        {faq.answer}
+                    <span className="text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                      {item.q}
+                    </span>
+                    <Chevron className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${open ? "rotate-180" : "rotate-0"}`} />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-out ${
+                      open ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    <div className="px-2 pb-3 md:px-0 md:pb-4">
+                      <p className="faq-answer md:text-sm leading-relaxed">
+                        {item.a}
                       </p>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
-
-
-
-
     </div>
+  );
+}
+
+function Chevron({ className = "" }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }

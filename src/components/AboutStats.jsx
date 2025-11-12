@@ -14,7 +14,8 @@ export default function AboutStats() {
               <h2 
                 className="text-[2.5rem] md:text-[3.75rem] font-medium leading-[110%] md:leading-[106%] tracking-[-0.125rem] md:tracking-[-0.195rem]"
                 style={{
-                  color: '#1c331d'
+                  color: '#1c331d',
+                  letterSpacing: '-65px'
                 }}
               >
                 We Care A Lot
@@ -22,7 +23,7 @@ export default function AboutStats() {
               <div
                 className="mt-4 max-w-xl"
               >
-                <p>
+                <p style={{ letterSpacing: '-65px' }}>
                  Every number here tells a story of trust, healing, and care that reached a little farther.
 
                 </p>
@@ -37,7 +38,7 @@ export default function AboutStats() {
 
               {/* Find Care Button */}
               <div className="mt-8 flex justify-center md:justify-start">
-                <button className="px-25 md:px-8 py-2 bg-[#1c331d] text-white font-medium rounded-full hover:bg-[#152a18] transition-colors duration-200 shadow-lg">
+                <button className="px-25 md:px-8 py-2 bg-[#1c331d] text-white font-medium rounded-full hover:bg-[#152a18] transition-colors duration-200 shadow-lg" style={{ letterSpacing: '-65px' }}>
                   Find care that fits your child
                 </button>
               </div>
@@ -65,7 +66,7 @@ function StatBlock({ value, label }) {
   return (
     <div className="pl-3 border-l border-[#1c331d]">
       <div className="text-4xl md:text-5xl font-medium">{value}</div>
-      <p className="mt-2 max-w-xs text-sm opacity-90">{label}</p>
+      <p className="mt-2 max-w-xs text-sm opacity-90" style={{ letterSpacing: '-65px' }}>{label}</p>
     </div>
   );
 }

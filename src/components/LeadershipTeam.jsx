@@ -26,13 +26,13 @@ export default function LeadershipTeam() {
           <div className="flex flex-wrap justify-center gap-8">
             {/* Josh Bruno - CEO */}
             <div className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden">
+              <div className="h-80 w-full overflow-hidden rounded-[10px]">
                 <Image
-                  src="/doug.png"
+                  src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Faisal.webp"
                   alt="Josh Bruno"
                   width={320}
                   height={320}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   loading="lazy"
                 />
               </div>
@@ -44,13 +44,13 @@ export default function LeadershipTeam() {
 
             {/* Gabe Diop - Co-founder */}
             <div className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden">
+              <div className="h-80 w-full overflow-hidden rounded-[10px]">
                 <Image
-                  src="/doug.png"
+                  src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Raman.webp"
                   alt="Gabe Diop"
                   width={320}
                   height={320}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   loading="lazy"
                 />
               </div>

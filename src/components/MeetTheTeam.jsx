@@ -3,12 +3,12 @@
 import Image from "next/image";
 
 const teamMembers = [
-  { name: "Albin", title: "Advisory Board Member", image: "/doug.png" },
-  { name: "Aswathy Balan", title: "Advisory Board Member", image: "/doug.png" },
-  { name: "Thaniya", title: "Advisory Board Member", image: "/doug.png" },
-  { name: "Aswathy Sambath", title: "Advisory Board Member", image: "/doug.png" },
-  { name: "Athullya Nair", title: "Advisory Board Member", image: "/doug.png" },
-  { name: "Gayathri", title: "Advisory Board Member", image: "/doug.png" },
+  { name: "Albin", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Albin.webp" },
+  { name: "Aswathy Balan", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Balan.webp" },
+  { name: "Thaniya", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Thaniya.webp" },
+  { name: "Aswathy Sambath", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Sambath.webp" },
+  { name: "Athullya Nair", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Athullya.webp" },
+  { name: "Gayathri", title: "Advisory Board Member", image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Gayathri.webp" },
 ];
 
 export default function MeetTheTeam() {
@@ -35,13 +35,13 @@ export default function MeetTheTeam() {
           <div className="flex flex-wrap justify-center gap-8">
             {teamMembers.map((member) => (
               <div key={member.name} className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden">
+              <div className="h-80 w-full overflow-hidden rounded-[10px]">
                 <Image
                     src={member.image}
                     alt={member.name}
                   width={320}
                   height={320}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   loading="lazy"
                 />
               </div>

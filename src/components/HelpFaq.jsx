@@ -111,7 +111,7 @@ export default function HelpFaq({ cmsData = null }) {
           </div>
           <div>
             <p className="text-sm md:text-base lg:text-lg text-center md:text-left">
-              Visit our full <a className="underline font-medium" href="#">FAQ page</a> for more<br className="hidden md:block" />
+              Visit our full <a className="underline font-medium" href="/faq">FAQ page</a> for more<br className="hidden md:block" />
               commonly asked questions.
             </p>
           </div>
