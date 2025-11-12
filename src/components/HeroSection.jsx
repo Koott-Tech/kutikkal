@@ -162,11 +162,11 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
   return (
     <div className="w-full">
       <section className="w-full">
-                 <div className="w-full md:rounded-2xl overflow-hidden" style={{ backgroundColor: '#eae5ff' }}>
+                 <div className="w-full md:rounded-2xl overflow-hidden" style={{ backgroundColor: '#F3FAF0' }}>
                      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
              {/* Content Area */}
                           <div className="p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
-                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#123331] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left">
+                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left">
                  {currentContent.title}
                </h1>
               

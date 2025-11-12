@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function TherapyTypesSplit({ therapyType = "individual", cmsData = null }) {
+  const router = useRouter();
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -120,7 +122,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
         <div className="flex flex-col md:grid md:grid-cols-2">
           {/* Content Area - with background */}
           <div
-            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#d3e9d1]"
+            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#DEEFDC]"
           >
             <h3 
               className="mb-2"
@@ -147,7 +149,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             </div>
                 
             <button 
-              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 lg:px-12 py-3 md:py-4 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-sm md:text-base lg:text-lg text-white"
+              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-6 md:px-8 py-2 md:py-3 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-xs md:text-sm lg:text-base text-white"
               style={{ 
                 backgroundColor: '#3f2e73',
                 fontWeight: 500,
@@ -157,6 +159,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+              onClick={() => router.push('/guide')}
             >
               {currentContent.buttonText || "Get started"}
             </button>

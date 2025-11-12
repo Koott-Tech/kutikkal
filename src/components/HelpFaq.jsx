@@ -80,7 +80,7 @@ export default function HelpFaq({ cmsData = null }) {
     })() : DATA;
 
   // Get the left image from CMS data or use default
-  const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq.png";
+  const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
 
   return (
     <section className="w-full mt-12 md:mt-20 px-4 lg:px-6">

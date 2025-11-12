@@ -1,8 +1,10 @@
 "use client";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HowItWorks() {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
   const trackRef = useRef(null);
@@ -234,6 +236,7 @@ export default function HowItWorks() {
             style={{ backgroundColor: '#15171A' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
+            onClick={() => router.push('/guide')}
           >
             Get started
           </button>

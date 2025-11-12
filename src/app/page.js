@@ -14,6 +14,7 @@ import InfoCards from "../components/InfoCards";
 import BlogTeaser from "../components/BlogTeaser";
 import HelpFaq from "../components/HelpFaq";
 import SupportFaq from "../components/SupportFaq";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -87,6 +88,52 @@ export default function Home() {
             justify-content: flex-start !important;
           }
         }
+        .sister-brands-nav a,
+        .sister-brands-nav span,
+        .sister-brands-nav a[href] {
+          cursor: pointer !important;
+        }
+        .tooltip-container {
+          position: relative;
+          display: inline-block;
+        }
+        .tooltip-popup {
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-bottom: 8px;
+          padding: 6px 12px;
+          background-color: white;
+          color: #1f2937;
+          font-size: 12px;
+          border-radius: 6px;
+          white-space: nowrap;
+          z-index: 1000;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.2s ease-in-out;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          border: 1px solid #e5e7eb;
+        }
+        .tooltip-popup::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 5px solid transparent;
+          border-top-color: white;
+        }
+        .tooltip-container:hover .tooltip-popup {
+          opacity: 1;
+        }
+        @media (max-width: 767px) {
+          .tooltip-popup {
+            font-size: 11px;
+            padding: 5px 10px;
+          }
+        }
       `}</style>
      
       <Hero />
@@ -103,10 +150,30 @@ export default function Home() {
                 </div>
               </div>
               <div className="sister-brands-nav flex flex-wrap items-center justify-center md:justify-end gap-4 md:gap-6 text-sm md:text-base text-gray-700 md:ml-auto">
-                <span className="hover:text-gray-900 cursor-pointer font-semibold">Koott</span>
-                <span className="hover:text-gray-900 cursor-pointer font-semibold">Hopelly</span>
-                <span className="hover:text-gray-900 cursor-pointer font-semibold">WorkMate</span>
-                <span className="hover:text-gray-900 cursor-pointer">About us</span>
+                <a 
+                  href="https://www.koott.in/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-gray-900 cursor-pointer font-semibold"
+                  style={{ cursor: 'pointer' }}
+                >
+                  Koott
+                </a>
+                <div className="tooltip-container">
+                  <span className="hover:text-gray-900 cursor-pointer font-semibold" style={{ cursor: 'pointer' }}>Hopelly</span>
+                  <div className="tooltip-popup">Launching Soon</div>
+                </div>
+                <div className="tooltip-container">
+                  <span className="hover:text-gray-900 cursor-pointer font-semibold" style={{ cursor: 'pointer' }}>WorkMate</span>
+                  <div className="tooltip-popup">Launching Soon</div>
+                </div>
+                <Link 
+                  href="/about"
+                  className="hover:text-gray-900 cursor-pointer"
+                  style={{ cursor: 'pointer' }}
+                >
+                  About us
+                </Link>
               </div>
             </div>
           </div>

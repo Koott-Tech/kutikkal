@@ -16,10 +16,10 @@ export default function PrivacyPolicyPage() {
                 <p className="mt-6 text-base leading-relaxed text-gray-700">
                     LittleCare by Koott Care Pvt. Ltd. (&ldquo;LittleCare&rdquo;) is the owner and operator of{" "}
                     <a
-                        href="https://www.littlecare.in"
+                        href="https://www.little.care"
                         className="text-indigo-600 underline hover:text-indigo-700"
                     >
-                        https://www.littlecare.in
+                        https://www.little.care
                     </a>
                     . LittleCare is committed to protecting your privacy and ensuring the safety of all individuals who
                     use our platform and services, especially children and families.
@@ -36,10 +36,10 @@ export default function PrivacyPolicyPage() {
                         the responsible handling of information related to minors. This document constitutes
                         LittleCare&rsquo;s Privacy Policy and is accessible at{" "}
                         <a
-                            href="https://www.littlecare.in"
+                            href="https://www.little.care"
                             className="text-indigo-600 underline hover:text-indigo-700"
                         >
-                            https://www.littlecare.in
+                            https://www.little.care
                         </a>
                         .
                     </p>
@@ -178,7 +178,7 @@ export default function PrivacyPolicyPage() {
                             href="mailto:hello@littlecare.in"
                             className="text-indigo-600 underline hover:text-indigo-700"
                         >
-                            hello@littlecare.in
+                            hey@little.care
                         </a>
                         . Verification may be required for security purposes. LittleCare shall update its records upon request but is not
                         responsible for the authenticity of user-provided data.

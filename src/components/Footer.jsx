@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Footer({ isHomePage = false, isCmsPage = false }) {
     const [openSections, setOpenSections] = useState({});
@@ -20,6 +20,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
     });
     const [betterParentingMenu, setBetterParentingMenu] = useState([]);
     const pathname = usePathname();
+    const router = useRouter();
 
     const formatDisplayName = (slug) => {
         if (!slug) return '';
@@ -210,6 +211,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                onClick={() => router.push('/guide')}
                             >
                                 {pathname === '/about' ? 'Join Our Team' : 'Book  Now'}
                             </button>
