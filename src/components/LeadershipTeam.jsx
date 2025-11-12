@@ -38,7 +38,7 @@ export default function LeadershipTeam() {
               </div>
               <div className="px-0 py-6">
                 <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Faisal Vysam Purath </h5>
-                 <p className="text-gray-600">CEO</p>
+                 <p className="text-gray-600">CEO & Founder</p>
               </div>
             </div>
 
@@ -56,7 +56,7 @@ export default function LeadershipTeam() {
               </div>
               <div className="px-0 py-6">
                 <h5 className="text-sm md:text-base font-medium text-gray-900 mb-1">Aswathy Usha Raman</h5>
-                 <p className="text-gray-600">Chief Psycologist</p>
+                 <p className="text-gray-600">Chief Psychologist</p>
               </div>
             </div>
           </div>
