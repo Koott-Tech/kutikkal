@@ -1,9 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Image from "next/image";
-
 export default function TestimonialsAbout() {
     return (
         <div className="px-[50px]">
@@ -22,172 +18,75 @@ export default function TestimonialsAbout() {
 
                         {/* Grid Cards Layout */}
                         <div className="flex md:grid md:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 overflow-x-auto md:overflow-x-visible">
-                            {/* Left side - Text content card (top half) */}
+                            {/* Fathima Liana */}
                             <div className="md:col-span-1 bg-green-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"I didn't know where to start, but Little Care made it easy. They guided us with so much patience."</p>
+                                <p className="text-lg font-medium mb-4">"Little Care feels like home — warm, genuine, and full of heart. I love that we get to work closely with families and really see the difference small changes can make in a child's life."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Albin.webp"
-                                            alt="Albin"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>A</AvatarFallback>
-                                    </Avatar>
-
-                                    <div>
-                                        <cite className="text-sm font-medium">Albin</cite>
-                                    </div>
+                                <div className="mt-auto">
+                                    <cite className="text-sm font-medium">Fathima Liana – Consultant Psychologist</cite>
                                 </div>
                             </div>
                             
-                            {/* Content card (bottom half) */}
+                            {/* Anusmitha Praveen */}
                             <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"They helped me understand my child better instead of just focusing on behavior."</p>
+                                <p className="text-lg font-medium mb-4">"What I really love about Little Care is the space it gives us to connect deeply with every child's journey. The team spirit here is amazing — we learn from each other every day."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Balan.webp"
-                                            alt="Aswathy Balan"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>AB</AvatarFallback>
-                                    </Avatar>
-
-                                    <div>
-                                        <cite className="text-sm font-medium">Aswathy Balan</cite>
-                                    </div>
+                                <div className="mt-auto">
+                                    <cite className="text-sm font-medium">Anusmitha Praveen - Consultant Psychologist</cite>
                                 </div>
                             </div>
                             
-                            {/* Testimonial card 5 */}
+                            {/* Irene Marium */}
                             <div className="md:col-span-1 bg-cyan-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"We finally found a place where my child feels heard. The sessions made such a difference at home."</p>
+                                <p className="text-lg font-medium mb-4">"Little Care blends science with softness in such a beautiful way. We use solid clinical methods, but there's always warmth and creativity behind every session."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Thaniya.webp"
-                                            alt="Thaniya"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>T</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <cite className="text-sm font-medium">Thaniya</cite>
-                                    </div>
+                                <div className="mt-auto">
+                                    <cite className="text-sm font-medium">Irene Marium - Consultant Psychologist</cite>
                                 </div>
                             </div>
                             
+                            {/* Athulya O */}
                             <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"It felt like talking to someone who actually gets what parenting is like."</p>
+                                <p className="text-lg font-medium mb-4">"There's so much creativity here! From therapy games to fun tools and parent sessions — it's all about helping kids grow while keeping therapy engaging and playful."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Sambath.webp"
-                                            alt="Aswathy Sambath"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>AS</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <cite className="text-sm font-medium">Aswathy Sambath</cite>
-                                    </div>
+                                <div className="mt-auto">
+                                    <cite className="text-sm font-medium">Athulya O – Consultant Psychologist</cite>
                                 </div>
                             </div>
                             
-                            {/* Testimonial card 6 */}
+                            {/* Bhavith */}
                             <div className="bg-purple-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"The team was kind, patient, and explained everything clearly. I felt supported as a parent too."</p>
+                                <p className="text-lg mb-4">"What I love most is how collaborative the team is. Everyone genuinely cares — we celebrate small wins together and support each other through challenges. It really feels like a family."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Athullya.webp"
-                                            alt="Athullya Nair"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>AN</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">Athullya Nair</p>
-                                    </div>
+                                <div className="mt-auto">
+                                    <p className="text-sm font-medium">Bhavith - Designer</p>
                                 </div>
                             </div>
                             
-                            {/* Testimonial card 7 */}
+                            {/* Abhishek */}
                             <div className="bg-teal-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"My son actually looks forward to his sessions now. That says everything."</p>
+                                <p className="text-lg mb-4">"Working with Little Care has been truly meaningful. It's not just about building a platform — it's about creating something that genuinely helps children and parents connect with care. Knowing our tech makes therapy easier and more accessible makes it all worth it."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Gayathri.webp"
-                                            alt="Gayathri"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>G</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">Gayathri</p>
-                                    </div>
+                                <div className="mt-auto">
+                                    <p className="text-sm font-medium">Abhishek, Software Developer at Little Care</p>
                                 </div>
                             </div>
                             
-                            {/* Additional card 1 */}
+                            {/* Jishnu */}
                             <div className="bg-pink-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"They really understood my child instead of just giving advice. It felt personal and warm."</p>
+                                <p className="text-lg mb-4">"At Little Care, digital marketing never feels like marketing. We're not pushing content — we're sharing stories that matter. Every campaign shows how powerful it is when empathy meets purpose, and seeing parents connect because of something we created is what keeps me inspired."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Faisal.webp"
-                                            alt="Faisal Vysam Purath"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>FVP</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">Faisal Vysam Purath</p>
-                                    </div>
+                                <div className="mt-auto">
+                                    <p className="text-sm font-medium">Jishnu, Digital Marketing Specialist</p>
                                 </div>
                             </div>
                             
-                            {/* Additional card 2 */}
+                            {/* Shinas */}
                             <div className="bg-indigo-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"I was nervous at first, but the therapist made both of us comfortable from day one."</p>
+                                <p className="text-lg mb-4">"Working with Little Care has changed how I see storytelling. Every frame we capture holds real emotion — a child's progress, a parent's relief, a therapist's quiet pride. It's more than videos; it's documenting hope in its simplest form. I'm proud to be part of something so honest and meaningful."</p>
 
-                                <div className="mt-auto grid grid-cols-[auto_1fr] items-center gap-3">
-                                    <Avatar className="size-12">
-                                        <AvatarImage
-                                            src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Raman.webp"
-                                            alt="Aswathy Usha Raman"
-                                            height="400"
-                                            width="400"
-                                            loading="lazy"
-                                        />
-                                        <AvatarFallback>AUR</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">Aswathy Usha Raman</p>
-                                    </div>
+                                <div className="mt-auto">
+                                    <p className="text-sm font-medium">Shinas, Videographer</p>
                                 </div>
                             </div>
                         </div>
