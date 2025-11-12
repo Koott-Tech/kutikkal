@@ -6,10 +6,11 @@ import { useState, useRef, useEffect } from 'react';
 const getYouTubeEmbedUrl = (url, muted = true) => {
   if (!url) return null;
   
-  // Handle various YouTube URL formats
+  // Handle various YouTube URL formats including Shorts
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    /youtube\.com\/shorts\/([^&\n?#\/]+)/, // YouTube Shorts: youtube.com/shorts/VIDEO_ID
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/, // Regular YouTube URLs
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/ // YouTube watch URLs with other params
   ];
   
   for (const pattern of patterns) {
