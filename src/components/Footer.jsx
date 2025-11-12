@@ -21,6 +21,13 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
     const [betterParentingMenu, setBetterParentingMenu] = useState([]);
     const pathname = usePathname();
 
+    const formatDisplayName = (slug) => {
+        if (!slug) return '';
+        return slug
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+    };
+
     const toggleSection = (section) => {
         setOpenSections(prev => ({
             ...prev,
@@ -100,7 +107,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
         fetchAssessments();
     }, []);
 
-    // Fetch better parenting pages (flat list, ordered)
+    // Fetch better parenting pages (flat list, ordered) - same logic as Header
     useEffect(() => {
         async function fetchBetterParenting() {
             try {
@@ -108,20 +115,18 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                 const res = await fetch(`${base}/api/better-parenting?limit=50`, { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
-                const pages = data?.data?.pages
-                    || data?.message?.pages
-                    || data?.pages
-                    || data?.data
-                    || [];
-                const items = pages
-                    .filter(p => p?.status === 'published')
-                    .map(p => ({
-                        title: p?.seo_title?.replace(' - Little Care', '') || p?.hero_title || p?.title || '',
-                        url: `/better-parenting/${p?.slug}`,
-                        order: p?.menu_order || 0
-                    }))
-                    .sort((a, b) => a.order - b.order);
-                setBetterParentingMenu(items);
+                const pages = data?.data?.pages || data?.message?.pages;
+                if (data.success && Array.isArray(pages)) {
+                    const items = pages
+                        .filter(p => p.status === 'published')
+                        .map(p => ({
+                            title: formatDisplayName(p.slug),
+                            url: `/better-parenting/${p.slug}`,
+                            order: p.menu_order || 0
+                        }))
+                        .sort((a, b) => a.order - b.order);
+                    setBetterParentingMenu(items);
+                }
             } catch (_) {
                 // swallow
             }

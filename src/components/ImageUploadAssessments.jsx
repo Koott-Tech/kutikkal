@@ -47,9 +47,9 @@ export default function ImageUploadAssessments({ currentImageUrl, onImageUpload,
         throw new Error(error.message || 'Upload failed');
       }
       const data = await response.json();
-      if (data.success && data.message?.url) {
-        setPreviewUrl(data.message.url);
-        onImageUpload(data.message.url);
+      if (data.success && data.data?.url) {
+        setPreviewUrl(data.data.url);
+        onImageUpload(data.data.url);
       } else {
         throw new Error('Invalid response from server');
       }
