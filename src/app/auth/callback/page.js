@@ -113,7 +113,8 @@ function AuthCallbackContent() {
         if (!supabase) {
           console.error('Supabase client not available');
           setStatus('Configuration error. Redirecting...');
-          setTimeout(() => router.push('/login?error=config_error'), 2000);
+          localStorage.setItem('auth_error', 'Authentication configuration error. Please try again.');
+          setTimeout(() => router.push('/'), 2000);
           return;
         }
 
@@ -123,7 +124,8 @@ function AuthCallbackContent() {
         if (error) {
           console.error('Auth callback error:', error);
           setStatus('Authentication failed. Redirecting...');
-          setTimeout(() => router.push('/login?error=auth_failed'), 2000);
+          localStorage.setItem('auth_error', 'Authentication failed. Please try again.');
+          setTimeout(() => router.push('/'), 2000);
           return;
         }
 
@@ -230,7 +232,8 @@ function AuthCallbackContent() {
         } else {
           console.log('No session found, redirecting to login');
           setStatus('No session found. Redirecting...');
-          setTimeout(() => router.push('/login?error=no_session'), 2000);
+          localStorage.setItem('auth_error', 'No active session found. Please log in again.');
+          setTimeout(() => router.push('/'), 2000);
         }
       } catch (error) {
         console.error('Auth callback error:', error);
@@ -266,7 +269,8 @@ function AuthCallbackContent() {
           }, 1500);
         } else {
           setStatus('Error occurred. Redirecting...');
-          setTimeout(() => router.push('/login?error=auth_failed'), 2000);
+          localStorage.setItem('auth_error', 'Authentication failed. Please try again.');
+          setTimeout(() => router.push('/'), 2000);
         }
       }
     };

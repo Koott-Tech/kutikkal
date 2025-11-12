@@ -6,8 +6,8 @@ import Header from './Header';
 export default function HeaderWrapper() {
   const pathname = usePathname();
   
-  // Hide global site header on admin, superadmin, psychologist dashboards, login, and register pages
-  const hideHeaderPaths = ['/admin', '/superadmin', '/psychologist', '/login', '/register'];
+  // Hide global site header on admin, superadmin, psychologist dashboards
+  const hideHeaderPaths = ['/admin', '/superadmin', '/psychologist'];
   const shouldHideCompletely = hideHeaderPaths.some((p) => pathname.startsWith(p));
   
   if (shouldHideCompletely) return null;

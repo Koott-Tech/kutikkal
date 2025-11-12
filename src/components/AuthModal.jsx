@@ -61,6 +61,14 @@ export default function AuthModal({
   useEffect(() => {
     if (open) {
       setRememberMe(!!isRemembered);
+      // Check for stored auth error when modal opens
+      if (typeof window !== 'undefined') {
+        const storedError = localStorage.getItem('auth_error');
+        if (storedError) {
+          setError(storedError);
+          localStorage.removeItem('auth_error');
+        }
+      }
     }
   }, [open, isRemembered]);
 
@@ -82,7 +90,15 @@ export default function AuthModal({
       closeAndReset();
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
-      setError(msg);
+      // Check if it's a "user not found" type error - suggest signup
+      if (msg.toLowerCase().includes('user not found') ||
+          msg.toLowerCase().includes('new to little care')) {
+        setError("New to Little Care? Sign up first");
+        // Pre-fill email in signup form (but don't switch tabs automatically)
+        setSignup(prev => ({ ...prev, email: email }));
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -267,7 +283,14 @@ export default function AuthModal({
                     Don&apos;t have an account?{" "}
                     <button
                       type="button"
-                      onClick={()=>{ setActiveTab("signup"); setError(""); }}
+                      onClick={()=>{ 
+                        setActiveTab("signup"); 
+                        setError(""); 
+                        // Pre-fill email if available
+                        if (email) {
+                          setSignup(prev => ({ ...prev, email: email }));
+                        }
+                      }}
                       className="text-[#3f2e73] hover:text-black font-medium"
                     >
                       Sign up

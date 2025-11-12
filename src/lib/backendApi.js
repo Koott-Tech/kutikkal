@@ -35,7 +35,11 @@ const handleResponse = async (response, options = {}) => {
       }
       
       // Handle authentication/authorization errors - auto logout
-      if (response.status === 401 || response.status === 403) {
+      // Skip auto-redirect for login/register endpoints (they handle errors themselves)
+      const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
+                            options.endpoint?.includes('/auth/register');
+      
+      if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
         // Check if it's a token expiration error
         const isTokenExpired = error.error === 'Token expired' || 
                               error.error === 'bad_jwt' || 
@@ -52,14 +56,14 @@ const handleResponse = async (response, options = {}) => {
         if (typeof window !== 'undefined') {
           clearAuthData();
           
-          // Store error message for login page to display
+          // Store error message for auth modal to display
           const errorMsg = isTokenExpired 
             ? 'Your session has expired. Please log in again to continue.' 
             : 'Authentication failed. Please log in again.';
           localStorage.setItem('auth_error', errorMsg);
           
-          // Redirect to login
-          window.location.href = '/login';
+          // Redirect to home - auth modal will be shown by components that need it
+          window.location.href = '/';
         }
         
         throw new Error(isTokenExpired ? 'Session expired' : 'Authentication failed');
@@ -80,7 +84,11 @@ const handleResponse = async (response, options = {}) => {
         }
       }
       
-      throw new Error(error.message || error.error || `HTTP error! status: ${response.status}`);
+      // For login endpoint, preserve the original error message from backend
+      const errorMsg = options.endpoint?.includes('/auth/login') && error?.message 
+        ? error.message 
+        : (error.message || error.error || `HTTP error! status: ${response.status}`);
+      throw new Error(errorMsg);
     } catch (parseError) {
       console.error('Failed to parse error response:', parseError);
       
@@ -98,10 +106,13 @@ const handleResponse = async (response, options = {}) => {
         case 401:
         case 403:
           // Auto logout on auth errors even if parsing fails
-          if (typeof window !== 'undefined') {
+          // Skip auto-redirect for login/register endpoints (they handle errors themselves)
+          const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
+                                options.endpoint?.includes('/auth/register');
+          if (typeof window !== 'undefined' && !isAuthEndpoint) {
             clearAuthData();
             localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
-            window.location.href = '/login';
+            window.location.href = '/';
           }
           errorMessage = 'Authentication required. Please log in again.';
           break;
@@ -203,7 +214,7 @@ async function apiRequest(endpoint, options = {}) {
 
   try {
     const response = await makeRequest(token);
-    return await handleResponse(response, { silent: options.silent });
+    return await handleResponse(response, { silent: options.silent, endpoint: endpoint });
   } catch (error) {
     // Only log errors if not silenced
     if (!options.silent) {

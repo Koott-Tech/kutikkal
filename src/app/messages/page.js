@@ -16,8 +16,8 @@ export default function ClientMessagesPage() {
     if (user) {
       router.push('/profile?tab=messages');
     } else {
-      // If not authenticated, redirect to login
-      router.push('/login');
+      // If not authenticated, redirect to home (auth modal will be shown by Header)
+      router.push('/');
     }
   }, [user, authLoading, router]);
 

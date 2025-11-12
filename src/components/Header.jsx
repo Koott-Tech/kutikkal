@@ -76,6 +76,12 @@ export default function Header() {
       setShowQuickContact(true);
       sessionStorage.removeItem("showQuickContact");
     }
+    // Check for auth errors and show modal
+    const authError = localStorage.getItem("auth_error");
+    if (authError) {
+      setShowAuthModal(true);
+      localStorage.removeItem("auth_error");
+    }
   }, []);
 
   // Fetch profile data for authenticated users
@@ -1635,7 +1641,11 @@ export default function Header() {
     {showAuthModal && (
       <AuthModal
         open={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        onClose={() => {
+          setShowAuthModal(false);
+          // Clear any auth error when modal is closed
+          localStorage.removeItem("auth_error");
+        }}
         onRequireContactInfo={() => setShowQuickContact(true)}
       />
     )}
