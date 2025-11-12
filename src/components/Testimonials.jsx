@@ -152,7 +152,7 @@ export default function Testimonials() {
     return () => stopAutoPlay();
   }, []);
 
-  const youtubeUrl = "https://youtu.be/i7qo7bKL8uc?list=TLGGekpdK8wISaMxMjExMjAyNQ";
+  const youtubeUrl = "https://www.youtube.com/shorts/mX7RKFjrLxk";
   const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
 
   const toggleMute = () => {
