@@ -2,10 +2,34 @@
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 
+// Helper function to convert YouTube URL to embed URL
+const getYouTubeEmbedUrl = (url, muted = true) => {
+  if (!url) return null;
+  
+  // Handle various YouTube URL formats including Shorts
+  const patterns = [
+    /youtube\.com\/shorts\/([^&\n?#\/]+)/, // YouTube Shorts: youtube.com/shorts/VIDEO_ID
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/, // Regular YouTube URLs
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/ // YouTube watch URLs with other params
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      const videoId = match[1];
+      // Use nocookie domain and parameters to minimize branding
+      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+    }
+  }
+  
+  return null;
+};
+
 export default function Testimonials() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
   const autoPlayRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
   
   const photos = [
     { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child" },
@@ -128,9 +152,16 @@ export default function Testimonials() {
     return () => stopAutoPlay();
   }, []);
 
+  const youtubeUrl = "https://youtu.be/i7qo7bKL8uc?list=TLGGekpdK8wISaMxMjExMjAyNQ";
+  const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
   return (
     <section className="w-full bg-white mt-48 md:mt-64 testimonials-section ">
-      <style jsx>{`
+      <style jsx global>{`
         .testimonial-faq-bg {
           position: absolute;
           inset: 0;
@@ -170,6 +201,45 @@ export default function Testimonials() {
             font-weight: 600 !important;
             line-height: 0.95 !important;
           }
+        }
+        /* Hide YouTube branding and UI elements */
+        .youtube-embed-wrapper {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        .youtube-embed-wrapper iframe {
+          position: absolute;
+          top: -60px;
+          left: 0;
+          width: 100%;
+          height: calc(100% + 120px);
+          transform: scale(1.1);
+          transform-origin: center center;
+        }
+        /* Hide YouTube logo overlay using pseudo-element */
+        .youtube-embed-wrapper::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 60px;
+          background: transparent;
+          z-index: 10;
+          pointer-events: none;
+        }
+        .youtube-embed-wrapper::before {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 60px;
+          background: transparent;
+          z-index: 10;
+          pointer-events: none;
         }
       `}</style>
       <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
@@ -237,16 +307,51 @@ export default function Testimonials() {
                 </p>
               </div>
             </div>
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px'}}>
-              <video 
-                src="/intro_2.mp4" 
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-                className="w-full h-full object-cover"
-                style={{ objectPosition: 'center bottom' }}
-              />
+            <div 
+              className="rounded-[10px] relative overflow-hidden" 
+              style={{height: '396px'}}
+            >
+              {embedUrl && (
+                <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
+                  <iframe
+                    key={`youtube-${isMuted}`}
+                    src={embedUrl}
+                    className="absolute top-0 left-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    frameBorder="0"
+                    style={{
+                      position: 'absolute',
+                      top: '-60px',
+                      left: 0,
+                      width: '100%',
+                      height: 'calc(100% + 120px)',
+                      transform: 'scale(1.1)',
+                      transformOrigin: 'center center'
+                    }}
+                  />
+                  {/* Mute/Unmute button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMute();
+                    }}
+                    className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
+                    aria-label={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? (
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
