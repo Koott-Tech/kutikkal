@@ -300,7 +300,19 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       </div>
       {/* Videos showcase above InfoCards */}
       <div className="mt-16 md:-mt-24">
-        <VideosShowcase cmsData={{ videos: serviceData.videos }} />
+        <VideosShowcase cmsData={{ 
+          videos: (serviceData.videos || []).map(video => ({
+            url: video.url || video.src,
+            src: video.url || video.src,
+            thumbnailUrl: video.thumbnailUrl || video.poster,
+            poster: video.thumbnailUrl || video.poster,
+            title: video.title,
+            position: video.position
+          })),
+          videosHeading: serviceData.videos_heading,
+          videosSubheading: serviceData.videos_subheading,
+          featuredIndex: serviceData.videos_featured_index
+        }} />
       </div>
       {/* Info Cards under Types of Therapy */}
       <div className="-mt-8 md:-mt-24">

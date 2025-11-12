@@ -442,6 +442,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                       <option value="">Auto</option>
                       {[0,1,2,3,4].map(pos => (<option key={pos} value={pos}>{pos}</option>))}
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">Position in the video carousel (0=left, 2=middle, 4=right)</p>
                   </div>
                 </div>
               </div>
