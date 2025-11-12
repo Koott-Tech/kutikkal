@@ -4,24 +4,24 @@ import Image from "next/image";
 
 export default function PersonalizedCare() {
   return (
-    <section className="w-full flex items-center mt-12 md:mt-20">
+    <section className="w-full flex items-center mt-16">
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
           .personalized-care-heading {
-            font-size: 32px !important;
-            font-weight: 600 !important;
-            line-height: 1.1 !important;
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.1;
           }
         }
         @media (max-width: 767px) {
           .personalized-care-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
         }
       `}</style>
-      <div className="w-full px-4 sm:px-6 md:px-0 py-4">
+      <div className="w-full px-4 sm:px-6 md:px-0">
         {/* Header Section */}
         <div className="text-center mb-0 px-4">
           <h3 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500 }}>

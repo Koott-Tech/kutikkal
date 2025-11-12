@@ -160,7 +160,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="w-full bg-white mt-48 md:mt-64 testimonials-section ">
+    <section className="w-full bg-white testimonials-section mt-8">
       <style jsx global>{`
         .testimonial-faq-bg {
           position: absolute;
@@ -172,9 +172,9 @@ export default function Testimonials() {
           height: 120%;
           left: -60%;
           top: -10%;
-          background-size: cover !important;
-          background-position: center center !important;
-          background-repeat: no-repeat !important;
+          background-size: cover;
+          background-position: center center;
+          background-repeat: no-repeat;
         }
         @media (max-width: 1023px) {
           .testimonial-faq-bg {
@@ -187,19 +187,16 @@ export default function Testimonials() {
         }
         @media (min-width: 768px) and (max-width: 1023px) {
           .testimonials-heading {
-            font-size: 32px !important;
-            font-weight: 600 !important;
-            line-height: 1.1 !important;
-          }
-          .testimonials-section {
-            margin-top: 80px !important;
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.1;
           }
         }
         @media (max-width: 767px) {
           .testimonials-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
         }
         /* Hide YouTube branding and UI elements */

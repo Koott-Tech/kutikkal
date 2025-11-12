@@ -20,54 +20,7 @@ export default function Home() {
   return (
     <main className="pt-8">
       <style jsx>{`
-        .info-cards-spacing {
-          margin-top: 32px;
-        }
-        .testimonials-spacing {
-          margin-top: 80px;
-        }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .component-spacing {
-            margin-top: 70px !important;
-          }
-          .info-cards-spacing {
-            margin-top: 28px !important;
-          }
-          .testimonials-spacing {
-            margin-top: 60px !important;
-          }
-        }
         @media (max-width: 767px) {
-          .component-spacing {
-            margin-top: 60px !important;
-          }
-          .component-spacing-tight {
-            margin-top: 8px !important;
-          }
-          /* Reduce wrapper margin above SupportFaq */
-          .support-tight {
-            margin-top: 12px !important;
-          }
-          /* Tighten spacing above Support section (Our promise) on mobile */
-          :global(.support-tight .our-promise-section) {
-            margin-top: 16px !important;
-          }
-          /* Force the ChooseOptions root <section> margin to collapse on mobile */
-          :global(.raise-choose > section) {
-            margin-top: 0 !important;
-          }
-          .component-spacing:first-child {
-            margin-top: 0 !important;
-          }
-          .info-cards-spacing {
-            margin-top: 24px !important;
-          }
-          .testimonials-spacing {
-            margin-top: 24px !important;
-          }
-          :global(.testimonials-tight .testimonials-section) {
-            margin-top: 16px !important;
-          }
           .sister-brands-text {
             text-align: left !important;
           }
@@ -180,39 +133,21 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="component-spacing component-spacing-tight raise-choose">
         <ChooseOptions />
-      </div>
       
       {/* <FeatureCards /> */}
-      <div className="component-spacing">
         <PersonalizedCare />
-      </div>
-      <div className="component-spacing info-cards-spacing" style={{ marginTop: 20 }}>
         <InfoCards compact />
-      </div>
-      <div className="component-spacing">
         <ConsultationBanner />
-      </div>
-      <div className="component-spacing">
         <HowItWorks />
-      </div>
-      <div className="component-spacing support-tight">
         <SupportFaq />
-      </div>
-      <div className="component-spacing testimonials-spacing testimonials-tight" style={{ marginTop: 160 }}>
         <Testimonials />
-      </div>
       
       {/* <ResultsSplit /> */}
       
-      <div className="component-spacing">
         <BlogTeaser />
-      </div>
       
-      <div className="component-spacing">
         <HelpFaq />
-      </div>
     </main>
   );
 }

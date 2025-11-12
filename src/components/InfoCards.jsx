@@ -59,49 +59,43 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     return null;
   };
 
-  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center pt-4 md:pt-6 pb-0 mb-0`;
+  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center mt-2`;
 
   return (
     <section className={sectionClassName}>
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
-          .mobile-section {
-            margin-top: 12px !important;
-          }
           .info-card {
-            min-height: 200px !important;
-            padding: 20px !important;
+            min-height: 200px;
+            padding: 20px;
           }
           .info-card-title {
-            font-size: 18px !important;
-            line-height: 1.35 !important;
+            font-size: 18px;
+            line-height: 1.35;
           }
           .info-card-description {
-            font-size: 14px !important;
-            line-height: 1.45 !important;
+            font-size: 14px;
+            line-height: 1.45;
           }
           .info-card-cta {
-            font-size: 15px !important;
+            font-size: 15px;
           }
         }
         @media (max-width: 767px) {
-          .mobile-section {
-            margin-top: 8px !important;
-          }
           .info-card {
-            min-height: 180px !important;
-            padding: 16px !important;
+            min-height: 180px;
+            padding: 16px;
           }
           .info-card-title {
-            font-size: 16px !important;
-            line-height: 1.3 !important;
+            font-size: 16px;
+            line-height: 1.3;
           }
           .info-card-description {
-            font-size: 13px !important;
-            line-height: 1.4 !important;
+            font-size: 13px;
+            line-height: 1.4;
           }
           .info-card-cta {
-            font-size: 14px !important;
+            font-size: 14px;
           }
         }
       `}</style>

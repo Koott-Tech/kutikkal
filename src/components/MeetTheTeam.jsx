@@ -14,8 +14,8 @@ const teamMembers = [
 export default function MeetTheTeam() {
   return (
     <div className="px-[50px]">
-      <section className="w-full mt-6 md:mt-8 mb-6 md:mb-8">
-        <div className="w-full py-20">
+      <section className="w-full mt-24">
+        <div className="w-full">
           {/* Header Section */}
           <div className="text-center mb-16">
             <p className="text-xl text-black font-normal text-center mb-2">

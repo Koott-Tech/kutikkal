@@ -83,22 +83,22 @@ export default function HelpFaq({ cmsData = null }) {
   const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
 
   return (
-    <section className="w-full mt-12 md:mt-20 px-4 lg:px-6">
+    <section className="w-full px-4 lg:px-6 mt-24">
       <style jsx>{`
         @media (max-width: 767px) {
           .help-faq-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
           /* Force smaller answer text on mobile */
           .faq-answer {
-            font-size: 10.5px !important;
-            line-height: 1.45 !important;
+            font-size: 10.5px;
+            line-height: 1.45;
           }
         }
       `}</style>
-      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 py-4 md:py-6 md:grid-cols-[0.9fr_1.1fr]">
+      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0">
           <div className="space-y-1">

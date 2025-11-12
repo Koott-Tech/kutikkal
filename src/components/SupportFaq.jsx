@@ -71,125 +71,120 @@ export default function SupportFaq() {
   }, [active, currentSrc, items, resolvedSrcByIndex]);
 
   return (
-    <section className="w-full flex items-center mt-20 our-promise-section" style={{ height: 'auto' }}>
+    <section className="w-full flex items-center our-promise-section mt-16" style={{ height: 'auto' }}>
       <style jsx>{`
         .faq-background {
-          height: 100% !important;
-          min-height: calc(100% - 48px) !important;
+          height: 100%;
+          min-height: calc(100% - 48px);
         }
         .faq-mobile-content {
           position: relative;
-          z-index: 1;
         }
         @media (max-width: 1023px) {
           .faq-background {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            width: 170% !important; /* stretch beyond container width */
-            height: 120% !important;
-            transform: translate(-50%, -50%) rotate(90deg) !important;
-            transform-origin: center center !important;
-            background-size: cover !important;
-            background-position: center center !important;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 170%; /* stretch beyond container width */
+            height: 100%;
+            max-height: 100%;
+            transform: translateX(-50%) rotate(90deg);
+            transform-origin: center center;
+            background-size: cover;
+            background-position: center center;
           }
         }
         .our-promise-section {
-          min-height: auto !important;
-          height: auto !important;
-          padding-top: 0 !important;
-          padding-bottom: 0 !important;
-          margin-top: 120px !important;
-          position: relative;
-          z-index: 0;
-          isolation: isolate;
+          min-height: auto;
+          height: auto;
+          padding-top: 0;
+          padding-bottom: 0;
+          overflow: visible;
         }
         @media (min-width: 768px) and (max-width: 1023px) {
           .our-promise-section {
-            margin-top: 90px !important;
-            padding: 0 24px !important;
+            padding: 0 24px;
           }
           .our-promise-title {
-            font-size: 22px !important;
-            margin-bottom: 14px !important;
+            font-size: 22px;
+            margin-bottom: 14px;
           }
           .our-promise-description {
-            font-size: 15px !important;
-            line-height: 1.5 !important;
+            font-size: 15px;
+            line-height: 1.5;
           }
           .faq-mobile-content h6 {
-            font-size: 18px !important;
+            font-size: 18px;
           }
           .faq-mobile-content p {
-            font-size: 14px !important;
-            line-height: 1.5 !important;
+            font-size: 14px;
+            line-height: 1.5;
           }
         }
         @media (max-width: 767px) {
           .our-promise-section {
-            margin-top: 20px !important;
-            padding: 0 16px !important;
+            padding: 0 16px;
           }
           .our-promise-title {
-            font-size: 18px !important;
-            margin-bottom: 12px !important;
+            font-size: 18px;
+            margin-bottom: 12px;
           }
           .our-promise-description {
-            font-size: 14px !important;
-            line-height: 1.4 !important;
+            font-size: 14px;
+            line-height: 1.4;
           }
           .faq-mobile-content h6 {
-            font-size: 16px !important;
+            font-size: 16px;
           }
           .faq-mobile-content p {
-            font-size: 13px !important;
-            line-height: 1.4 !important;
+            font-size: 13px;
+            line-height: 1.4;
           }
           .our-promise-title {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
         }
         .our-promise-grid {
-          height: 600px !important;
-          min-height: 600px !important;
-          max-height: 600px !important;
+          height: 600px;
+          min-height: 600px;
+          max-height: 600px;
         }
         .left-side-image-container {
-          transition: opacity 0.3s ease-in-out !important;
-          transform: none !important;
-          height: 500px !important;
-          min-height: 500px !important;
-          max-height: 500px !important;
-          flex-shrink: 0 !important;
-          flex-grow: 0 !important;
-          overflow: hidden !important;
-          border-radius: 10px !important;
+          transition: opacity 0.3s ease-in-out;
+          transform: none;
+          height: 500px;
+          min-height: 500px;
+          max-height: 500px;
+          flex-shrink: 0;
+          flex-grow: 0;
+          overflow: hidden;
+          border-radius: 10px;
         }
         .left-side-image-container img {
-          transition: opacity 0.3s ease-in-out !important;
-          transform: none !important;
-          animation: none !important;
-          height: 500px !important;
-          width: 100% !important;
-          object-fit: contain !important;
-          max-width: 100% !important;
-          max-height: 500px !important;
-          min-height: 500px !important;
-          min-width: 100% !important;
-          border-radius: 10px !important;
+          transition: opacity 0.3s ease-in-out;
+          transform: none;
+          animation: none;
+          height: 500px;
+          width: 100%;
+          object-fit: contain;
+          max-width: 100%;
+          max-height: 500px;
+          min-height: 500px;
+          min-width: 100%;
+          border-radius: 10px;
         }
         @media (min-width: 1024px) {
           .our-promise-section {
-            min-height: clamp(520px, 60vh, 820px) !important;
-            height: clamp(520px, 60vh, 820px) !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
+            min-height: clamp(520px, 60vh, 820px);
+            height: clamp(520px, 60vh, 820px);
+            padding-top: 0;
+            padding-bottom: 0;
           }
         }
       `}</style>
-      <div className="w-full mx-auto max-w-[1400px] mt-4 md:mt-40 px-3 sm:px-8 md:px-[50px]">
+      <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
         <h3 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
         Supporting you and your little one at every step.

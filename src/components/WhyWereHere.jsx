@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 export default function WhyWereHere() {
   return (
-    <section className="w-full py-24 px-4 bg-white">
+    <section className="w-full px-4 bg-white mt-24">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}

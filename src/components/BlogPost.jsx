@@ -381,7 +381,7 @@ export default function BlogPost({ slug }) {
         {blogPost.featured_image_url && (
           <div className="mb-8">
             <div className="flex justify-center">
-              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden bg-gray-100">
+              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden">
               <img
                 src={blogPost.featured_image_url}
             alt={blogPost.title}

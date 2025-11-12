@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function TestimonialsAbout() {
     return (
         <div className="px-[50px]">
-            <section className="w-full mt-6 md:mt-8 mb-6 md:mb-8">
+            <section className="w-full mt-10">
                 <div className="h-[100vh] w-full rounded-2xl overflow-hidden bg-white">
                     <div className="h-full w-full p-8">
                         {/* Header Section */}

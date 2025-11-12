@@ -151,7 +151,7 @@ export default function Blog() {
           <Link href={`/blog/${featuredPost.slug}`} className="block">
             <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16 group cursor-pointer">
               {/* Image Container */}
-              <div className="relative h-[360px] md:h-[420px] w-full bg-gray-100">
+              <div className="relative h-[360px] md:h-[420px] w-full">
                 <Image
                   src={featuredPost.featured_image_url || "/kids.png"}
                   alt={featuredPost.title}
@@ -229,39 +229,39 @@ export default function Blog() {
 
         {/* Blog Posts Grid */}
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {filteredPosts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                <div className="bg-white rounded-xl overflow-hidden py-4 border border-gray-200">
+              <Link 
+                key={post.id} 
+                href={`/blog/${post.slug}`} 
+                className="group block w-full max-w-[340px] mx-auto md:mx-0"
+              >
+                <article className="w-full cursor-pointer">
                   {/* Image Container */}
-                  <div className="relative h-48 bg-gray-100">
+                  {post.featured_image_url && (
+                    <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
                     <Image
-                      src={post.featured_image_url || "/kids.png"}
+                        src={post.featured_image_url}
                       alt={post.title}
                       fill
-                      className="object-contain transition-transform duration-200"
-                    />
-                    
-                    {/* Category Badge */}
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="absolute top-3 left-3">
-                        <span className="bg-indigo-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          {post.tags[0]}
-                        </span>
+                        className="object-contain object-left"
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
+                      />
                       </div>
                     )}
+                  
+                  {/* Meta Info */}
+                  <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
+                    <span>{post.author_name || "Kuttikal Team"}</span>
+                    <span className="px-1 md:px-2">•</span>
+                    <span>{formatDate(post.published_at || post.created_at)}</span>
                   </div>
                   
-                  {/* Text Content */}
-                  <div className="px-6 pt-6 pb-4">
-                    <div className="text-sm text-gray-500 mb-2" style={{ fontWeight: 50 }}>
-                      {post.author_name} • {formatDate(post.published_at || post.created_at)}
-                    </div>
-                    <h6 className="text-lg font-normal text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+                  {/* Title */}
+                  <h6 className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900">
                       {post.title}
                     </h6>
-                  </div>
-                </div>
+                </article>
               </Link>
             ))}
           </div>

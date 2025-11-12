@@ -6,34 +6,7 @@ import { useRouter } from "next/navigation";
 export default function BlogTeaser() {
   const router = useRouter();
 
-  const fallbackPosts = [
-    {
-      src: "/hero.png",
-      alt: "Plant leaves",
-      author_name: "Alex Bachert",
-      published_at: "2025-05-23",
-      title: "The benefits of combining therapy and psychiatry",
-      highlight: false,
-    },
-    {
-      src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-      alt: "Smiling person",
-      author_name: "Liz Talago",
-      published_at: "2025-03-25",
-      title: "How to find a therapist who's a good fit for you",
-      highlight: false,
-    },
-    {
-      src: "/rightside5th.png",
-      alt: "Person working online",
-      author_name: "Alex Bachert",
-      published_at: "2025-05-19",
-      title: "What are the benefits of doing therapy online?",
-      highlight: true,
-    },
-  ];
-
-  const [posts, setPosts] = useState(fallbackPosts);
+  const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const handleExploreClick = () => {
@@ -94,10 +67,12 @@ export default function BlogTeaser() {
         const result = await response.json();
         if (result.success && Array.isArray(result.data?.blogs) && result.data.blogs.length > 0) {
           setPosts(result.data.blogs.slice(0, 3));
+        } else {
+          setPosts([]);
         }
       } catch (error) {
         console.error('Error fetching latest blogs:', error);
-        // Fallback to default posts already set
+        setPosts([]);
       } finally {
         setIsLoading(false);
       }
@@ -142,41 +117,41 @@ export default function BlogTeaser() {
   };
 
   return (
-    <section className="w-full mt-24 md:mt-24 px-4 lg:px-6">
+    <section className="w-full px-4 lg:px-6 mt-24">
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
           .blog-teaser-heading {
-            font-size: 32px !important;
-            font-weight: 600 !important;
-            line-height: 1.1 !important;
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.1;
           }
           .blog-card {
-            max-width: 280px !important;
+            max-width: 280px;
           }
           .blog-image {
-            height: 140px !important;
+            height: 140px;
           }
           .blog-title {
-            font-size: 14px !important;
-            line-height: 1.35 !important;
+            font-size: 14px;
+            line-height: 1.35;
           }
           .blog-meta {
-            font-size: 12px !important;
+            font-size: 12px;
           }
         }
         @media (max-width: 767px) {
           .blog-teaser-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
           .blog-grid {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            gap: 20px !important;
+            gap: 20px;
             padding-bottom: 12px;
             padding-left: clamp(18px, 7vw, 32px);
             padding-right: clamp(18px, 7vw, 32px);
@@ -186,18 +161,18 @@ export default function BlogTeaser() {
             display: none;
           }
           .blog-image {
-            height: 120px !important;
+            height: 120px;
           }
           .blog-title {
-            font-size: 13px !important;
-            line-height: 1.3 !important;
+            font-size: 13px;
+            line-height: 1.3;
           }
           .blog-meta {
-            font-size: 11px !important;
+            font-size: 11px;
           }
           .blog-card {
             flex: 0 0 78%;
-            max-width: none !important;
+            max-width: none;
             scroll-snap-align: center;
           }
           .blog-card:first-child {
@@ -208,7 +183,6 @@ export default function BlogTeaser() {
           }
           .blog-carousel-controls {
             position: relative;
-            margin-top: 86px;
             height: 0;
           }
           .blog-carousel-controls button {
@@ -240,11 +214,11 @@ export default function BlogTeaser() {
           }
         }
       `}</style>
-      <div className="mx-auto max-w-[1100px] px-0 py-4 md:py-6 lg:py-8 overflow-hidden">
+      <div className="mx-auto max-w-[1100px] px-0 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4">
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
-                 <h3 className="blog-teaser-heading mt-2 md:mt-3 break-words text-base md:text-xl lg:text-2xl font-semibold">
+                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-10 md:mb-12 break-words text-base md:text-xl lg:text-2xl font-semibold">
                Tips to become a better parent
              </h3>
            </div>
@@ -262,9 +236,9 @@ export default function BlogTeaser() {
           </div>
         </div>
 
-        <div ref={carouselRef} className="blog-grid mt-24 md:mt-16 lg:mt-20 grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel">
+        <div ref={carouselRef} className="blog-grid grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel">
            {posts.map((post) => {
-            const imageSrc = post.featured_image_url || post.src || "/hero.png";
+            const imageSrc = post.featured_image_url || post.src;
             const author = post.author_name || post.author || "Kuttikal Team";
             const date = post.published_at || post.created_at || post.date || '';
             const altText = post.alt || post.title || "Blog cover image";
@@ -275,8 +249,9 @@ export default function BlogTeaser() {
               className="blog-card w-full max-w-[300px] md:max-w-[340px] mx-auto md:mx-0 cursor-pointer"
               onClick={() => handleBlogClick(post)}
             >
+               {imageSrc && (
                <div
-               className={`blog-image relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl bg-gray-100 ${
+               className={`blog-image relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl  ${
                    post.highlight ? "ring-4 md:ring-8 ring-sky-100" : ""
                  }`}
                >
@@ -284,10 +259,11 @@ export default function BlogTeaser() {
                   src={imageSrc}
                   alt={altText}
                   fill
-                  className="object-contain"
+                    className="object-contain object-left"
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
                 />
               </div>
+              )}
               <div className="blog-meta mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
                 <span className="p2">{author}</span>
                 <span className="px-1 md:px-2 p2">•</span>

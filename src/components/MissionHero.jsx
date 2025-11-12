@@ -15,7 +15,7 @@ export default function MissionHero() {
     <>
       <div className="w-full min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 flex flex-col">
         {/* Row 1: Header Content */}
-        <div className="flex flex-col items-center px-6 pt-16 text-center">
+        <div className="flex flex-col items-center px-6 pt-16 mt-8 text-center">
           <h1 
             className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[110%] md:leading-tight mb-6 max-w-4xl tracking-[-0.195rem]"
             style={{ color: '#1d1733' }}

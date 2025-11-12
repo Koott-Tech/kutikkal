@@ -132,65 +132,62 @@ export default function HowItWorks() {
   };
 
   return (
-    <section id="how-it-works" className="w-full mobile-section mt-12 md:mt-20">
+    <section id="how-it-works" className="w-full mobile-section mt-16">
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
-          .mobile-section {
-            margin-top: 16px !important;
-          }
           .how-it-works-card {
-            height: 320px !important;
-            width: 300px !important;
+            height: 320px;
+            width: 300px;
           }
           .how-it-works-title {
-            font-size: 20px !important;
-            margin-bottom: 14px !important;
+            font-size: 20px;
+            margin-bottom: 14px;
           }
           .how-it-works-description {
-            font-size: 14px !important;
-            line-height: 1.4 !important;
+            font-size: 14px;
+            line-height: 1.4;
           }
           .how-it-works-heading {
-            font-size: 32px !important;
-            font-weight: 600 !important;
-            line-height: 1.1 !important;
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.1;
           }
         }
         @media (max-width: 767px) {
           .mobile-section {
-            margin-top: 8px !important;
+            margin-top: 8px;
           }
           .how-it-works-card {
-            height: 280px !important;
-            width: clamp(240px, 80vw, 320px) !important;
+            height: 280px;
+            width: clamp(240px, 80vw, 320px);
           }
           .how-it-works-title {
-            font-size: 18px !important;
-            margin-bottom: 12px !important;
+            font-size: 18px;
+            margin-bottom: 12px;
           }
           .how-it-works-description {
-            font-size: 13px !important;
-            line-height: 1.3 !important;
+            font-size: 13px;
+            line-height: 1.3;
           }
           .how-it-works-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 0.95;
           }
         }
         .card-bg-mobile {
-          background-size: cover !important;
-          background-position: center !important;
-          background-repeat: no-repeat !important;
-          background-attachment: initial !important;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: initial;
         }
         @media (max-width: 768px) {
           .card-bg-mobile {
-            background-size: 100% 100% !important;
-            background-position: center top !important;
+            background-size: 100% 100%;
+            background-position: center top;
           }
           .card-2-inner-image {
-            margin-top: 10px !important;
+            margin-top: 10px;
           }
         }
         @media (max-width: 767px) {
@@ -220,7 +217,7 @@ export default function HowItWorks() {
           }
         }
       `}</style>
-      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 pt-2 md:pt-4 pb-6 md:pb-8">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6">
         <p className="text-center md:text-center mt-2 text-sm md:text-base">
           How it works
         </p>
@@ -305,7 +302,7 @@ export default function HowItWorks() {
                                 fill
                                 className="object-contain"
                                 sizes="200px"
-                                style={{ padding: '0 !important', margin: '0 !important', display: 'block' }}
+                                style={{ padding: '0', margin: '0', display: 'block' }}
                               />
                             </div>
                             {/* Doctor Information */}
@@ -348,7 +345,7 @@ export default function HowItWorks() {
                                 fill
                                 className="object-contain"
                                 sizes="170px"
-                                style={{ padding: '0 !important', margin: '0 !important', display: 'block' }}
+                                style={{ padding: '0', margin: '0', display: 'block' }}
                               />
                             </div>
                           </div>
@@ -482,7 +479,7 @@ export default function HowItWorks() {
                     fill
                     className="object-contain"
                     sizes="220px"
-                    style={{ padding: '0 !important', margin: '0 !important', display: 'block' }}
+                    style={{ padding: '0', margin: '0', display: 'block' }}
                   />
                 </div>
                 {/* Doctor Information */}
@@ -558,7 +555,7 @@ export default function HowItWorks() {
                   fill
                   className="object-contain"
                   sizes="190px"
-                  style={{ padding: '0 !important', margin: '0 !important', display: 'block' }}
+                  style={{ padding: '0', margin: '0', display: 'block' }}
                 />
               </div>
             </div>

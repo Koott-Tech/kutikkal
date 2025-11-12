@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function AboutStats() {
   return (
     <div className="w-full">
-      <section className="w-full  md:mb-8">
+      <section className="w-full mt-24">
         <div className="min-h-[120vh] md:h-[100vh] w-full overflow-hidden shadow-sm">
           <div className="flex flex-col md:grid md:grid-cols-2 h-full w-full">
             {/* Left: Text + Stats */}
@@ -46,7 +46,7 @@ export default function AboutStats() {
             {/* Right: Image */}
             <div className="relative order-2 md:order-2 h-[60vh] md:h-full">
               <Image
-                src="/About Us Card 1.webp"
+                src="/Aboutus 2.webp"
                 alt="Person enjoying a cup"
                 fill
                 className="object-cover"

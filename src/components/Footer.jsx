@@ -135,7 +135,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
         fetchBetterParenting();
     }, []);
     return (
-        <footer className="w-full" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+        <footer className="w-full mt-14" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
                 @media (min-width: 768px) and (max-width: 1023px) {
                     .footer-heading {
