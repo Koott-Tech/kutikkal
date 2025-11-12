@@ -16,6 +16,9 @@ import TherapistCarousel from '@/components/TherapistCarousel';
 // Force dynamic rendering and disable caching so edits reflect immediately
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const dynamicParams = true;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
 
 const EXCLUDED = new Set([
   'assessments',
@@ -97,7 +100,13 @@ async function fetchCounsellingService(slug, { preview = false } = {}) {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = preview ? '?preview=1' : '';
     const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      next: { revalidate: 0 },
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
     
     if (response.ok) {
