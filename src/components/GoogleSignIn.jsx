@@ -66,6 +66,15 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
       console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
       
       if (isDevelopment) {
+        // Development: Store current page URL before redirecting to Google
+        if (typeof window !== 'undefined') {
+          const currentUrl = window.location.pathname + window.location.search;
+          // Only store if not already on callback page
+          if (!currentUrl.includes('/auth/callback')) {
+            sessionStorage.setItem('auth_return_url', currentUrl);
+          }
+        }
+        
         // Development: Use current redirect behavior
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

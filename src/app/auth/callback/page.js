@@ -30,7 +30,8 @@ function AuthCallbackFallback() {
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState('Processing...');
+  const [status, setStatus] = useState(null);
+  const [showError, setShowError] = useState(false);
   const { login } = useAuth();
 
   const { returnUrl, mode, sourceOrigin } = useMemo(() => {
@@ -106,15 +107,16 @@ function AuthCallbackContent() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        setStatus('Processing authentication...');
-        
         const supabase = getSupabaseClient();
         
         if (!supabase) {
           console.error('Supabase client not available');
-          setStatus('Configuration error. Redirecting...');
+          setStatus('Authentication configuration error. Please try again.');
+          setShowError(true);
           localStorage.setItem('auth_error', 'Authentication configuration error. Please try again.');
-          setTimeout(() => router.push('/'), 2000);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
           return;
         }
 
@@ -123,15 +125,17 @@ function AuthCallbackContent() {
         
         if (error) {
           console.error('Auth callback error:', error);
-          setStatus('Authentication failed. Redirecting...');
+          setStatus('Authentication failed. Please try again.');
+          setShowError(true);
           localStorage.setItem('auth_error', 'Authentication failed. Please try again.');
-          setTimeout(() => router.push('/'), 2000);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
           return;
         }
 
         if (data.session && data.session.user) {
           console.log('🔍 Supabase auth successful:', data.session.user);
-          setStatus('Authentication successful! Redirecting...');
 
           const accessToken = data.session.access_token;
           const baseUserData = {
@@ -219,21 +223,56 @@ function AuthCallbackContent() {
             } catch (postMessageError) {
               console.warn('Failed to post auth success message to opener:', postMessageError);
             }
-            setStatus('Authentication successful! You may close this window.');
-          } else if (safeReturnUrl) {
-            if (safeReturnUrl.startsWith('http')) {
-              window.location.href = safeReturnUrl;
-            } else {
-              router.replace(safeReturnUrl);
-            }
+            window.close();
           } else {
-            router.replace('/');
+            // On success: reload the original page instead of redirecting to /
+            // Priority: 1) returnUrl from query params, 2) sessionStorage, 3) referrer (excluding Google)
+            let redirectUrl = safeReturnUrl;
+            
+            if (!redirectUrl && typeof window !== 'undefined') {
+              // Try to get from sessionStorage (stored before redirect)
+              const storedUrl = sessionStorage.getItem('auth_return_url');
+              if (storedUrl) {
+                redirectUrl = storedUrl;
+                sessionStorage.removeItem('auth_return_url');
+              } else {
+                // Try to get from referrer (avoid Google OAuth pages)
+                const referrer = document.referrer;
+                if (referrer && referrer.startsWith(window.location.origin)) {
+                  try {
+                    const referrerUrl = new URL(referrer);
+                    // Only use referrer if it's not the callback page itself and not from Google
+                    if (!referrerUrl.pathname.includes('/auth/callback') && 
+                        !referrerUrl.hostname.includes('google') &&
+                        !referrerUrl.hostname.includes('accounts.google')) {
+                      redirectUrl = referrerUrl.pathname + referrerUrl.search;
+                    }
+                  } catch (e) {
+                    // If parsing fails, fall through
+                  }
+                }
+              }
+            }
+            
+            // Always reload the page - use redirectUrl if we have it, otherwise reload home
+            if (redirectUrl && redirectUrl !== '/auth/callback') {
+              // Reload the original page
+              window.location.href = redirectUrl;
+            } else {
+              // If no specific page found, reload home page (this is still a reload, not a router redirect)
+              if (typeof window !== 'undefined') {
+                window.location.href = '/';
+              }
+            }
           }
         } else {
           console.log('No session found, redirecting to login');
-          setStatus('No session found. Redirecting...');
+          setStatus('No active session found. Please log in again.');
+          setShowError(true);
           localStorage.setItem('auth_error', 'No active session found. Please log in again.');
-          setTimeout(() => router.push('/'), 2000);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
         }
       } catch (error) {
         console.error('Auth callback error:', error);
@@ -263,26 +302,39 @@ function AuthCallbackContent() {
           } catch (postMessageError) {
             console.warn('Failed to post auth error message to opener:', postMessageError);
           }
-          setStatus('Authentication failed. You may close this window.');
-          setTimeout(() => {
             window.close();
-          }, 1500);
         } else {
-          setStatus('Error occurred. Redirecting...');
+          setStatus('Authentication failed. Please try again.');
+          setShowError(true);
           localStorage.setItem('auth_error', 'Authentication failed. Please try again.');
-          setTimeout(() => router.push('/'), 2000);
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
         }
       }
     };
 
     handleAuthCallback();
-  }, [login, mode, router, safeReturnUrl]);
+  }, [login, mode, router, safeReturnUrl, targetOrigin]);
 
+  // Don't show any UI on success - just redirect silently
+  // Only show error UI if there's an actual error
+  if (!showError) {
+    return null; // Return nothing while processing, will redirect on success
+  }
+
+  // Only show UI for errors
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">{status}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center px-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </div>
+        <p className="text-lg font-medium text-gray-900 mb-2">Authentication Failed</p>
+        <p className="text-gray-600 mb-4">{status || 'An error occurred during authentication.'}</p>
+        <p className="text-sm text-gray-500">Redirecting to home page...</p>
       </div>
     </div>
   );

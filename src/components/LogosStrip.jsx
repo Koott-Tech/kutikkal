@@ -1,9 +1,7 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 
 export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logosCount = 8, swapSecondThird = false }) {
-  const [showTooltip, setShowTooltip] = useState(false);
   
   // Check if using dark background to determine text and logo colors
   const isDarkBg = bgColor !== "bg-white";
@@ -35,30 +33,10 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
        <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 px-2 sm:px-4 md:px-[70px]">
                  {/* Insurance Coverage Text - Left on desktop, top on mobile */}
           <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
-                     <div className="text-center md:text-left relative">
+                     <div className="text-center md:text-left">
              <p className={`text-base font-medium ${textColor} leading-[1.5]`}>
                Industry experts from <br /> renowned universities.
              </p>
-             <div className="absolute -top-1 -right-6 md:-right-6">
-               <button
-                 onMouseEnter={() => setShowTooltip(true)}
-                 onMouseLeave={() => setShowTooltip(false)}
-                 className={`flex h-4 w-4 items-center justify-center rounded-full ${isDarkBg ? 'bg-white/20 hover:bg-white/30' : 'bg-gray-200 hover:bg-gray-300'} transition-colors cursor-pointer`}
-               >
-                 <span className={`text-xs font-medium ${isDarkBg ? 'text-white' : 'text-gray-600'}`}>i</span>
-               </button>
-               
-               {/* Tooltip */}
-               {showTooltip && (
-                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50">
-                   <div className="text-xs text-gray-700 leading-tight">
-                     Rula patients typically pay $15 per session using insurance, but we'll provide you with a personalized cost estimate prior to your first appointment.
-                   </div>
-                   {/* Arrow pointing down */}
-                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
-                 </div>
-               )}
-             </div>
            </div>
          </div>
          

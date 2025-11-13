@@ -88,6 +88,8 @@ export default function AuthModal({
         await maybePromptContactInfo();
       }
       closeAndReset();
+      // Reload the page to refresh auth state
+      window.location.reload();
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
       // Check if it's a "user not found" type error - suggest signup
@@ -131,6 +133,8 @@ export default function AuthModal({
       try { await onAuthSuccess?.(data.data.user); } catch (_) {}
       await maybePromptContactInfo();
       closeAndReset();
+      // Reload the page to refresh auth state
+      window.location.reload();
     } catch (err) {
       const msg = err?.message || "Registration failed. Please try again.";
       setError(msg);

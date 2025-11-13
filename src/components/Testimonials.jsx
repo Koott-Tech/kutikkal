@@ -26,81 +26,124 @@ const getYouTubeEmbedUrl = (url, muted = true) => {
 };
 
 export default function Testimonials() {
-  const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
   const autoPlayRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
+  const isPausedRef = useRef(false);
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
+  const touchHoldTimerRef = useRef(null);
+  const isHoldingRef = useRef(false);
+  const scrollCheckRef = useRef(null);
+  const isScrollingRef = useRef(false);
   
   const photos = [
-    { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child" },
-    { src: "/TESTIMONIALS 2.webp", alt: "Family smiling" },
-    { src: "/TESTIMONIALS 3.webp", alt: "Happy child" },
-    { src: "/TESTIMONIALS 4.webp", alt: "Family moment" },
-    { src: "/TESTIMONIALS 5.webp", alt: "Happy family" }
+    { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
+    { src: "/TESTIMONIALS 2.webp", alt: "Family smiling", type: "image" },
+    { src: "/TESTIMONIALS 3.webp", alt: "Happy child", type: "image" },
+    { src: "/TESTIMONIALS 4.webp", alt: "Family moment", type: "image" },
+    { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" },
+    { src: "/testimonialgirl.png", alt: "Testimonial", type: "image" },
+    { src: "https://www.youtube.com/shorts/mX7RKFjrLxk", alt: "Testimonial video", type: "video" }
   ];
 
-  const nextSlide = () => {
-    stopAutoPlay(); // Stop auto-play when user clicks
-    const newSlide = (currentSlide + 1) % photos.length;
-    setCurrentSlide(newSlide);
-    scrollToSlide(newSlide);
-    // Restart auto-play after delay
-    setTimeout(() => startAutoPlay(), 2000);
-  };
-
-  const prevSlide = () => {
-    stopAutoPlay(); // Stop auto-play when user clicks
-    const newSlide = (currentSlide - 1 + photos.length) % photos.length;
-    setCurrentSlide(newSlide);
-    scrollToSlide(newSlide);
-    // Restart auto-play after delay
-    setTimeout(() => startAutoPlay(), 2000);
-  };
-
-  const goToSlide = (index) => {
-    stopAutoPlay(); // Stop auto-play when user clicks
-    setCurrentSlide(index);
-    scrollToSlide(index);
-    // Restart auto-play after delay
-    setTimeout(() => startAutoPlay(), 2000);
-  };
-
-  // Handle scroll events to sync with navigation dots
+  // Create infinite loop by duplicating photos
+  const infinitePhotos = [...photos, ...photos, ...photos];
+  
   const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const scrollLeft = scrollContainerRef.current.scrollLeft;
-      const cardWidth = 280; // Fixed card width
-      const gap = 16; // gap-4 = 16px
-      const totalCardWidth = cardWidth + gap;
-      const newSlide = Math.round(scrollLeft / totalCardWidth);
-      setCurrentSlide(Math.min(newSlide, photos.length - 1));
+    if (!scrollContainerRef.current || isScrollingRef.current) return;
+    
+    // Use requestAnimationFrame to throttle scroll checks
+    if (scrollCheckRef.current) {
+      cancelAnimationFrame(scrollCheckRef.current);
     }
+    
+    scrollCheckRef.current = requestAnimationFrame(() => {
+      if (!scrollContainerRef.current || isScrollingRef.current) return;
+      
+      const container = scrollContainerRef.current;
+      const scrollLeft = container.scrollLeft;
+      const containerWidth = container.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
+      
+      if (containerWidth === 0) return; // Wait for container to have width
+      
+      const thresholdStart = photos.length * containerWidth;
+      const thresholdEnd = photos.length * 2 * containerWidth;
+      
+      // If scrolled past the end of middle set, instantly jump to corresponding position in middle set
+      if (scrollLeft >= thresholdEnd - (containerWidth * 0.5)) {
+        isScrollingRef.current = true;
+        // Temporarily disable smooth scrolling and scroll snap
+        const originalScrollBehavior = container.style.scrollBehavior;
+        const originalScrollSnap = container.style.scrollSnapType;
+        container.style.scrollBehavior = 'auto';
+        container.style.scrollSnapType = 'none';
+        
+        // Calculate offset more precisely
+        const positionInLastSet = scrollLeft - thresholdEnd;
+        const offset = positionInLastSet >= 0 ? (positionInLastSet % (photos.length * containerWidth)) : 0;
+        const targetScroll = thresholdStart + offset;
+
+        // Set scroll position instantly
+        container.scrollLeft = targetScroll;
+        
+        // Re-enable smooth scrolling and snap after jump completes
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            container.style.scrollBehavior = originalScrollBehavior || 'smooth';
+            container.style.scrollSnapType = originalScrollSnap || 'x mandatory';
+            setTimeout(() => {
+              isScrollingRef.current = false;
+            }, 150);
+          });
+        });
+      }
+      // If scrolled before the start of middle set, instantly jump to corresponding position in middle set
+      else if (scrollLeft <= thresholdStart - (containerWidth * 0.5)) {
+        isScrollingRef.current = true;
+        // Temporarily disable smooth scrolling and scroll snap
+        const originalScrollBehavior = container.style.scrollBehavior;
+        const originalScrollSnap = container.style.scrollSnapType;
+        container.style.scrollBehavior = 'auto';
+        container.style.scrollSnapType = 'none';
+        
+        // Calculate offset more precisely
+        const positionBeforeStart = thresholdStart - scrollLeft;
+        const offset = positionBeforeStart >= 0 ? (positionBeforeStart % (photos.length * containerWidth)) : 0;
+        const targetScroll = thresholdEnd - offset;
+        
+        // Set scroll position instantly
+        container.scrollLeft = targetScroll;
+        
+        // Re-enable smooth scrolling and snap after jump completes
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            container.style.scrollBehavior = originalScrollBehavior || 'smooth';
+            container.style.scrollSnapType = originalScrollSnap || 'x mandatory';
+            setTimeout(() => {
+              isScrollingRef.current = false;
+            }, 150);
+          });
+        });
+      }
+    });
   };
 
-  // Scroll to specific slide
-  const scrollToSlide = (index) => {
-    if (scrollContainerRef.current) {
-      const cardWidth = 280; // Fixed card width
-      const gap = 16; // gap-4 = 16px
-      const totalCardWidth = cardWidth + gap;
-      scrollContainerRef.current.scrollTo({
-        left: index * totalCardWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  // Auto-play functionality
+  // Auto-play functionality with infinite loop
   const startAutoPlay = () => {
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
     }
     autoPlayRef.current = setInterval(() => {
-      setCurrentSlide((prev) => {
-        const next = (prev + 1) % photos.length;
-        scrollToSlide(next);
-        return next;
-      });
+      if (!isPausedRef.current && !isScrollingRef.current && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const containerWidth = container.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
+        
+        container.scrollBy({
+          left: containerWidth,
+          behavior: 'smooth'
+        });
+      }
     }, 3000);
   };
 
@@ -111,46 +154,121 @@ export default function Testimonials() {
     }
   };
 
-  // Touch/swipe support
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-
+  // Touch/swipe support with hold-to-pause
   const minSwipeDistance = 50;
 
   const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-    stopAutoPlay(); // Stop auto-play when user interacts
+    touchEndRef.current = null;
+    touchStartRef.current = e.targetTouches[0].clientX;
+    isPausedRef.current = true;
+    stopAutoPlay();
+    
+    // Start touch hold timer
+    touchHoldTimerRef.current = setTimeout(() => {
+      isHoldingRef.current = true;
+      isPausedRef.current = true;
+      stopAutoPlay();
+    }, 300);
   };
 
   const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    touchEndRef.current = e.targetTouches[0].clientX;
+    // If moved significantly, cancel hold
+    if (touchStartRef.current && Math.abs(e.targetTouches[0].clientX - touchStartRef.current) > 10) {
+      if (touchHoldTimerRef.current) {
+        clearTimeout(touchHoldTimerRef.current);
+        touchHoldTimerRef.current = null;
+      }
+      isHoldingRef.current = false;
+    }
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    // Clear hold timer
+    if (touchHoldTimerRef.current) {
+      clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
     
-    const distance = touchStart - touchEnd;
+    if (isHoldingRef.current) {
+      isHoldingRef.current = false;
+      // If was holding, don't swipe, just resume autoplay after delay
+      setTimeout(() => {
+        isPausedRef.current = false;
+        startAutoPlay();
+      }, 1000);
+      return;
+    }
+    
+    if (!touchStartRef.current || !touchEndRef.current) {
+      setTimeout(() => {
+        isPausedRef.current = false;
+        startAutoPlay();
+      }, 1000);
+      return;
+    }
+    
+    const distance = touchStartRef.current - touchEndRef.current;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
-    if (isLeftSwipe) {
-      nextSlide();
-    } else if (isRightSwipe) {
-      prevSlide();
-    }
-    
-    // Restart auto-play after user interaction
+    if (isLeftSwipe || isRightSwipe) {
+      // Let native scroll handle the swipe
+      isPausedRef.current = false;
     setTimeout(() => {
       startAutoPlay();
     }, 2000);
+    } else {
+      // No swipe, resume autoplay
+      isPausedRef.current = false;
+      setTimeout(() => {
+        startAutoPlay();
+      }, 1000);
+    }
   };
 
-  // Start auto-play on mount
+  // Initialize carousel and start auto-play
   useEffect(() => {
+    // Wait for DOM to be ready
+    const initCarousel = () => {
+      if (scrollContainerRef.current && typeof window !== 'undefined') {
+        const container = scrollContainerRef.current;
+        // Wait for container to have proper width
+        const containerWidth = container.offsetWidth || window.innerWidth;
+        if (containerWidth > 0) {
+          // Disable smooth scrolling for initial positioning
+          container.style.scrollBehavior = 'auto';
+          // Start at the middle set (infinite loop starting point)
+          container.scrollLeft = photos.length * containerWidth;
+          // Re-enable smooth scrolling after positioning
+          requestAnimationFrame(() => {
+            container.style.scrollBehavior = 'smooth';
+          });
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Try to initialize immediately, if not ready, wait a bit
+    if (!initCarousel()) {
+      const timeout = setTimeout(() => {
+        initCarousel();
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+
     startAutoPlay();
-    return () => stopAutoPlay();
-  }, []);
+    return () => {
+      stopAutoPlay();
+      if (touchHoldTimerRef.current) {
+        clearTimeout(touchHoldTimerRef.current);
+      }
+      if (scrollCheckRef.current) {
+        cancelAnimationFrame(scrollCheckRef.current);
+      }
+    };
+  }, [photos.length]);
 
   const youtubeUrl = "https://www.youtube.com/shorts/mX7RKFjrLxk";
   const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
@@ -197,6 +315,40 @@ export default function Testimonials() {
             font-size: 28px;
             font-weight: 600;
             line-height: 0.95;
+          }
+          .testimonials-carousel-track {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            width: 100% !important;
+          }
+          .testimonials-infinite-carousel {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            width: 100% !important;
+            max-width: 100vw !important;
+            scroll-behavior: smooth !important;
+            scroll-snap-type: x mandatory !important;
+            overscroll-behavior-x: contain !important;
+            will-change: scroll-position;
+          }
+          .testimonials-carousel-track {
+            will-change: transform;
+          }
+          .testimonials-infinite-carousel::-webkit-scrollbar {
+            display: none;
+          }
+          .testimonials-carousel-card {
+            flex: 0 0 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            scroll-snap-align: start !important;
+            scroll-snap-stop: always !important;
           }
         }
         /* Hide YouTube branding and UI elements */
@@ -391,7 +543,7 @@ export default function Testimonials() {
 
 
         {/* Mobile: Horizontal photo carousel */}
-        <div className="block lg:hidden w-full max-w-sm mx-auto mt-6">
+        <div className="block lg:hidden w-full mt-6">
           {/* Scrollable Carousel Container */}
           <div 
             ref={scrollContainerRef}
@@ -399,65 +551,94 @@ export default function Testimonials() {
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            className="relative overflow-x-auto overflow-y-hidden rounded-[10px] carousel-scroll snap-x snap-mandatory"
-            style={{ scrollSnapType: 'x mandatory' }}
+            className="relative overflow-x-auto overflow-y-hidden carousel-scroll snap-x snap-mandatory testimonials-infinite-carousel"
+            style={{ 
+              scrollSnapType: 'x mandatory', 
+              width: '100%',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehaviorX: 'contain'
+            }}
           >
-            <div className="flex gap-3 pb-4">
-              {photos.map((photo, index) => (
+            <div className="flex pb-4 testimonials-carousel-track" style={{ gap: 0, width: '100%' }}>
+              {infinitePhotos.map((photo, index) => (
                 <div 
-                  key={index} 
-                  className="flex-shrink-0 w-[240px] snap-start"
+                  key={`${photo.src}-${index}`}
+                  className="flex-shrink-0 snap-start testimonials-carousel-card"
+                  style={{ width: '100%', minWidth: '100%', maxWidth: '100%' }}
                 >
-                  <div className="relative w-full h-[180px] rounded-[10px] overflow-hidden">
+                  <div className="w-full px-4 md:px-6 testimonials-card-content" style={{ paddingLeft: photo.type === "video" ? 'clamp(32px, 12vw, 64px)' : 'clamp(24px, 10vw, 48px)', paddingRight: photo.type === "video" ? 'clamp(32px, 12vw, 64px)' : 'clamp(24px, 10vw, 48px)', boxSizing: 'border-box' }}>
+                    {photo.type === "video" ? (
+                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                        {getYouTubeEmbedUrl(photo.src, isMuted) && (
+                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                            <iframe
+                              key={`youtube-${isMuted}-${index}`}
+                              src={getYouTubeEmbedUrl(photo.src, isMuted)}
+                              className="absolute top-0 left-0 w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              frameBorder="0"
+                              loading="lazy"
+                              style={{
+                                position: 'absolute',
+                                top: '-60px',
+                                left: 0,
+                                width: '100%',
+                                height: 'calc(100% + 120px)',
+                                transform: 'scale(1.1)',
+                                transformOrigin: 'center center',
+                                border: 'none',
+                                pointerEvents: 'auto'
+                              }}
+                            />
+                            {/* Mute/Unmute button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                toggleMute();
+                              }}
+                              onTouchStart={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
+                              aria-label={isMuted ? 'Unmute' : 'Mute'}
+                              style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                            >
+                              {isMuted ? (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                              )}
+                            </button>
+                            {/* Hide YouTube logo overlay */}
+                            <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
                     <Image 
                       src={photo.src} 
                       alt={photo.alt} 
                       fill 
                       className="object-cover" 
-                      sizes="240px"
+                          sizes="100vw"
+                          loading="lazy"
                     />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Navigation Dots */}
-          <div className="flex justify-center mt-6 gap-2">
-            {photos.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                  currentSlide === index ? 'bg-indigo-600' : 'bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Navigation Arrows */}
-          <div className="flex justify-between items-center mt-4 px-4">
-            <button
-              onClick={prevSlide}
-              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            
-            <span className="text-sm text-gray-500">
-              {currentSlide + 1} of {photos.length}
-            </span>
-            
-            <button
-              onClick={nextSlide}
-              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
 

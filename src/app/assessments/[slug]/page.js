@@ -131,7 +131,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           }} 
         />
       </div>
-      <div className="mt-8">
+      <div className="mt-0">
         <TherapyTypesSplit 
           therapyType={slug}
           cmsData={{ 
@@ -157,7 +157,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
       </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="mt-8">
-          <InfoCards cmsData={{ items: data.info_cards }} />
+          <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
       <div className="mt-8">

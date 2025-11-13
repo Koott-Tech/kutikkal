@@ -900,85 +900,85 @@ const TherapistProfileContent = () => {
               </div>
             </div>
 
-            {/* Mobile: Doctor Name below image */}
+          {/* Mobile: Doctor Name below image */}
             <div className="text-center md:hidden mb-6 mt-4">
               <h2 className="text-3xl font-semibold mb-2">
-                {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
+              {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
               </h2>
               <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
-                {selectedDoctor.specialization || 'Licensed Psychologist'}
-              </p>
+              {selectedDoctor.specialization || 'Licensed Psychologist'}
+            </p>
               <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
                 {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
               </p>
-            </div>
-            
+          </div>
+          
             {/* Desktop: Image and Name Section - Side by side */}
             <div className="hidden md:flex items-center gap-8 ml-32 mt-20">
-              {/* Desktop: Profile Picture - Left aligned */}
+          {/* Desktop: Profile Picture - Left aligned */}
               <div className="relative flex-shrink-0">
                 <div className="w-80 h-88 rounded-[20px] overflow-hidden relative bg-white therapist-profile-image" style={{ border: 'none' }}>
-                  {/* Doctor Profile Picture or Fallback */}
-                  {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                    (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
-                                           selectedDoctor.name.toLowerCase().includes('marium')))) ? (
-                    <img 
-                      src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                           (() => {
-                             const name = selectedDoctor.name?.toLowerCase() || '';
-                             if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
-                             if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                             if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
-                             if (name.includes('child') || name.includes('teen')) return '/kids.png';
-                             return null;
-                           })()}
-                      alt={selectedDoctor.name || selectedDoctor.first_name}
-                    className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to initials if image fails to load
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  
-                  {/* Fallback: Doctor Initials Avatar */}
-                  <div 
-                    style={{
-                      display: (selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                                (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') || 
-                                                       selectedDoctor.name.toLowerCase().includes('marium') ||
-                                                       selectedDoctor.name.toLowerCase().includes('doug') ||
-                                                       selectedDoctor.name.toLowerCase().includes('ashley') ||
-                                                       selectedDoctor.name.toLowerCase().includes('child')))) ? 'none' : 'flex',
-                      width: "100%",
-                      height: "100%",
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "6rem",
-                      fontWeight: "bold",
-                      color: "#fff",
-                      textShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                {/* Doctor Profile Picture or Fallback */}
+                {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                  (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
+                                         selectedDoctor.name.toLowerCase().includes('marium')))) ? (
+                  <img 
+                    src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                         (() => {
+                           const name = selectedDoctor.name?.toLowerCase() || '';
+                           if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                           if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                           if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                           return null;
+                         })()}
+                    alt={selectedDoctor.name || selectedDoctor.first_name}
+                  className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to initials if image fails to load
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
                     }}
-                  >
-                    {selectedDoctor.name ? 
-                      selectedDoctor.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
-                      selectedDoctor.first_name ? 
-                        selectedDoctor.first_name.charAt(0).toUpperCase() : 
-                        'D'
-                    }
-                  </div>
-                </div>
+                  />
+                ) : null}
                 
-                {/* Experience text - Desktop positioning */}
-                {selectedDoctor.experience_years && (
+                {/* Fallback: Doctor Initials Avatar */}
+                <div 
+                  style={{
+                    display: (selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                              (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') || 
+                                                     selectedDoctor.name.toLowerCase().includes('marium') ||
+                                                     selectedDoctor.name.toLowerCase().includes('doug') ||
+                                                     selectedDoctor.name.toLowerCase().includes('ashley') ||
+                                                     selectedDoctor.name.toLowerCase().includes('child')))) ? 'none' : 'flex',
+                    width: "100%",
+                    height: "100%",
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "6rem",
+                    fontWeight: "bold",
+                    color: "#fff",
+                    textShadow: "0 4px 16px rgba(0,0,0,0.5)"
+                  }}
+                >
+                  {selectedDoctor.name ? 
+                    selectedDoctor.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
+                    selectedDoctor.first_name ? 
+                      selectedDoctor.first_name.charAt(0).toUpperCase() : 
+                      'D'
+                  }
+                </div>
+              </div>
+              
+              {/* Experience text - Desktop positioning */}
+              {selectedDoctor.experience_years && (
                 <div className="absolute bottom-4 -right-8 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg min-w-[140px]">
                   <p className="text-xs font-medium" style={{ color: '#3f2e73' }}>
-                      <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
-                  </p>
-                </div>
-                )}
+                    <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
+                </p>
+              </div>
+              )}
               </div>
               
               {/* Desktop: Name, Designation, and Pricing - Stacked */}
@@ -995,37 +995,37 @@ const TherapistProfileContent = () => {
                       {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
                     </span>
                   </p>
-                </div>
               </div>
             </div>
-
+          </div>
+          
             <div className="flex justify-center md:justify-end items-start mb-8 mt-4">
-              {/* Action Buttons */}
-              <div className="flex gap-2 md:gap-4">
-                <button 
+            {/* Action Buttons */}
+            <div className="flex gap-2 md:gap-4">
+              <button 
                   onClick={scrollToCalendar}
                   className="bg-[#3f2e73] hover:bg-[#1d1733] text-white font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors duration-200 shadow-lg text-sm md:text-base"
-                >
-                  BOOK SESSION
-                </button>
+              >
+                BOOK SESSION
+              </button>
                 <button 
                   onClick={handleShare}
                   className="relative w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors duration-200 border border-gray-300"
                 >
-                  <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
-                    <circle cx="18" cy="5" r="3"/>
-                    <circle cx="6" cy="12" r="3"/>
-                    <circle cx="18" cy="19" r="3"/>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                  </svg>
+                <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
                   {showShareTooltip && (
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-white text-gray-900 text-xs rounded-lg whitespace-nowrap z-50 shadow-lg border border-gray-200 animate-fade-in">
                       Link copied!
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-white"></div>
                     </div>
                   )}
-                </button>
+              </button>
               </div>
             </div>
           </div>

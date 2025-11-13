@@ -296,7 +296,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         }}
       />
       </div>
-      <div className="mt-24 md:mt-28">
+      <div className="mt-0">
         <TherapyTypesSplit 
           therapyType={slug} 
           cmsData={{
@@ -326,7 +326,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       {/* Info Cards under Types of Therapy */}
       <div className="-mt-8 md:-mt-24">
         <div className="mx-auto w-full max-w-[22rem] sm:max-w-[28rem] md:max-w-none px-4 sm:px-6 md:px-0">
-          <InfoCards cmsData={{ items: serviceData.info_cards }} />
+          <InfoCards cmsData={{ items: serviceData.info_cards }} isCmsPage={true} />
         </div>
       </div>
       {/* Reviews */}

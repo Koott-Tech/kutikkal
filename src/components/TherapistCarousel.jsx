@@ -88,20 +88,37 @@ export default function TherapistCarousel({ therapists = [] }) {
   }, []);
 
   return (
-    <div className="md:hidden w-full">
+    <div className="md:hidden w-full therapist-carousel-wrapper">
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          .therapist-carousel-wrapper {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
+      `}} />
       <div
         ref={containerRef}
-        className="overflow-x-auto no-scrollbar flex gap-4 snap-x snap-mandatory px-2"
-        style={{ scrollSnapType: 'x mandatory' }}
+        className="overflow-x-auto no-scrollbar flex gap-4 snap-x snap-mandatory"
+        style={{ scrollSnapType: 'x mandatory', paddingLeft: '0', paddingRight: '0' }}
       >
         {therapists.map((doc, idx) => {
           const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
           const name = doc.name || doc.first_name || 'Therapist';
+          const isFirst = idx === 0;
           return (
             <a 
               key={idx} 
               href={`/therapist-profile?doctor=${idx}`} 
               className="block snap-start flex-shrink-0 w-[90%]"
+              style={{ 
+                paddingLeft: isFirst ? 'clamp(18px, 7vw, 32px)' : '0',
+                paddingRight: '0'
+              }}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -170,6 +187,7 @@ export default function TherapistCarousel({ therapists = [] }) {
         <a 
           href="/psychologists" 
           className="block snap-start flex-shrink-0 w-[90%]"
+          style={{ paddingRight: 'clamp(18px, 7vw, 32px)' }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >

@@ -83,21 +83,25 @@ export default function HelpFaq({ cmsData = null }) {
   const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
 
   return (
-    <section className="w-full px-4 lg:px-6 mt-24">
-      <style jsx>{`
+    <section className="w-full px-4 lg:px-6 mt-8 md:mt-24">
+      <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 767px) {
           .help-faq-heading {
-            font-size: 28px;
-            font-weight: 600;
-            line-height: 0.95;
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            line-height: 0.95 !important;
           }
           /* Force smaller answer text on mobile */
           .faq-answer {
-            font-size: 10.5px;
-            line-height: 1.45;
+            font-size: 11px !important;
+            line-height: 1.4 !important;
+          }
+          /* Reduce margin-bottom for last FAQ section in mobile */
+          .faq-section:last-child {
+            margin-bottom: 1rem !important;
           }
         }
-      `}</style>
+      `}} />
       <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0">
@@ -129,7 +133,7 @@ export default function HelpFaq({ cmsData = null }) {
                  {/* Right column: Accordion FAQ */}
          <div className="mr-4 md:mr-8 lg:mr-12 w-full md:max-w-2xl ml-1 md:ml-0 px-2 md:px-0">
            {faqData.map((section, ci) => (
-            <div key={section.title} className="mb-6 md:mb-10 mt-3">
+            <div key={section.title} className={`faq-section mb-6 md:mb-10 mt-3 ${ci === faqData.length - 1 ? 'last-faq-section' : ''}`}>
               <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left text-sm md:text-base lg:text-lg font-medium`}>
                 {section.title}
               </h5>
@@ -155,7 +159,7 @@ export default function HelpFaq({ cmsData = null }) {
                         }`}
                       >
                         <div className="px-2 pb-3 md:px-0 md:pb-4">
-                          <p className="faq-answer md:text-sm leading-relaxed">
+                          <p className="faq-answer text-xs md:text-sm leading-relaxed">
                             {item.a}
                           </p>
                         </div>

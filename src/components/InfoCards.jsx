@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function InfoCards({ cmsData = null, compact = false, hideIcons = false }) {
+export default function InfoCards({ cmsData = null, compact = false, hideIcons = false, isCmsPage = false }) {
   const defaultItems = [
     {
       icon: "speech-bubble",
@@ -59,7 +59,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     return null;
   };
 
-  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center mt-2`;
+  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center mt-2 ${isCmsPage ? 'info-cards-cms-mobile' : ''}`;
 
   return (
     <section className={sectionClassName}>
@@ -96,6 +96,9 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
           }
           .info-card-cta {
             font-size: 14px;
+          }
+          .info-cards-cms-mobile {
+            margin-top: 2rem !important;
           }
         }
       `}</style>

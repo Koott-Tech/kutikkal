@@ -60,7 +60,7 @@ export default function Header() {
   const [profileData, setProfileData] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, logout, hasRole } = useAuth();
+  const { user, isAuthenticated, logout, hasRole, isLoading: authLoading } = useAuth();
 
   const formatDisplayName = (slug) => {
     if (!slug) return '';
@@ -71,18 +71,29 @@ export default function Header() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
+    // Don't check for errors until auth has finished loading
+    if (authLoading) return;
+    
     const shouldShow = sessionStorage.getItem("showQuickContact");
     if (shouldShow === "true") {
       setShowQuickContact(true);
       sessionStorage.removeItem("showQuickContact");
     }
-    // Check for auth errors and show modal
+    
+    // Check for auth errors and show modal only if user is not authenticated
     const authError = localStorage.getItem("auth_error");
     if (authError) {
+      // If user exists or is authenticated, clear error silently
+      if (user || isAuthenticated()) {
+        localStorage.removeItem("auth_error");
+      } else {
+        // Only show modal if user is definitely not authenticated
       setShowAuthModal(true);
       localStorage.removeItem("auth_error");
     }
-  }, []);
+    }
+  }, [authLoading, user, isAuthenticated]);
 
   // Fetch profile data for authenticated users
   useEffect(() => {

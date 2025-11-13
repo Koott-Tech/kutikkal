@@ -29,6 +29,7 @@ export default function BlogTeaser() {
   const carouselRef = useRef(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const node = carouselRef.current;
@@ -37,6 +38,18 @@ export default function BlogTeaser() {
     const updateButtons = () => {
       setCanScrollPrev(node.scrollLeft > 0);
       setCanScrollNext(node.scrollLeft + node.offsetWidth < node.scrollWidth - 1);
+      
+      // Update current slide index for dots
+      if (posts.length > 0) {
+        const firstSlide = node.firstElementChild;
+        if (firstSlide) {
+          const slideWidth = firstSlide.getBoundingClientRect().width;
+          const gap = 20; // gap between slides
+          const total = slideWidth + gap;
+          const slideIndex = Math.round(node.scrollLeft / total);
+          setCurrentSlide(Math.max(0, Math.min(slideIndex, posts.length - 1)));
+        }
+      }
     };
 
     updateButtons();
@@ -47,7 +60,7 @@ export default function BlogTeaser() {
       node.removeEventListener("scroll", updateButtons);
       window.removeEventListener("resize", updateButtons);
     };
-  }, []);
+  }, [posts.length]);
 
   useEffect(() => {
     const loadBlogs = async () => {
@@ -109,116 +122,136 @@ export default function BlogTeaser() {
     const node = carouselRef.current;
     if (!node) return;
     const firstSlide = node.firstElementChild;
-    const slideWidth = firstSlide?.getBoundingClientRect().width || node.offsetWidth * 0.78;
+    const slideWidth = firstSlide?.getBoundingClientRect().width || node.offsetWidth * 0.75;
     const styles = window.getComputedStyle(node);
     const gap =
       parseFloat(styles.getPropertyValue("column-gap") || styles.getPropertyValue("gap")) || 20;
     node.scrollTo({ left: node.scrollLeft + dir * (slideWidth + gap), behavior: "smooth" });
   };
 
+  const scrollToSlide = (index) => {
+    if (isLoading) return;
+    const node = carouselRef.current;
+    if (!node) return;
+    const firstSlide = node.firstElementChild;
+    if (!firstSlide) return;
+    const slideWidth = firstSlide.getBoundingClientRect().width;
+    const gap = 20;
+    const total = slideWidth + gap;
+    node.scrollTo({ left: index * total, behavior: "smooth" });
+  };
+
   return (
-    <section className="w-full px-4 lg:px-6 mt-24">
-      <style jsx>{`
+    <section className="w-full px-4 md:px-6 lg:px-6 mt-16 md:mt-24">
+      <style dangerouslySetInnerHTML={{__html: `
         @media (min-width: 768px) and (max-width: 1023px) {
           .blog-teaser-heading {
-            font-size: 32px;
-            font-weight: 600;
-            line-height: 1.1;
+            font-size: 32px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
           }
           .blog-card {
-            max-width: 280px;
+            max-width: 280px !important;
           }
           .blog-image {
-            height: 140px;
+            height: 140px !important;
           }
           .blog-title {
-            font-size: 14px;
-            line-height: 1.35;
+            font-size: 14px !important;
+            line-height: 1.35 !important;
           }
           .blog-meta {
-            font-size: 12px;
+            font-size: 12px !important;
           }
         }
         @media (max-width: 767px) {
           .blog-teaser-heading {
-            font-size: 28px;
-            font-weight: 600;
-            line-height: 0.95;
+            font-size: 28px !important;
+            font-weight: 600 !important;
+            line-height: 0.95 !important;
           }
           .blog-grid {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            gap: 20px;
-            padding-bottom: 12px;
-            padding-left: clamp(18px, 7vw, 32px);
-            padding-right: clamp(18px, 7vw, 32px);
-            margin-inline: 0;
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            -webkit-overflow-scrolling: touch !important;
+            gap: 20px !important;
+            padding-bottom: 12px !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: -16px !important;
+            margin-right: -16px !important;
+            width: calc(100% + 32px) !important;
+            max-width: none !important;
           }
           .blog-grid::-webkit-scrollbar {
-            display: none;
+            display: none !important;
           }
           .blog-image {
-            height: 120px;
+            height: 120px !important;
           }
           .blog-title {
-            font-size: 13px;
-            line-height: 1.3;
+            font-size: 13px !important;
+            line-height: 1.3 !important;
           }
           .blog-meta {
-            font-size: 11px;
+            font-size: 11px !important;
           }
           .blog-card {
-            flex: 0 0 78%;
-            max-width: none;
-            scroll-snap-align: center;
+            flex: 0 0 75% !important;
+            max-width: none !important;
+            width: 75% !important;
+            scroll-snap-align: center !important;
+            min-width: 0 !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            box-sizing: border-box !important;
           }
           .blog-card:first-child {
-            margin-left: calc((100% - 78%) / 2);
+            padding-left: clamp(18px, 7vw, 32px) !important;
           }
           .blog-card:last-child {
-            margin-right: calc((100% - 78%) / 2);
+            padding-right: clamp(18px, 7vw, 32px) !important;
+          }
+          .blog-card img {
+            width: 100% !important;
+            height: auto !important;
           }
           .blog-carousel-controls {
-            position: relative;
-            height: 0;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            margin-top: 16px !important;
+            padding: 0 4px !important;
           }
           .blog-carousel-controls button {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f1f1f5;
-            color: #1f1f28;
-            border: none;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            position: absolute;
-            top: -68px;
-            z-index: 1;
-          }
-          .blog-carousel-controls button:first-child {
-            left: 12px;
-          }
-          .blog-carousel-controls button:last-child {
-            right: 12px;
+            width: 44px !important;
+            height: 44px !important;
+            border-radius: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background-color: #f1f1f5 !important;
+            color: #1f1f28 !important;
+            border: none !important;
+            transition: background-color 0.2s ease, transform 0.2s ease !important;
+            position: relative !important;
+            z-index: 1 !important;
           }
           .blog-carousel-controls button:disabled {
-            opacity: 0.5;
+            opacity: 0.5 !important;
           }
           .blog-carousel-controls button:not(:disabled):active {
-            transform: scale(0.96);
+            transform: scale(0.96) !important;
           }
         }
-      `}</style>
-      <div className="mx-auto max-w-[1100px] px-0 overflow-hidden">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4">
+      `}} />
+      <div className="mx-auto max-w-[1100px] px-0 md:px-0 overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-12">
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
-                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-10 md:mb-12 break-words text-base md:text-xl lg:text-2xl font-semibold">
+                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl font-semibold">
                Tips to become a better parent
              </h3>
            </div>
@@ -236,7 +269,8 @@ export default function BlogTeaser() {
           </div>
         </div>
 
-        <div ref={carouselRef} className="blog-grid grid grid-cols-1 md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel">
+        <div className="overflow-hidden md:overflow-visible">
+          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post) => {
             const imageSrc = post.featured_image_url || post.src;
             const author = post.author_name || post.author || "Kuttikal Team";
@@ -246,7 +280,7 @@ export default function BlogTeaser() {
             return (
             <article 
               key={post.id || post.slug || post.title} 
-              className="blog-card w-full max-w-[300px] md:max-w-[340px] mx-auto md:mx-0 cursor-pointer"
+              className="blog-card cursor-pointer"
               onClick={() => handleBlogClick(post)}
             >
                {imageSrc && (
@@ -275,7 +309,11 @@ export default function BlogTeaser() {
             </article>
           )})}
         </div>
-        <div className="blog-carousel-controls md:hidden px-4">
+        </div>
+        
+        {/* Mobile: Carousel Controls */}
+        <div className="md:hidden">
+          <div className="blog-carousel-controls">
           <button
             type="button"
             aria-label="Previous"
@@ -286,6 +324,7 @@ export default function BlogTeaser() {
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
+            
           <button
             type="button"
             aria-label="Next"
@@ -296,6 +335,7 @@ export default function BlogTeaser() {
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
+          </div>
         </div>
       </div>
     </section>

@@ -237,7 +237,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       <div className="mt-16 md:mt-20">
         <BenefitsSection cmsData={{ title: data?.benefits_title || 'Why this program?', benefits: data?.benefits || [], benefitsImageUrl: data?.benefits_image_url || '' }} />
       </div>
-      <div className="mt-8">
+      <div className="mt-0">
         <TherapyTypesSplit cmsData={{ title: data?.types_title || 'What we offer', types: data?.types || [], rightImageUrl: data?.right_image_url || '' }} />
       </div>
       {/* Videos showcase */}
@@ -260,7 +260,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="mt-8">
-          <InfoCards cmsData={{ items: data.info_cards }} />
+          <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
       {(data?.blog_teaser_enabled !== false) && (

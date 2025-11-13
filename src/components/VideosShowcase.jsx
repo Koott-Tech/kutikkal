@@ -62,7 +62,8 @@ export default function VideosShowcase({ cmsData = null }) {
     }
   }
   
-  const [playingVideo, setPlayingVideo] = useState(typeof cmsData?.featuredIndex === 'number' ? cmsData.featuredIndex : 2); // default center (middle)
+  // Initialize playingVideo - default to center (2), will be adjusted on mount for mobile
+  const [playingVideo, setPlayingVideo] = useState(typeof cmsData?.featuredIndex === 'number' ? cmsData.featuredIndex : 2);
   const [isMuted, setIsMuted] = useState(true); // Start muted
   const videoRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
   const scrollerRef = useRef(null);
@@ -107,38 +108,42 @@ export default function VideosShowcase({ cmsData = null }) {
     }
   };
 
-  // Auto-play middle video (position 2) on mount, muted
+  // Auto-play video based on screen size: first video (0) on mobile, center video (2) on desktop
   useEffect(() => {
     if (hasAutoPlayedRef.current) return;
     
-    const middleIndex = 2;
-    const middleVideoUrl = displayVideos[middleIndex]?.url || displayVideos[middleIndex]?.src;
+    // Detect if mobile view
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const autoPlayIndex = isMobile ? 0 : 2; // First video on mobile, center on desktop
     
-    if (!middleVideoUrl) return;
+    // Set the playing video state first
+    setPlayingVideo(autoPlayIndex);
+    
+    const videoUrl = displayVideos[autoPlayIndex]?.url || displayVideos[autoPlayIndex]?.src;
+    
+    if (!videoUrl) return;
     
     hasAutoPlayedRef.current = true;
     
-    // Auto-play middle video if it's not YouTube
-    if (!isYouTubeUrl(middleVideoUrl)) {
+    // Auto-play video if it's not YouTube
+    if (!isYouTubeUrl(videoUrl)) {
       // Wait a bit for video element to be ready
       const timer = setTimeout(() => {
-        if (videoRefs[middleIndex].current) {
-          const video = videoRefs[middleIndex].current;
+        if (videoRefs[autoPlayIndex].current) {
+          const video = videoRefs[autoPlayIndex].current;
           video.muted = true;
+          video.loop = true; // Ensure loop is enabled
           const playPromise = video.play();
           if (playPromise !== undefined) {
             playPromise.catch(() => {
               // Silently handle play errors
             });
           }
-          setPlayingVideo(middleIndex);
         }
-      }, 100);
+      }, 200); // Increased timeout to ensure element is ready
       return () => clearTimeout(timer);
-    } else {
-      // For YouTube, just set as playing (iframe handles autoplay)
-      setPlayingVideo(middleIndex);
     }
+    // For YouTube videos, setPlayingVideo is already called above, iframe handles autoplay with loop via getYouTubeEmbedUrl
   }, [displayVideos]);
 
   // When a video is selected to play, auto-play it once mounted; pause others
@@ -153,8 +158,9 @@ export default function VideosShowcase({ cmsData = null }) {
       
       try {
         if (i === playingVideo) {
-          // Set muted state
+          // Set muted state and ensure loop is enabled (especially for center video on desktop)
           ref.muted = isMuted;
+          ref.loop = true; // Ensure loop is enabled
           const playPromise = ref.play();
           if (playPromise !== undefined) {
             playPromise.catch(() => {
@@ -226,6 +232,33 @@ export default function VideosShowcase({ cmsData = null }) {
           z-index: 10;
           pointer-events: none;
         }
+        @media (max-width: 767px) {
+          .videos-carousel-container {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1279px) {
+          .video-card-outer {
+            width: clamp(180px, 12vw, 240px) !important;
+            height: clamp(270px, 18vw, 360px) !important;
+          }
+          .video-card-middle {
+            width: clamp(200px, 14vw, 280px) !important;
+            height: clamp(300px, 21vw, 420px) !important;
+          }
+          .video-card-center {
+            width: clamp(240px, 18vw, 340px) !important;
+            height: clamp(360px, 27vw, 500px) !important;
+          }
+          .videos-carousel-gap {
+            gap: clamp(12px, 1.5vw, 24px) !important;
+          }
+        }
       `}</style>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="px-4 sm:px-6 mb-10 md:mb-14 text-center">
@@ -239,10 +272,11 @@ export default function VideosShowcase({ cmsData = null }) {
               {cmsData?.videosHeading || 'See More of What We Do'}
             </h3>
           </div>
+          </div>
         </div>
 
-        {/* Carousel controls (desktop) */}
-        <div className="relative">
+      {/* Carousel controls (desktop) - Outside padded container for edge-to-edge */}
+      <div className="relative videos-carousel-container">
           <button
             type="button"
             aria-label="Previous"
@@ -254,19 +288,20 @@ export default function VideosShowcase({ cmsData = null }) {
 
           <div
             ref={scrollerRef}
-            className="flex gap-4 md:gap-6 px-1 sm:px-2 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
+            className="flex gap-4 md:gap-6 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
+            style={{ paddingLeft: '0', paddingRight: '0' }}
           >
             {[0,1,2,3,4].map((i) => (
-              <div key={i} className="flex-shrink-0 snap-center">
+              <div key={i} className="flex-shrink-0 snap-center" style={{ paddingLeft: i === 0 ? 'clamp(18px, 7vw, 32px)' : '0', paddingRight: i === 4 ? 'clamp(18px, 7vw, 32px)' : '0' }}>
                 <div
                   data-video-card
                   className={`relative rounded-[14px] overflow-hidden bg-white cursor-pointer group shadow-[0_8px_24px_rgba(63,46,115,0.18)]
-                    ${i === 0 || i === 4 ? 'w-[200px] h-[300px]' : 'w-[240px] h-[360px]'}
+                    ${'w-[240px] h-[360px]'}
                     ${i === 2 
-                      ? 'md:w-[340px] md:h-[500px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)]' 
+                      ? 'md:w-[340px] md:h-[500px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'md:w-[240px] md:h-[360px]'
-                        : 'md:w-[280px] md:h-[420px]'}
+                        ? 'md:w-[240px] md:h-[360px] video-card-outer'
+                        : 'md:w-[280px] md:h-[420px] video-card-middle'}
                   `}
                   onClick={() => handleVideoClick(i)}
                 >
@@ -392,7 +427,6 @@ export default function VideosShowcase({ cmsData = null }) {
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-        </div>
       </div>
     </section>
   );

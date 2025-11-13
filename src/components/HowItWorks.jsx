@@ -158,7 +158,7 @@ export default function HowItWorks() {
             margin-top: 8px;
           }
           .how-it-works-card {
-            height: 280px;
+            height: 320px;
             width: clamp(240px, 80vw, 320px);
             border-radius: 10px !important;
           }
@@ -192,29 +192,41 @@ export default function HowItWorks() {
           }
         }
         @media (max-width: 767px) {
+          .how-it-works-carousel-wrapper {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
           .how-it-works-carousel {
-            scroll-padding-inline: clamp(18px, 7vw, 32px);
+            scroll-padding-inline: 0;
             padding-bottom: 12px;
             margin-inline: 0;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
           }
           .how-it-works-carousel::-webkit-scrollbar {
             display: none;
           }
           .how-it-works-track {
             gap: clamp(16px, 5vw, 24px);
-            padding-inline: clamp(18px, 7vw, 32px);
+            padding-inline: 0;
           }
           .how-it-works-slide {
             flex: 0 0 82%;
             scroll-snap-align: center;
           }
           .how-it-works-track > .how-it-works-slide:first-child {
-            margin-left: calc((100% - 82%) / 2);
+            margin-left: 0;
+            padding-left: clamp(18px, 7vw, 32px);
           }
           .how-it-works-track > .how-it-works-slide:last-child {
-            margin-right: calc((100% - 82%) / 2);
+            margin-right: 0;
+            padding-right: clamp(18px, 7vw, 32px);
           }
         }
       `}</style>
@@ -242,13 +254,14 @@ export default function HowItWorks() {
 
         <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Mobile Carousel */}
-          <div className="md:hidden w-full">
+          <div className="md:hidden w-full how-it-works-carousel-wrapper">
             <div className="relative">
               {/* Scrollable Carousel Container */}
               <div 
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
                 className="how-it-works-carousel relative overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
+                style={{ paddingLeft: '0', paddingRight: '0' }}
               >
                 <div ref={trackRef} className="how-it-works-track flex pb-4">
                 {carouselData.map((card, index) => (
@@ -258,7 +271,7 @@ export default function HowItWorks() {
                     data-slide-index={index}
                   >
                     <div
-                      className="how-it-works-card p-4 h-[280px] w-full flex flex-col justify-between card-bg-mobile rounded-[10px]"
+                      className="how-it-works-card p-4 h-[320px] w-full flex flex-col justify-between card-bg-mobile rounded-[10px]"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",

@@ -117,64 +117,70 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <section className="w-full mt-16 md:mt-20 mb-0 md:mb-8 px-4 sm:px-6 md:px-10 pt-8 md:pt-12">
+    <section className="w-full mt-4 md:mt-6 mb-0 md:mb-8 px-0 pt-8 md:pt-12">
       <div className="w-full overflow-hidden">
         <div className="flex flex-col md:grid md:grid-cols-2">
           {/* Content Area - with background */}
           <div
-            className="flex flex-col justify-start px-6 sm:px-8 md:px-[100px] lg:px-[120px] py-10 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#DEEFDC]"
+            className="flex flex-col justify-start px-0 pt-10 pb-0 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#DEEFDC]"
           >
-            <h3 
-              className="mb-2"
-              style={{
-                color: '#15171a',
-                fontWeight: 500,
-                marginBottom: '0.5rem'
-              }}
-            >
-              {currentContent.title}
-            </h3>
-           
-            <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
-              {currentContent.types.map((type, index) => (
-                <div key={index}>
-                  <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
-                    {type.title}
-                  </p>
-                  <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
-                    {type.description}
-                  </p>
-                </div>
-              ))}
+            <div className="px-6 sm:px-8 md:px-[100px] lg:px-[120px]">
+              <h3 
+                className="mb-2"
+                style={{
+                  color: '#15171a',
+                  fontWeight: 500,
+                  marginBottom: '0.5rem'
+                }}
+              >
+                {currentContent.title}
+              </h3>
+             
+              <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
+                {currentContent.types.map((type, index) => (
+                  <div key={index}>
+                    <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
+                      {type.title}
+                    </p>
+                    <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
+                      {type.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+                  
+              <div className="flex justify-center md:justify-start">
+                <button 
+                className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-6 md:px-8 py-2 md:py-3 shadow-lg transition-colors duration-200 text-xs md:text-sm lg:text-base text-white"
+                  style={{ 
+                    backgroundColor: '#3f2e73',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    letterSpacing: 'normal',
+                    fontFamily: "'Work Sans', Arial, sans-serif",
+                    width: 'auto',
+                    maxWidth: '80%'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+                  onClick={() => router.push('/psychologists')}
+                >
+                  {currentContent.buttonText || "Get started"}
+                </button>
+              </div>
             </div>
-                
-            <button 
-              className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-6 md:px-8 py-2 md:py-3 shadow-lg transition-colors duration-200 w-full md:w-fit mx-auto md:mx-0 text-xs md:text-sm lg:text-base text-white"
-              style={{ 
-                backgroundColor: '#3f2e73',
-                fontWeight: 500,
-                textTransform: 'none',
-                letterSpacing: 'normal',
-                fontFamily: "'Work Sans', Arial, sans-serif"
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
-              onClick={() => router.push('/psychologists')}
-            >
-              {currentContent.buttonText || "Get started"}
-            </button>
 
             {/* Mobile Image - Inside the green background area */}
-            <div className="block md:hidden mt-8 mx-4 relative h-[50vh]" style={{ minHeight: '300px' }}>
-              <div className="absolute inset-0">
+            <div className="block md:hidden mt-8 mx-0 relative" style={{ minHeight: '380px', height: '55vh', marginBottom: 0, paddingBottom: 0 }}>
+              <div className="absolute inset-0" style={{ borderRadius: 0 }}>
                 <Image
                   src={currentContent.rightImageUrl || "/rightside5th.png"}
                   alt="Two women sitting on a couch during therapy session"
                   fill
-                  className="object-cover rounded-lg"
-                  sizes="calc(100vw - 2rem)"
+                  className="object-cover"
+                  sizes="100vw"
                   priority
-                  style={{ objectPosition: 'center' }}
+                  style={{ objectPosition: 'center', borderRadius: 0 }}
                 />
               </div>
             </div>
