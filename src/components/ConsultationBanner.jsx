@@ -7,7 +7,7 @@ export default function ConsultationBanner() {
       <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
         <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
           <div className="overflow-hidden relative rounded-[10px] main-container min-h-[320px] md:min-h-[240px]" style={{ borderRadius: "10px", minHeight: "240px" }}>
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/consultationbanner.png')" }}></div>
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/consultationbanner.png')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px' }}></div>
           <style jsx>{`
             .main-container {
               border-radius: 10px;
@@ -42,9 +42,27 @@ export default function ConsultationBanner() {
                 padding-top: 0;
                 padding-bottom: 0;
               }
+              .main-container {
+                position: relative;
+                overflow: hidden;
+              }
+              .main-container > div[class*="absolute"] {
+                z-index: 0;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                width: 100%;
+                height: 200px;
+                max-height: 200px;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 10px !important;
+              }
               .mobile-container {
                 padding: 8px;
-                min-height: 160px;
+                min-height: 200px;
                 gap: 0px;
               }
               .mobile-container[style] {
@@ -65,22 +83,25 @@ export default function ConsultationBanner() {
                 row-gap: 0px;
               }
               .mobile-container > div:last-child {
-                min-height: 160px;
-                height: 160px;
+                min-height: 200px;
+                height: 200px;
               }
               .mobile-text {
-                padding: 8px 4px;
+                padding: 0px 4px 0px 4px !important;
+              }
+              div[class*="p-4"].mobile-text {
+                padding: 0px 4px 0px 4px !important;
               }
               .mobile-text h4 {
                 font-size: 16px;
                 line-height: 1.3;
-                margin-bottom: 6px;
+                margin-bottom: 4px;
                 text-align: left;
               }
               .mobile-text p {
                 font-size: 11px;
                 line-height: 1.4;
-                margin-bottom: 12px;
+                margin-bottom: 8px;
                 text-align: left;
               }
               .mobile-text button {
@@ -89,8 +110,9 @@ export default function ConsultationBanner() {
                 margin-left: 0;
               }
               .main-container {
-                min-height: 160px;
-                height: 160px;
+                min-height: 200px;
+                height: 200px;
+                max-height: 200px;
                 padding: 0;
                 margin-top: 0;
                 margin-bottom: 0;
@@ -106,13 +128,29 @@ export default function ConsultationBanner() {
               }
               .mobile-image {
                 justify-content: center;
+                margin: 0;
+                padding: 0;
               }
               .mobile-image > div {
-                width: 60px;
-                height: 60px;
+                margin: 0;
+                margin-top: -4px !important;
+                padding: 0 !important;
+                width: 70px;
+                height: 100px;
+                background-color: #3b82f6;
+              }
+              .mobile-image > div img {
+                padding: 0 !important;
+                margin: 0 !important;
               }
               .flex.items-center.gap-1 {
                 gap: 0px;
+                margin-bottom: 0;
+                padding-bottom: 0;
+              }
+              .mobile-text > div:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
               }
             }
             @media (min-width: 768px) {
@@ -156,6 +194,13 @@ export default function ConsultationBanner() {
                 position: relative;
                 top: 40%;
                 transform: translateY(-50%);
+                background-color: #3b82f6;
+                padding: 0;
+                margin: 0;
+              }
+              .desktop-image img {
+                padding: 0;
+                margin: 0;
               }
             }
           `}</style>
@@ -166,7 +211,7 @@ export default function ConsultationBanner() {
               Confused where to start?
               </h4>
               
-              <p className="text-xs md:text-base mb-6 md:mb-8 text-left">
+              <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px' }}>
                Book a free 20 minutes session with our psychologist.
               </p>
               
@@ -182,11 +227,12 @@ export default function ConsultationBanner() {
                 
                 {/* Image next to button */}
                 <div className="mobile-image md:hidden">
-                  <div className="w-16 h-16 rounded-[10px] overflow-hidden">
+                  <div className="w-[70px] h-[100px] rounded-[10px] overflow-hidden" style={{ padding: 0, margin: 0 }}>
                     <img
                       src="/consultation.png"
                       alt="Consultation"
                       className="w-full h-full object-cover"
+                      style={{ padding: 0, margin: 0 }}
                       loading="eager"
                       decoding="async"
                     />
@@ -197,14 +243,14 @@ export default function ConsultationBanner() {
 
             {/* Right: Image - Desktop only */}
             <div className="mobile-image relative h-full col-span-1 hidden md:flex justify-center items-center p-8">
-              <div className="desktop-image overflow-hidden" style={{ width: '128px', height: '128px', borderRadius: '20px' }}>
+              <div className="desktop-image overflow-hidden" style={{ width: '112px', height: '160px', borderRadius: '10px', padding: 0, margin: 0 }}>
                 <img
                   src="/consultation.png"
                   alt="Consultation"
-                  width={128}
-                  height={128}
+                  width={112}
+                  height={160}
                   className="object-cover"
-                  style={{ borderRadius: '20px', width: '100%', height: '100%' }}
+                  style={{ borderRadius: '10px', width: '100%', height: '100%', padding: 0, margin: 0 }}
                   loading="eager"
                   decoding="async"
                 />

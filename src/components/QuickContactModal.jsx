@@ -97,21 +97,21 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
       // If onSaved callback is provided (booking flow), refresh auth context without reloading
       // This preserves booking state (selectedDate, selectedTime, selectedPackage)
       if (onSaved) {
-        try {
+      try {
           const { authApi } = await import("@/lib/backendApi");
-          const refreshed = await authApi.getProfile({ silent: true });
-          const userData = refreshed?.data?.user || refreshed?.data;
-          if (userData && token) {
-            login(userData, token, { remember: isRemembered });
-          }
-        } catch (e) {
-          // ignore refresh errors; booking flow can continue
+        const refreshed = await authApi.getProfile({ silent: true });
+        const userData = refreshed?.data?.user || refreshed?.data;
+        if (userData && token) {
+          login(userData, token, { remember: isRemembered });
         }
+      } catch (e) {
+        // ignore refresh errors; booking flow can continue
+      }
         onSaved();
         onClose?.();
       } else {
         // If no callback (standalone usage), reload page to update header
-        onClose?.();
+      onClose?.();
         window.location.reload();
       }
     } catch (err) {

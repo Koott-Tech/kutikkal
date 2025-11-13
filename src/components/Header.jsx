@@ -1047,11 +1047,11 @@ export default function Header() {
                     <div className="px-4 pb-3 border-b border-gray-200">
                       {!hasRole('client') ? (
                         <>
-                          <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
-                          <div className="text-xs text-gray-500">{user?.email}</div>
-                          <div className="text-xs text-indigo-600 font-medium mt-1">
-                            {getRoleDisplayName(user?.role)}
-                          </div>
+                      <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                      <div className="text-xs text-indigo-600 font-medium mt-1">
+                        {getRoleDisplayName(user?.role)}
+                      </div>
                         </>
                       ) : (
                         <div className="text-xs text-gray-500">{user?.email}</div>
@@ -1162,16 +1162,16 @@ export default function Header() {
                     {hasRole('client') ? (
                       <div className="text-sm text-gray-500">{user?.email}</div>
                     ) : (
-                      <div>
-                        <div className="text-base font-medium text-gray-900">{getUserDisplayName()}</div>
-                        {/* Only show email if it's different from display name */}
-                        {getUserDisplayName() !== user?.email && (
-                          <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
-                        )}
-                        <div className="text-sm text-indigo-600 font-medium mt-1">
-                          {getRoleDisplayName(user?.role)}
-                        </div>
+                    <div>
+                      <div className="text-base font-medium text-gray-900">{getUserDisplayName()}</div>
+                      {/* Only show email if it's different from display name */}
+                      {getUserDisplayName() !== user?.email && (
+                        <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
+                      )}
+                      <div className="text-sm text-indigo-600 font-medium mt-1">
+                        {getRoleDisplayName(user?.role)}
                       </div>
+                    </div>
                     )}
                   </div>
                   

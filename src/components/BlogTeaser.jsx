@@ -222,7 +222,7 @@ export default function BlogTeaser() {
                Tips to become a better parent
              </h3>
            </div>
-          <div className="flex justify-center md:justify-end mt-4 md:mt-6 lg:mt-9">
+          <div className="flex justify-center md:justify-end md:self-start md:pt-8">
             <button
               type="button"
               onClick={handleExploreClick}

@@ -125,7 +125,7 @@ const handleResponse = async (response, options = {}) => {
           if (isAuthEndpointParse) {
             errorMessage = 'Invalid email or password. No account found. Please create a new account.';
           } else {
-            errorMessage = 'Authentication required. Please log in again.';
+          errorMessage = 'Authentication required. Please log in again.';
           }
           break;
         case 404:

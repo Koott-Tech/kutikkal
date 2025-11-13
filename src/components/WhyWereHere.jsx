@@ -3,14 +3,22 @@ import Image from 'next/image';
 
 export default function WhyWereHere() {
   return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          h1.why-were-here-heading {
+            line-height: 1.0 !important;
+          }
+        }
+      `}} />
     <section className="w-full px-4 bg-white mt-24">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left Section - Text Content */}
           <div className="space-y-6">
-            <h3 className="text-4xl md:text-5xl font-medium text-black leading-[1.1] md:leading-normal tracking-tight">
+            <h1 className="font-medium text-black why-were-here-heading">
              We started with a wish <br /> to care a little deeper
-            </h3>
+            </h1>
             
             <div className="space-y-6 text-[1.125rem] md:text-base text-gray-700 leading-[150%] md:leading-relaxed tracking-[-0.03375rem] md:tracking-tight">
               <p>
@@ -57,5 +65,6 @@ export default function WhyWereHere() {
         </div>
       </div>
     </section>
+    </>
   );
 }

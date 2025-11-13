@@ -64,10 +64,13 @@ export default function Home() {
           white-space: nowrap;
           z-index: 1000;
           opacity: 0;
+          visibility: hidden;
           pointer-events: none;
-          transition: opacity 0.2s ease-in-out;
+          transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           border: 1px solid #e5e7eb;
+          min-width: max-content;
+          max-width: calc(100vw - 32px);
         }
         .tooltip-popup::after {
           content: '';
@@ -78,13 +81,27 @@ export default function Home() {
           border: 5px solid transparent;
           border-top-color: white;
         }
-        .tooltip-container:hover .tooltip-popup {
+        .tooltip-container:hover .tooltip-popup,
+        .tooltip-container:active .tooltip-popup {
           opacity: 1;
+          visibility: visible;
         }
         @media (max-width: 767px) {
           .tooltip-popup {
             font-size: 11px;
             padding: 5px 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            right: auto;
+            margin-left: 0;
+            margin-right: 0;
+            width: max-content;
+            max-width: calc(100vw - 32px);
+            white-space: normal;
+            word-wrap: break-word;
+          }
+          .tooltip-container {
+            position: relative;
           }
         }
       `}</style>
@@ -114,11 +131,11 @@ export default function Home() {
                 </a>
                 <div className="tooltip-container">
                   <span className="hover:text-gray-900 cursor-pointer font-semibold" style={{ cursor: 'pointer' }}>Hopelly</span>
-                  <div className="tooltip-popup">Launching Soon</div>
+                  <div className="tooltip-popup" suppressHydrationWarning>Launching Soon</div>
                 </div>
                 <div className="tooltip-container">
                   <span className="hover:text-gray-900 cursor-pointer font-semibold" style={{ cursor: 'pointer' }}>WorkMate</span>
-                  <div className="tooltip-popup">Launching Soon</div>
+                  <div className="tooltip-popup" suppressHydrationWarning>Launching Soon</div>
                 </div>
                 <Link 
                   href="/about"

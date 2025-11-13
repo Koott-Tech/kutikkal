@@ -36,7 +36,7 @@ export default function MissionHero() {
         }
         @media (max-width: 767px) {
           h1.mission-hero-title {
-            line-height: 1.2 !important;
+            line-height: 1.0 !important;
             margin-bottom: 0.5rem;
           }
           h1.mission-hero-title br {

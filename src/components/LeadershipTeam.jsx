@@ -171,19 +171,19 @@ export default function LeadershipTeam() {
     styleElement.innerHTML = `
       @media (max-width: 767px) {
         .leadership-image-container {
-          border-radius: 10px;
-          overflow: hidden;
+          border-radius: 10px !important;
+          overflow: hidden !important;
         }
         .leadership-image-container * {
-          border-radius: 10px;
+          border-radius: 10px !important;
         }
         .leadership-image-container img,
         .leadership-image-container span,
         .leadership-image-container span img,
         .leadership-image-container > *,
         .leadership-image-container > * > * {
-          border-radius: 10px;
-          overflow: hidden;
+          border-radius: 10px !important;
+          overflow: hidden !important;
         }
       }
     `;
@@ -194,19 +194,19 @@ export default function LeadershipTeam() {
       <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 767px) {
           .leadership-image-container {
-            border-radius: 10px;
-            overflow: hidden;
+            border-radius: 10px !important;
+            overflow: hidden !important;
           }
           .leadership-image-container * {
-            border-radius: 10px;
+            border-radius: 10px !important;
           }
           .leadership-image-container img,
           .leadership-image-container span,
           .leadership-image-container span img,
           .leadership-image-container > *,
           .leadership-image-container > * > * {
-            border-radius: 10px;
-            overflow: hidden;
+            border-radius: 10px !important;
+            overflow: hidden !important;
           }
         }
       `}} />
@@ -266,7 +266,7 @@ export default function LeadershipTeam() {
                     {leadershipMembers.map((member, index) => (
                         <div 
                             key={index} 
-                            className="flex-shrink-0 w-[320px] snap-start"
+                            className="flex-shrink-0 w-[320px] snap-start px-4"
                         >
                             <div className="w-full bg-white rounded-2xl overflow-hidden">
               <div className="h-80 w-full overflow-hidden rounded-[10px] leadership-image-container" suppressHydrationWarning>
@@ -275,7 +275,7 @@ export default function LeadershipTeam() {
                                         alt={member.name}
                   width={320}
                   height={320}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-[10px]"
                   loading="lazy"
                 />
               </div>
@@ -313,10 +313,6 @@ export default function LeadershipTeam() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                
-                <span className="text-sm text-gray-500">
-                    {currentSlide + 1} of {leadershipMembers.length}
-                </span>
                 
                 <button
                     onClick={nextSlide}
