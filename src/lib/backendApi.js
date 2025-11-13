@@ -39,6 +39,13 @@ const handleResponse = async (response, options = {}) => {
       const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
                             options.endpoint?.includes('/auth/register');
       
+      // For login/register endpoints, let them handle their own errors
+      if ((response.status === 401 || response.status === 403) && isAuthEndpoint) {
+        // Return the actual error message from the backend for login/register
+        const backendError = error?.message || error?.error || 'Authentication failed';
+        throw new Error(backendError);
+      }
+      
       if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
         // Check if it's a token expiration error
         const isTokenExpired = error.error === 'Token expired' || 
@@ -107,14 +114,19 @@ const handleResponse = async (response, options = {}) => {
         case 403:
           // Auto logout on auth errors even if parsing fails
           // Skip auto-redirect for login/register endpoints (they handle errors themselves)
-          const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
+          const isAuthEndpointParse = options.endpoint?.includes('/auth/login') || 
                                 options.endpoint?.includes('/auth/register');
-          if (typeof window !== 'undefined' && !isAuthEndpoint) {
+          if (typeof window !== 'undefined' && !isAuthEndpointParse) {
             clearAuthData();
             localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
             window.location.href = '/';
           }
-          errorMessage = 'Authentication required. Please log in again.';
+          // For login/register endpoints, provide a more helpful message
+          if (isAuthEndpointParse) {
+            errorMessage = 'Invalid email or password. No account found. Please create a new account.';
+          } else {
+            errorMessage = 'Authentication required. Please log in again.';
+          }
           break;
         case 404:
           errorMessage = 'Resource not found. The requested endpoint does not exist.';

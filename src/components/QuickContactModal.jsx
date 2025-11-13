@@ -9,17 +9,42 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
   const [lastName, setLastName] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [phone, setPhone] = useState("");
+  const [childName, setChildName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      // Reset form when modal closes
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setChildName("");
+      setCountryCode("+91");
+      return;
+    }
 
     const profile = user?.profile || user || {};
-    if (profile.first_name) setFirstName(profile.first_name);
-    if (profile.last_name) setLastName(profile.last_name);
+    // Only set values if they exist and are not "Pending", "Update", or empty
+    const invalidValues = ["Pending", "Update", "pending", "update"];
+    if (profile.first_name && !invalidValues.includes(profile.first_name) && profile.first_name.trim() !== "") {
+      setFirstName(profile.first_name);
+    } else {
+      setFirstName("");
+    }
+    if (profile.last_name && !invalidValues.includes(profile.last_name) && profile.last_name.trim() !== "") {
+      setLastName(profile.last_name);
+    } else {
+      setLastName("");
+    }
+    if (profile.child_name && !invalidValues.includes(profile.child_name) && profile.child_name.trim() !== "") {
+      setChildName(profile.child_name);
+    } else {
+      setChildName("");
+    }
 
-    if (profile.phone_number) {
+    const invalidPhoneValues = ["Pending", "Update", "pending", "update", "+91"];
+    if (profile.phone_number && !invalidPhoneValues.includes(profile.phone_number) && profile.phone_number.trim() !== "") {
       const raw = String(profile.phone_number).trim();
       const digitsOnly = raw.replace(/[^\d+]/g, "");
 
@@ -42,6 +67,9 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
 
       setCountryCode(extractedCode);
       setPhone(numberOnly.replace(/\D/g, ""));
+    } else {
+      setPhone("");
+      setCountryCode("+91");
     }
   }, [open, user]);
 
@@ -56,26 +84,36 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
     }
     try {
       setIsSaving(true);
-      const { clientApi, authApi } = await import("@/lib/backendApi");
+      const { clientApi } = await import("@/lib/backendApi");
       const sanitizedPhone = phone.replace(/\D/g, "");
       const fullPhone = `${countryCode}${sanitizedPhone}`;
       await clientApi.updateProfile({
         first_name: firstName,
         last_name: lastName,
         phone_number: fullPhone,
+        child_name: childName || null,
       });
-      // Refresh auth context so header/user info updates without hard refresh
-      try {
-        const refreshed = await authApi.getProfile({ silent: true });
-        const userData = refreshed?.data?.user || refreshed?.data;
-        if (userData && token) {
-          login(userData, token, { remember: isRemembered });
+      
+      // If onSaved callback is provided (booking flow), refresh auth context without reloading
+      // This preserves booking state (selectedDate, selectedTime, selectedPackage)
+      if (onSaved) {
+        try {
+          const { authApi } = await import("@/lib/backendApi");
+          const refreshed = await authApi.getProfile({ silent: true });
+          const userData = refreshed?.data?.user || refreshed?.data;
+          if (userData && token) {
+            login(userData, token, { remember: isRemembered });
+          }
+        } catch (e) {
+          // ignore refresh errors; booking flow can continue
         }
-      } catch (e) {
-        // ignore refresh errors; booking flow can continue
+        onSaved();
+        onClose?.();
+      } else {
+        // If no callback (standalone usage), reload page to update header
+        onClose?.();
+        window.location.reload();
       }
-      onSaved?.();
-      onClose?.();
     } catch (err) {
       setError(err?.message || "Failed to save details. Please try again.");
     } finally {
@@ -90,18 +128,26 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
           <h6 className="text-center text-gray-900 text-base md:text-lg font-semibold">Add your details</h6>
           <button aria-label="Close" onClick={onClose} className="absolute right-4 top-4 text-gray-500 hover:text-gray-700">✕</button>
         </div>
-        {error && <div className="mx-4 mt-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && <div className="mx-4 mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm" style={{ color: '#2C1A4A' }}>{error}</div>}
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
           <input
             value={firstName}
             onChange={(e)=>setFirstName(e.target.value)}
-            placeholder="First name"
+            placeholder="First Name"
             className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]"
+            required
           />
           <input
             value={lastName}
             onChange={(e)=>setLastName(e.target.value)}
-            placeholder="Last name"
+            placeholder="Last Name"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]"
+            required
+          />
+          <input
+            value={childName}
+            onChange={(e)=>setChildName(e.target.value)}
+            placeholder="Child Name"
             className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]"
           />
           <div className="flex gap-2">
@@ -124,10 +170,11 @@ export default function QuickContactModal({ open, onClose, onSaved }) {
             <input
               value={phone}
               onChange={(e)=>setPhone(e.target.value.replace(/[^\d]/g, ""))}
-              placeholder="Phone number"
+              placeholder="Phone Number"
               className="flex-1 rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]"
               type="tel"
               inputMode="tel"
+              required
             />
           </div>
           <button type="submit" disabled={isSaving} className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isSaving ? 'Saving…' : 'Save & Continue'}</button>

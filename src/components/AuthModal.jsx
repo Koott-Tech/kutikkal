@@ -91,11 +91,18 @@ export default function AuthModal({
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
       // Check if it's a "user not found" type error - suggest signup
-      if (msg.toLowerCase().includes('user not found') ||
-          msg.toLowerCase().includes('new to little care')) {
-        setError("New to Little Care? Sign up first");
-        // Pre-fill email in signup form (but don't switch tabs automatically)
+      const errorMsgLower = msg.toLowerCase();
+      if (errorMsgLower.includes('user not found') ||
+          errorMsgLower.includes('new to little care') ||
+          errorMsgLower.includes('no account found') ||
+          errorMsgLower.includes('account does not exist') ||
+          errorMsgLower.includes('invalid credentials') ||
+          errorMsgLower.includes('incorrect email or password') ||
+          (errorMsgLower.includes('authentication required') && !errorMsgLower.includes('session expired'))) {
+        setError("No account found with this email. Please create a new account.");
+        // Pre-fill email in signup form and switch to signup tab
         setSignup(prev => ({ ...prev, email: email }));
+        setActiveTab('signup');
       } else {
         setError(msg);
       }
@@ -213,7 +220,7 @@ export default function AuthModal({
         {/* Title removed as requested */}
 
         {error && (
-          <div className="mx-4 mt-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mx-4 mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm" style={{ color: '#2C1A4A' }}>{error}</div>
         )}
         {successMessage && (
           <div className="mx-4 mt-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{successMessage}</div>
