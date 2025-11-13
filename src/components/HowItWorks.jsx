@@ -269,7 +269,7 @@ export default function HowItWorks() {
                         borderRadius: "10px"
               }}
             >
-                      {/* Header Section */}
+              {/* Header Section */}
                       <div className="flex-shrink-0">
                         <div className="text-xl font-medium text-gray-900 text-center" style={{ marginBottom: '12px' }}>{card.number}</div>
                         <h6 className="how-it-works-title text-center font-semibold text-base">

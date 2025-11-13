@@ -65,6 +65,9 @@ const TherapistProfileContent = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
+  // Share tooltip state
+  const [showShareTooltip, setShowShareTooltip] = useState(false);
+
   // Fetch client package details (for booking remaining sessions)
   const fetchClientPackage = async (packageId) => {
     try {
@@ -311,6 +314,43 @@ const TherapistProfileContent = () => {
 
   const [showAuth, setShowAuth] = useState(false);
   const [showQuickContact, setShowQuickContact] = useState(false);
+
+  const scrollToCalendar = () => {
+    const calendarSection = document.getElementById('calendar-section');
+    if (calendarSection) {
+      const elementPosition = calendarSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - 100; // 100px offset from top
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const currentUrl = window.location.href;
+      await navigator.clipboard.writeText(currentUrl);
+      setShowShareTooltip(true);
+      setTimeout(() => {
+        setShowShareTooltip(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = window.location.href;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setShowShareTooltip(true);
+      setTimeout(() => {
+        setShowShareTooltip(false);
+      }, 2000);
+    }
+  };
 
   const handleBookSession = async () => {
     // 1) Auth check first → show login/signup popup if needed
@@ -753,7 +793,7 @@ const TherapistProfileContent = () => {
 
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white -mt-0" style={{ marginTop: 0, paddingTop: 0, marginBottom: 0, paddingBottom: 0 }}>
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
           .therapist-header-padding {
@@ -776,10 +816,10 @@ const TherapistProfileContent = () => {
         }
       `}</style>
       {/* Header Section - Profile Card */}
-      <div className="bg-white shadow-lg">
+      <div className="bg-white shadow-lg" style={{ marginTop: 0, paddingTop: 0 }}>
         <div className="w-full">
           {/* Top Section with Green Background */}
-          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-gradient-to-r from-[#f5f1ff] to-[#eae4ff] p-6 md:p-12 pt-40 md:pt-44 therapist-header-padding" style={{ minHeight: '120px', zIndex: 0 }}>
+          <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] px-6 md:px-12 pt-2 md:pt-3 pb-2 md:pb-3 therapist-header-padding" style={{ zIndex: 0, background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff)', marginTop: 0, paddingTop: '24px' }}>
             {/* Abstract Pattern Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
               <svg width="100%" height="100%" viewBox="0 0 400 200">
@@ -793,9 +833,9 @@ const TherapistProfileContent = () => {
             </div>
             
             {/* Mobile: Profile Picture at top */}
-            <div className="relative z-10 flex items-center justify-center md:hidden h-full" style={{ pointerEvents: 'auto' }}>
+            <div className="relative z-10 flex items-center justify-center md:hidden h-full mt-20" style={{ pointerEvents: 'auto' }}>
               <div className="relative">
-                <div className="w-48 h-48 rounded-[20px] overflow-hidden relative bg-white">
+                <div className="w-48 h-52 rounded-[20px] overflow-hidden relative bg-white" style={{ paddingTop: '16px', border: 'none' }}>
                   {/* Doctor Profile Picture or Fallback */}
                   {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
                     (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
@@ -851,8 +891,8 @@ const TherapistProfileContent = () => {
                 
                 {/* Experience text - Mobile positioning */}
                 {selectedDoctor.experience_years && (
-                <div className="absolute bottom-2 -right-2 bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
-                  <p className="text-gray-800 text-xs font-medium">
+                <div className="absolute bottom-2 -right-2 bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg min-w-[120px]">
+                  <p className="text-xs font-medium" style={{ color: '#3f2e73' }}>
                       <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
                   </p>
                 </div>
@@ -860,111 +900,93 @@ const TherapistProfileContent = () => {
               </div>
             </div>
 
-            {/* Desktop: Name and Title - Responsive positioning */}
-            <div className="hidden md:flex relative z-10 items-center justify-start md:ml-[28rem] h-full" style={{ pointerEvents: 'auto' }}>
-              <div className="text-left">
-                <h6 className="font-bold text-gray-800 mb-1">
-                  {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-                </h6>
-                <p className="text-lg text-gray-600 mb-2">
-                  Psychologist
-                </p>
-              </div>
+            {/* Mobile: Doctor Name below image */}
+            <div className="text-center md:hidden mb-6">
+              <h3 className="font-semibold mb-2">
+                {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {selectedDoctor.specialization || 'Licensed Psychologist'}
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Doctor Details Section */}
-      <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-blue-50 shadow-lg">
-        <div className="w-full p-4 md:p-8 therapist-content-padding">
-          {/* Mobile: Doctor Name below image */}
-          <div className="text-center md:hidden mb-6">
-            <p className="font-bold text-gray-800 mb-2">
-              {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-            </p>
-            <p className="text-sm text-gray-600">
-              {selectedDoctor.specialization || 'Licensed Psychologist'}
-            </p>
-          </div>
-          
-          {/* Desktop: Profile Picture - Left aligned */}
-          <div className="hidden md:flex justify-start -mt-56 mb-8 ml-32">
-            <div className="relative">
-              <div className="w-80 h-80 rounded-[20px] overflow-hidden relative bg-white therapist-profile-image">
-                {/* Doctor Profile Picture or Fallback */}
-                {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                  (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
-                                         selectedDoctor.name.toLowerCase().includes('marium')))) ? (
-                  <img 
-                    src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                         (() => {
-                           const name = selectedDoctor.name?.toLowerCase() || '';
-                           if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
-                           if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
-                           if (name.includes('child') || name.includes('teen')) return '/kids.png';
-                           return null;
-                         })()}
-                    alt={selectedDoctor.name || selectedDoctor.first_name}
-                  className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to initials if image fails to load
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
+            
+            {/* Desktop: Image and Name Section - Side by side */}
+            <div className="hidden md:flex items-center gap-8 ml-32 mt-20">
+              {/* Desktop: Profile Picture - Left aligned */}
+              <div className="relative flex-shrink-0">
+                <div className="w-80 h-88 rounded-[20px] overflow-hidden relative bg-white therapist-profile-image" style={{ border: 'none' }}>
+                  {/* Doctor Profile Picture or Fallback */}
+                  {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                    (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
+                                           selectedDoctor.name.toLowerCase().includes('marium')))) ? (
+                    <img 
+                      src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                           (() => {
+                             const name = selectedDoctor.name?.toLowerCase() || '';
+                             if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                             if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                             if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                             if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                             return null;
+                           })()}
+                      alt={selectedDoctor.name || selectedDoctor.first_name}
+                    className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Fallback: Doctor Initials Avatar */}
+                  <div 
+                    style={{
+                      display: (selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
+                                (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') || 
+                                                       selectedDoctor.name.toLowerCase().includes('marium') ||
+                                                       selectedDoctor.name.toLowerCase().includes('doug') ||
+                                                       selectedDoctor.name.toLowerCase().includes('ashley') ||
+                                                       selectedDoctor.name.toLowerCase().includes('child')))) ? 'none' : 'flex',
+                      width: "100%",
+                      height: "100%",
+                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "6rem",
+                      fontWeight: "bold",
+                      color: "#fff",
+                      textShadow: "0 4px 16px rgba(0,0,0,0.5)"
                     }}
-                  />
-                ) : null}
-                
-                {/* Fallback: Doctor Initials Avatar */}
-                <div 
-                  style={{
-                    display: (selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                              (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') || 
-                                                     selectedDoctor.name.toLowerCase().includes('marium') ||
-                                                     selectedDoctor.name.toLowerCase().includes('doug') ||
-                                                     selectedDoctor.name.toLowerCase().includes('ashley') ||
-                                                     selectedDoctor.name.toLowerCase().includes('child')))) ? 'none' : 'flex',
-                    width: "100%",
-                    height: "100%",
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "6rem",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    textShadow: "0 4px 16px rgba(0,0,0,0.5)"
-                  }}
-                >
-                  {selectedDoctor.name ? 
-                    selectedDoctor.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
-                    selectedDoctor.first_name ? 
-                      selectedDoctor.first_name.charAt(0).toUpperCase() : 
-                      'D'
-                  }
-                </div>
-              </div>
-              
-              {/* Experience text - Desktop positioning */}
-              {selectedDoctor.experience_years && (
-              <div className="absolute bottom-4 -right-8 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-                <p className="text-gray-800 text-xs font-medium">
-                    <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
-                </p>
-              </div>
-              )}
-              
-              {/* Qualifications and Pricing - Desktop only */}
-              <div className="absolute bottom-16 right-[-330px] p-3">
-                <div className="mb-1">
-                  <p className="text-gray-800 font-medium text-sm">
-                    {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' ? 
-                      `Education: ${selectedDoctor.ug_college}` : 
-                      'Licensed Professional'
+                  >
+                    {selectedDoctor.name ? 
+                      selectedDoctor.name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
+                      selectedDoctor.first_name ? 
+                        selectedDoctor.first_name.charAt(0).toUpperCase() : 
+                        'D'
                     }
+                  </div>
+                </div>
+                
+                {/* Experience text - Desktop positioning */}
+                {selectedDoctor.experience_years && (
+                <div className="absolute bottom-4 -right-8 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg min-w-[140px]">
+                  <p className="text-xs font-medium" style={{ color: '#3f2e73' }}>
+                      <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
                   </p>
                 </div>
-                <div>
+                )}
+              </div>
+              
+              {/* Desktop: Name, Designation, and Pricing - Stacked */}
+              <div className="flex-1">
+                <div className="text-left">
+                  <h3 className="font-semibold mb-2">
+                    {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
+                  </h3>
+                  <p className="text-lg text-gray-600 ">
+                    Psychologist
+                  </p>
                   <p className="text-gray-800 text-sm">
                     <span className="font-medium">
                       {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
@@ -973,26 +995,35 @@ const TherapistProfileContent = () => {
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div className="flex justify-center md:justify-end items-start mb-8 mt-0 md:-mt-32">
-            {/* Action Buttons */}
-            <div className="flex gap-2 md:gap-4">
-              <button 
-                onClick={handleBookSession}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors duration-200 shadow-lg text-sm md:text-base"
-              >
-                BOOK SESSION
-              </button>
-              <button className="w-10 h-10 md:w-12 md:h-12 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
-                <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
-                  <circle cx="18" cy="5" r="3"/>
-                  <circle cx="6" cy="12" r="3"/>
-                  <circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-              </button>
+
+            <div className="flex justify-center md:justify-end items-start mb-8 mt-4">
+              {/* Action Buttons */}
+              <div className="flex gap-2 md:gap-4">
+                <button 
+                  onClick={scrollToCalendar}
+                  className="bg-[#3f2e73] hover:bg-[#1d1733] text-white font-semibold py-2 px-4 md:py-3 md:px-8 rounded-full transition-colors duration-200 shadow-lg text-sm md:text-base"
+                >
+                  BOOK SESSION
+                </button>
+                <button 
+                  onClick={handleShare}
+                  className="relative w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-colors duration-200 border border-gray-300"
+                >
+                  <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  {showShareTooltip && (
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-white text-gray-900 text-xs rounded-lg whitespace-nowrap z-50 shadow-lg border border-gray-200 animate-fade-in">
+                      Link copied!
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-white"></div>
+                    </div>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1003,7 +1034,7 @@ const TherapistProfileContent = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
             {/* Left Side - About Description */}
-            <div className="space-y-6 mt-[50px] md:mt-[100px] therapist-about-section">
+            <div className="space-y-6 mt-[20px] md:mt-[40px] therapist-about-section">
               <p className="font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 {selectedDoctor.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
@@ -1065,68 +1096,119 @@ const TherapistProfileContent = () => {
               </div>
               
               {/* FAQ Section - Desktop/Laptop View */}
-              <div className="mt-6 p-4 rounded-lg bg-gray-50 hidden lg:block">
+              <div className="mt-6 hidden lg:block">
                 <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
                 
-                <div className="space-y-3">
+                <div className="space-y-0">
                   {/* FAQ 1 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
+                  <div className="border-b border-gray-200 last:border-b-0">
                     <button
+                      type="button"
                       onClick={() => toggleFAQ(0)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
                     >
-                      <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 0 ? '−' : '+'}
+                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                        What makes your approach to therapy unique?
                       </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 0 ? "rotate-180" : "rotate-0"}`}
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </button>
-                    {openFAQ === 0 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-out ${
+                        openFAQ === 0 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="px-0 pb-3 md:pb-4">
+                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                           &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
                         </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                   
                   {/* FAQ 2 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
+                  <div className="border-b border-gray-200 last:border-b-0">
                     <button
+                      type="button"
                       onClick={() => toggleFAQ(1)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
                     >
-                      <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 1 ? '−' : '+'}
+                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                        How do you help hesitant clients?
                       </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 1 ? "rotate-180" : "rotate-0"}`}
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </button>
-                    {openFAQ === 1 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-out ${
+                        openFAQ === 1 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="px-0 pb-3 md:pb-4">
+                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                           &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
                         </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                   
                   {/* FAQ 3 */}
-                  <div className="border border-gray-200 rounded-lg bg-white">
+                  <div className="border-b border-gray-200 last:border-b-0">
                     <button
+                      type="button"
                       onClick={() => toggleFAQ(2)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
                     >
-                      <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
-                      <span className="text-gray-500 text-lg font-bold">
-                        {openFAQ === 2 ? '−' : '+'}
+                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                        What&apos;s most important in successful therapy?
                       </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 2 ? "rotate-180" : "rotate-0"}`}
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </button>
-                    {openFAQ === 2 && (
-                      <div className="px-3 pb-3">
-                        <p className="text-gray-700 leading-relaxed text-xs">
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-out ${
+                        openFAQ === 2 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="px-0 pb-3 md:pb-4">
+                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                           &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
                         </p>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1134,14 +1216,14 @@ const TherapistProfileContent = () => {
             </div>
             
             {/* Right Side - Calendar */}
-            <div className="bg-white rounded-2xl shadow-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 sticky top-4 self-start mt-[50px] md:mt-[100px] therapist-calendar-section">
+            <div id="calendar-section" className="bg-white rounded-2xl p-4 md:p-6 max-w-md w-full mx-auto md:ml-32 self-start mt-[20px] md:mt-[40px] therapist-calendar-section" style={{ boxShadow: '0 25px 50px -12px rgba(63, 46, 115, 0.35), 0 10px 25px -5px rgba(63, 46, 115, 0.2)' }}>
               {/* Calendar Header */}
               <div className="text-center mb-4">
                 <p className="font-bold text-gray-800 mb-1">Book Your Session</p>
                 <p className="text-gray-600 text-sm">Select a date and time that works for you</p>
                 {loadingAvailability && (
-                  <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                  <div className="mt-2 flex items-center justify-center text-xs" style={{ color: '#3f2e73' }}>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 mr-2" style={{ borderColor: '#3f2e73' }}></div>
                     Loading availability...
                   </div>
                 )}
@@ -1463,70 +1545,134 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* FAQ Section - Mobile View */}
-      <div className="w-full p-4 md:p-8 bg-white lg:hidden">
+      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="mt-6 p-4 rounded-lg bg-gray-50">
+          <style dangerouslySetInnerHTML={{__html: `
+            @media (max-width: 767px) {
+              .faq-heading {
+                font-size: 16px !important;
+                font-weight: 600;
+                line-height: 1.4;
+              }
+              .faq-answer {
+                font-size: 14px !important;
+                line-height: 1.5;
+              }
+            }
+          `}} />
+          <div className="mt-6">
             <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
             
-            <div className="space-y-3">
+            <div className="space-y-0">
               {/* FAQ 1 */}
-              <div className="border border-gray-200 rounded-lg bg-white">
+              <div className="border-b border-gray-200 last:border-b-0">
                 <button
+                  type="button"
                   onClick={() => toggleFAQ(0)}
-                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                 >
-                  <span className="font-medium text-gray-800 text-sm">What makes your approach to therapy unique?</span>
-                  <span className="text-gray-500 text-lg font-bold">
-                    {openFAQ === 0 ? '−' : '+'}
+                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                    What makes your approach to therapy unique?
                   </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 0 ? "rotate-180" : "rotate-0"}`}
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </button>
-                {openFAQ === 0 && (
-                  <div className="px-3 pb-3">
-                    <p className="text-gray-700 leading-relaxed text-xs">
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    openFAQ === 0 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-2 pb-3 md:px-0 md:pb-4">
+                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                       &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
                     </p>
                   </div>
-                )}
+                </div>
               </div>
               
               {/* FAQ 2 */}
-              <div className="border border-gray-200 rounded-lg bg-white">
+              <div className="border-b border-gray-200 last:border-b-0">
                 <button
+                  type="button"
                   onClick={() => toggleFAQ(1)}
-                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                 >
-                  <span className="font-medium text-gray-800 text-sm">How do you help hesitant clients?</span>
-                  <span className="text-gray-500 text-lg font-bold">
-                    {openFAQ === 1 ? '−' : '+'}
+                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                    How do you help hesitant clients?
                   </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 1 ? "rotate-180" : "rotate-0"}`}
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </button>
-                {openFAQ === 1 && (
-                  <div className="px-3 pb-3">
-                    <p className="text-gray-700 leading-relaxed text-xs">
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    openFAQ === 1 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-2 pb-3 md:px-0 md:pb-4">
+                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                       &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
                     </p>
                   </div>
-                )}
+                </div>
               </div>
               
               {/* FAQ 3 */}
-              <div className="border border-gray-200 rounded-lg bg-white">
+              <div className="border-b border-gray-200 last:border-b-0">
                 <button
+                  type="button"
                   onClick={() => toggleFAQ(2)}
-                  className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                 >
-                  <span className="font-medium text-gray-800 text-sm">What&apos;s most important in successful therapy?</span>
-                  <span className="text-gray-500 text-lg font-bold">
-                    {openFAQ === 2 ? '−' : '+'}
+                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                    What&apos;s most important in successful therapy?
                   </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 2 ? "rotate-180" : "rotate-0"}`}
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </button>
-                {openFAQ === 2 && (
-                  <div className="px-3 pb-3">
-                    <p className="text-gray-700 leading-relaxed text-xs">
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-out ${
+                    openFAQ === 2 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-2 pb-3 md:px-0 md:pb-4">
+                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
                       &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
                     </p>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -1534,12 +1680,11 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* Support Contact Section */}
-      <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-auto md:h-[100px] bg-green-500 flex items-center justify-center py-4 md:py-0">
+      <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-auto md:h-[100px] bg-[#3f2e73] flex items-center justify-center py-4 md:py-0 mt-8 md:mt-12" style={{ marginBottom: 0 }}>
         <p className="text-white text-xs md:text-sm text-center px-4">
           If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>
       </div>
-      
       {/* Treatment Method Modal */}
       {showTreatmentModal && selectedTreatment && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">

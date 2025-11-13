@@ -25,6 +25,9 @@ export default function FooterWrapper() {
   // Check if we're on a CMS page (counselling only; assessments and better-parenting removed)
   const isCmsPage = pathname.startsWith('/counselling/');
   
-  return <Footer isHomePage={isHomePage} isCmsPage={isCmsPage} />;
+  // Check if we're on the therapist profile page
+  const isTherapistProfile = pathname.startsWith('/therapist-profile');
+  
+  return <Footer isHomePage={isHomePage} isCmsPage={isCmsPage} isTherapistProfile={isTherapistProfile} />;
 }
 

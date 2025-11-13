@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-export default function Footer({ isHomePage = false, isCmsPage = false }) {
+export default function Footer({ isHomePage = false, isCmsPage = false, isTherapistProfile = false }) {
     const [openSections, setOpenSections] = useState({});
     const [counsellingMenu, setCounsellingMenu] = useState({
         emotional: [],
@@ -135,7 +135,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
         fetchBetterParenting();
     }, []);
     return (
-        <footer className="w-full mt-14" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
+        <footer className={`w-full ${isTherapistProfile ? 'mt-0' : 'mt-14'}`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
                 @media (min-width: 768px) and (max-width: 1023px) {
                     .footer-heading {
@@ -179,7 +179,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
             ) : (
                 // CMS pages footer wrapper design (current design)
                 <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
-                    background: 'linear-gradient(to bottom, #f3f0ff, #e0d8ff)'
+                    background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)'
                 }}>
                     <div className="text-center max-w-4xl mx-auto">
                         <h4 className="footer-heading mb-2 font-semibold">
