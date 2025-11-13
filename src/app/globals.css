@@ -125,7 +125,7 @@ h7 {
 @media (max-width: 767px) {
   h1 {
     font-size: 28px !important;
-    line-height: 1.2rem 
+    line-height: 1.2rem !important;
   }
   
   /* CMS hero section specific mobile line-height override */
@@ -477,5 +477,31 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   .hero-section {
     padding-left: clamp(50px, 6vw, 90px) !important;
     padding-right: clamp(50px, 6vw, 90px) !important;
+  }
+}
+
+/* Team and Leadership image border radius for mobile */
+@media (max-width: 767px) {
+  .team-image-container,
+  .leadership-image-container {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .team-image-container *,
+  .leadership-image-container * {
+    border-radius: 10px;
+  }
+  .team-image-container img,
+  .team-image-container span,
+  .team-image-container span img,
+  .team-image-container > *,
+  .team-image-container > * > *,
+  .leadership-image-container img,
+  .leadership-image-container span,
+  .leadership-image-container span img,
+  .leadership-image-container > *,
+  .leadership-image-container > * > * {
+    border-radius: 10px;
+    overflow: hidden;
   }
 }

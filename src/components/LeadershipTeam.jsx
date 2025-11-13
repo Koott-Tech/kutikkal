@@ -1,9 +1,59 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 
 export default function LeadershipTeam() {
+  useEffect(() => {
+    const styleId = 'leadership-image-border-radius';
+    let styleElement = document.getElementById(styleId);
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    styleElement.innerHTML = `
+      @media (max-width: 767px) {
+        .leadership-image-container {
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .leadership-image-container * {
+          border-radius: 10px;
+        }
+        .leadership-image-container img,
+        .leadership-image-container span,
+        .leadership-image-container span img,
+        .leadership-image-container > *,
+        .leadership-image-container > * > * {
+          border-radius: 10px;
+          overflow: hidden;
+        }
+      }
+    `;
+  }, []);
+
   return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          .leadership-image-container {
+            border-radius: 10px;
+            overflow: hidden;
+          }
+          .leadership-image-container * {
+            border-radius: 10px;
+          }
+          .leadership-image-container img,
+          .leadership-image-container span,
+          .leadership-image-container span img,
+          .leadership-image-container > *,
+          .leadership-image-container > * > * {
+            border-radius: 10px;
+            overflow: hidden;
+          }
+        }
+      `}} />
     <div className="px-[50px]">
       <section className="w-full mt-24">
         <div className="w-full">
@@ -26,7 +76,7 @@ export default function LeadershipTeam() {
           <div className="flex flex-wrap justify-center gap-8">
             {/* Josh Bruno - CEO */}
             <div className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden rounded-[10px]">
+              <div className="h-80 w-full overflow-hidden rounded-[10px] leadership-image-container" suppressHydrationWarning>
                 <Image
                   src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Faisal.webp"
                   alt="Josh Bruno"
@@ -44,7 +94,7 @@ export default function LeadershipTeam() {
 
             {/* Gabe Diop - Co-founder */}
             <div className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden rounded-[10px]">
+              <div className="h-80 w-full overflow-hidden rounded-[10px] leadership-image-container" suppressHydrationWarning>
                 <Image
                   src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Raman.webp"
                   alt="Gabe Diop"
@@ -63,5 +113,6 @@ export default function LeadershipTeam() {
         </div>
       </section>
     </div>
+    </>
   );
 }

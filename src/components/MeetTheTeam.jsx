@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 
 const teamMembers = [
@@ -12,8 +13,57 @@ const teamMembers = [
 ];
 
 export default function MeetTheTeam() {
+  useEffect(() => {
+    const styleId = 'team-image-border-radius';
+    let styleElement = document.getElementById(styleId);
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    styleElement.innerHTML = `
+      @media (max-width: 767px) {
+        .team-image-container {
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .team-image-container * {
+          border-radius: 10px;
+        }
+        .team-image-container img,
+        .team-image-container span,
+        .team-image-container span img,
+        .team-image-container > *,
+        .team-image-container > * > * {
+          border-radius: 10px;
+          overflow: hidden;
+        }
+      }
+    `;
+  }, []);
+
   return (
-    <div className="px-[50px]">
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          .team-image-container {
+            border-radius: 10px;
+            overflow: hidden;
+          }
+          .team-image-container * {
+            border-radius: 10px;
+          }
+          .team-image-container img,
+          .team-image-container span,
+          .team-image-container span img,
+          .team-image-container > *,
+          .team-image-container > * > * {
+            border-radius: 10px;
+            overflow: hidden;
+          }
+        }
+      `}} />
+      <div className="px-[50px]">
       <section className="w-full mt-24">
         <div className="w-full">
           {/* Header Section */}
@@ -35,7 +85,7 @@ export default function MeetTheTeam() {
           <div className="flex flex-wrap justify-center gap-8">
             {teamMembers.map((member) => (
               <div key={member.name} className="w-80 bg-white rounded-2xl overflow-hidden">
-              <div className="h-80 w-full overflow-hidden rounded-[10px]">
+              <div className="h-80 w-full overflow-hidden rounded-[10px] team-image-container" suppressHydrationWarning>
                 <Image
                     src={member.image}
                     alt={member.name}
@@ -57,5 +107,6 @@ export default function MeetTheTeam() {
         </div>
       </section>
     </div>
+    </>
   );
 }

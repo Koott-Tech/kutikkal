@@ -4,6 +4,13 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const formatDisplayName = (slug) => {
+  if (!slug) return '';
+  return slug
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 export default function GuideModal({ open, onClose, defaultCategory = null }) {
   if (!open) return null;
 
@@ -98,7 +105,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
           .forEach(s => {
             if (grouped[s.category]) {
               grouped[s.category].push({
-                title: (s.seo_title || s.hero_title || s.slug)?.replace(' - Little Care', ''),
+                title: formatDisplayName(s.slug),
                 slug: s.slug,
                 href: `/counselling/${s.slug}`,
                 order: s.menu_order || 0
@@ -118,7 +125,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
           .forEach(a => {
             if (grouped[a.category]) {
               grouped[a.category].push({
-                title: (a.seo_title || a.hero_title || a.slug)?.replace(' - Little Care', ''),
+                title: formatDisplayName(a.slug),
                 slug: a.slug,
                 href: `/assessments/${a.slug}`,
                 order: a.menu_order || 0
@@ -133,10 +140,11 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
         const json = await res.json();
         const pages = json?.data?.pages || json?.message?.pages || json?.pages || [];
         const items = pages.filter(p => p.status === 'published').map(p => ({
-          title: p.seo_title || p.hero_title || p.slug,
+          title: formatDisplayName(p.slug),
           slug: p.slug,
-          href: `/better-parenting/${p.slug}`
-        }));
+          href: `/better-parenting/${p.slug}`,
+          order: p.menu_order || 0
+        })).sort((a, b) => a.order - b.order);
         setSubmenu({ loading: false, items, grouped: null });
         requestAnimationFrame(() => setMounted(true));
       }

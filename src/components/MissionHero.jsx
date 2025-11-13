@@ -13,23 +13,101 @@ export default function MissionHero() {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 flex flex-col">
+      <style dangerouslySetInnerHTML={{__html: `
+        .mission-hero-container {
+          height: auto;
+          min-height: auto;
+        }
+        @media (min-width: 768px) {
+          .mission-hero-container {
+            height: auto;
+            min-height: 100vh;
+          }
+        }
+        @media (max-width: 767px) {
+          .mission-hero-container {
+            height: auto;
+            min-height: auto;
+          }
+        }
+        .mission-hero-image-container {
+          width: 100%;
+          max-width: 100%;
+        }
+        @media (max-width: 767px) {
+          h1.mission-hero-title {
+            line-height: 1.2 !important;
+            margin-bottom: 0.5rem;
+          }
+          h1.mission-hero-title br {
+            display: none;
+          }
+          .mission-hero-header {
+            padding-top: 6rem;
+            margin-top: 1rem;
+            padding-bottom: 0;
+          }
+          .mission-hero-header p {
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+          }
+          .mission-hero-button {
+            margin-bottom: 0;
+            margin-top: 2rem;
+          }
+          .mission-hero-image {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 2rem;
+            flex: 0 0 auto;
+          }
+          .mission-hero-image-container {
+            max-width: 100%;
+            height: auto;
+            max-height: 40vh;
+          }
+        }
+        @media (min-width: 768px) {
+          .mission-hero-image {
+            flex: 0 1 auto;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .mission-hero-image-container {
+            max-width: 80%;
+            max-height: 45vh;
+          }
+        }
+        @media (min-width: 1024px) and (max-width: 1279px) {
+          .mission-hero-image-container {
+            max-width: 70%;
+            max-height: 50vh;
+          }
+        }
+        @media (min-width: 1280px) {
+          .mission-hero-image-container {
+            max-width: 60%;
+            max-height: 55vh;
+          }
+        }
+      `}} />
+      <div className="mission-hero-container w-full bg-gradient-to-b from-purple-50 to-purple-100 flex flex-col">
         {/* Row 1: Header Content */}
-        <div className="flex flex-col items-center px-6 pt-16 mt-8 text-center">
+        <div className="mission-hero-header flex flex-col items-center px-6 pt-16 md:pt-16 mt-8 md:mt-8 text-center">
           <h1 
-            className="text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[110%] md:leading-tight mb-6 max-w-4xl tracking-[-0.195rem]"
+            className="mission-hero-title text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[1.0] md:leading-tight mb-6 md:mb-6 max-w-4xl tracking-[-0.195rem]"
             style={{ color: '#1d1733' }}
           >
             Our mission is to make care <br /> feel closer, calmer, and real.
           </h1>
           
-          <p className="text-[1rem] md:text-lg lg:text-xl text-gray-700 mb-8 max-w-4xl leading-[1.3rem] md:leading-relaxed">
+          <p className="text-[1rem] md:text-lg lg:text-xl text-gray-700 mb-8 md:mb-8 max-w-4xl leading-[1.3rem] md:leading-relaxed">
           Because every child deserves care that truly connects.
           </p>
         </div>
 
         {/* Row 2: Button */}
-        <div className="flex justify-center items-center w-full mb-8">
+        <div className="mission-hero-button flex justify-center items-center w-full mb-8 md:mb-8">
           <button 
             type="button"
             onClick={handleGetStartedClick}
@@ -42,8 +120,8 @@ export default function MissionHero() {
         </div>
 
         {/* Row 3: Hero Image */}
-        <div className="flex-1 flex items-end justify-center px-6 pb-4">
-          <div className="relative w-full max-w-5xl aspect-video">
+        <div className="mission-hero-image flex-1 flex items-end justify-center px-6 pb-4">
+          <div className="mission-hero-image-container relative w-full aspect-video">
             <Image
               src="/aboutushero.webp"
               alt="Our Mission"

@@ -1,11 +1,162 @@
 "use client";
+import { useState, useRef, useEffect } from "react";
 
 export default function TestimonialsAbout() {
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const scrollContainerRef = useRef(null);
+    const autoPlayRef = useRef(null);
+
+    const testimonials = [
+        {
+            quote: "Little Care feels like home — warm, genuine, and full of heart. I love that we get to work closely with families and really see the difference small changes can make in a child's life.",
+            author: "Fathima Liana - Consultant Psychologist",
+            bgColor: "bg-green-100"
+        },
+        {
+            quote: "What I really love about Little Care is the space it gives us to connect deeply with every child's journey. The team spirit here is amazing — we learn from each other every day.",
+            author: "Anusmitha Praveen - Consultant Psychologist",
+            bgColor: "bg-amber-100"
+        },
+        {
+            quote: "Little Care blends science with softness in such a beautiful way. We use solid clinical methods, but there's always warmth and creativity behind every session.",
+            author: "Irene Marium - Consultant Psychologist",
+            bgColor: "bg-cyan-100"
+        },
+        {
+            quote: "There's so much creativity here! From therapy games to fun tools and parent sessions — it's all about helping kids grow while keeping therapy engaging and playful.",
+            author: "Athulya O - Consultant Psychologist",
+            bgColor: "bg-blue-100"
+        },
+        {
+            quote: "What I love most is how collaborative the team is. Everyone genuinely cares — we celebrate small wins together and support each other through challenges. It really feels like a family.",
+            author: "Bhavith - Brand Designer",
+            bgColor: "bg-purple-100"
+        },
+        {
+            quote: "Working with Little Care has been truly meaningful. It's not just about building a platform — it's about creating something that genuinely helps children and parents connect with care. Knowing our tech makes therapy easier and more accessible makes it all worth it.",
+            author: "Abhishek - Software Developer",
+            bgColor: "bg-teal-100"
+        },
+        {
+            quote: "At Little Care, digital marketing never feels like marketing. We're not pushing content — we're sharing stories that matter. Every campaign shows how powerful it is when empathy meets purpose, and seeing parents connect because of something we created is what keeps me inspired.",
+            author: "Jishnu - Digital Marketing Specialist",
+            bgColor: "bg-pink-100"
+        },
+        {
+            quote: "Working with Little Care has changed how I see storytelling. Every frame we capture holds real emotion — a child's progress, a parent's relief, a therapist's quiet pride. It's more than videos; it's documenting hope in its simplest form. I'm proud to be part of something so honest and meaningful.",
+            author: "Shinas - Videographer",
+            bgColor: "bg-indigo-100"
+        }
+    ];
+
+    const nextSlide = () => {
+        stopAutoPlay();
+        const newSlide = (currentSlide + 1) % testimonials.length;
+        setCurrentSlide(newSlide);
+        scrollToSlide(newSlide);
+        setTimeout(() => startAutoPlay(), 2000);
+    };
+
+    const prevSlide = () => {
+        stopAutoPlay();
+        const newSlide = (currentSlide - 1 + testimonials.length) % testimonials.length;
+        setCurrentSlide(newSlide);
+        scrollToSlide(newSlide);
+        setTimeout(() => startAutoPlay(), 2000);
+    };
+
+    const goToSlide = (index) => {
+        stopAutoPlay();
+        setCurrentSlide(index);
+        scrollToSlide(index);
+        setTimeout(() => startAutoPlay(), 2000);
+    };
+
+    const handleScroll = () => {
+        if (scrollContainerRef.current) {
+            const scrollLeft = scrollContainerRef.current.scrollLeft;
+            const cardWidth = 340; // Increased card width
+            const gap = 8; // gap-2 = 8px
+            const totalCardWidth = cardWidth + gap;
+            const newSlide = Math.round(scrollLeft / totalCardWidth);
+            setCurrentSlide(Math.min(newSlide, testimonials.length - 1));
+        }
+    };
+
+    const scrollToSlide = (index) => {
+        if (scrollContainerRef.current) {
+            const cardWidth = 340;
+            const gap = 8;
+            const totalCardWidth = cardWidth + gap;
+            scrollContainerRef.current.scrollTo({
+                left: index * totalCardWidth,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const startAutoPlay = () => {
+        if (autoPlayRef.current) {
+            clearInterval(autoPlayRef.current);
+        }
+        autoPlayRef.current = setInterval(() => {
+            setCurrentSlide((prev) => {
+                const next = (prev + 1) % testimonials.length;
+                scrollToSlide(next);
+                return next;
+            });
+        }, 3000);
+    };
+
+    const stopAutoPlay = () => {
+        if (autoPlayRef.current) {
+            clearInterval(autoPlayRef.current);
+            autoPlayRef.current = null;
+        }
+    };
+
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+        stopAutoPlay();
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextSlide();
+        } else if (isRightSwipe) {
+            prevSlide();
+        }
+        
+        setTimeout(() => {
+            startAutoPlay();
+        }, 2000);
+    };
+
+    useEffect(() => {
+        startAutoPlay();
+        return () => stopAutoPlay();
+    }, []);
+
     return (
-        <div className="px-[50px]">
+        <div className="px-4 md:px-[50px]">
             <section className="w-full mt-10">
                 <div className="min-h-[75vh] w-full rounded-2xl overflow-hidden bg-white">
-                    <div className="w-full p-8">
+                    <div className="w-full p-4 md:p-8">
                         {/* Header Section */}
                         <div className="text-center mb-8">
                             <h2 
@@ -16,78 +167,84 @@ export default function TestimonialsAbout() {
                             <p className="text-lg text-gray-600">Every story we tell, every session we take, reminds us why we started to make care feel human again.</p>
                         </div>
 
-                        {/* Grid Cards Layout */}
-                        <div className="flex md:grid md:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 overflow-x-auto md:overflow-x-visible">
-                            {/* Fathima Liana */}
-                            <div className="md:col-span-1 bg-green-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"Little Care feels like home — warm, genuine, and full of heart. I love that we get to work closely with families and really see the difference small changes can make in a child's life."</p>
+                        {/* Desktop: Grid Cards Layout */}
+                        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-2">
+                            {testimonials.map((testimonial, index) => (
+                                <div key={index} className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col`}>
+                                    <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
+                                    <div className="mt-auto">
+                                        <p className="text-sm font-medium">{testimonial.author}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Fathima Liana - Consultant Psychologist</p>
+                        {/* Mobile: Carousel */}
+                        <div className="block md:hidden w-full mt-6 mx-auto max-w-sm">
+                            {/* Scrollable Carousel Container */}
+                            <div 
+                                ref={scrollContainerRef}
+                                onScroll={handleScroll}
+                                onTouchStart={onTouchStart}
+                                onTouchMove={onTouchMove}
+                                onTouchEnd={onTouchEnd}
+                                className="relative overflow-x-auto overflow-y-hidden rounded-[10px] carousel-scroll snap-x snap-mandatory"
+                                style={{ scrollSnapType: 'x mandatory' }}
+                            >
+                                <div className="flex gap-2 pb-4 items-stretch">
+                                    {testimonials.map((testimonial, index) => (
+                                        <div 
+                                            key={index} 
+                                            className="flex-shrink-0 w-[340px] snap-start h-[320px]"
+                                        >
+                                            <div className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col h-full`}>
+                                                <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
+                                                <div className="mt-auto">
+                                                    <p className="text-sm font-medium">{testimonial.author}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            
-                            {/* Anusmitha Praveen */}
-                            <div className="md:col-span-1 bg-amber-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"What I really love about Little Care is the space it gives us to connect deeply with every child's journey. The team spirit here is amazing — we learn from each other every day."</p>
 
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Anusmitha Praveen - Consultant Psychologist</p>
-                                </div>
+                            {/* Navigation Dots */}
+                            <div className="flex justify-center mt-6 gap-2">
+                                {testimonials.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => goToSlide(index)}
+                                        className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                                            currentSlide === index ? 'bg-indigo-600' : 'bg-gray-300'
+                                        }`}
+                                        aria-label={`Go to slide ${index + 1}`}
+                                    />
+                                ))}
                             </div>
-                            
-                            {/* Irene Marium */}
-                            <div className="md:col-span-1 bg-cyan-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"Little Care blends science with softness in such a beautiful way. We use solid clinical methods, but there's always warmth and creativity behind every session."</p>
 
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Irene Marium - Consultant Psychologist</p>
-                                </div>
-                            </div>
-                            
-                            {/* Athulya O */}
-                            <div className="md:col-span-1 bg-blue-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg font-medium mb-4">"There's so much creativity here! From therapy games to fun tools and parent sessions — it's all about helping kids grow while keeping therapy engaging and playful."</p>
-
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Athulya O - Consultant Psychologist</p>
-                                </div>
-                            </div>
-                            
-                            {/* Bhavith */}
-                            <div className="bg-purple-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"What I love most is how collaborative the team is. Everyone genuinely cares — we celebrate small wins together and support each other through challenges. It really feels like a family."</p>
-
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Bhavith - Brand Designer</p>
-                                </div>
-                            </div>
-                            
-                            {/* Abhishek */}
-                            <div className="bg-teal-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"Working with Little Care has been truly meaningful. It's not just about building a platform — it's about creating something that genuinely helps children and parents connect with care. Knowing our tech makes therapy easier and more accessible makes it all worth it."</p>
-
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Abhishek - Software Developer</p>
-                                </div>
-                            </div>
-                            
-                            {/* Jishnu */}
-                            <div className="bg-pink-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"At Little Care, digital marketing never feels like marketing. We're not pushing content — we're sharing stories that matter. Every campaign shows how powerful it is when empathy meets purpose, and seeing parents connect because of something we created is what keeps me inspired."</p>
-
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Jishnu - Digital Marketing Specialist</p>
-                                </div>
-                            </div>
-                            
-                            {/* Shinas */}
-                            <div className="bg-indigo-100 rounded-2xl p-6 min-w-[300px] md:min-w-0 flex flex-col">
-                                <p className="text-lg mb-4">"Working with Little Care has changed how I see storytelling. Every frame we capture holds real emotion — a child's progress, a parent's relief, a therapist's quiet pride. It's more than videos; it's documenting hope in its simplest form. I'm proud to be part of something so honest and meaningful."</p>
-
-                                <div className="mt-auto">
-                                    <p className="text-sm font-medium">Shinas - Videographer</p>
-                                </div>
+                            {/* Navigation Arrows */}
+                            <div className="flex justify-between items-center mt-4 px-4">
+                                <button
+                                    onClick={prevSlide}
+                                    className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                                >
+                                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                
+                                <span className="text-sm text-gray-500">
+                                    {currentSlide + 1} of {testimonials.length}
+                                </span>
+                                
+                                <button
+                                    onClick={nextSlide}
+                                    className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                                >
+                                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>

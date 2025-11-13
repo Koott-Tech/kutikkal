@@ -300,20 +300,10 @@ export default function Header() {
   };
 
   const handleTherapyTypeClick = (therapyType) => {
-    const routeMap = {
-      "Individual therapy": "/individual-therapy",
-      "Couples therapy": "/couples-therapy",
-      "Family therapy": "/family-therapy",
-      "Child therapy": "/child-therapy",
-      "Teen therapy": "/teen-therapy",
-      "Psychiatry": "/psychiatry"
-    };
-    
-    const route = routeMap[therapyType];
-    if (route) {
-      router.push(route);
-      setIsFindCareOpen(false);
-    }
+    // Therapy type pages have been removed
+    // Redirect to guide page instead
+    router.push('/guide');
+    setIsFindCareOpen(false);
   };
 
   const handleFAQClick = () => {
@@ -359,7 +349,7 @@ export default function Header() {
     } else if (user?.role === 'psychologist') {
       router.push('/psychologist');
     } else if (user?.role === 'finance') {
-      router.push('/finance');
+      router.push('/admin'); // Redirect finance role to admin since finance page is removed
     } else {
       router.push('/profile');
     }
@@ -1113,6 +1103,10 @@ export default function Header() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center">
                 <div 
+                  onClick={() => {
+                    handleHomeClick();
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="hover:opacity-80 transition-opacity cursor-pointer"
                   style={{ 
                     width: "100px", 
@@ -1161,6 +1155,7 @@ export default function Header() {
                   <button
                     onClick={() => {
                       handleProfileClick();
+                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full py-3 px-4 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200 mt-4 text-center"
                   >
@@ -1176,6 +1171,7 @@ export default function Header() {
                   <button
                     onClick={() => {
                       handleLoginClick();
+                      setIsMobileMenuOpen(false);
                     }}
                     className="w-full text-left py-3 px-4 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg border border-gray-200"
                   >
@@ -1568,6 +1564,7 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               handleCompanyClick();
+                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Company</span>
@@ -1576,6 +1573,7 @@ export default function Header() {
                             className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => {
                               handleCareerClick();
+                              setIsMobileMenuOpen(false);
                             }}
                           >
                             <span className="text-gray-700 text-sm">Career</span>

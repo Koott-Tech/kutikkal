@@ -50,10 +50,17 @@ export default function FAQ() {
 
   return (
     <div className="w-full min-h-screen bg-white">
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          .faq-main-heading {
+            line-height: 1.4 !important;
+          }
+        }
+      `}} />
       {/* Hero Section */}
       <section className="w-full py-16 md:py-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
+          <h1 className="faq-main-heading text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 mt-8 md:mt-0">
             Frequently Asked Questions
           </h1>
           <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
@@ -64,7 +71,7 @@ export default function FAQ() {
 
       {/* FAQ Section */}
       <section className="w-full px-4 lg:px-6 pb-16 md:pb-24">
-        <style jsx>{`
+        <style dangerouslySetInnerHTML={{__html: `
           @media (max-width: 767px) {
             .faq-heading {
               font-size: 28px;
@@ -76,7 +83,7 @@ export default function FAQ() {
               line-height: 1.45;
             }
           }
-        `}</style>
+        `}} />
         <div className="mx-auto max-w-4xl">
           <div className="space-y-0">
             {FAQ_DATA.map((item, index) => {

@@ -13,12 +13,6 @@ const ConditionalProviders = memo(({ children }) => {
   const staticPages = [
     '/',
     '/about',
-    '/individual-therapy',
-    '/couples-therapy', 
-    '/family-therapy',
-    '/child-therapy',
-    '/teen-therapy',
-    '/psychiatry',
     '/career',
     '/faq'
   ];

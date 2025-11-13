@@ -171,7 +171,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                             We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                         </p>
-                        <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-3 px-6 rounded-full text-base transition-colors duration-200">
+                        <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-4 md:py-3 md:px-6 rounded-full text-sm md:text-base transition-colors duration-200">
                             Get started
                         </button>
                     </div>
@@ -193,7 +193,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                         <div className="flex items-center justify-center gap-3">
                             <a
                                 href={pathname === '/about' ? "/#choose-your-guide" : "https://wa.me/"}
-                                className="px-5 py-2.5 rounded-3xl font-semibold transition-all duration-200"
+                                className="px-3 py-2 md:px-5 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200"
                                 style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
                                 onClick={(e) => {
                                     if (pathname === '/about') {
@@ -207,7 +207,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 {pathname === '/about' ? 'Start Your Care' : 'WhatsApp Us'}
                             </a>
                             <button 
-                                className="text-white px-8 py-3 rounded-3xl font-semibold transition-all duration-200 shadow-sm" 
+                                className="text-white px-4 py-2 md:px-8 md:py-3 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200 shadow-sm" 
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
@@ -426,7 +426,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                             <h5 className="hidden md:block text-white mb-8">Better Parenting</h5>
                             <ul className={`space-y-1 text-base leading-relaxed ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
-                                    <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-sm">{item.title}</a></li>
+                                    <li key={item.url}><a href={item.url} className="text-white font-medium text-sm">{item.title}</a></li>
                                 ))}
                             </ul>
                         </div>
