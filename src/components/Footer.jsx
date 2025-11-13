@@ -211,7 +211,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false }) {
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
-                                onClick={() => router.push('/guide')}
+                                onClick={() => router.push('/psychologists')}
                             >
                                 {pathname === '/about' ? 'Join Our Team' : 'Book  Now'}
                             </button>

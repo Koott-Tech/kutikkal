@@ -7,8 +7,13 @@ export default function FooterWrapper() {
   const pathname = usePathname();
   
   // Don't show footer on admin, superadmin, finance, staff, psychologist, and client dashboard pages
-  const hideFooterPaths = ['/admin', '/superadmin', '/finance', '/staff', '/psychologist', '/profile'];
-  const shouldHideFooter = hideFooterPaths.some(path => pathname.startsWith(path));
+  // Note: /psychologists (listing page) should show footer, only /psychologist (dashboard) should hide it
+  const shouldHideFooter = pathname.startsWith('/admin') || 
+                            pathname.startsWith('/superadmin') || 
+                            pathname.startsWith('/finance') || 
+                            pathname.startsWith('/staff') || 
+                            pathname.startsWith('/profile') ||
+                            (pathname.startsWith('/psychologist') && !pathname.startsWith('/psychologists'));
   
   if (shouldHideFooter) {
     return null;

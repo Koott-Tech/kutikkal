@@ -150,9 +150,9 @@ const Guide = () => {
       <div style={{ position: "relative", zIndex: 3 }}></div>
       
       <section style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
-        <h5 style={{ fontWeight: 800, color: "#1a1a1a", textAlign: "center", maxWidth: 900, marginBottom: "2.2rem" }}>
+        <h2 className="text-center max-w-[900px] mb-9 text-[#1a1a1a] font-semibold mt-4">
           Psychologists that help you grow
-        </h5>
+        </h2>
         <p style={{ fontSize: "1.18rem", color: "#444", textAlign: "center", maxWidth: 600, fontWeight: 500, margin: 0, marginBottom: "2.2rem" }}>
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
         </p>

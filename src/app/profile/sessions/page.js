@@ -216,7 +216,7 @@ export default function SessionsPage() {
             <h3 className="text-gray-900 mb-2">No sessions yet</h3>
             <p className="text-gray-600 mb-4 sm:mb-6">You haven&apos;t booked any sessions yet.</p>
             <button
-              onClick={() => router.push('/guide')}
+              onClick={() => router.push('/psychologists')}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
             >
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />

@@ -60,7 +60,7 @@ export default function FAQ() {
       {/* Hero Section */}
       <section className="w-full py-16 md:py-20 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="faq-main-heading text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6 mt-8 md:mt-0">
+          <h1 className="faq-main-heading text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[1.0] md:leading-tight mb-4 md:mb-6 mt-8 md:mt-0 tracking-[-0.195rem]" style={{ color: '#1d1733' }}>
             Frequently Asked Questions
           </h1>
           <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto">
@@ -74,13 +74,13 @@ export default function FAQ() {
         <style dangerouslySetInnerHTML={{__html: `
           @media (max-width: 767px) {
             .faq-heading {
-              font-size: 28px;
+              font-size: 16px !important;
               font-weight: 600;
-              line-height: 0.95;
+              line-height: 1.4;
             }
             .faq-answer {
-              font-size: 10.5px;
-              line-height: 1.45;
+              font-size: 14px !important;
+              line-height: 1.5;
             }
           }
         `}} />
@@ -96,7 +96,7 @@ export default function FAQ() {
                     onClick={() => setOpenId(open ? "" : id)}
                     className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                   >
-                    <span className="text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                    <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
                       {item.q}
                     </span>
                     <Chevron className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${open ? "rotate-180" : "rotate-0"}`} />

@@ -7,8 +7,10 @@ export default function HeaderWrapper() {
   const pathname = usePathname();
   
   // Hide global site header on admin, superadmin, psychologist dashboards
-  const hideHeaderPaths = ['/admin', '/superadmin', '/psychologist'];
-  const shouldHideCompletely = hideHeaderPaths.some((p) => pathname.startsWith(p));
+  // Note: /psychologists (listing page) should show header, only /psychologist (dashboard) should hide it
+  const shouldHideCompletely = pathname.startsWith('/admin') || 
+                                pathname.startsWith('/superadmin') || 
+                                (pathname.startsWith('/psychologist') && !pathname.startsWith('/psychologists'));
   
   if (shouldHideCompletely) return null;
   

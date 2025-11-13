@@ -314,7 +314,7 @@ const TherapistProfileContent = () => {
 
   const handleBookSession = async () => {
     // 1) Auth check first → show login/signup popup if needed
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated() || !user) {
       setShowAuth(true);
       return;
     }
@@ -727,7 +727,7 @@ const TherapistProfileContent = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
             <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73] mx-auto mb-4"></div>
-          <p className="font-bold text-gray-800 mb-4">Loading Doctor Profile...</p>
+          <p className="font-bold text-gray-800 mb-4">Loading Psychologist Profile...</p>
         </div>
       </div>
     );
@@ -740,10 +740,10 @@ const TherapistProfileContent = () => {
           <p className="font-bold text-gray-800 mb-4">Doctor Not Found</p>
           <p className="text-gray-600 mb-4">{error || 'Unable to load doctor information'}</p>
           <button 
-            onClick={() => router.push('/guide')}
+            onClick={() => router.push('/psychologists')}
             className="bg-[#3f2e73] hover:bg-[#1d1733] text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
-            Back to Guide
+            Back to Psychologists
           </button>
         </div>
       </div>
@@ -1196,7 +1196,6 @@ const TherapistProfileContent = () => {
                   for (let day = 1; day <= daysInMonth; day++) {
                     const isToday = isCurrentMonth && day === today.getDate();
                     const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear();
-                    const isAvailable = day >= today.getDate() || !isCurrentMonth;
                     
                                           // Check if this specific date is available for the psychologist
                       // Use local date formatting to avoid timezone conversion issues
@@ -1206,13 +1205,21 @@ const TherapistProfileContent = () => {
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
                       const dateAvailability = psychologistAvailability[dateStr];
+                    
+                    // Properly check if date is in the past
+                    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    todayStart.setHours(0, 0, 0, 0);
+                    calendarDate.setHours(0, 0, 0, 0);
+                    const isPastDate = calendarDate < todayStart;
+                    const isAvailable = !isPastDate;
+                    
                     const isPsychologistAvailable = dateAvailability && (
                       (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0) ||
                       (Array.isArray(dateAvailability.timeSlots) && dateAvailability.timeSlots.some(slot => slot.available))
                     );
                     
-                    const shouldHighlight = !!isPsychologistAvailable;
-                    // Only treat as available/highlight if it is not a past date
+                    // Only show highlight/available indicator if it's not a past date
+                    const shouldHighlight = !!isPsychologistAvailable && !isPastDate;
                     const isActuallyAvailable = shouldHighlight && isAvailable;
                     
                     calendarDays.push(
@@ -1237,7 +1244,7 @@ const TherapistProfileContent = () => {
                                 ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
                                 : 'text-gray-300 cursor-not-allowed'
                         }`}
-                        title={isPsychologistAvailable ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
+                        title={isPsychologistAvailable && !isPastDate ? (isToday ? 'Today - Available for booking' : 'Available for booking') : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
                         {shouldHighlight && (
@@ -1281,24 +1288,8 @@ const TherapistProfileContent = () => {
                             <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p>No availability for this date</p>
+                            <p>No available time slot for this date</p>
                             <p className="text-xs mt-1">Please select another date</p>
-                            <button 
-                              onClick={() => {
-                                // Find next available date
-                                const nextAvailable = Object.entries(psychologistAvailability)
-                                  .find(([date, availability]) => 
-                                    new Date(date) > selectedDate &&
-                                    ((availability.availableSlots && availability.availableSlots > 0) || (availability.timeSlots && availability.timeSlots.length > 0))
-                                  );
-                                if (nextAvailable) {
-                                  setSelectedDate(new Date(nextAvailable[0]));
-                                }
-                              }}
-                              className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-xs"
-                            >
-                              Find Next Available
-                            </button>
                           </div>
                         </div>
                       );
@@ -1443,28 +1434,13 @@ const TherapistProfileContent = () => {
                   </>
                 )}
               </div>
-              
-              {/* Login/Role Prompt */}
-              {!isAuthenticated() ? (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-blue-700 text-sm text-center">
-                    🔐 Please <button onClick={() => setShowAuth(true)} className="underline font-semibold">log in</button> to book a session
-                  </p>
-                </div>
-              ) : !hasRole('client') ? (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-yellow-700 text-sm text-center">
-                    ⚠️ Only clients can book sessions. You are logged in as a {user.role}.
-                  </p>
-                </div>
-              ) : null}
 
               {/* Book Button */}
               <button 
                 onClick={handleBookSession}
-                disabled={!selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking}
+                disabled={isBooking}
                 className={`w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm ${
-                  !selectedDate || !selectedTime || (!selectedPackage && !isBookingRemaining) || isBooking
+                  isBooking
                     ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     : 'bg-[#3f2e73] text-white hover:bg-[#1d1733]'
                 }`}

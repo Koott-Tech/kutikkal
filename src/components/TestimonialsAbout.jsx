@@ -39,7 +39,7 @@ export default function TestimonialsAbout() {
         },
         {
             quote: "At Little Care, digital marketing never feels like marketing. We're not pushing content — we're sharing stories that matter. Every campaign shows how powerful it is when empathy meets purpose, and seeing parents connect because of something we created is what keeps me inspired.",
-            author: "Jishnu - Digital Marketing Specialist",
+            author: "Jishnu - Digital Marketer",
             bgColor: "bg-pink-100"
         },
         {
@@ -105,7 +105,7 @@ export default function TestimonialsAbout() {
                 scrollToSlide(next);
                 return next;
             });
-        }, 3000);
+        }, 5000);
     };
 
     const stopAutoPlay = () => {
@@ -117,20 +117,57 @@ export default function TestimonialsAbout() {
 
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
+    const [touchHoldTimer, setTouchHoldTimer] = useState(null);
+    const [isHolding, setIsHolding] = useState(false);
     const minSwipeDistance = 50;
 
     const onTouchStart = (e) => {
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
         stopAutoPlay();
+        
+        // Start touch hold timer
+        const timer = setTimeout(() => {
+            setIsHolding(true);
+            stopAutoPlay();
+        }, 300);
+        setTouchHoldTimer(timer);
     };
 
     const onTouchMove = (e) => {
         setTouchEnd(e.targetTouches[0].clientX);
+        // If moved significantly, cancel hold
+        if (touchStart && Math.abs(e.targetTouches[0].clientX - touchStart) > 10) {
+            if (touchHoldTimer) {
+                clearTimeout(touchHoldTimer);
+                setTouchHoldTimer(null);
+            }
+            setIsHolding(false);
+        }
     };
 
     const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
+        // Clear hold timer
+        if (touchHoldTimer) {
+            clearTimeout(touchHoldTimer);
+            setTouchHoldTimer(null);
+        }
+        
+        if (isHolding) {
+            setIsHolding(false);
+            // If was holding, don't swipe, just resume autoplay after delay
+            setTimeout(() => {
+                startAutoPlay();
+            }, 3000);
+            return;
+        }
+        
+        if (!touchStart || !touchEnd) {
+            setTimeout(() => {
+                startAutoPlay();
+            }, 3000);
+            return;
+        }
         
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > minSwipeDistance;
@@ -144,7 +181,7 @@ export default function TestimonialsAbout() {
         
         setTimeout(() => {
             startAutoPlay();
-        }, 2000);
+        }, 3000);
     };
 
     useEffect(() => {
@@ -172,13 +209,13 @@ export default function TestimonialsAbout() {
                             {testimonials.map((testimonial, index) => (
                                 <div key={index} className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col`}>
                                     <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
-                                    <div className="mt-auto">
+                                <div className="mt-auto">
                                         <p className="text-sm font-medium">{testimonial.author}</p>
-                                    </div>
+                            </div>
                                 </div>
                             ))}
-                        </div>
-
+                            </div>
+                            
                         {/* Mobile: Carousel */}
                         <div className="block md:hidden w-full mt-6 mx-auto max-w-sm">
                             {/* Scrollable Carousel Container */}
@@ -199,15 +236,15 @@ export default function TestimonialsAbout() {
                                         >
                                             <div className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col h-full`}>
                                                 <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
-                                                <div className="mt-auto">
+                                <div className="mt-auto">
                                                     <p className="text-sm font-medium">{testimonial.author}</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                </div>
+                            </div>
+                                </div>
                                     ))}
                                 </div>
                             </div>
-
+                            
                             {/* Navigation Dots */}
                             <div className="flex justify-center mt-6 gap-2">
                                 {testimonials.map((_, index) => (
@@ -221,7 +258,7 @@ export default function TestimonialsAbout() {
                                     />
                                 ))}
                             </div>
-
+                            
                             {/* Navigation Arrows */}
                             <div className="flex justify-between items-center mt-4 px-4">
                                 <button

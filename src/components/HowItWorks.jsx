@@ -233,7 +233,7 @@ export default function HowItWorks() {
             style={{ backgroundColor: '#15171A' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
-            onClick={() => router.push('/guide')}
+            onClick={() => router.push('/psychologists')}
           >
             Get started
           </button>

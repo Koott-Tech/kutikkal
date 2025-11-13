@@ -159,7 +159,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
-              onClick={() => router.push('/guide')}
+              onClick={() => router.push('/psychologists')}
             >
               {currentContent.buttonText || "Get started"}
             </button>

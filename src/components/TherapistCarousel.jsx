@@ -77,7 +77,7 @@ export default function TherapistCarousel({ therapists = [] }) {
         })}
 
         {/* Mobile-only extra card: View more */}
-        <a href="/guide" className="block snap-start flex-shrink-0 w-[calc(100%-60px)]">
+        <a href="/psychologists" className="block snap-start flex-shrink-0 w-[calc(100%-60px)]">
           <div className="guide-video-card h-[320px] w-full rounded-[10px] overflow-hidden border border-gray-200 shadow-sm relative" style={{ backgroundColor: '#eae5ff' }}>
             <div className="relative z-10 h-full flex items-center justify-center">
               <span className="relative text-gray-900 text-lg group cursor-pointer">

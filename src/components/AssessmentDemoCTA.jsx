@@ -12,7 +12,7 @@ export default function AssessmentDemoCTA() {
             <p className="text-gray-700 mb-6">
               We’d love to walk you through the platform we built with therapists' needs in mind.
             </p>
-            <a href="/guide" className="inline-flex items-center rounded-full bg-emerald-700 text-white px-6 py-3 hover:bg-emerald-800 transition-colors">
+            <a href="/psychologists" className="inline-flex items-center rounded-full bg-emerald-700 text-white px-6 py-3 hover:bg-emerald-800 transition-colors">
               Meet with us
             </a>
           </div>

@@ -60,7 +60,7 @@ export default function Header() {
   const [profileData, setProfileData] = useState(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, hasRole } = useAuth();
 
   const formatDisplayName = (slug) => {
     if (!slug) return '';
@@ -302,7 +302,7 @@ export default function Header() {
   const handleTherapyTypeClick = (therapyType) => {
     // Therapy type pages have been removed
     // Redirect to guide page instead
-    router.push('/guide');
+    router.push('/psychologists');
     setIsFindCareOpen(false);
   };
 
@@ -371,23 +371,37 @@ export default function Header() {
   const getUserDisplayName = () => {
     if (!user) return 'User';
     
-    // Prefer full name from profileData
-    if (profileData && profileData.first_name && profileData.last_name) {
+    // Priority 1: Use name from profileData if available (most up-to-date)
+    if (profileData?.first_name && profileData?.last_name) {
       return `${profileData.first_name} ${profileData.last_name}`.trim();
     }
     
-    // If AuthContext already has profile with name, use it to avoid flashing email
+    // Priority 2: Use name from user.profile (from AuthContext)
     if (user.profile?.first_name && user.profile?.last_name) {
       return `${user.profile.first_name} ${user.profile.last_name}`.trim();
     }
     
-    // For admins/superadmins, keep showing email
+    // Priority 3: Use name directly from user object
+    if (user.first_name || user.last_name) {
+      const name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      if (name) return name;
+    }
+    
+    // Priority 4: Use partial name (first_name only or last_name only)
+    if (user.profile?.first_name) {
+      return user.profile.first_name;
+    }
+    if (user.first_name) {
+      return user.first_name;
+    }
+    
+    // For admins/superadmins, show email
     if (user.role === 'admin' || user.role === 'superadmin') {
       return user.email;
     }
     
-    // Fallback placeholder instead of email to avoid flash
-    return 'User';
+    // Only fallback to email if absolutely no name is available anywhere
+    return user.email || 'User';
   };
 
   const getUserInitial = () => {
@@ -465,7 +479,7 @@ export default function Header() {
                   {isFindCareOpen && (
                     <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
                       {/* Counselling Services */}
-                      <div className="px-6 pb-4 border-b border-gray-200">
+                      <div className="px-6 pb-4">
                         <div className="space-y-3">
                           {/* Emotional & Mental Health */}
                           <div 
@@ -1031,11 +1045,17 @@ export default function Header() {
                 {isUserMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                     <div className="px-4 pb-3 border-b border-gray-200">
-                      <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
-                      <div className="text-xs text-gray-500">{user?.email}</div>
-                      <div className="text-xs text-indigo-600 font-medium mt-1">
-                        {getRoleDisplayName(user?.role)}
-                      </div>
+                      {!hasRole('client') ? (
+                        <>
+                          <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                          <div className="text-xs text-gray-500">{user?.email}</div>
+                          <div className="text-xs text-indigo-600 font-medium mt-1">
+                            {getRoleDisplayName(user?.role)}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-xs text-gray-500">{user?.email}</div>
+                      )}
                     </div>
                     <div className="px-4 pt-3 space-y-2">
                       <button
@@ -1139,16 +1159,20 @@ export default function Header() {
                         {getUserInitial()}
                       </span>
                     </div>
-                    <div>
-                      <div className="text-base font-medium text-gray-900">{getUserDisplayName()}</div>
-                      {/* Only show email if it's different from display name */}
-                      {getUserDisplayName() !== user?.email && (
-                        <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
-                      )}
-                      <div className="text-sm text-indigo-600 font-medium mt-1">
-                        {getRoleDisplayName(user?.role)}
+                    {hasRole('client') ? (
+                      <div className="text-sm text-gray-500">{user?.email}</div>
+                    ) : (
+                      <div>
+                        <div className="text-base font-medium text-gray-900">{getUserDisplayName()}</div>
+                        {/* Only show email if it's different from display name */}
+                        {getUserDisplayName() !== user?.email && (
+                          <div className="text-sm text-gray-500 mt-1">{user?.email}</div>
+                        )}
+                        <div className="text-sm text-indigo-600 font-medium mt-1">
+                          {getRoleDisplayName(user?.role)}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                   
                   {/* Dashboard Button */}
@@ -1365,19 +1389,6 @@ export default function Header() {
                               ))}
                             </div>
                           )}
-                        </div>
-                        
-                        <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
-                          
-                          <div 
-                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
-                            onClick={() => {
-                              router.push('/resources');
-                              setIsMobileMenuOpen(false);
-                            }}
-                          >
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">Resources</span>
-                          </div>
                         </div>
                       </div>
                     </div>

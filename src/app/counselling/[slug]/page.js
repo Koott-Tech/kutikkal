@@ -276,7 +276,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       </div>
       {/* Desktop-only View More under grid */}
       <div className="hidden md:block text-center mt-6">
-        <a href="/guide" className="inline-flex items-center justify-center text-gray-900 text-lg group">
+        <a href="/psychologists" className="inline-flex items-center justify-center text-gray-900 text-lg group">
           <span className="relative cursor-pointer">
             View more →
             <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gray-900 transition-all duration-300 ease-out group-hover:w-full" />

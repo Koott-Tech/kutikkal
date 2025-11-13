@@ -65,7 +65,7 @@ export default function PackagesPage() {
           <h6 className="text-gray-900 mb-2">No packages purchased yet</h6>
           <p className="text-gray-600">You can browse therapists and purchase packages from the guide page.</p>
           <button
-            onClick={() => router.push('/guide')}
+            onClick={() => router.push('/psychologists')}
             className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
           >
             Browse Therapists
