@@ -67,30 +67,30 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
       
       if (isDevelopment) {
         // Development: Use current redirect behavior
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
           }
-        });
-
-        if (error) {
-          console.error('❌ Supabase Google Sign-In error:', error);
-          console.error('Error details:', {
-            message: error.message,
-            status: error.status,
-            name: error.name
-          });
-          if (onError) onError(new Error(error.message));
-          return;
         }
+      });
 
-        console.log('✅ Supabase Google Sign-In initiated:', data);
-        // Note: User will be redirected to Google, so no further code will execute
+      if (error) {
+        console.error('❌ Supabase Google Sign-In error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
+        if (onError) onError(new Error(error.message));
+        return;
+      }
+
+      console.log('✅ Supabase Google Sign-In initiated:', data);
+      // Note: User will be redirected to Google, so no further code will execute
       } else {
         // Production: Use popup window centered on screen
         const { data, error } = await supabase.auth.signInWithOAuth({

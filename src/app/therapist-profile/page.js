@@ -835,7 +835,7 @@ const TherapistProfileContent = () => {
             {/* Mobile: Profile Picture at top */}
             <div className="relative z-10 flex items-center justify-center md:hidden h-full mt-20" style={{ pointerEvents: 'auto' }}>
               <div className="relative">
-                <div className="w-48 h-52 rounded-[20px] overflow-hidden relative bg-white" style={{ paddingTop: '16px', border: 'none' }}>
+                <div className="w-48 h-52 rounded-[20px] overflow-hidden relative bg-white" style={{ paddingTop: '0', border: 'none' }}>
                   {/* Doctor Profile Picture or Fallback */}
                   {(selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
                     (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
@@ -891,9 +891,9 @@ const TherapistProfileContent = () => {
                 
                 {/* Experience text - Mobile positioning */}
                 {selectedDoctor.experience_years && (
-                <div className="absolute bottom-2 -right-2 bg-white/90 backdrop-blur-sm rounded-xl px-2 py-1 shadow-lg min-w-[120px]">
-                  <p className="text-xs font-medium" style={{ color: '#3f2e73' }}>
-                      <span className="font-semibold">{selectedDoctor.experience_years}+ years of experience</span>
+                <div className="absolute bottom-2 -right-2 bg-white/90 backdrop-blur-sm rounded-lg px-1.5 py-0.5 shadow-lg min-w-[90px]">
+                  <p className="text-[10px] font-medium" style={{ color: '#3f2e73' }}>
+                      <span className="font-semibold">{selectedDoctor.experience_years}+ yrs</span>
                   </p>
                 </div>
                 )}
@@ -901,12 +901,15 @@ const TherapistProfileContent = () => {
             </div>
 
             {/* Mobile: Doctor Name below image */}
-            <div className="text-center md:hidden mb-6">
-              <h3 className="font-semibold mb-2">
+            <div className="text-center md:hidden mb-6 mt-4">
+              <h2 className="text-3xl font-semibold mb-2">
                 {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-              </h3>
-              <p className="text-sm text-gray-600">
+              </h2>
+              <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
                 {selectedDoctor.specialization || 'Licensed Psychologist'}
+              </p>
+              <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
+                {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
               </p>
             </div>
             
@@ -1545,13 +1548,13 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* FAQ Section - Mobile View */}
-      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden">
+      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden" style={{ marginTop: '3rem' }}>
         <div className="max-w-6xl mx-auto">
           <style dangerouslySetInnerHTML={{__html: `
             @media (max-width: 767px) {
               .faq-heading {
                 font-size: 16px !important;
-                font-weight: 600;
+                font-weight: 400 !important;
                 line-height: 1.4;
               }
               .faq-answer {
@@ -1681,9 +1684,17 @@ const TherapistProfileContent = () => {
       
       {/* Support Contact Section */}
       <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-auto md:h-[100px] bg-[#3f2e73] flex items-center justify-center py-4 md:py-0 mt-8 md:mt-12" style={{ marginBottom: 0 }}>
-        <p className="text-white text-xs md:text-sm text-center px-4">
+        <p className="text-white text-xs md:text-sm text-center px-4 support-contact-text">
           If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
         </p>
+        <style dangerouslySetInnerHTML={{__html: `
+          @media (max-width: 767px) {
+            .support-contact-text {
+              line-height: 1.2 !important;
+              font-size: 10px !important;
+            }
+          }
+        `}} />
       </div>
       {/* Treatment Method Modal */}
       {showTreatmentModal && selectedTreatment && (

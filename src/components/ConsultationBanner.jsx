@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 
 export default function ConsultationBanner() {
+  const router = useRouter();
   return (
     <div className="section-mobile mt-16">
       <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
@@ -216,7 +218,11 @@ export default function ConsultationBanner() {
               </p>
               
               <div className="flex items-center gap-1">
-                <button className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" style={{ backgroundColor: 'white' }}>
+                <button 
+                  onClick={() => router.push('/psychologists')}
+                  className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" 
+                  style={{ backgroundColor: 'white' }}
+                >
                   <span>Book Your Slot Now</span>
                   <div className="w-4 h-4 md:w-7 md:h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: '#bed39c' }}>
                     <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

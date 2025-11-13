@@ -62,13 +62,45 @@ export default function TherapistCarousel({ therapists = [] }) {
           />
                 <div style={{ position: 'absolute', left: 18, bottom: 18, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
                   <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{name}</div>
-                  {doc.experience_years && (
-                    <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', opacity: 0.95 }}>{doc.experience_years} years experience</div>
-                  )}
+                  {/* Expertise bubbles */}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                    {/* Specialization chips first */}
                     {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? doc.area_of_expertise.slice(0, 2) : ['Child Therapy']).map((exp, i) => (
-                      <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.32em 1.1em', fontWeight: 600, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
+                      <span key={i} style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{exp}</span>
                     ))}
+                    {/* Price chip (matches specialization chip style) */}
+                    <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
+                    {/* Experience chip */}
+                    <span style={{
+                      background: 'rgba(255,255,255,0.22)',
+                      color: '#fff',
+                      borderRadius: 16,
+                      padding: '0.18em 0.5em',
+                      fontWeight: 400,
+                      fontSize: '0.9rem',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                      backdropFilter: 'blur(0.5px)',
+                      WebkitBackdropFilter: 'blur(0.5px)',
+                      border: '1.5px solid rgba(255,255,255,0.18)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6
+                    }}>
+                      <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
+                      {`${(doc.experience_years || 3)}+ yrs Experience`}
+                    </span>
+                    <span style={{
+                      background: 'rgba(255,255,255,0.22)',
+                      color: '#fff',
+                      borderRadius: 16,
+                      padding: '0.18em 0.5em',
+                      fontWeight: 400,
+                      fontSize: '0.9rem',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                      backdropFilter: 'blur(0.5px)',
+                      WebkitBackdropFilter: 'blur(0.5px)',
+                      border: '1.5px solid rgba(255,255,255,0.18)'
+                    }}>📚 Consultant Psychologist</span>
                   </div>
                 </div>
               </div>

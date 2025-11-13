@@ -220,7 +220,7 @@ const Guide = () => {
               overflow: hidden;
               box-shadow: none !important;
               background: #fff;
-              border: 2px solid #e0e7ef;
+              border: none;
               position: relative;
               margin: 0 !important; /* ensure no extra row spacing */
             }
@@ -306,7 +306,7 @@ const Guide = () => {
             @media (max-width: 768px) {
               .guide-cards-container {
                 grid-template-columns: 1fr;
-                gap: 6px !important; /* unified row/column gap */
+                gap: 20px !important; /* increased gap between cards */
                 padding: 0 3rem !important; /* more side padding */
                 max-width: 480px;
                 margin-left: auto;
@@ -330,7 +330,7 @@ const Guide = () => {
             /* Small mobile view - 1 card per row with smaller cards */
             @media (max-width: 480px) {
               .guide-cards-container {
-                gap: 3px !important; /* unified row/column gap */
+                gap: 20px !important; /* increased gap between cards */
                 padding: 0 2.5rem !important; /* more side padding */
                 max-width: 420px;
               }
