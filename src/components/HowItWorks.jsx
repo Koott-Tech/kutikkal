@@ -160,6 +160,7 @@ export default function HowItWorks() {
           .how-it-works-card {
             height: 280px;
             width: clamp(240px, 80vw, 320px);
+            border-radius: 10px !important;
           }
           .how-it-works-title {
             font-size: 18px;
@@ -257,26 +258,27 @@ export default function HowItWorks() {
                     data-slide-index={index}
                   >
                     <div
-                      className="how-it-works-card p-4 h-[280px] w-full flex flex-col justify-between card-bg-mobile"
+                      className="how-it-works-card p-4 h-[280px] w-full flex flex-col justify-between card-bg-mobile rounded-[10px]"
                       style={{ 
                         backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
                         backgroundAttachment: "scroll",
-                        backgroundColor: card.id === 2 ? "#f0f0f0" : "transparent"
+                        backgroundColor: card.id === 2 ? "#f0f0f0" : "transparent",
+                        borderRadius: "10px"
               }}
             >
-              {/* Header Section */}
-                      <div className="flex-shrink-0" style={card.id === 2 ? { marginBottom: '-10px' } : {}}>
-                        <div className="text-xl font-medium text-gray-900 text-center" style={{ marginBottom: card.id === 2 ? '8px' : '12px' }}>{card.number}</div>
-                        <h6 className="how-it-works-title text-center font-semibold text-base" style={card.id === 2 ? { marginBottom: '0px' } : {}}>
+                      {/* Header Section */}
+                      <div className="flex-shrink-0">
+                        <div className="text-xl font-medium text-gray-900 text-center" style={{ marginBottom: '12px' }}>{card.number}</div>
+                        <h6 className="how-it-works-title text-center font-semibold text-base">
                           {card.title}
                         </h6>
                       </div>
 
                       {/* Content Section */}
-                      <div className={`flex-1 flex flex-col ${card.id === 2 ? '' : 'justify-center'}`} style={card.id === 2 ? { padding: 0, marginTop: '-50px', marginBottom: '-25px' } : {}}>
+                      <div className={`flex-1 flex flex-col ${card.id === 2 ? 'justify-center' : 'justify-center'}`} style={card.id === 2 ? { padding: 0 } : {}}>
                         {/* Card-specific content */}
                         {card.id === 1 && (
                           <div className="space-y-2 flex flex-col items-center">
@@ -294,7 +296,7 @@ export default function HowItWorks() {
                         )}
 
                         {card.id === 2 && (
-                          <div className="flex flex-col items-center card-2-inner-image" style={{ margin: '-85px 0', padding: 0 }}>
+                          <div className="flex flex-col items-center justify-center card-2-inner-image" style={{ padding: 0, margin: '-70px auto 0 auto' }}>
                             <div className="relative" style={{ width: '200px', height: '200px', padding: 0, margin: 0 }}>
                               <Image
                                 src="/howitworks2inner.png"
@@ -354,8 +356,8 @@ export default function HowItWorks() {
                       </div>
 
                       {/* Footer Section */}
-                      <div className="flex-shrink-0" style={card.id === 2 ? { marginTop: '-25px' } : card.id === 4 ? { marginTop: '-5px' } : {}}>
-                        <p className="how-it-works-description text-center px-4 text-xs" style={card.id === 2 ? { marginTop: '0px', paddingTop: '0px', lineHeight: '1.2' } : card.id === 4 ? { marginTop: '5px', paddingTop: '0px', lineHeight: '1.2' } : { marginTop: '4px', paddingTop: '8px' }}>
+                      <div className="flex-shrink-0" style={card.id === 4 ? { marginTop: '-5px' } : {}}>
+                        <p className="how-it-works-description text-center px-4 text-xs" style={card.id === 4 ? { marginTop: '5px', paddingTop: '0px', lineHeight: '1.2' } : { marginTop: '4px', paddingTop: '8px' }}>
                           {card.description}
                         </p>
                       </div>
@@ -409,7 +411,7 @@ export default function HowItWorks() {
           <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
             <div
-              className="rounded-2xl p-6 h-[355px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
+              className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
                 backgroundImage: "url('/howitworks1.png')",
               }}

@@ -234,7 +234,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       <div className="mt-8">
         <HowItWorks />
       </div>
-      <div className="mt-12">
+      <div className="mt-16 md:mt-20">
         <BenefitsSection cmsData={{ title: data?.benefits_title || 'Why this program?', benefits: data?.benefits || [], benefitsImageUrl: data?.benefits_image_url || '' }} />
       </div>
       <div className="mt-8">

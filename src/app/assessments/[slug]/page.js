@@ -122,7 +122,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
         <HowItWorks />
       </div>
 
-      <div className="mt-8">
+      <div className="mt-16 md:mt-20">
         <BenefitsSection 
           cmsData={{ 
             title: data?.benefits_title || 'Why this assessment?', 

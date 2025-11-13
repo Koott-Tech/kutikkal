@@ -286,16 +286,16 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       <div className="mt-12 md:mt-16">
         <HowItWorks />
       </div>
-      <BenefitsSection 
-        therapyType={slug} 
-        cmsData={{
-          title: serviceData.benefits_title,
-          benefits: serviceData.benefits || [],
-          benefitsImageUrl: serviceData.benefits_image_url || ''
-        }}
-        fluid
-        compactSpacing
-      />
+      <div className="mt-16 md:mt-20">
+        <BenefitsSection 
+          therapyType={slug} 
+          cmsData={{
+            title: serviceData.benefits_title,
+            benefits: serviceData.benefits || [],
+            benefitsImageUrl: serviceData.benefits_image_url || ''
+          }}
+        />
+      </div>
       <div className="mt-24 md:mt-28">
         <TherapyTypesSplit 
           therapyType={slug} 
