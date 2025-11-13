@@ -5,6 +5,10 @@ import { useEffect, useRef, useState } from "react";
 export default function TherapistCarousel({ therapists = [] }) {
   const containerRef = useRef(null);
   const [current, setCurrent] = useState(0);
+  const autoplayRef = useRef(null);
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
+  const isPausedRef = useRef(false);
 
   // Sync dots with scroll position
   const handleScroll = () => {
@@ -28,6 +32,54 @@ export default function TherapistCarousel({ therapists = [] }) {
     setCurrent(index);
   };
 
+  // Autoplay functionality
+  useEffect(() => {
+    if (therapists.length === 0) return;
+    
+    const startAutoplay = () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+      
+      autoplayRef.current = setInterval(() => {
+        if (!isPausedRef.current && containerRef.current) {
+          const el = containerRef.current;
+          const cardWidth = el.firstChild ? el.firstChild.getBoundingClientRect().width : 320;
+          const gap = 16;
+          const total = cardWidth + gap;
+          
+          setCurrent((prev) => {
+            const next = (prev + 1) % therapists.length;
+            el.scrollTo({ left: next * total, behavior: "smooth" });
+            return next;
+          });
+        }
+      }, 5000); // 5 seconds delay
+    };
+
+    startAutoplay();
+    
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+    };
+  }, [therapists.length]);
+
+  // Touch handlers for pause on touch and hold
+  const handleTouchStart = (e) => {
+    touchStartRef.current = Date.now();
+    isPausedRef.current = true;
+  };
+
+  const handleTouchEnd = () => {
+    touchEndRef.current = Date.now();
+    // If touch was held for more than 200ms, keep paused
+    if (touchStartRef.current && touchEndRef.current - touchStartRef.current > 200) {
+      setTimeout(() => {
+        isPausedRef.current = false;
+      }, 1000); // Resume after 1 second
+    } else {
+      isPausedRef.current = false;
+    }
+  };
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -39,15 +91,21 @@ export default function TherapistCarousel({ therapists = [] }) {
     <div className="md:hidden w-full">
       <div
         ref={containerRef}
-        className="overflow-x-auto no-scrollbar flex gap-4 snap-x snap-mandatory px-4"
+        className="overflow-x-auto no-scrollbar flex gap-4 snap-x snap-mandatory px-2"
         style={{ scrollSnapType: 'x mandatory' }}
       >
         {therapists.map((doc, idx) => {
           const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
           const name = doc.name || doc.first_name || 'Therapist';
           return (
-            <a key={idx} href={`/therapist-profile?doctor=${idx}`} className="block snap-start flex-shrink-0 w-[calc(100%-60px)]">
-              <div className="guide-video-card h-[320px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
+            <a 
+              key={idx} 
+              href={`/therapist-profile?doctor=${idx}`} 
+              className="block snap-start flex-shrink-0 w-[90%]"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">
                 <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div
             style={{
@@ -109,8 +167,13 @@ export default function TherapistCarousel({ therapists = [] }) {
         })}
 
         {/* Mobile-only extra card: View more */}
-        <a href="/psychologists" className="block snap-start flex-shrink-0 w-[calc(100%-60px)]">
-          <div className="guide-video-card h-[320px] w-full rounded-[10px] overflow-hidden border border-gray-200 shadow-sm relative" style={{ backgroundColor: '#eae5ff' }}>
+        <a 
+          href="/psychologists" 
+          className="block snap-start flex-shrink-0 w-[90%]"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 shadow-sm relative" style={{ backgroundColor: '#eae5ff' }}>
             <div className="relative z-10 h-full flex items-center justify-center">
               <span className="relative text-gray-900 text-lg group cursor-pointer">
                 View more →
