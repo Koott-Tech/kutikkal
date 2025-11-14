@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Suspense } from "react";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
@@ -45,7 +46,9 @@ export default function RootLayout({ children }) {
       <body
         className="antialiased"
       >
-        <PageLoadingOverlay />
+        <Suspense fallback={null}>
+          <PageLoadingOverlay />
+        </Suspense>
         <ConditionalProviders>
           <HeaderWrapper />
           <ConditionalPadding>

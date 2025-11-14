@@ -312,6 +312,78 @@ const TherapistProfileContent = () => {
     // Keep selected package intact when time changes
   };
 
+  const parseTimeStringToMinutes = (timeStr) => {
+    if (!timeStr) return null;
+    const trimmed = timeStr.trim();
+
+    // Match 12-hour format e.g., "10:30 AM"
+    const match12 = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let hours = parseInt(match12[1], 10);
+      const minutes = parseInt(match12[2], 10);
+      const period = match12[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      }
+      if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      return hours * 60 + minutes;
+    }
+
+    // Match 24-hour format e.g., "14:30" or "14:30:00"
+    const match24 = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (match24) {
+      const hours = parseInt(match24[1], 10);
+      const minutes = parseInt(match24[2], 10);
+      return hours * 60 + minutes;
+    }
+
+    return null;
+  };
+
+  const getSlotMinutes = (slot) => {
+    if (!slot) return null;
+    if (typeof slot === 'string') {
+      return parseTimeStringToMinutes(slot);
+    }
+    const possibleKeys = ['time', 'time_slot', 'startTime', 'start_time', 'displayTime'];
+    for (const key of possibleKeys) {
+      if (slot[key]) {
+        const minutes = parseTimeStringToMinutes(slot[key]);
+        if (minutes !== null) return minutes;
+      }
+    }
+    return null;
+  };
+
+  const formatSlotDisplayTime = (slot) => {
+    if (!slot) return '';
+    if (typeof slot === 'string') return slot;
+    if (slot.displayTime) return slot.displayTime;
+    const minutes = getSlotMinutes(slot);
+    if (minutes === null) return slot.time || '';
+    const hours24 = Math.floor(minutes / 60);
+    const minutesPart = String(minutes % 60).padStart(2, '0');
+    const period = hours24 >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 || 12;
+    return `${hours12}:${minutesPart} ${period}`;
+  };
+
+  const isSlotInPast = (slot, date) => {
+    if (!slot || !date) return false;
+    const now = new Date();
+    const isSameDay =
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    if (!isSameDay) return false;
+    const slotMinutes = getSlotMinutes(slot);
+    if (slotMinutes === null) return false;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return slotMinutes <= nowMinutes;
+  };
+
   const [showAuth, setShowAuth] = useState(false);
   const [showQuickContact, setShowQuickContact] = useState(false);
 
@@ -1361,8 +1433,11 @@ const TherapistProfileContent = () => {
                       const dateStr = `${year}-${month}-${dayStr}`;
                     const dateAvailability = psychologistAvailability[dateStr];
                     const allTimeSlots = dateAvailability?.timeSlots || [];
-                    const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
-                    const blockedSlots = allTimeSlots.filter(slot => !slot.available).map(slot => slot.displayTime);
+                    const availableSlots = allTimeSlots
+                      .filter(slot => slot.available && !isSlotInPast(slot, selectedDate))
+                      .map(slot => formatSlotDisplayTime(slot))
+                      .filter(Boolean);
+                    const hadAvailableSlots = allTimeSlots.some(slot => slot.available);
                     
 
                     
@@ -1383,7 +1458,7 @@ const TherapistProfileContent = () => {
                     return (
                       <div className="space-y-2">
                         {/* Available Time Slots */}
-                        {availableSlots.length > 0 && (
+                        {availableSlots.length > 0 ? (
                           <div className="space-y-2">
                             <p className="text-sm font-medium text-[#3f2e73]">Available Times:</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
@@ -1402,7 +1477,15 @@ const TherapistProfileContent = () => {
                               ))}
                             </div>
                           </div>
-                        )}
+                        ) : hadAvailableSlots ? (
+                          <div className="text-center py-6 text-xs text-gray-500">
+                            <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p>All earlier slots for today have passed.</p>
+                            <p className="mt-1">Please pick another time or date.</p>
+                          </div>
+                        ) : null}
                       </div>
                     );
                   })()
