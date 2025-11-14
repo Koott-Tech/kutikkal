@@ -192,7 +192,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         </p>
                         <div className="flex items-center justify-center gap-3">
                             <a
-                                href={pathname === '/about' ? "/#choose-your-guide" : "https://wa.me/message/GET4UPOTPJTXM1"}
+                                href={pathname === '/about' ? "/#choose-your-guide" : "https://wa.me/919539007766?text=Hi%20Little%20Care%2C%20I%27d%20like%20to%20know%20more%20about%20your%20services."}
                                 className="px-3 py-2 md:px-5 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200"
                                 style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
                                 onClick={(e) => {

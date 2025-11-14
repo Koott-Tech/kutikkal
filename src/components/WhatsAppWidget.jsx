@@ -175,8 +175,8 @@ export default function WhatsAppWidget() {
     };
   }, [isDragging, dragOffset, position]);
 
-  // WhatsApp link - Message Little Care on WhatsApp
-  const whatsappUrl = "https://wa.me/message/GET4UPOTPJTXM1";
+  // WhatsApp link with pre-filled message
+  const whatsappUrl = "https://wa.me/919539007766?text=Hi%20Little%20Care%2C%20I%27d%20like%20to%20know%20more%20about%20your%20services.";
 
   // Use right/bottom if not positioned yet, otherwise use left/top for dragging
   const positionStyle = position.x !== null && position.y !== null
