@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
 
@@ -17,7 +17,7 @@ export default function PageLoadingOverlay() {
     return search ? `${pathname}?${search}` : pathname;
   }, [pathname, searchParams]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // show overlay immediately on mount and whenever the path/search changes
     setIsVisible(true);
 

@@ -180,7 +180,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
       dataToSave.slug = normalizedSlug;
       if (normalizedSlug !== formData.slug) {
         setFormData(prev => ({ ...prev, slug: normalizedSlug }));
-      }
+    }
     }
     onSubmit(dataToSave);
   };

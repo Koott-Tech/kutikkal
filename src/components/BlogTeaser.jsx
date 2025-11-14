@@ -142,7 +142,7 @@ export default function BlogTeaser() {
   };
 
   return (
-    <section className="w-full px-4 md:px-6 lg:px-6 mt-16 md:mt-24">
+    <section className="w-full px-4 md:px-6 lg:px-6 mt-16 md:mt-24 mb-16 md:mb-0">
       <style dangerouslySetInnerHTML={{__html: `
         @media (min-width: 768px) and (max-width: 1023px) {
           .blog-teaser-heading {

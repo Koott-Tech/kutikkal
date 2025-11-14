@@ -225,8 +225,8 @@ export default function CounsellingPageBuilder({
       delete dataToSave.slug;
     } else {
       dataToSave.slug = normalizedSlug;
-      if (normalizedSlug !== formData.slug) {
-        setFormData(prev => ({ ...prev, slug: normalizedSlug }));
+    if (normalizedSlug !== formData.slug) {
+      setFormData(prev => ({ ...prev, slug: normalizedSlug }));
       }
     }
 

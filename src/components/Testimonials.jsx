@@ -166,7 +166,7 @@ export default function Testimonials() {
         const container = scrollContainerRef.current;
         const containerWidth = container.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
         if (containerWidth === 0) return;
-
+        
         container.scrollBy({
           left: containerWidth,
           behavior: 'smooth'
@@ -192,7 +192,7 @@ export default function Testimonials() {
                 scrollContainerRef.current.style.scrollSnapType = originalScrollSnap || 'x mandatory';
               });
             });
-          }
+      }
         }, 700);
       }
     }, 5000);

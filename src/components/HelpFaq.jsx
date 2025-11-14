@@ -132,8 +132,11 @@ export default function HelpFaq({ cmsData = null }) {
 
                  {/* Right column: Accordion FAQ */}
          <div className="mr-4 md:mr-8 lg:mr-12 w-full md:max-w-2xl ml-1 md:ml-0 px-2 md:px-0">
-           {faqData.map((section, ci) => (
-            <div key={section.title} className={`faq-section mb-6 md:mb-10 mt-3 ${ci === faqData.length - 1 ? 'last-faq-section' : ''}`}>
+           {faqData.map((section, ci) => {
+            const isLastSection = ci === faqData.length - 1;
+            const spacingClasses = isLastSection ? 'mt-16 md:mt-3' : 'mt-3';
+            return (
+            <div key={section.title} className={`faq-section mb-6 md:mb-10 ${spacingClasses}`}>
               <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left text-sm md:text-base lg:text-lg font-medium`}>
                 {section.title}
               </h5>
@@ -169,7 +172,8 @@ export default function HelpFaq({ cmsData = null }) {
                 })}
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </div>
     </section>
