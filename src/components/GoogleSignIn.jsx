@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '../lib/supabaseClient';
@@ -8,48 +8,89 @@ import { getSupabaseClient } from '../lib/supabaseClient';
 export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
   const { login } = useAuth();
   const router = useRouter();
-  const [showIframe, setShowIframe] = useState(false);
-  const [iframeUrl, setIframeUrl] = useState(null);
 
   // Get singleton Supabase client
   const supabase = getSupabaseClient();
+  const popupRef = useRef(null);
+  const returnUrlRef = useRef(null);
 
-  // Check if we're in development or production
-  const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_NODE_ENV === 'development';
+  const resolvedReturnUrl = useMemo(() => {
+    if (returnUrl) return returnUrl;
+    if (typeof window === 'undefined') return '/';
+    return window.location.href;
+  }, [returnUrl]);
 
-  // Monitor for OAuth completion in production iframe
   useEffect(() => {
-    if (!showIframe || isDevelopment) return;
+    returnUrlRef.current = resolvedReturnUrl;
+  }, [resolvedReturnUrl]);
 
-    const checkAuth = async () => {
-      try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (sessionData.session) {
-          setShowIframe(false);
-          onSuccess?.(sessionData.session);
-          // In production: stay on same page and refresh to update auth
-          window.location.reload();
+  useEffect(() => {
+    const handleAuthResult = (event) => {
+      if (!event?.data || typeof window === 'undefined') return;
+      if (!event.data?.type?.startsWith?.('supabase:auth-')) return;
+
+      const allowedOrigins = [window.location.origin];
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        try {
+          const supabaseOrigin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin;
+          allowedOrigins.push(supabaseOrigin);
+        } catch (error) {
+          console.warn('Unable to parse Supabase origin for message verification:', error);
         }
-      } catch (error) {
-        console.error('Error checking session:', error);
+      }
+
+      if (!allowedOrigins.includes(event.origin)) {
+        console.warn('Blocked message from untrusted origin:', event.origin);
+        return;
+      }
+
+      const { type, success, payload } = event.data;
+      if (type !== 'supabase:auth-result') return;
+
+      if (success) {
+        if (popupRef.current && !popupRef.current.closed) {
+          try {
+            popupRef.current.close();
+          } catch (closeError) {
+            console.warn('Unable to close auth popup:', closeError);
+          }
+        }
+        try {
+          if (payload?.user && payload?.token) {
+            login(payload.user, payload.token);
+          }
+        } catch (error) {
+          console.warn('Unable to hydrate AuthContext from popup result:', error);
+        }
+
+        onSuccess?.();
+
+        const targetUrl = payload?.returnUrl || returnUrlRef.current || (typeof window !== 'undefined' ? window.location.href : '/');
+        if (typeof window !== 'undefined') {
+          if (targetUrl && targetUrl !== window.location.href) {
+            window.location.href = targetUrl;
+          } else {
+            router.refresh();
+          }
+        } else {
+          router.refresh();
+        }
+      } else {
+        const message = payload?.error || 'Google Sign-In failed.';
+        onError?.(new Error(message));
       }
     };
 
-    // Poll for session changes every 1 second when iframe is open
-    const interval = setInterval(checkAuth, 1000);
-    
-    // Also listen for storage events (in case auth completes in another tab/window)
-    const handleStorageChange = () => {
-      checkAuth();
-    };
-    window.addEventListener('storage', handleStorageChange);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', handleAuthResult);
+    }
 
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('message', handleAuthResult);
+      }
     };
-  }, [showIframe, isDevelopment, supabase, onSuccess, onError, router, returnUrl]);
+  }, [login, onError, onSuccess, router]);
 
   const handleGoogleSignIn = async () => {
     if (!supabase) {
@@ -61,29 +102,45 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
     
     try {
       console.log('🔍 Starting Supabase Google Sign-In');
-      console.log('🔍 Environment:', isDevelopment ? 'Development' : 'Production');
       console.log('🔍 Redirect URL:', `${window.location.origin}/auth/callback`);
       console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
       
-      if (isDevelopment) {
-        // Development: Store current page URL before redirecting to Google
-        if (typeof window !== 'undefined') {
-          const currentUrl = window.location.pathname + window.location.search;
-          // Only store if not already on callback page
-          if (!currentUrl.includes('/auth/callback')) {
-            sessionStorage.setItem('auth_return_url', currentUrl);
-          }
-        }
-        
-        // Development: Use current redirect behavior
+      const popupFeatures = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=480,height=640';
+      let popupWindow = null;
+      if (typeof window !== 'undefined') {
+        const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+        const width = window.innerWidth || document.documentElement.clientWidth || screen.width;
+        const height = window.innerHeight || document.documentElement.clientHeight || screen.height;
+
+        const popupWidth = 480;
+        const popupHeight = 640;
+        const left = width / 2 - popupWidth / 2 + dualScreenLeft;
+        const top = height / 2 - popupHeight / 2 + dualScreenTop;
+
+        popupWindow = window.open(
+          '',
+          'kuttikal-google-auth',
+          `${popupFeatures},left=${left},top=${top}`
+        );
+      }
+
+      const callbackUrl = new URL(`${window.location.origin}/auth/callback`);
+      callbackUrl.searchParams.set('mode', 'popup');
+      if (typeof window !== 'undefined') {
+        callbackUrl.searchParams.set('sourceOrigin', encodeURIComponent(window.location.origin));
+      }
+      callbackUrl.searchParams.set('returnUrl', encodeURIComponent(resolvedReturnUrl));
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl.toString(),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          skipBrowserRedirect: true,
         }
       });
 
@@ -95,42 +152,27 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
           name: error.name
         });
         if (onError) onError(new Error(error.message));
+        if (popupWindow && !popupWindow.closed) {
+          popupWindow.close();
+        }
         return;
+      }
+
+      if (data?.url) {
+        if (popupWindow) {
+          popupWindow.location.href = data.url;
+          popupWindow.focus();
+          popupRef.current = popupWindow;
+        } else {
+          window.location.href = data.url;
+        }
+      } else if (popupWindow && !popupWindow.closed) {
+        popupWindow.close();
+        onError?.(new Error('Unable to start Google Sign-In popup.'));
       }
 
       console.log('✅ Supabase Google Sign-In initiated:', data);
       // Note: User will be redirected to Google, so no further code will execute
-      } else {
-        // Production: Use popup window centered on screen
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            },
-            skipBrowserRedirect: true
-          }
-        });
-
-        if (error) {
-          console.error('❌ Supabase Google Sign-In error:', error);
-          console.error('Error details:', {
-            message: error.message,
-            status: error.status,
-            name: error.name
-          });
-          if (onError) onError(new Error(error.message));
-          return;
-        }
-
-        if (data?.url) {
-          // Production: Show iframe-based modal centered on screen
-          setIframeUrl(data.url);
-          setShowIframe(true);
-        }
-      }
       
     } catch (error) {
       console.error('❌ Google Sign-In error:', error);
@@ -139,11 +181,9 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
     }
   };
 
-
   return (
     <div>
       <button
-        type="button"
         onClick={handleGoogleSignIn}
         className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
@@ -155,45 +195,6 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
         </svg>
         Continue with Google
       </button>
-
-      {/* Production: Iframe-based Google sign-in modal - centered on screen */}
-      {showIframe && iframeUrl && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={() => setShowIframe(false)}
-        >
-          <div 
-            className="relative bg-white rounded-lg shadow-2xl overflow-hidden"
-            style={{ 
-              width: '500px', 
-              height: '600px',
-              maxWidth: '90vw',
-              maxHeight: '90vh'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setShowIframe(false)}
-              className="absolute top-2 right-2 z-10 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-              aria-label="Close"
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            
-            {/* Google Sign-in iframe */}
-            <iframe
-              src={iframeUrl}
-              className="w-full h-full border-0"
-              title="Google Sign In"
-              allow="popups popupto"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
