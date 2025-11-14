@@ -1603,7 +1603,8 @@ const TherapistProfileContent = () => {
                 )}
               </div>
 
-              {/* Book Button */}
+              {/* Book Button - original flow temporarily disabled for payment verification */}
+              {/*
               <button 
                 onClick={handleBookSession}
                 disabled={isBooking}
@@ -1614,6 +1615,21 @@ const TherapistProfileContent = () => {
                 }`}
               >
                 {isBooking ? 'Booking...' : isBookingRemaining ? 'Book Remaining Session' : `Book ${selectedPackage?.name || 'Session'}`}
+              </button>
+              */}
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.open(
+                      'https://docs.google.com/forms/d/e/1FAIpQLSc5SwNgS6oqPm4BsaGYFaXBQ9W21ydSBqvJTQF5PuvFIuCGcA/viewform?usp=publish-editor',
+                      '_blank',
+                      'noopener,noreferrer'
+                    );
+                  }
+                }}
+                className="w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm bg-[#3f2e73] text-white hover:bg-[#1d1733]"
+              >
+                Book Session
               </button>
 
               {/* Success Message */}

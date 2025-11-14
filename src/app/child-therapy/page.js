@@ -1,0 +1,25 @@
+import HeroSection from '@/components/HeroSection';
+import LogosStrip from '@/components/LogosStrip';
+import ProcessSteps from '@/components/ProcessSteps';
+import BenefitsSection from '@/components/BenefitsSection';
+import Testimonials from '@/components/Testimonials';
+import HelpFaq from '@/components/HelpFaq';
+
+
+export default function ChildTherapy() {
+  return (
+    <div>
+      <HeroSection therapyType="child" />
+      <LogosStrip bgColor="bg-[#123331]" height="py-4" logosCount={6} />
+      <ProcessSteps therapyType="child" />
+      <BenefitsSection therapyType="child" />
+      <div className="mt-16">
+        <Testimonials />
+      </div>
+      <div className="mt-24">
+        <HelpFaq />
+      </div>
+
+    </div>
+  );
+}
