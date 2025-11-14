@@ -277,6 +277,15 @@ export default function VideosShowcase({ cmsData = null }) {
             gap: clamp(12px, 1.5vw, 24px) !important;
           }
         }
+        .video-overlay {
+          background-color: rgba(63, 46, 115, 0.08);
+          transition: background-color 0.2s ease;
+        }
+        .video-card:hover .video-overlay,
+        .video-card:focus-within .video-overlay,
+        .video-card:active .video-overlay {
+          background-color: rgba(63, 46, 115, 0.18);
+        }
       `}</style>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="px-4 sm:px-6 mb-10 md:mb-14 text-center">
@@ -306,21 +315,24 @@ export default function VideosShowcase({ cmsData = null }) {
 
           <div
             ref={scrollerRef}
-            className="flex gap-4 md:gap-6 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
+            className="flex gap-5 md:gap-8 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
             style={{ paddingLeft: '0', paddingRight: '0' }}
           >
-            {[0,1,2,3,4].map((i) => (
+            {[0,1,2,3,4].map((i) => {
+              const cardShadow = i === 2 ? '0 14px 38px rgba(63, 46, 115, 0.32)' : undefined;
+              return (
               <div key={i} className="flex-shrink-0 snap-center" style={{ paddingLeft: i === 0 ? 'clamp(18px, 7vw, 32px)' : '0', paddingRight: i === 4 ? 'clamp(18px, 7vw, 32px)' : '0' }}>
                 <div
                   data-video-card
-                  className={`relative rounded-[14px] overflow-hidden bg-white cursor-pointer group shadow-[0_8px_24px_rgba(63,46,115,0.18)]
-                    ${'w-[200px] h-[320px]'}
+                  className={`video-card relative rounded-[14px] overflow-hidden bg-white cursor-pointer group
+                    ${'w-[220px] h-[340px]'}
                     ${i === 2 
                       ? 'md:w-[300px] md:h-[460px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'md:w-[200px] md:h-[320px] video-card-outer'
-                        : 'md:w-[250px] md:h-[380px] video-card-middle'}
+                        ? 'md:w-[240px] md:h-[360px] video-card-outer'
+                        : 'md:w-[270px] md:h-[400px] video-card-middle'}
                   `}
+                  style={cardShadow ? { boxShadow: cardShadow } : undefined}
                   onClick={() => handleVideoClick(i)}
                 >
                   {(() => {
@@ -381,9 +393,12 @@ export default function VideosShowcase({ cmsData = null }) {
                                 alt={displayVideos[i]?.title || 'Video review thumbnail'}
                                 className="max-w-full max-h-full object-contain"
                               />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
-                                <svg className="w-16 h-16 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
+                              <div className="absolute inset-0 flex items-center justify-center video-overlay">
+                                <svg className="w-14 h-14 text-white drop-shadow-lg opacity-95" viewBox="0 0 24 24">
+                                  <path
+                                    d="M9 6.75c0-.832.905-1.346 1.606-.905l7.01 4.33c.702.433.702 1.377 0 1.81l-7.01 4.33c-.701.441-1.606-.073-1.606-.905v-8.66z"
+                                    fill="currentColor"
+                                  />
                                 </svg>
                               </div>
                             </div>
@@ -432,9 +447,12 @@ export default function VideosShowcase({ cmsData = null }) {
                                 alt={displayVideos[i]?.title || 'Video review thumbnail'}
                                 className="max-w-full max-h-full object-contain"
                               />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
-                                <svg className="w-16 h-16 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
+                              <div className="absolute inset-0 flex items-center justify-center video-overlay">
+                                <svg className="w-14 h-14 text-white drop-shadow-lg opacity-95" viewBox="0 0 24 24">
+                                  <path
+                                    d="M9 6.75c0-.832.905-1.346 1.606-.905l7.01 4.33c.702.433.702 1.377 0 1.81l-7.01 4.33c-.701.441-1.606-.073-1.606-.905v-8.66z"
+                                    fill="currentColor"
+                                  />
                                 </svg>
                               </div>
                             </div>
@@ -445,7 +463,7 @@ export default function VideosShowcase({ cmsData = null }) {
                   })()}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
           <button
