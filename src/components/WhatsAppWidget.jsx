@@ -148,19 +148,18 @@ export default function WhatsAppWidget() {
     };
 
     const handleMouseUp = () => {
-      // Small delay to allow click handler to check wasDragged
+      setIsDragging(false);
+      // Small delay to reset drag flag after click detection
       setTimeout(() => {
-        setIsDragging(false);
         setWasDragged(false);
-      }, 100);
+      }, 150);
     };
 
     const handleTouchEnd = () => {
-      // Small delay to allow click handler to check wasDragged
+      setIsDragging(false);
       setTimeout(() => {
-        setIsDragging(false);
         setWasDragged(false);
-      }, 100);
+      }, 150);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -176,9 +175,8 @@ export default function WhatsAppWidget() {
     };
   }, [isDragging, dragOffset, position]);
 
-  // WhatsApp number - update with your actual WhatsApp number
-  const whatsappNumber = "1234567890"; // Replace with your WhatsApp number in format: countrycode + number without + or spaces
-  const whatsappUrl = `https://wa.me/${whatsappNumber}`;
+  // WhatsApp link - Message Little Care on WhatsApp
+  const whatsappUrl = "https://wa.me/message/GET4UPOTPJTXM1";
 
   // Use right/bottom if not positioned yet, otherwise use left/top for dragging
   const positionStyle = position.x !== null && position.y !== null
@@ -253,7 +251,7 @@ export default function WhatsAppWidget() {
           }}
           onClick={(e) => {
             // Prevent click if widget was dragged
-            if (wasDragged || isDragging) {
+            if (wasDragged) {
               e.preventDefault();
               e.stopPropagation();
             }
