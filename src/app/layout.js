@@ -4,6 +4,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
+import PageLoadingOverlay from "@/components/PageLoadingOverlay";
 
 export const metadata = {
   title: "Child Psychotherapy",
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
       <body
         className="antialiased"
       >
+        <PageLoadingOverlay />
         <ConditionalProviders>
           <HeaderWrapper />
           <ConditionalPadding>
