@@ -17,7 +17,7 @@ const generateTwentyMinuteSlots = (startHour, endHour) => {
   let currentMinutes = startHour * 60;
   const endMinutes = endHour * 60;
 
-  while (currentMinutes < endMinutes) {
+  while (currentMinutes <= endMinutes) {
     const hours24 = Math.floor(currentMinutes / 60);
     const minutes = currentMinutes % 60;
     slots.push(formatDisplayTime(hours24, minutes));
@@ -46,8 +46,8 @@ export default function FreeAssessmentTimeslotsPage() {
 
   // Time slot categories – restricted to 20-minute slots from 10 AM-1 PM and 2 PM-5 PM
   const timeSlots = {
-    morning: generateTwentyMinuteSlots(10, 13), // 10:00 AM - 12:40 PM
-    noon: generateTwentyMinuteSlots(14, 17),    // 2:00 PM - 4:40 PM
+    morning: generateTwentyMinuteSlots(10, 13), // 10:00 AM - 1:00 PM
+    noon: generateTwentyMinuteSlots(14, 17),    // 2:00 PM - 5:00 PM
     evening: [],
     night: []
   };
