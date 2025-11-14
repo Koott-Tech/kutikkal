@@ -219,7 +219,7 @@ export default function ConsultationBanner() {
               
               <div className="flex items-center gap-1">
                 <button 
-                  onClick={() => router.push('/psychologists')}
+                  onClick={() => router.push('/free-assessment')}
                   className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" 
                   style={{ backgroundColor: 'white' }}
                 >

@@ -15,6 +15,18 @@ import ImageUpload from '@/components/ImageUpload';
 import TherapistCarousel from '@/components/TherapistCarousel';
 import { publicApi } from '@/lib/backendApi';
 
+const normalizeInfoCards = (cards = []) => {
+  if (!Array.isArray(cards)) return [];
+  return cards.map((card) => {
+    const linkValue = card?.ctaLink || card?.link || '';
+    return {
+      ...card,
+      ctaLink: linkValue,
+      link: linkValue,
+    };
+  });
+};
+
 const removeAssessmentSpecialist = (docs = []) => {
   const filtered = docs.filter(doc => (doc?.name || doc?.first_name || '').toLowerCase() !== 'assessment specialist');
   return filtered.length > 0 ? filtered : docs;
@@ -44,7 +56,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
       { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
     ],
     therapists_heading: '',
-    info_cards: [],
+    info_cards: normalizeInfoCards([]),
     videos: [],
     reviews: [],
     videos_heading: '',
@@ -85,7 +97,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
           { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/counselling/anxiety-sadness' }
         ],
         therapists_heading: initialData.therapists_heading || '',
-        info_cards: initialData.info_cards || [],
+        info_cards: normalizeInfoCards(initialData.info_cards || []),
         videos: initialData.videos || [],
         reviews: initialData.reviews || [],
         videos_heading: initialData.videos_heading || '',
@@ -120,11 +132,18 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
   const slugify = (val) => (val || '').toString().toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   const handleArrayItemAdd = (field) => {
-    const newItem = field === 'benefits' ? { title: '', description: '', iconUrl: '' }
-      : field === 'types' ? { title: '', description: '' }
-      : field === 'faqs' ? { question: '', answer: '' }
-      : field === 'videos' ? { title: '', url: '', thumbnailUrl: '' }
-      : field === 'reviews' ? { author: '', text: '', avatarUrl: '' }
+    const newItem = field === 'benefits'
+      ? { title: '', description: '', iconUrl: '' }
+      : field === 'types'
+        ? { title: '', description: '' }
+        : field === 'faqs'
+          ? { question: '', answer: '' }
+          : field === 'videos'
+            ? { title: '', url: '', thumbnailUrl: '' }
+            : field === 'reviews'
+              ? { author: '', text: '', avatarUrl: '' }
+              : field === 'info_cards'
+                ? { title: '', description: '', icon: '', iconColor: '', cta: '', ctaLink: '', link: '' }
       : { title: '', description: '' };
     setFormData(prev => ({ ...prev, [field]: [...prev[field], newItem] }));
   };
@@ -143,20 +162,26 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
   const handleElementClick = (type) => setActiveElement({ type });
 
   const handleSave = () => {
-    const slug = slugify(formData.slug || '');
+    const isEdit = Boolean(pageId);
+    const normalizedSlug = slugify(formData.slug || '');
     const heroTitle = (formData.hero_title || '').trim();
-    if (!slug) {
-      alert('Please fill Slug before saving.');
-      return;
-    }
     if (!heroTitle) {
       alert('Please fill Hero Title before saving.');
       return;
     }
-    if (slug !== formData.slug) {
-      setFormData(prev => ({ ...prev, slug }));
+    if (!isEdit && !normalizedSlug) {
+      alert('Please fill Slug before saving.');
+      return;
     }
-    const dataToSave = { ...formData, slug };
+    const dataToSave = { ...formData, info_cards: normalizeInfoCards(formData.info_cards) };
+    if (isEdit) {
+      delete dataToSave.slug;
+    } else {
+      dataToSave.slug = normalizedSlug;
+      if (normalizedSlug !== formData.slug) {
+        setFormData(prev => ({ ...prev, slug: normalizedSlug }));
+      }
+    }
     onSubmit(dataToSave);
   };
 
@@ -235,7 +260,16 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA Link (URL)</label>
-                    <input type="text" placeholder="e.g., /better-parenting or /counselling" value={card.ctaLink || card.link || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input
+                      type="text"
+                      placeholder="e.g., /better-parenting or /counselling"
+                      value={card.ctaLink || card.link || ''}
+                      onChange={(e) => {
+                        handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value);
+                        handleArrayItemUpdate('info_cards', index, 'link', e.target.value);
+                      }}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <p className="text-xs text-gray-500 mt-1">Used as anchor href for the button</p>
                   </div>
                 </div>
@@ -702,5 +736,6 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
     </div>
   );
 }
+
 
 

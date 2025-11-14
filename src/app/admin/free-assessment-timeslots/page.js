@@ -5,6 +5,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Clock, Check, X, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 
+const formatDisplayTime = (hours24, minutes) => {
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  const displayHour = ((hours24 + 11) % 12) + 1;
+  const minuteStr = minutes.toString().padStart(2, '0');
+  return `${displayHour}:${minuteStr} ${period}`;
+};
+
+const generateTwentyMinuteSlots = (startHour, endHour) => {
+  const slots = [];
+  let currentMinutes = startHour * 60;
+  const endMinutes = endHour * 60;
+
+  while (currentMinutes < endMinutes) {
+    const hours24 = Math.floor(currentMinutes / 60);
+    const minutes = currentMinutes % 60;
+    slots.push(formatDisplayTime(hours24, minutes));
+    currentMinutes += 20;
+  }
+
+  return slots;
+};
+
 export default function FreeAssessmentTimeslotsPage() {
   const { user, token, authLoading } = useAuth();
   const [timeslots, setTimeslots] = useState([]);
@@ -22,12 +44,12 @@ export default function FreeAssessmentTimeslotsPage() {
   const [step, setStep] = useState(1); // 1: select date, 2: select times, 3: save
   const [bookedAssessments, setBookedAssessments] = useState([]);
 
-  // Time slot categories (exact same as doctor modal)
+  // Time slot categories – restricted to 20-minute slots from 10 AM-1 PM and 2 PM-5 PM
   const timeSlots = {
-    morning: ['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'],
-    noon: ['12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM'],
-    evening: ['4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM'],
-    night: ['8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM']
+    morning: generateTwentyMinuteSlots(10, 13), // 10:00 AM - 12:40 PM
+    noon: generateTwentyMinuteSlots(14, 17),    // 2:00 PM - 4:40 PM
+    evening: [],
+    night: []
   };
 
   // Fetch availability data for current month
@@ -365,6 +387,34 @@ export default function FreeAssessmentTimeslotsPage() {
     console.log('[Admin/FreeAssess] goToNextDate:nextDate', nextDate);
   };
 
+  const handleSelectAllDefaultSlots = () => {
+    const defaultSelection = [
+      ...timeSlots.morning.map(time => `morning:${time}`),
+      ...timeSlots.noon.map(time => `noon:${time}`)
+    ];
+    setSelectedTimes(defaultSelection);
+  };
+
+  const handleEditDate = (dateStr) => {
+    const existing = availabilityData[dateStr];
+    if (!existing || !existing.timeSlots) return;
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+
+    const selections = [];
+    Object.entries(existing.timeSlots).forEach(([period, times]) => {
+      if (Array.isArray(times)) {
+        times.forEach((time) => selections.push(`${period}:${time}`));
+      }
+    });
+
+    setCurrentDate(dateObj);
+    setSelectedDate(dateObj);
+    setSelectedTimes(selections);
+    setStep(2);
+  };
+
   const removeAvailability = async (dateStr) => {
     try {
       setLoading(true);
@@ -593,7 +643,18 @@ export default function FreeAssessmentTimeslotsPage() {
               
               {/* Time Periods */}
               <div className="max-w-md mx-auto space-y-4">
-                {Object.entries(timeSlots).map(([period, times]) => (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSelectAllDefaultSlots}
+                    className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition-colors"
+                  >
+                    Select All Default Slots
+                  </button>
+                </div>
+                {Object.entries(timeSlots)
+                  .filter(([, times]) => times.length > 0)
+                  .map(([period, times]) => (
                   <div key={period} className="bg-gray-50 rounded-lg p-4">
                     <h6 className="mb-3 capitalize">{period}</h6>
                     <div className="grid grid-cols-2 gap-2">
@@ -686,6 +747,14 @@ export default function FreeAssessmentTimeslotsPage() {
                           day: 'numeric' 
                         })}
                       </h5>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEditDate(dateStr)}
+                          className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                        >
+                          Edit
+                        </button>
                       <button
                         type="button"
                         onClick={() => removeAvailability(dateStr)}
@@ -693,6 +762,7 @@ export default function FreeAssessmentTimeslotsPage() {
                       >
                         <X className="w-4 h-4" />
                       </button>
+                      </div>
                     </div>
                     <div className="space-y-1">
                       {allSlots.map((slot, slotIndex) => {

@@ -38,6 +38,7 @@ export default function Testimonials() {
   const isScrollingRef = useRef(false);
   
   const photos = [
+    { src: "https://youtube.com/shorts/RSge3l2uKSI", alt: "Testimonial video", type: "video" },
     { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
     { 
       text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
@@ -70,9 +71,7 @@ export default function Testimonials() {
       gradient: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #D1E9FF 100%)",
       type: "text" 
     },
-    { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" },
-    { src: "/testimonialgirl.png", alt: "Testimonial", type: "image" },
-    { src: "https://www.youtube.com/shorts/mX7RKFjrLxk", alt: "Testimonial video", type: "video" }
+    { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" }
   ];
 
   // Create infinite loop by duplicating photos
@@ -166,13 +165,37 @@ export default function Testimonials() {
       if (!isPausedRef.current && !isScrollingRef.current && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const containerWidth = container.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
-        
+        if (containerWidth === 0) return;
+
         container.scrollBy({
           left: containerWidth,
           behavior: 'smooth'
         });
+
+        const thresholdStart = photos.length * containerWidth;
+        const thresholdEnd = photos.length * 2 * containerWidth;
+
+        // After the scroll animation, ensure we loop back to the first card
+        setTimeout(() => {
+          if (!scrollContainerRef.current) return;
+          const currentScroll = scrollContainerRef.current.scrollLeft;
+          if (currentScroll >= thresholdEnd - (containerWidth * 0.25)) {
+            const originalScrollBehavior = scrollContainerRef.current.style.scrollBehavior;
+            const originalScrollSnap = scrollContainerRef.current.style.scrollSnapType;
+            scrollContainerRef.current.style.scrollBehavior = 'auto';
+            scrollContainerRef.current.style.scrollSnapType = 'none';
+            scrollContainerRef.current.scrollLeft = thresholdStart;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                if (!scrollContainerRef.current) return;
+                scrollContainerRef.current.style.scrollBehavior = originalScrollBehavior || 'smooth';
+                scrollContainerRef.current.style.scrollSnapType = originalScrollSnap || 'x mandatory';
+              });
+            });
+          }
+        }, 700);
       }
-    }, 3000);
+    }, 5000);
   };
 
   const stopAutoPlay = () => {
@@ -298,7 +321,7 @@ export default function Testimonials() {
     };
   }, [photos.length]);
 
-  const youtubeUrl = "https://www.youtube.com/shorts/mX7RKFjrLxk";
+  const youtubeUrl = "https://youtube.com/shorts/RSge3l2uKSI";
   const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
 
   const toggleMute = () => {

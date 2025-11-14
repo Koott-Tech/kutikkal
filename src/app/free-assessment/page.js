@@ -664,14 +664,12 @@ export default function FreeAssessmentPage() {
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                       <span className="ml-2 text-gray-600">Loading timeslots...</span>
                     </div>
-                  ) : availableTimeslots.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-2">
-                      {availableTimeslots
-                        .filter((timeslot) => {
-                          // Hide past time slots if selected date is today
+                  ) : (() => {
+                    const filteredSlots = availableTimeslots.filter((timeslot) => {
                           if (!selectedDate) return true;
                           const now = new Date();
-                          const isToday = selectedDate.getFullYear() === now.getFullYear() &&
+                      const isToday =
+                        selectedDate.getFullYear() === now.getFullYear() &&
                                          selectedDate.getMonth() === now.getMonth() &&
                                          selectedDate.getDate() === now.getDate();
                           if (!isToday) return true;
@@ -679,8 +677,19 @@ export default function FreeAssessmentPage() {
                           const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
                           const nowMinutes = now.getHours() * 60 + now.getMinutes();
                           return slotMinutes > nowMinutes;
-                        })
-                        .map((timeslot, index) => {
+                    });
+
+                    if (filteredSlots.length === 0) {
+                      return (
+                        <div className="flex items-center justify-center h-32 text-gray-500 text-sm italic">
+                          No available time slots for this date
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-3 gap-2">
+                        {filteredSlots.map((timeslot, index) => {
                         const isSelected = selectedTime === timeslot.time;
                         const isFullyBooked = timeslot.currentBookings >= timeslot.maxBookings;
                         const remainingSlots = timeslot.maxBookings - timeslot.currentBookings;
@@ -709,11 +718,8 @@ export default function FreeAssessmentPage() {
                         );
                       })}
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-32 text-gray-500 text-sm italic">
-                      No available time slots for this date
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               )}
 

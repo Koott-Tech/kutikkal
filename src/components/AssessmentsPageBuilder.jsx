@@ -17,6 +17,18 @@ import ImageUpload from '@/components/ImageUpload';
 import TherapistCarousel from '@/components/TherapistCarousel';
 import { publicApi } from '@/lib/backendApi';
 
+const normalizeInfoCards = (cards = []) => {
+  if (!Array.isArray(cards)) return [];
+  return cards.map((card) => {
+    const linkValue = card?.ctaLink || card?.link || '';
+    return {
+      ...card,
+      ctaLink: linkValue,
+      link: linkValue,
+    };
+  });
+};
+
 export default function AssessmentsPageBuilder({ 
   serviceId, 
   assessmentId,
@@ -62,11 +74,11 @@ export default function AssessmentsPageBuilder({
       { title: 'Anxiety', description: 'Help managing worry and stress', link: '/assessments/spence-anxiety-scale' },
       { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/assessments/child-depression-inventory' }
     ],
-    info_cards: [
-      { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist' },
-      { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment' },
-      { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching' }
-    ],
+    info_cards: normalizeInfoCards([
+      { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/counselling', link: '/counselling' },
+      { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment', ctaLink: '/assessments', link: '/assessments' },
+      { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching', ctaLink: '/better-parenting', link: '/better-parenting' }
+    ]),
     videos: [],
     reviews: [],
     assigned_doctor_ids: [],
@@ -122,11 +134,11 @@ export default function AssessmentsPageBuilder({
           { title: 'Anxiety', description: 'Help managing worry and stress', link: '/assessments/spence-anxiety-scale' },
           { title: 'Depression', description: 'Support for mood and emotional wellbeing', link: '/assessments/child-depression-inventory' }
         ],
-        info_cards: initialData.info_cards || [
-          { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/assessments' },
-          { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment', ctaLink: '/assessments' },
-          { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching', ctaLink: '/better-parenting' }
-        ],
+        info_cards: normalizeInfoCards(initialData.info_cards || [
+          { icon: 'speech-bubble', iconColor: 'purple', title: "Find licensed therapist to support your child's bigger emotions", description: "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.", cta: 'Find a therapist', ctaLink: '/counselling', link: '/counselling' },
+          { icon: 'pill', iconColor: 'green', title: "Get clarity with experts for your child's needs and strengths", description: "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.", cta: 'Book an assessment', ctaLink: '/assessments', link: '/assessments' },
+          { icon: 'combination', iconColor: 'blue', title: "Learn strategies and tools to be a better parent that you always wanted to be", description: "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.", cta: 'Start parent coaching', ctaLink: '/better-parenting', link: '/better-parenting' }
+        ]),
         videos: initialData.videos || [],
         reviews: initialData.reviews || [],
         assigned_doctor_ids: initialData.assigned_doctor_ids || [],
@@ -170,12 +182,19 @@ export default function AssessmentsPageBuilder({
   console.log('PageBuilder - formData.faqs.length:', formData.faqs?.length);
 
   const handleArrayItemAdd = (field) => {
-    const newItem = field === 'benefits' ? { title: '', description: '', iconUrl: '' } :
-                   field === 'types' ? { title: '', description: '' } :
-                   field === 'faqs' ? { question: '', answer: '' } :
-                   field === 'videos' ? { title: '', url: '', thumbnailUrl: '' } :
-                   field === 'reviews' ? { author: '', text: '' } :
-                   { title: '', description: '' };
+    const newItem = field === 'benefits'
+      ? { title: '', description: '', iconUrl: '' }
+      : field === 'types'
+        ? { title: '', description: '' }
+        : field === 'faqs'
+          ? { question: '', answer: '' }
+          : field === 'videos'
+            ? { title: '', url: '', thumbnailUrl: '' }
+            : field === 'reviews'
+              ? { author: '', text: '' }
+              : field === 'info_cards'
+                ? { title: '', description: '', icon: '', iconColor: '', cta: '', ctaLink: '', link: '' }
+                : { title: '', description: '' };
     
     setFormData(prev => ({
       ...prev,
@@ -204,22 +223,34 @@ export default function AssessmentsPageBuilder({
   };
 
   const handleSave = () => {
-    // When editing an existing assessment, exclude the slug from the update
     const isEdit = !!(serviceId || assessmentId);
-    const slug = slugify(formData.slug || '');
+    const normalizedSlug = slugify(formData.slug || '');
     const heroTitle = (formData.hero_title || '').trim();
-    if (!slug) {
-      alert('Please fill Slug before saving.');
-      return;
-    }
+
     if (!heroTitle) {
       alert('Please fill Hero Title before saving.');
       return;
     }
-    if (slug !== formData.slug) {
-      setFormData(prev => ({ ...prev, slug }));
+
+    if (!isEdit && !normalizedSlug) {
+      alert('Please fill Slug before saving.');
+      return;
     }
-    const dataToSave = { ...formData, slug };
+
+    const dataToSave = {
+      ...formData,
+      info_cards: normalizeInfoCards(formData.info_cards)
+    };
+
+    if (isEdit) {
+      delete dataToSave.slug;
+    } else {
+      dataToSave.slug = normalizedSlug;
+      if (normalizedSlug !== formData.slug) {
+        setFormData(prev => ({ ...prev, slug: normalizedSlug }));
+      }
+    }
+
     onSubmit(dataToSave);
   };
 
@@ -591,7 +622,16 @@ export default function AssessmentsPageBuilder({
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">CTA Link (URL)</label>
-                    <input type="text" placeholder="e.g., /assessments or /assessments/adhd" value={card.ctaLink || card.link || ''} onChange={(e)=>handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value)} className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input
+                      type="text"
+                      placeholder="e.g., /assessments or /assessments/adhd"
+                      value={card.ctaLink || card.link || ''}
+                      onChange={(e) => {
+                        handleArrayItemUpdate('info_cards', index, 'ctaLink', e.target.value);
+                        handleArrayItemUpdate('info_cards', index, 'link', e.target.value);
+                      }}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <p className="text-xs text-gray-500 mt-1">Used as anchor href for the button</p>
                   </div>
                 </div>
