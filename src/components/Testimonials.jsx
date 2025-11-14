@@ -39,9 +39,37 @@ export default function Testimonials() {
   
   const photos = [
     { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
+    { 
+      text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
+      author: "Father of a 10-year-old",
+      bgImage: "/faq1.png",
+      gradient: "linear-gradient(135deg, #E6F5EC 0%, #D4EDE0 50%, #C8E8D5 100%)",
+      type: "text" 
+    },
     { src: "/TESTIMONIALS 2.webp", alt: "Family smiling", type: "image" },
+    { 
+      text: "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident.", 
+      author: "12-year-old girl",
+      bgImage: "/6.png",
+      gradient: "linear-gradient(135deg, #ECEBFF 0%, #E0DEFF 50%, #D4D2FF 100%)",
+      type: "text" 
+    },
     { src: "/TESTIMONIALS 3.webp", alt: "Happy child", type: "image" },
+    { 
+      text: "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person.", 
+      author: "Parent of an 8-year-old",
+      bgImage: "/7.png",
+      gradient: "linear-gradient(135deg, #FFF5E6 0%, #FFEED6 50%, #FFE7C8 100%)",
+      type: "text" 
+    },
     { src: "/TESTIMONIALS 4.webp", alt: "Family moment", type: "image" },
+    { 
+      text: "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children.", 
+      author: "Parent of a 9-year-old",
+      bgImage: "/8.png",
+      gradient: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #D1E9FF 100%)",
+      type: "text" 
+    },
     { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" },
     { src: "/testimonialgirl.png", alt: "Testimonial", type: "image" },
     { src: "https://www.youtube.com/shorts/mX7RKFjrLxk", alt: "Testimonial video", type: "video" }
@@ -320,6 +348,21 @@ export default function Testimonials() {
             padding-left: 0 !important;
             padding-right: 0 !important;
             width: 100% !important;
+          }
+          /* Mobile carousel text review card background - fit inside without overflow */
+          .testimonials-text-card-bg {
+            position: absolute !important;
+            top: -50% !important;
+            left: -125% !important;
+            right: auto !important;
+            bottom: auto !important;
+            transform: rotate(90deg) scale(3.5) !important;
+            transform-origin: center !important;
+            width: 350% !important;
+            height: 200% !important;
+            background-size: cover !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
           }
           .testimonials-infinite-carousel {
             -webkit-overflow-scrolling: touch;
@@ -622,6 +665,25 @@ export default function Testimonials() {
                             <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
                           </div>
                         )}
+                      </div>
+                    ) : photo.type === "text" ? (
+                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                        <div
+                          className="z-0"
+                          style={{ 
+                            background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
+                            position: 'absolute',
+                            inset: 0
+                          }}
+                        />
+                        <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
+                          <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
+                            "{photo.text}"
+                          </p>
+                          <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
+                            {photo.author}
+                          </p>
+                        </div>
                       </div>
                     ) : (
                       <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>

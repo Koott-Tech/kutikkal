@@ -125,48 +125,48 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             className="flex flex-col justify-start px-0 pt-10 pb-0 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#DEEFDC]"
           >
             <div className="px-6 sm:px-8 md:px-[100px] lg:px-[120px]">
-              <h3 
-                className="mb-2"
-                style={{
-                  color: '#15171a',
-                  fontWeight: 500,
-                  marginBottom: '0.5rem'
-                }}
-              >
-                {currentContent.title}
-              </h3>
-             
-              <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
-                {currentContent.types.map((type, index) => (
-                  <div key={index}>
-                    <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
-                      {type.title}
-                    </p>
-                    <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
-                      {type.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-                  
+            <h3 
+              className="mb-2"
+              style={{
+                color: '#15171a',
+                fontWeight: 500,
+                marginBottom: '0.5rem'
+              }}
+            >
+              {currentContent.title}
+            </h3>
+           
+            <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
+              {currentContent.types.map((type, index) => (
+                <div key={index}>
+                  <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
+                    {type.title}
+                  </p>
+                  <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
+                    {type.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+                
               <div className="flex justify-center md:justify-start">
-                <button 
+            <button 
                 className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-6 md:px-8 py-2 md:py-3 shadow-lg transition-colors duration-200 text-xs md:text-sm lg:text-base text-white"
-                  style={{ 
-                    backgroundColor: '#3f2e73',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    letterSpacing: 'normal',
+              style={{ 
+                backgroundColor: '#3f2e73',
+                fontWeight: 500,
+                textTransform: 'none',
+                letterSpacing: 'normal',
                     fontFamily: "'Work Sans', Arial, sans-serif",
                     width: 'auto',
                     maxWidth: '80%'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
                   onClick={() => router.push('/psychologists')}
-                >
-                  {currentContent.buttonText || "Get started"}
-                </button>
+            >
+              {currentContent.buttonText || "Get started"}
+            </button>
               </div>
             </div>
 
