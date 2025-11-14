@@ -2,27 +2,33 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
-// Helper function to convert YouTube URL to embed URL
-const getYouTubeEmbedUrl = (url, muted = true) => {
+const extractYouTubeId = (url) => {
   if (!url) return null;
-  
-  // Handle various YouTube URL formats including Shorts
   const patterns = [
-    /youtube\.com\/shorts\/([^&\n?#\/]+)/, // YouTube Shorts: youtube.com/shorts/VIDEO_ID
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/, // Regular YouTube URLs
-    /youtube\.com\/watch\?.*v=([^&\n?#]+)/ // YouTube watch URLs with other params
+    /youtube\.com\/shorts\/([^&\n?#\/]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
   ];
-  
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
-      const videoId = match[1];
-      // Use nocookie domain and parameters to minimize branding
-      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+      return match[1];
     }
   }
-  
   return null;
+};
+
+// Helper function to convert YouTube URL to embed URL
+const getYouTubeEmbedUrl = (url, muted = true, autoplay = true) => {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) return null;
+  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoplay ? '1' : '0'}&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+};
+
+const getYouTubeThumbnailUrl = (url) => {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) return null;
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 };
 
 // Check if URL is YouTube
@@ -221,11 +227,11 @@ export default function VideosShowcase({ cmsData = null }) {
         }
         .youtube-embed-wrapper iframe {
           position: absolute;
-          top: 0;
+          top: -60px;
           left: 0;
           width: 100%;
-          height: 100%;
-          transform: none;
+          height: calc(100% + 120px);
+          transform: scale(1.05);
         }
         /* Hide YouTube logo overlay using pseudo-element */
         .youtube-embed-wrapper::after {
@@ -325,12 +331,12 @@ export default function VideosShowcase({ cmsData = null }) {
                 <div
                   data-video-card
                   className={`video-card relative rounded-[14px] overflow-hidden bg-white cursor-pointer group
-                    ${'w-[220px] h-[340px]'}
+                    ${'w-[200px] h-[320px]'}
                     ${i === 2 
                       ? 'md:w-[300px] md:h-[460px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'md:w-[240px] md:h-[360px] video-card-outer'
-                        : 'md:w-[270px] md:h-[400px] video-card-middle'}
+                        ? 'md:w-[220px] md:h-[340px] video-card-outer'
+                        : 'md:w-[250px] md:h-[380px] video-card-middle'}
                   `}
                   style={cardShadow ? { boxShadow: cardShadow } : undefined}
                   onClick={() => handleVideoClick(i)}
@@ -339,33 +345,27 @@ export default function VideosShowcase({ cmsData = null }) {
                     const videoUrl = displayVideos[i]?.url || displayVideos[i]?.src;
                     const thumbnailUrl = displayVideos[i]?.thumbnailUrl || displayVideos[i]?.poster;
                     const isYouTube = isYouTubeUrl(videoUrl);
-                    const embedUrl = isYouTube ? getYouTubeEmbedUrl(videoUrl, isMuted) : null;
+                    const embedUrl = isYouTube ? getYouTubeEmbedUrl(videoUrl, isMuted, playingVideo === i) : null;
+                    const youtubeThumb = isYouTube ? getYouTubeThumbnailUrl(videoUrl) : null;
                     
                     if (isYouTube && embedUrl) {
                       // Render YouTube iframe with custom styling to hide branding
                       return (
                         <>
-                          {playingVideo === i ? (
-                            <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
-                              <iframe
-                                key={`youtube-${i}`}
-                                ref={(el) => { youtubeIframeRefs.current[i] = el; }}
-                                src={embedUrl}
-                                className="absolute top-0 left-0 w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                frameBorder="0"
-                                style={{
-                                  position: 'absolute',
-                                  top: '-60px',
-                                  left: 0,
-                                  width: '100%',
-                                  height: 'calc(100% + 120px)',
-                                  transform: 'scale(1.1)',
-                                  transformOrigin: 'center center'
-                                }}
-                              />
-                              {/* Mute/Unmute button */}
+                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
+                            <iframe
+                              key={`youtube-${i}-${playingVideo === i ? 'play' : 'pause'}`}
+                              ref={(el) => { youtubeIframeRefs.current[i] = el; }}
+                              src={embedUrl}
+                              className="absolute top-0 left-0 w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              frameBorder="0"
+                              style={{
+                                pointerEvents: playingVideo === i ? 'auto' : 'none'
+                              }}
+                            />
+                            {playingVideo === i && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -385,13 +385,15 @@ export default function VideosShowcase({ cmsData = null }) {
                                   </svg>
                                 )}
                               </button>
-                            </div>
-                          ) : (
-                            <div className="absolute inset-0 bg-white flex items-center justify-center">
+                            )}
+                          </div>
+                          {playingVideo !== i && (
+                            <div className="absolute inset-0 flex items-center justify-center">
                               <img
-                                src={thumbnailUrl || '/hero.png'}
+                                src={youtubeThumb || thumbnailUrl || '/hero.png'}
                                 alt={displayVideos[i]?.title || 'Video review thumbnail'}
-                                className="max-w-full max-h-full object-contain"
+                                className="absolute inset-0 w-full h-full object-cover"
+                                style={{ transform: 'scale(1.22)', transformOrigin: 'center center' }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">
                                 <svg className="w-14 h-14 text-white drop-shadow-lg opacity-95" viewBox="0 0 24 24">
