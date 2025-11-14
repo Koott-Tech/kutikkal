@@ -1768,7 +1768,7 @@ const TherapistProfileContent = () => {
       {/* Support Contact Section */}
       <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] h-auto md:h-[100px] bg-[#3f2e73] flex items-center justify-center py-4 md:py-0 mt-8 md:mt-12" style={{ marginBottom: 0 }}>
         <p className="text-white text-xs md:text-sm text-center px-4 support-contact-text">
-          If you didn&apos;t find what you were looking for, please reach out to us at support@kuttikal.com or +1-555-0123. We&apos;re here for you - for anything you might need.
+          If you didn&apos;t find what you were looking for, please reach out to us at hey@little.care or +91-9539007766. We&apos;re here for you - for anything you might need.
         </p>
         <style dangerouslySetInnerHTML={{__html: `
           @media (max-width: 767px) {
