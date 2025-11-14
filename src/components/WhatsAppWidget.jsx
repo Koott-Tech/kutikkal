@@ -309,7 +309,7 @@ export default function WhatsAppWidget() {
       >
         <div style={{ position: 'relative', display: 'inline-block' }}>
           <div className={`whatsapp-tooltip ${isTooltipVisible ? 'visible' : ''}`}>
-            I’m movable
+            Hi... I’m movable
           </div>
           <a
             href={whatsappUrl}

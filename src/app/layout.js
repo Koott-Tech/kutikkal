@@ -6,6 +6,7 @@ import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
 import PageLoadingOverlay from "@/components/PageLoadingOverlay";
+import ClickBurst from "@/components/ClickBurst";
 
 export const metadata = {
   title: "Child Psychotherapy",
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
         <Suspense fallback={null}>
           <PageLoadingOverlay />
         </Suspense>
+        <ClickBurst />
         <ConditionalProviders>
           <HeaderWrapper />
           <ConditionalPadding>
