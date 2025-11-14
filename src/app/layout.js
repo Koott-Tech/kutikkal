@@ -3,6 +3,7 @@ import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
+import WhatsAppWidget from "@/components/WhatsAppWidget";
 
 export const metadata = {
   title: "Child Psychotherapy",
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
             {children}
           </ConditionalPadding>
           <FooterWrapper />
+          <WhatsAppWidget />
         </ConditionalProviders>
       </body>
     </html>
