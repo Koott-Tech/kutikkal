@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 // Helper function to convert YouTube URL to embed URL
 const getYouTubeEmbedUrl = (url, muted = true) => {
@@ -18,7 +18,7 @@ const getYouTubeEmbedUrl = (url, muted = true) => {
     if (match && match[1]) {
       const videoId = match[1];
       // Use nocookie domain and parameters to minimize branding
-      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
     }
   }
   
@@ -66,6 +66,7 @@ export default function VideosShowcase({ cmsData = null }) {
   const [playingVideo, setPlayingVideo] = useState(typeof cmsData?.featuredIndex === 'number' ? cmsData.featuredIndex : 2);
   const [isMuted, setIsMuted] = useState(true); // Start muted
   const videoRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
+  const youtubeIframeRefs = useRef([]);
   const scrollerRef = useRef(null);
   const hasAutoPlayedRef = useRef(false);
 
@@ -182,6 +183,24 @@ export default function VideosShowcase({ cmsData = null }) {
     setIsMuted(!isMuted);
   };
 
+  const sendYouTubeCommand = useCallback((iframe, command) => {
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(JSON.stringify({
+      event: 'command',
+      func: command,
+      args: []
+    }), '*');
+  }, []);
+
+  useEffect(() => {
+    if (playingVideo == null) return;
+    const videoUrl = displayVideos[playingVideo]?.url || displayVideos[playingVideo]?.src;
+    if (!isYouTubeUrl(videoUrl)) return;
+    const iframe = youtubeIframeRefs.current[playingVideo];
+    if (!iframe) return;
+    sendYouTubeCommand(iframe, isMuted ? 'mute' : 'unMute');
+  }, [isMuted, playingVideo, displayVideos, sendYouTubeCommand]);
+
   const scrollByCard = (direction = 1) => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -202,12 +221,11 @@ export default function VideosShowcase({ cmsData = null }) {
         }
         .youtube-embed-wrapper iframe {
           position: absolute;
-          top: -60px;
+          top: 0;
           left: 0;
           width: 100%;
-          height: calc(100% + 120px);
-          transform: scale(1.1);
-          transform-origin: center center;
+          height: 100%;
+          transform: none;
         }
         /* Hide YouTube logo overlay using pseudo-element */
         .youtube-embed-wrapper::after {
@@ -296,12 +314,12 @@ export default function VideosShowcase({ cmsData = null }) {
                 <div
                   data-video-card
                   className={`relative rounded-[14px] overflow-hidden bg-white cursor-pointer group shadow-[0_8px_24px_rgba(63,46,115,0.18)]
-                    ${'w-[240px] h-[360px]'}
+                    ${'w-[200px] h-[320px]'}
                     ${i === 2 
-                      ? 'md:w-[340px] md:h-[500px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
+                      ? 'md:w-[300px] md:h-[460px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'md:w-[240px] md:h-[360px] video-card-outer'
-                        : 'md:w-[280px] md:h-[420px] video-card-middle'}
+                        ? 'md:w-[200px] md:h-[320px] video-card-outer'
+                        : 'md:w-[250px] md:h-[380px] video-card-middle'}
                   `}
                   onClick={() => handleVideoClick(i)}
                 >
@@ -318,7 +336,8 @@ export default function VideosShowcase({ cmsData = null }) {
                           {playingVideo === i ? (
                             <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
                               <iframe
-                                key={`youtube-${i}-${isMuted}`}
+                                key={`youtube-${i}`}
+                                ref={(el) => { youtubeIframeRefs.current[i] = el; }}
                                 src={embedUrl}
                                 className="absolute top-0 left-0 w-full h-full"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -356,7 +375,12 @@ export default function VideosShowcase({ cmsData = null }) {
                               </button>
                             </div>
                           ) : (
-                            <div className="absolute inset-0" style={{ backgroundImage: `url(${thumbnailUrl || '/hero.png'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                            <div className="absolute inset-0 bg-white flex items-center justify-center">
+                              <img
+                                src={thumbnailUrl || '/hero.png'}
+                                alt={displayVideos[i]?.title || 'Video review thumbnail'}
+                                className="max-w-full max-h-full object-contain"
+                              />
                               <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
                                 <svg className="w-16 h-16 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
                                   <path d="M8 5v14l11-7z" />
@@ -402,7 +426,12 @@ export default function VideosShowcase({ cmsData = null }) {
                             </button>
                           )}
                           {playingVideo !== i && (
-                            <div className="absolute inset-0" style={{ backgroundImage: `url(${thumbnailUrl || '/hero.png'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                            <div className="absolute inset-0 bg-white flex items-center justify-center">
+                              <img
+                                src={thumbnailUrl || '/hero.png'}
+                                alt={displayVideos[i]?.title || 'Video review thumbnail'}
+                                className="max-w-full max-h-full object-contain"
+                              />
                               <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-all">
                                 <svg className="w-16 h-16 text-white opacity-90" fill="currentColor" viewBox="0 0 24 24">
                                   <path d="M8 5v14l11-7z" />
