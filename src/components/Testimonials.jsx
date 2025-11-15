@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 // Helper function to convert YouTube URL to embed URL
 const getYouTubeEmbedUrl = (url, muted = true) => {
@@ -17,8 +17,26 @@ const getYouTubeEmbedUrl = (url, muted = true) => {
     const match = url.match(pattern);
     if (match && match[1]) {
       const videoId = match[1];
+      const params = new URLSearchParams({
+        autoplay: '1',
+        mute: muted ? '1' : '0',
+        loop: '1',
+        playlist: videoId,
+        controls: '0',
+        modestbranding: '1',
+        rel: '0',
+        showinfo: '0',
+        iv_load_policy: '3',
+        fs: '0',
+        disablekb: '1',
+        playsinline: '1',
+        cc_load_policy: '0',
+        enablejsapi: '1',
+        origin: typeof window !== 'undefined' ? window.location.origin : '',
+        widget_referrer: typeof window !== 'undefined' ? window.location.href : ''
+      });
       // Use nocookie domain and parameters to minimize branding
-      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+      return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
     }
   }
   
@@ -36,6 +54,10 @@ export default function Testimonials() {
   const isHoldingRef = useRef(false);
   const scrollCheckRef = useRef(null);
   const isScrollingRef = useRef(false);
+  const isMobileRef = useRef(false);
+  const [useMobileMarquee, setUseMobileMarquee] = useState(false);
+  const [isMobileMarqueePaused, setIsMobileMarqueePaused] = useState(false);
+  const marqueeResumeTimeoutRef = useRef(null);
   
   const photos = [
     { src: "https://youtube.com/shorts/RSge3l2uKSI", alt: "Testimonial video", type: "video" },
@@ -158,6 +180,10 @@ export default function Testimonials() {
 
   // Auto-play functionality with infinite loop
   const startAutoPlay = () => {
+    if (isMobileRef.current) {
+      stopAutoPlay();
+      return;
+    }
     if (autoPlayRef.current) {
       clearInterval(autoPlayRef.current);
     }
@@ -205,6 +231,67 @@ export default function Testimonials() {
     }
   };
 
+  const updateIsMobileFlag = () => {
+    if (typeof window === 'undefined') return;
+    const nextIsMobile = window.matchMedia
+      ? window.matchMedia('(max-width: 767px)').matches
+      : window.innerWidth < 768;
+    isMobileRef.current = nextIsMobile;
+    setUseMobileMarquee(nextIsMobile);
+    if (!nextIsMobile) {
+      setIsMobileMarqueePaused(false);
+      if (marqueeResumeTimeoutRef.current) {
+        clearTimeout(marqueeResumeTimeoutRef.current);
+        marqueeResumeTimeoutRef.current = null;
+      }
+    }
+    if (isMobileRef.current) {
+      stopAutoPlay();
+    }
+  };
+
+  const pauseMobileMarquee = useCallback(() => {
+    if (!useMobileMarquee) return;
+    setIsMobileMarqueePaused(true);
+    if (marqueeResumeTimeoutRef.current) {
+      clearTimeout(marqueeResumeTimeoutRef.current);
+      marqueeResumeTimeoutRef.current = null;
+    }
+  }, [useMobileMarquee]);
+
+  const resumeMobileMarquee = useCallback((delay = 4000) => {
+    if (!useMobileMarquee) return;
+    if (marqueeResumeTimeoutRef.current) {
+      clearTimeout(marqueeResumeTimeoutRef.current);
+    }
+    marqueeResumeTimeoutRef.current = setTimeout(() => {
+      setIsMobileMarqueePaused(false);
+      marqueeResumeTimeoutRef.current = null;
+    }, delay);
+  }, [useMobileMarquee]);
+
+  useEffect(() => {
+    updateIsMobileFlag();
+    if (typeof window === 'undefined') return;
+    const onResize = () => updateIsMobileFlag();
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (marqueeResumeTimeoutRef.current) {
+        clearTimeout(marqueeResumeTimeoutRef.current);
+        marqueeResumeTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  const resumeAutoPlay = () => {
+    if (isMobileRef.current) {
+      stopAutoPlay();
+      return;
+    }
+    startAutoPlay();
+  };
+
   // Touch/swipe support with hold-to-pause
   const minSwipeDistance = 50;
 
@@ -246,7 +333,7 @@ export default function Testimonials() {
       // If was holding, don't swipe, just resume autoplay after delay
       setTimeout(() => {
         isPausedRef.current = false;
-        startAutoPlay();
+        resumeAutoPlay();
       }, 1000);
       return;
     }
@@ -254,7 +341,7 @@ export default function Testimonials() {
     if (!touchStartRef.current || !touchEndRef.current) {
       setTimeout(() => {
         isPausedRef.current = false;
-        startAutoPlay();
+        resumeAutoPlay();
       }, 1000);
       return;
     }
@@ -267,19 +354,23 @@ export default function Testimonials() {
       // Let native scroll handle the swipe
       isPausedRef.current = false;
     setTimeout(() => {
-      startAutoPlay();
+      resumeAutoPlay();
     }, 2000);
     } else {
       // No swipe, resume autoplay
       isPausedRef.current = false;
       setTimeout(() => {
-        startAutoPlay();
+        resumeAutoPlay();
       }, 1000);
     }
   };
 
   // Initialize carousel and start auto-play
   useEffect(() => {
+    if (useMobileMarquee) {
+      updateIsMobileFlag();
+      return;
+    }
     // Wait for DOM to be ready
     const initCarousel = () => {
       if (scrollContainerRef.current && typeof window !== 'undefined') {
@@ -309,7 +400,9 @@ export default function Testimonials() {
       return () => clearTimeout(timeout);
     }
 
-    startAutoPlay();
+    updateIsMobileFlag();
+    resumeAutoPlay();
+
     return () => {
       stopAutoPlay();
       if (touchHoldTimerRef.current) {
@@ -319,7 +412,20 @@ export default function Testimonials() {
         cancelAnimationFrame(scrollCheckRef.current);
       }
     };
-  }, [photos.length]);
+  }, [photos.length, useMobileMarquee]);
+
+  const handleMarqueeInteractionStart = useCallback(() => {
+    pauseMobileMarquee();
+  }, [pauseMobileMarquee]);
+
+  const handleMarqueeInteractionEnd = useCallback(() => {
+    resumeMobileMarquee(4000);
+  }, [resumeMobileMarquee]);
+
+  const handleMarqueeScroll = useCallback(() => {
+    pauseMobileMarquee();
+    resumeMobileMarquee(4000);
+  }, [pauseMobileMarquee, resumeMobileMarquee]);
 
   const youtubeUrl = "https://youtube.com/shorts/RSge3l2uKSI";
   const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
@@ -416,6 +522,39 @@ export default function Testimonials() {
             scroll-snap-align: start !important;
             scroll-snap-stop: always !important;
           }
+        .testimonials-mobile-marquee-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+          position: relative;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+        }
+        .testimonials-mobile-marquee-wrapper::-webkit-scrollbar {
+          display: none;
+        }
+        .testimonials-mobile-marquee {
+          display: flex;
+          gap: 16px;
+          width: max-content;
+          animation: testimonials-mobile-scroll 20s linear infinite;
+        }
+        .testimonials-mobile-marquee:hover,
+        .testimonials-mobile-marquee:active,
+        .testimonials-mobile-marquee-wrapper:active .testimonials-mobile-marquee,
+        .testimonials-mobile-marquee-wrapper:focus-within .testimonials-mobile-marquee,
+        .testimonials-mobile-marquee.paused {
+          animation-play-state: paused;
+        }
+        @keyframes testimonials-mobile-scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
         }
         /* Hide YouTube branding and UI elements */
         .youtube-embed-wrapper {
@@ -426,35 +565,39 @@ export default function Testimonials() {
         }
         .youtube-embed-wrapper iframe {
           position: absolute;
-          top: -60px;
-          left: 0;
-          width: 100%;
-          height: calc(100% + 120px);
-          transform: scale(1.1);
+          top: -40px;
+          left: -1%;
+          width: 102%;
+          height: calc(100% + 80px);
+          transform: scale(1.02);
           transform-origin: center center;
-        }
-        /* Hide YouTube logo overlay using pseudo-element */
-        .youtube-embed-wrapper::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 60px;
-          background: transparent;
-          z-index: 10;
           pointer-events: none;
         }
+        @media (max-width: 767px) {
+          .youtube-embed-wrapper iframe {
+            top: -60px;
+            height: calc(100% + 120px);
+            transform: scale(1.04);
+          }
+        }
+        /* Hide YouTube logo overlay using pseudo-element */
+        .youtube-embed-wrapper::after,
         .youtube-embed-wrapper::before {
           content: '';
           position: absolute;
-          bottom: 0;
           left: 0;
           width: 100%;
-          height: 60px;
-          background: transparent;
+          height: 64px;
           z-index: 10;
           pointer-events: none;
+        }
+        .youtube-embed-wrapper::after {
+          top: 0;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+        .youtube-embed-wrapper::before {
+          bottom: 0;
+          background: linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 100%);
         }
       `}</style>
       <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
@@ -531,19 +674,12 @@ export default function Testimonials() {
                   <iframe
                     key={`youtube-${isMuted}`}
                     src={embedUrl}
-                    className="absolute top-0 left-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full"
+                    title="testimonial-featured-video"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
+                    allowFullScreen={false}
                     frameBorder="0"
-                    style={{
-                      position: 'absolute',
-                      top: '-60px',
-                      left: 0,
-                      width: '100%',
-                      height: 'calc(100% + 120px)',
-                      transform: 'scale(1.1)',
-                      transformOrigin: 'center center'
-                    }}
+                    style={{ pointerEvents: 'none' }}
                   />
                   {/* Mute/Unmute button */}
                   <button
@@ -610,121 +746,239 @@ export default function Testimonials() {
 
         {/* Mobile: Horizontal photo carousel */}
         <div className="block lg:hidden w-full mt-6">
-          {/* Scrollable Carousel Container */}
-          <div 
-            ref={scrollContainerRef}
-            onScroll={handleScroll}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            className="relative overflow-x-auto overflow-y-hidden carousel-scroll snap-x snap-mandatory testimonials-infinite-carousel"
-            style={{ 
-              scrollSnapType: 'x mandatory', 
-              width: '100%',
-              scrollBehavior: 'smooth',
-              WebkitOverflowScrolling: 'touch',
-              overscrollBehaviorX: 'contain'
-            }}
-          >
-            <div className="flex pb-4 testimonials-carousel-track" style={{ gap: 0, width: '100%' }}>
-              {infinitePhotos.map((photo, index) => (
-                <div 
-                  key={`${photo.src}-${index}`}
-                  className="flex-shrink-0 snap-start testimonials-carousel-card"
-                  style={{ width: '100%', minWidth: '100%', maxWidth: '100%' }}
-                >
-                  <div className="w-full px-4 md:px-6 testimonials-card-content" style={{ paddingLeft: photo.type === "video" ? 'clamp(32px, 12vw, 64px)' : 'clamp(24px, 10vw, 48px)', paddingRight: photo.type === "video" ? 'clamp(32px, 12vw, 64px)' : 'clamp(24px, 10vw, 48px)', boxSizing: 'border-box' }}>
-                    {photo.type === "video" ? (
-                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
-                        {getYouTubeEmbedUrl(photo.src, isMuted) && (
-                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                            <iframe
-                              key={`youtube-${isMuted}-${index}`}
-                              src={getYouTubeEmbedUrl(photo.src, isMuted)}
-                              className="absolute top-0 left-0 w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              frameBorder="0"
-                              loading="lazy"
-                              style={{
+          {useMobileMarquee ? (
+            <div
+              className="testimonials-mobile-marquee-wrapper"
+              onTouchStart={handleMarqueeInteractionStart}
+              onTouchEnd={handleMarqueeInteractionEnd}
+              onTouchCancel={handleMarqueeInteractionEnd}
+              onPointerDown={handleMarqueeInteractionStart}
+              onPointerUp={handleMarqueeInteractionEnd}
+              onPointerCancel={handleMarqueeInteractionEnd}
+              onScroll={handleMarqueeScroll}
+            >
+              <div className={`testimonials-mobile-marquee ${isMobileMarqueePaused ? 'paused' : ''}`}>
+                {infinitePhotos.map((photo, index) => {
+                  const isVideoCard = photo.type === "video";
+                  const cardWidth = isVideoCard ? 'clamp(200px, 72vw, 300px)' : 'clamp(240px, 92vw, 360px)';
+                  return (
+                    <div
+                      key={`${photo.src}-${index}`}
+                      className="flex-shrink-0 flex justify-center"
+                      style={{ width: cardWidth, scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+                    >
+                      <div
+                        className="w-full px-3 testimonials-card-content"
+                        style={{
+                          boxSizing: 'border-box',
+                          maxWidth: cardWidth
+                        }}
+                      >
+                        {isVideoCard ? (
+                          <div
+                            className="relative h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto"
+                            style={{
+                              minHeight: '360px',
+                              maxHeight: '360px',
+                              width: '100%'
+                            }}
+                          >
+                            {getYouTubeEmbedUrl(photo.src, isMuted) && (
+                              <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                                <iframe
+                                  key={`youtube-${isMuted}-${index}`}
+                                  src={getYouTubeEmbedUrl(photo.src, isMuted)}
+                                  className="absolute inset-0 w-full h-full"
+                                  title={`testimonial-carousel-video-${index}`}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen={false}
+                                  frameBorder="0"
+                                  loading="lazy"
+                                  style={{ border: 'none', pointerEvents: 'none' }}
+                                />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    toggleMute();
+                                  }}
+                                  className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
+                                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                                >
+                                  {isMuted ? (
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                    </svg>
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : photo.type === "text" ? (
+                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                            <div
+                              className="z-0"
+                              style={{ 
+                                background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
                                 position: 'absolute',
-                                top: '-60px',
-                                left: 0,
-                                width: '100%',
-                                height: 'calc(100% + 120px)',
-                                transform: 'scale(1.1)',
-                                transformOrigin: 'center center',
-                                border: 'none',
-                                pointerEvents: 'auto'
+                                inset: 0
                               }}
                             />
-                            {/* Mute/Unmute button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                toggleMute();
-                              }}
-                              onTouchStart={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
-                              aria-label={isMuted ? 'Unmute' : 'Mute'}
-                              style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-                            >
-                              {isMuted ? (
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                </svg>
-                              ) : (
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                </svg>
-                              )}
-                            </button>
-                            {/* Hide YouTube logo overlay */}
-                            <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                            <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
+                              <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
+                                "{photo.text}"
+                              </p>
+                              <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
+                                {photo.author}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                            <Image 
+                              src={photo.src} 
+                              alt={photo.alt} 
+                              fill 
+                              className="object-cover" 
+                              sizes="100vw"
+                              loading="lazy"
+                            />
                           </div>
                         )}
                       </div>
-                    ) : photo.type === "text" ? (
-                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
-                        <div
-                          className="z-0"
-                          style={{ 
-                            background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
-                            position: 'absolute',
-                            inset: 0
-                          }}
-                        />
-                        <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
-                          <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
-                            "{photo.text}"
-                          </p>
-                          <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
-                            {photo.author}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
-                    <Image 
-                      src={photo.src} 
-                      alt={photo.alt} 
-                      fill 
-                      className="object-cover" 
-                          sizes="100vw"
-                          loading="lazy"
-                    />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div 
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              className="relative overflow-x-auto overflow-y-hidden carousel-scroll snap-x snap-mandatory testimonials-infinite-carousel"
+              style={{ 
+                scrollSnapType: 'x mandatory', 
+                width: '100%',
+                scrollBehavior: 'smooth',
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehaviorX: 'contain'
+              }}
+            >
+              <div className="flex pb-4 testimonials-carousel-track" style={{ gap: 0, width: '100%' }}>
+                {infinitePhotos.map((photo, index) => {
+                  const isVideoCard = photo.type === "video";
+                  return (
+                    <div 
+                      key={`${photo.src}-${index}`}
+                      className="flex-shrink-0 snap-start testimonials-carousel-card flex justify-center"
+                      style={{ width: '100%', minWidth: '100%', maxWidth: '100%' }}
+                    >
+                      <div
+                        className="w-full px-4 md:px-6 testimonials-card-content"
+                        style={{
+                          paddingLeft: isVideoCard ? 'clamp(12px, 6vw, 32px)' : 'clamp(24px, 10vw, 48px)',
+                          paddingRight: isVideoCard ? 'clamp(12px, 6vw, 32px)' : 'clamp(24px, 10vw, 48px)',
+                          boxSizing: 'border-box'
+                        }}
+                      >
+                        {isVideoCard ? (
+                          <div
+                            className="relative h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto"
+                            style={{
+                              minHeight: '360px',
+                              maxHeight: '360px',
+                              width: 'clamp(200px, 72vw, 300px)'
+                            }}
+                          >
+                            {getYouTubeEmbedUrl(photo.src, isMuted) && (
+                              <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                                <iframe
+                                  key={`youtube-${isMuted}-${index}`}
+                                  src={getYouTubeEmbedUrl(photo.src, isMuted)}
+                                  className="absolute inset-0 w-full h-full"
+                                  title={`testimonial-carousel-video-${index}`}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen={false}
+                                  frameBorder="0"
+                                  loading="lazy"
+                                  style={{ border: 'none', pointerEvents: 'none' }}
+                                />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    toggleMute();
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                  className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
+                                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                                >
+                                  {isMuted ? (
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                    </svg>
+                                  )}
+                                </button>
+                                <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                                <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                              </div>
+                            )}
+                          </div>
+                        ) : photo.type === "text" ? (
+                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                            <div
+                              className="z-0"
+                              style={{ 
+                                background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
+                                position: 'absolute',
+                                inset: 0
+                              }}
+                            />
+                            <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
+                              <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
+                                "{photo.text}"
+                              </p>
+                              <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
+                                {photo.author}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                            <Image 
+                              src={photo.src} 
+                              alt={photo.alt} 
+                              fill 
+                              className="object-cover" 
+                              sizes="100vw"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

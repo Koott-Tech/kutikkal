@@ -3,6 +3,14 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
+const isMobileViewport = () => {
+  if (typeof window === 'undefined') return false;
+  if (window.matchMedia) {
+    return window.matchMedia('(max-width: 767px)').matches;
+  }
+  return window.innerWidth < 768;
+};
+
 export default function ScrollToTop() {
   const pathname = usePathname();
 
@@ -22,6 +30,11 @@ export default function ScrollToTop() {
 
     // Only force scroll to top for SPA navigations, not reloads/back
     if (navigationType === 'reload' || navigationType === 'back_forward') {
+      return;
+    }
+
+    // Skip forcing scroll on narrow/mobile viewports to preserve reading position
+    if (isMobileViewport()) {
       return;
     }
 

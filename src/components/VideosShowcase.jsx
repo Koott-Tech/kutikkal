@@ -22,7 +22,25 @@ const extractYouTubeId = (url) => {
 const getYouTubeEmbedUrl = (url, muted = true, autoplay = true) => {
   const videoId = extractYouTubeId(url);
   if (!videoId) return null;
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=${autoplay ? '1' : '0'}&mute=${muted ? '1' : '0'}&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&cc_load_policy=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+  const params = new URLSearchParams({
+    autoplay: autoplay ? '1' : '0',
+    mute: muted ? '1' : '0',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    modestbranding: '1',
+    rel: '0',
+    showinfo: '0',
+    iv_load_policy: '3',
+    fs: '0',
+    disablekb: '1',
+    playsinline: '1',
+    cc_load_policy: '0',
+    enablejsapi: '1',
+    origin: typeof window !== 'undefined' ? window.location.origin : '',
+    widget_referrer: typeof window !== 'undefined' ? window.location.href : ''
+  });
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 };
 
 const getYouTubeThumbnailUrl = (url) => {
@@ -207,6 +225,20 @@ export default function VideosShowcase({ cmsData = null }) {
     sendYouTubeCommand(iframe, isMuted ? 'mute' : 'unMute');
   }, [isMuted, playingVideo, displayVideos, sendYouTubeCommand]);
 
+  useEffect(() => {
+    [0, 1, 2, 3, 4].forEach((i) => {
+      const videoUrl = displayVideos[i]?.url || displayVideos[i]?.src;
+      if (!isYouTubeUrl(videoUrl)) return;
+      const iframe = youtubeIframeRefs.current[i];
+      if (!iframe) return;
+      if (playingVideo === i) {
+        sendYouTubeCommand(iframe, 'playVideo');
+      } else {
+        sendYouTubeCommand(iframe, 'pauseVideo');
+      }
+    });
+  }, [playingVideo, displayVideos, sendYouTubeCommand]);
+
   const scrollByCard = (direction = 1) => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -227,34 +259,39 @@ export default function VideosShowcase({ cmsData = null }) {
         }
         .youtube-embed-wrapper iframe {
           position: absolute;
-          top: -60px;
-          left: 0;
-          width: 100%;
-          height: calc(100% + 120px);
-          transform: scale(1.05);
-        }
-        /* Hide YouTube logo overlay using pseudo-element */
-        .youtube-embed-wrapper::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 60px;
-          background: transparent;
-          z-index: 10;
+          top: -80px;
+          left: -2%;
+          width: 104%;
+          height: calc(100% + 160px);
+          transform: scale(1.12);
+          transform-origin: center center;
           pointer-events: none;
         }
+        @media (max-width: 767px) {
+          .youtube-embed-wrapper iframe {
+            top: -110px;
+            height: calc(100% + 220px);
+            transform: scale(1.18);
+          }
+        }
+        /* Hide YouTube logo overlay using pseudo-element */
+        .youtube-embed-wrapper::after,
         .youtube-embed-wrapper::before {
           content: '';
           position: absolute;
-          bottom: 0;
           left: 0;
           width: 100%;
-          height: 60px;
-          background: transparent;
+          height: 72px;
           z-index: 10;
           pointer-events: none;
+        }
+        .youtube-embed-wrapper::after {
+          top: 0;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+        .youtube-embed-wrapper::before {
+          bottom: 0;
+          background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
         }
         @media (max-width: 767px) {
           .videos-carousel-container {
@@ -349,23 +386,20 @@ export default function VideosShowcase({ cmsData = null }) {
                     const youtubeThumb = isYouTube ? getYouTubeThumbnailUrl(videoUrl) : null;
                     
                     if (isYouTube && embedUrl) {
-                      // Render YouTube iframe with custom styling to hide branding
-                      return (
-                        <>
-                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
-                            <iframe
-                              key={`youtube-${i}-${playingVideo === i ? 'play' : 'pause'}`}
+                      // Render YouTube iframe only when active to avoid duplicate audio
+                      return playingVideo === i ? (
+                            <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
+                              <iframe
+                            key={`youtube-${i}-active`}
                               ref={(el) => { youtubeIframeRefs.current[i] = el; }}
-                              src={embedUrl}
-                              className="absolute top-0 left-0 w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              frameBorder="0"
-                              style={{
-                                pointerEvents: playingVideo === i ? 'auto' : 'none'
-                              }}
-                            />
-                            {playingVideo === i && (
+                                src={embedUrl}
+                            className="absolute inset-0 w-full h-full"
+                            title={`video-review-${i}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen={false}
+                                frameBorder="0"
+                            style={{ pointerEvents: 'none' }}
+                              />
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -385,9 +419,8 @@ export default function VideosShowcase({ cmsData = null }) {
                                   </svg>
                                 )}
                               </button>
-                            )}
-                          </div>
-                          {playingVideo !== i && (
+                            </div>
+                      ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <img
                                 src={youtubeThumb || thumbnailUrl || '/hero.png'}
@@ -404,8 +437,6 @@ export default function VideosShowcase({ cmsData = null }) {
                                 </svg>
                               </div>
                             </div>
-                          )}
-                        </>
                       );
                     } else {
                       // Render regular video element
