@@ -108,7 +108,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
 
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-10">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
           <div className="mt-3 text-center px-4">
             <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
@@ -231,7 +231,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         </a>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-12 md:mt-16">
         <HowItWorks />
       </div>
       <div className="mt-16 md:mt-20">
@@ -241,7 +241,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         <TherapyTypesSplit cmsData={{ title: data?.types_title || 'What we offer', types: data?.types || [], rightImageUrl: data?.right_image_url || '' }} />
       </div>
       {/* Videos showcase */}
-      <div className="mt-8">
+      <div className="mt-16 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
             src: video.url || video.src,
@@ -255,11 +255,11 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         }} />
       </div>
       {/* Reviews */}
-      <div className="mt-8">
+      <div className="mt-16 md:-mt-24">
         <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
       </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
-        <div className="mt-8">
+        <div className="-mt-8 md:-mt-24">
           <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
@@ -268,7 +268,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
           <BlogTeaser />
         </div>
       )}
-      <div className="py-16 px-4">
+      <div className="mt-12 md:mt-16 px-4 pb-16">
         <div className="max-w-4xl mx-auto">
           <HelpFaq cmsData={{ faqs: data?.faqs || [], context: 'better-parenting' }} />
         </div>

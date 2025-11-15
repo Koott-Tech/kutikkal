@@ -100,25 +100,27 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
 
-      <AssessmentInfoCard
-        cmsData={{
-          slug,
-          id: data?.id,
-          title: data?.assessment_card_title,
-          description: data?.assessment_card_description,
-          sessionsInfo: data?.assessment_card_sessions_info,
-          typesHeading: data?.assessment_card_types_heading,
-          certifiedLabel: data?.assessment_card_certified_label,
-          nonCertifiedLabel: data?.assessment_card_non_certified_label,
-          assigned_doctor_ids: data?.assigned_doctor_ids || [],
-        }}
-      />
+      <div className="mt-8 md:mt-12">
+        <AssessmentInfoCard
+          cmsData={{
+            slug,
+            id: data?.id,
+            title: data?.assessment_card_title,
+            description: data?.assessment_card_description,
+            sessionsInfo: data?.assessment_card_sessions_info,
+            typesHeading: data?.assessment_card_types_heading,
+            certifiedLabel: data?.assessment_card_certified_label,
+            nonCertifiedLabel: data?.assessment_card_non_certified_label,
+            assigned_doctor_ids: data?.assigned_doctor_ids || [],
+          }}
+        />
+      </div>
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <TherapistCarousel therapists={therapists} />
       </div>
 
-      <div className="mt-8">
+      <div className="mt-12 md:mt-16">
         <HowItWorks />
       </div>
 
@@ -142,7 +144,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           }} 
         />
       </div>
-      <div className="mt-8">
+      <div className="mt-16 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
             src: video.url || video.src,
@@ -156,14 +158,14 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
         }} />
       </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
-        <div className="mt-8">
+        <div className="-mt-8 md:-mt-24">
           <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
-      <div className="mt-8">
+      <div className="mt-16 md:-mt-24">
         <Reviews cmsData={{ reviews: data?.reviews || [] }} />
       </div>
-      <div className="py-16 px-4">
+      <div className="mt-12 md:mt-16 px-4 pb-16">
         <div className="max-w-4xl mx-auto">
           <HelpFaq cmsData={{ faqs: data?.faqs || [] }} />
         </div>

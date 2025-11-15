@@ -554,7 +554,7 @@ export default function Testimonials() {
           100% {
             transform: translateX(-50%);
           }
-        }
+          }
         }
         /* Hide YouTube branding and UI elements */
         .youtube-embed-wrapper {
@@ -575,8 +575,8 @@ export default function Testimonials() {
         }
         @media (max-width: 767px) {
           .youtube-embed-wrapper iframe {
-            top: -60px;
-            height: calc(100% + 120px);
+          top: -60px;
+          height: calc(100% + 120px);
             transform: scale(1.04);
           }
         }
@@ -858,30 +858,30 @@ export default function Testimonials() {
               </div>
             </div>
           ) : (
-            <div 
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-              className="relative overflow-x-auto overflow-y-hidden carousel-scroll snap-x snap-mandatory testimonials-infinite-carousel"
-              style={{ 
-                scrollSnapType: 'x mandatory', 
-                width: '100%',
-                scrollBehavior: 'smooth',
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorX: 'contain'
-              }}
-            >
-              <div className="flex pb-4 testimonials-carousel-track" style={{ gap: 0, width: '100%' }}>
+          <div 
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            className="relative overflow-x-auto overflow-y-hidden carousel-scroll snap-x snap-mandatory testimonials-infinite-carousel"
+            style={{ 
+              scrollSnapType: 'x mandatory', 
+              width: '100%',
+              scrollBehavior: 'smooth',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehaviorX: 'contain'
+            }}
+          >
+            <div className="flex pb-4 testimonials-carousel-track" style={{ gap: 0, width: '100%' }}>
                 {infinitePhotos.map((photo, index) => {
                   const isVideoCard = photo.type === "video";
                   return (
-                    <div 
-                      key={`${photo.src}-${index}`}
+                <div 
+                  key={`${photo.src}-${index}`}
                       className="flex-shrink-0 snap-start testimonials-carousel-card flex justify-center"
-                      style={{ width: '100%', minWidth: '100%', maxWidth: '100%' }}
-                    >
+                  style={{ width: '100%', minWidth: '100%', maxWidth: '100%' }}
+                >
                       <div
                         className="w-full px-4 md:px-6 testimonials-card-content"
                         style={{
@@ -899,85 +899,85 @@ export default function Testimonials() {
                               width: 'clamp(200px, 72vw, 300px)'
                             }}
                           >
-                            {getYouTubeEmbedUrl(photo.src, isMuted) && (
-                              <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                                <iframe
-                                  key={`youtube-${isMuted}-${index}`}
-                                  src={getYouTubeEmbedUrl(photo.src, isMuted)}
+                        {getYouTubeEmbedUrl(photo.src, isMuted) && (
+                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                            <iframe
+                              key={`youtube-${isMuted}-${index}`}
+                              src={getYouTubeEmbedUrl(photo.src, isMuted)}
                                   className="absolute inset-0 w-full h-full"
                                   title={`testimonial-carousel-video-${index}`}
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                   allowFullScreen={false}
-                                  frameBorder="0"
-                                  loading="lazy"
-                                  style={{ border: 'none', pointerEvents: 'none' }}
-                                />
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    toggleMute();
-                                  }}
-                                  onTouchStart={(e) => {
-                                    e.stopPropagation();
-                                  }}
-                                  className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
-                                  aria-label={isMuted ? 'Unmute' : 'Mute'}
-                                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-                                >
-                                  {isMuted ? (
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                    </svg>
-                                  ) : (
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                    </svg>
-                                  )}
-                                </button>
-                                <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                                <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                              </div>
-                            )}
-                          </div>
-                        ) : photo.type === "text" ? (
-                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
-                            <div
-                              className="z-0"
-                              style={{ 
-                                background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
-                                position: 'absolute',
-                                inset: 0
-                              }}
-                            />
-                            <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
-                              <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
-                                "{photo.text}"
-                              </p>
-                              <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
-                                {photo.author}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
-                            <Image 
-                              src={photo.src} 
-                              alt={photo.alt} 
-                              fill 
-                              className="object-cover" 
-                              sizes="100vw"
+                              frameBorder="0"
                               loading="lazy"
+                                  style={{ border: 'none', pointerEvents: 'none' }}
                             />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                toggleMute();
+                              }}
+                              onTouchStart={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
+                              aria-label={isMuted ? 'Unmute' : 'Mute'}
+                              style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                            >
+                              {isMuted ? (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                              )}
+                            </button>
+                            <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
                           </div>
                         )}
                       </div>
-                    </div>
+                    ) : photo.type === "text" ? (
+                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                        <div
+                          className="z-0"
+                          style={{ 
+                            background: photo.gradient || `linear-gradient(135deg, #F5F5F5 0%, #E5E5E5 100%)`,
+                            position: 'absolute',
+                            inset: 0
+                          }}
+                        />
+                        <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6">
+                          <p className="text-[15px] leading-relaxed text-gray-900" style={{ lineHeight: '1.6' }}>
+                            "{photo.text}"
+                          </p>
+                          <p className="p2 mt-4 mb-4 text-xs text-gray-600 font-medium">
+                            {photo.author}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
+                    <Image 
+                      src={photo.src} 
+                      alt={photo.alt} 
+                      fill 
+                      className="object-cover" 
+                          sizes="100vw"
+                          loading="lazy"
+                    />
+                      </div>
+                    )}
+                  </div>
+                </div>
                   );
                 })}
-              </div>
             </div>
+          </div>
           )}
         </div>
 
