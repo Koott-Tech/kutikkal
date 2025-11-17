@@ -1,53 +1,68 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 export default function TestimonialsAbout() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const scrollContainerRef = useRef(null);
     const autoPlayRef = useRef(null);
 
-    const testimonials = [
+    const colors = ["#ede1ff", "#d6e4e3", "#ffe5c7", "#ffe8eb"];
+
+    const baseTestimonials = [
         {
             quote: "Little Care feels like home — warm, genuine, and full of heart. I love that we get to work closely with families and really see the difference small changes can make in a child's life.",
-            author: "Fathima Liana - Consultant Psychologist",
-            bgColor: "bg-green-100"
+            author: "Fathima Liana - Consultant Psychologist"
         },
         {
             quote: "What I really love about Little Care is the space it gives us to connect deeply with every child's journey. The team spirit here is amazing — we learn from each other every day.",
-            author: "Anusmitha Praveen - Consultant Psychologist",
-            bgColor: "bg-amber-100"
+            author: "Anusmitha Praveen - Consultant Psychologist"
         },
         {
             quote: "Little Care blends science with softness in such a beautiful way. We use solid clinical methods, but there's always warmth and creativity behind every session.",
-            author: "Irene Marium - Consultant Psychologist",
-            bgColor: "bg-cyan-100"
+            author: "Irene Marium - Consultant Psychologist"
         },
         {
             quote: "There's so much creativity here! From therapy games to fun tools and parent sessions — it's all about helping kids grow while keeping therapy engaging and playful.",
-            author: "Athulya O - Consultant Psychologist",
-            bgColor: "bg-blue-100"
+            author: "Athulya O - Consultant Psychologist"
         },
         {
             quote: "What I love most is how collaborative the team is. Everyone genuinely cares — we celebrate small wins together and support each other through challenges. It really feels like a family.",
-            author: "Bhavith - Brand Designer",
-            bgColor: "bg-purple-100"
+            author: "Bhavith - Brand Designer"
         },
         {
             quote: "Working with Little Care has been truly meaningful. It's not just about building a platform — it's about creating something that genuinely helps children and parents connect with care. Knowing our tech makes therapy easier and more accessible makes it all worth it.",
-            author: "Abhishek - Software Developer",
-            bgColor: "bg-teal-100"
+            author: "Abhishek - Software Developer"
         },
         {
             quote: "At Little Care, digital marketing never feels like marketing. We're not pushing content — we're sharing stories that matter. Every campaign shows how powerful it is when empathy meets purpose, and seeing parents connect because of something we created is what keeps me inspired.",
-            author: "Jishnu - Digital Marketer",
-            bgColor: "bg-pink-100"
+            author: "Jishnu - Digital Marketer"
         },
         {
             quote: "Working with Little Care has changed how I see storytelling. Every frame we capture holds real emotion — a child's progress, a parent's relief, a therapist's quiet pride. It's more than videos; it's documenting hope in its simplest form. I'm proud to be part of something so honest and meaningful.",
-            author: "Shinas - Videographer",
-            bgColor: "bg-indigo-100"
+            author: "Shinas - Videographer"
         }
     ];
+
+    // Randomly assign colors to testimonials ensuring different patterns for each row
+    const testimonials = useMemo(() => {
+        // Shuffle colors for first row
+        const firstRowColors = [...colors].sort(() => Math.random() - 0.5);
+        // Shuffle colors for second row, ensuring different pattern
+        let secondRowColors = [...colors].sort(() => Math.random() - 0.5);
+        // If patterns are the same, reshuffle second row
+        while (JSON.stringify(firstRowColors) === JSON.stringify(secondRowColors)) {
+            secondRowColors = [...colors].sort(() => Math.random() - 0.5);
+        }
+        
+        return baseTestimonials.map((testimonial, index) => {
+            const rowIndex = Math.floor(index / 4);
+            const colorArray = rowIndex === 0 ? firstRowColors : secondRowColors;
+            return {
+                ...testimonial,
+                bgColor: colorArray[index % colors.length]
+            };
+        });
+    }, []);
 
     const nextSlide = () => {
         stopAutoPlay();
@@ -207,7 +222,7 @@ export default function TestimonialsAbout() {
                         {/* Desktop: Grid Cards Layout */}
                         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-2">
                             {testimonials.map((testimonial, index) => (
-                                <div key={index} className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col`}>
+                                <div key={index} className="rounded-2xl p-6 flex flex-col" style={{ backgroundColor: testimonial.bgColor }}>
                                     <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
                                 <div className="mt-auto">
                                         <p className="text-sm font-medium">{testimonial.author}</p>
@@ -234,7 +249,7 @@ export default function TestimonialsAbout() {
                                             key={index} 
                                             className="flex-shrink-0 w-[340px] snap-start h-[320px]"
                                         >
-                                            <div className={`${testimonial.bgColor} rounded-2xl p-6 flex flex-col h-full`}>
+                                            <div className="rounded-2xl p-6 flex flex-col h-full" style={{ backgroundColor: testimonial.bgColor }}>
                                                 <p className="text-lg font-medium mb-4">"{testimonial.quote}"</p>
                                 <div className="mt-auto">
                                                     <p className="text-sm font-medium">{testimonial.author}</p>

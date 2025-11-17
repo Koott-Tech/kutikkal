@@ -33,7 +33,7 @@ export default function Home() {
             align-items: flex-start !important;
           }
           .sister-brands-nav {
-            justify-content: center !important;
+            justify-content: flex-start !important;
             width: 100% !important;
             margin-top: 16px !important;
           }
@@ -115,11 +115,11 @@ export default function Home() {
             <div className="sister-brands-container flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="sister-brands-content text-gray-700 text-sm md:text-sm text-center md:text-left flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-2">
                 <div className="sister-brands-text text-center md:text-left">
-                  <div className="text-xs md:text-sm">Our sister brands, united by one vision:</div>
-                  <div className="font-semibold text-sm md:text-sm">Redefining care, work, and hope for a better tomorrow.</div>
+                  <div className="text-[10px] md:text-sm leading-tight md:leading-normal">Our sister brands, united by one vision:</div>
+                  <div className="font-semibold text-[10px] md:text-sm leading-tight md:leading-normal">Redefining care, work, and hope for a better tomorrow.</div>
                 </div>
               </div>
-              <div className="sister-brands-nav flex flex-wrap items-center justify-center md:justify-end gap-4 md:gap-6 text-sm md:text-base text-gray-700 md:ml-auto">
+              <div className="sister-brands-nav flex flex-wrap items-center justify-start md:justify-end gap-4 md:gap-6 text-sm md:text-base text-gray-700 md:ml-auto">
                 <a 
                   href="https://www.koott.in/" 
                   target="_blank" 

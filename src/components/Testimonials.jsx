@@ -650,7 +650,7 @@ export default function Testimonials() {
           </div>
           {/* Third column: split 40% top (text review), 60% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '236px'}}>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '236px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/7.png')" }}
@@ -667,7 +667,7 @@ export default function Testimonials() {
             </div>
             <div 
               className="rounded-[10px] relative overflow-hidden" 
-              style={{height: '396px'}}
+              style={{height: '396px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}
             >
               {embedUrl && (
                 <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">

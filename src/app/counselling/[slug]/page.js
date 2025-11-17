@@ -195,10 +195,18 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       />
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
       {/* Therapist grid under hero */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (max-width: 767px) {
+          .therapist-heading-mobile {
+            font-size: 30px !important;
+            line-height: 0.95 !important;
+          }
+        }
+      `}} />
       <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-8 md:mb-10 text-center">
           <div className="mt-3 text-center md:text-center px-4">
-            <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+            <h3 className="how-it-works-heading therapist-heading-mobile text-center text-2xl md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
               {serviceData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
             </h3>
           </div>

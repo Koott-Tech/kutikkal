@@ -225,7 +225,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
 
   const sectionClass = `w-full bg-white${fluid ? '' : ' lg:h-screen'}`;
   const containerClass = `mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 ${compactSpacing ? 'pb-2 lg:pb-0' : 'pb-4 lg:pb-0'}`;
-  const headerClass = `text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
+  const headerClass = `text-left md:text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
 
   return (
     <section className={sectionClass}>
@@ -239,7 +239,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
       <div className={containerClass}>
         {/* Header */}
         <div className={headerClass}>
-          <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2">
+          <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2 text-left md:text-center">
             {currentContent.title}
           </h3>
         </div>

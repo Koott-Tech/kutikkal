@@ -60,7 +60,8 @@ export default function Reviews({ cmsData = null }) {
           <div className="marquee">
             {loopReviews.map((r, idx) => {
               const avatarSrc = r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG');
-              const displayName = r.author || r.name || 'Parent';
+              const rawName = r.author || r.name || 'Parent';
+              const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
               const handle = r.handle;
               return (
                 <div key={idx} className="min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">

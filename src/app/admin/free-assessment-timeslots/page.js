@@ -52,7 +52,41 @@ export default function FreeAssessmentTimeslotsPage() {
     night: []
   };
 
-  // Fetch availability data for current month
+  // Fetch all future configurations in a date range
+  const fetchAllFutureConfigurations = async (startDate, endDate) => {
+    try {
+      const startYear = startDate.getFullYear();
+      const startMonth = String(startDate.getMonth() + 1).padStart(2, '0');
+      const startDay = String(startDate.getDate()).padStart(2, '0');
+      const startDateStr = `${startYear}-${startMonth}-${startDay}`;
+      
+      const endYear = endDate.getFullYear();
+      const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+      const endDay = String(new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate()).padStart(2, '0');
+      const endDateStr = `${endYear}-${endMonth}-${endDay}`;
+      
+      console.log('[Admin/FreeAssess] fetchAllFutureConfigurations:range', { startDateStr, endDateStr });
+      const data = await adminApi.getDateConfigsRange(startDateStr, endDateStr);
+      console.log('[Admin/FreeAssess] fetchAllFutureConfigurations:response', data);
+      
+      if (data.success && data.data) {
+        // Merge all fetched data
+        setAvailabilityData(prevData => {
+          const merged = { ...prevData, ...data.data };
+          console.log('[Admin/FreeAssess] fetchAllFutureConfigurations:merged', {
+            prevKeys: Object.keys(prevData || {}).length,
+            newKeys: Object.keys(data.data || {}).length,
+            mergedKeys: Object.keys(merged).length
+          });
+          return merged;
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching all future configurations:', error);
+    }
+  };
+
+  // Fetch availability data for current month (and merge with existing data)
   const fetchAvailabilityData = async (date) => {
     try {
       setLoading(true);
@@ -83,19 +117,25 @@ export default function FreeAssessmentTimeslotsPage() {
       const data = await adminApi.getDateConfigsRange(startDate, endDate);
       console.log('[Admin/FreeAssess] fetchAvailabilityData:response', data);
       
-      if (data.success) {
-        setAvailabilityData(data.data);
-        console.log('[Admin/FreeAssess] fetchAvailabilityData:setAvailabilityData', {
-          keys: Object.keys(data.data || {}),
-          count: Object.keys(data.data || {}).length
+      if (data.success && data.data) {
+        // Merge new data with existing data instead of replacing
+        setAvailabilityData(prevData => {
+          const merged = { ...prevData, ...data.data };
+          console.log('[Admin/FreeAssess] fetchAvailabilityData:merged', {
+            prevKeys: Object.keys(prevData || {}).length,
+            newKeys: Object.keys(data.data || {}).length,
+            mergedKeys: Object.keys(merged).length,
+            sampleKeys: Object.keys(merged).slice(0, 5)
+          });
+          return merged;
         });
       } else {
         console.error('Failed to fetch availability:', data);
-        setAvailabilityData({});
+        // Don't clear existing data, just log the error
       }
     } catch (error) {
       console.error('Error fetching availability:', error);
-      setAvailabilityData({});
+      // Don't clear existing data on error
     } finally {
       setLoading(false);
       console.log('[Admin/FreeAssess] fetchAvailabilityData:done');
@@ -125,6 +165,44 @@ export default function FreeAssessmentTimeslotsPage() {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Check if a date is in the past
+  const isPastDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  // Check if a time slot has passed (for today's date)
+  const isPastTime = (time12h, dateStr) => {
+    const today = new Date();
+    const date = new Date(dateStr);
+    
+    // If not today, it's not past
+    if (date.toDateString() !== today.toDateString()) {
+      return false;
+    }
+    
+    // Convert 12-hour time to 24-hour for comparison
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') {
+      hours = '00';
+    }
+    
+    if (modifier === 'PM') {
+      hours = (parseInt(hours, 10) + 12).toString();
+    }
+    
+    const slotTime = new Date();
+    slotTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    
+    const now = new Date();
+    return slotTime < now;
   };
 
   // Fetch all timeslots
@@ -206,18 +284,66 @@ export default function FreeAssessmentTimeslotsPage() {
 
   const handlePrevMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const today = new Date();
+    const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    // Don't allow navigation to past months
+    if (newDate < currentMonth) {
+      return;
+    }
+    
     setCurrentDate(newDate);
     fetchAvailabilityData(newDate);
+  };
+
+  // Check if previous month button should be disabled
+  const canGoToPrevMonth = () => {
+    const today = new Date();
+    const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    return prevMonth >= currentMonth;
   };
 
   const handleNextMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     setCurrentDate(newDate);
-    fetchAvailabilityData(newDate);
+    
+    // Fetch data for the new month if we don't have it
+    const year = newDate.getFullYear();
+    const month = newDate.getMonth();
+    const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`;
+    
+    // Check if we already have data for any date in this month
+    const hasDataForMonth = Object.keys(availabilityData).some(dateStr => {
+      const date = new Date(dateStr);
+      return date.getFullYear() === year && date.getMonth() === month;
+    });
+    
+    if (!hasDataForMonth) {
+      fetchAvailabilityData(newDate);
+    }
+    
+    // Also prefetch next month for smoother navigation
+    const nextMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 1);
+    fetchAvailabilityData(nextMonth);
   };
 
   const handleDateSelect = (day) => {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    
+    // Double-check: prevent selecting past dates
+    const year = newSelectedDate.getFullYear();
+    const month = String(newSelectedDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(newSelectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${dayStr}`;
+    
+    if (isPastDate(dateStr)) {
+      console.warn('[Admin/FreeAssess] Attempted to select past date, prevented:', dateStr);
+      setError('Cannot select past dates. Please select a future date.');
+      return;
+    }
+    
     console.log('[Admin/FreeAssess] handleDateSelect', {
       day,
       selected: newSelectedDate,
@@ -226,21 +352,26 @@ export default function FreeAssessmentTimeslotsPage() {
     setSelectedDate(newSelectedDate);
 
     // Prefill selectedTimes from existing availability for this date (to allow edit/remove)
-    const year = newSelectedDate.getFullYear();
-    const month = String(newSelectedDate.getMonth() + 1).padStart(2, '0');
-    const dayStr = String(newSelectedDate.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${dayStr}`;
     const existing = availabilityData[dateStr]?.timeSlots;
 
     if (existing) {
       const preselected = [];
+      const today = new Date();
+      const isToday = newSelectedDate.toDateString() === today.toDateString();
+      
       Object.entries(existing).forEach(([period, times]) => {
         if (Array.isArray(times)) {
-          times.forEach((t) => preselected.push(`${period}:${t}`));
+          times.forEach((t) => {
+            const timeKey = `${period}:${t}`;
+            // Filter out past time slots if it's today
+            if (!isToday || !isPastTime(t, dateStr)) {
+              preselected.push(timeKey);
+            }
+          });
         }
       });
       setSelectedTimes(preselected);
-      console.log('[Admin/FreeAssess] prefillSelectedTimes', { preselected });
+      console.log('[Admin/FreeAssess] prefillSelectedTimes', { preselected, isToday });
     } else {
       setSelectedTimes([]);
       console.log('[Admin/FreeAssess] prefillSelectedTimes:none');
@@ -388,10 +519,27 @@ export default function FreeAssessmentTimeslotsPage() {
   };
 
   const handleSelectAllDefaultSlots = () => {
-    const defaultSelection = [
+    const today = new Date();
+    const selectedDateStr = selectedDate ? 
+      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : 
+      null;
+    const isToday = selectedDateStr && 
+      selectedDate.toDateString() === today.toDateString();
+    
+    let defaultSelection = [
       ...timeSlots.morning.map(time => `morning:${time}`),
       ...timeSlots.noon.map(time => `noon:${time}`)
     ];
+    
+    // Filter out past time slots if the selected date is today
+    if (isToday) {
+      defaultSelection = defaultSelection.filter(timeKey => {
+        const colonIndex = timeKey.indexOf(':');
+        const time = timeKey.substring(colonIndex + 1);
+        return !isPastTime(time, selectedDateStr);
+      });
+    }
+    
     setSelectedTimes(defaultSelection);
   };
 
@@ -452,8 +600,35 @@ export default function FreeAssessmentTimeslotsPage() {
         currentDate,
         iso: currentDate.toISOString()
       });
+      
+      // Ensure currentDate is not in the past - reset to current month if needed
+      const today = new Date();
+      const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const displayedMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      
+      let monthToFetch = currentDate;
+      if (displayedMonth < currentMonth) {
+        console.log('[Admin/FreeAssess] Resetting to current month');
+        setCurrentDate(currentMonth);
+        monthToFetch = currentMonth;
+      }
+      
+      // Fetch all future date configurations (from today to 3 months ahead)
+      // This ensures we get all existing configurations
+      const todayDate = new Date();
+      const threeMonthsFromNow = new Date(todayDate.getFullYear(), todayDate.getMonth() + 3, 1);
+      
+      // Fetch data for current month and next 2 months
+      fetchAvailabilityData(monthToFetch);
+      const nextMonth = new Date(monthToFetch.getFullYear(), monthToFetch.getMonth() + 1, 1);
+      const monthAfterNext = new Date(monthToFetch.getFullYear(), monthToFetch.getMonth() + 2, 1);
+      fetchAvailabilityData(nextMonth);
+      fetchAvailabilityData(monthAfterNext);
+      
+      // Also fetch a wide range to get all existing configurations
+      fetchAllFutureConfigurations(todayDate, threeMonthsFromNow);
+      
       fetchTimeslots();
-      fetchAvailabilityData(currentDate);
       fetchBookedAssessments();
     }
   }, [authLoading, token, user]);
@@ -545,8 +720,12 @@ export default function FreeAssessmentTimeslotsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={handlePrevMonth}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    disabled={loading}
+                    className={`p-2 rounded-lg transition-colors ${
+                      canGoToPrevMonth() && !loading
+                        ? 'hover:bg-gray-100 cursor-pointer'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                    disabled={!canGoToPrevMonth() || loading}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
@@ -588,15 +767,21 @@ export default function FreeAssessmentTimeslotsPage() {
                     for (let day = 1; day <= daysInMonth; day++) {
                       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                       const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-                      const isToday = isCurrentMonth && day === new Date().getDate();
-                      const isAvailable = day >= new Date().getDate() || !isCurrentMonth;
+                      const today = new Date();
+                      const isToday = isCurrentMonth && 
+                                     day === today.getDate() && 
+                                     currentDate.getMonth() === today.getMonth() &&
+                                     currentDate.getFullYear() === today.getFullYear();
                       
-                      // Check if this date has timeslots configured
+                      // Check if this date is in the past
                       const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                       const year = calendarDate.getFullYear();
                       const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
+                      const isPast = isPastDate(dateStr);
+                      const isAvailable = !isPast && isCurrentMonth;
+                      
                       const dateAvailability = availabilityData[dateStr];
                       
                       // Only show green if this date has been configured through the calendar (has timeSlots)
@@ -605,20 +790,34 @@ export default function FreeAssessmentTimeslotsPage() {
                       calendarDays.push(
                         <div
                           key={`day-${day}`}
-                          onClick={() => isAvailable && handleDateSelect(day)}
-                          className={`text-center py-1 rounded-lg transition-all duration-200 text-xs cursor-pointer ${
-                            hasTimeslots
-                              ? 'bg-green-500 text-white' 
-                              : isToday
+                          onClick={() => {
+                            if (isAvailable) {
+                              handleDateSelect(day);
+                            }
+                          }}
+                          className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
+                            isAvailable 
+                              ? 'cursor-pointer hover:bg-gray-100' 
+                              : 'cursor-not-allowed opacity-50'
+                          } ${
+                            hasTimeslots && isAvailable
+                              ? 'bg-green-500 text-white hover:bg-green-600' 
+                              : isToday && isAvailable
                                 ? 'bg-blue-100 text-blue-700 font-semibold'
                                 : isAvailable
-                                  ? 'hover:bg-gray-100 text-gray-700' 
-                                  : 'text-gray-300 cursor-not-allowed'
+                                  ? 'text-gray-700' 
+                                  : 'text-gray-300 bg-gray-50'
                           }`}
-                          title={hasTimeslots ? 'Timeslots configured' : isAvailable ? 'Click to select' : 'Past date'}
+                          title={
+                            hasTimeslots && isAvailable
+                              ? 'Timeslots configured - Click to edit' 
+                              : isAvailable 
+                                ? 'Click to select' 
+                                : 'Past date - Cannot select'
+                          }
                         >
                           {day}
-                          {hasTimeslots && (
+                          {hasTimeslots && isAvailable && (
                             <div className="w-1 h-1 bg-white rounded-full mx-auto mt-1"></div>
                           )}
                         </div>
@@ -654,32 +853,52 @@ export default function FreeAssessmentTimeslotsPage() {
                 </div>
                 {Object.entries(timeSlots)
                   .filter(([, times]) => times.length > 0)
-                  .map(([period, times]) => (
-                  <div key={period} className="bg-gray-50 rounded-lg p-4">
-                    <h6 className="mb-3 capitalize">{period}</h6>
-                    <div className="grid grid-cols-2 gap-2">
-                      {times.map(time => {
-                        const timeKey = `${period}:${time}`;
-                        const isSelected = selectedTimes.includes(timeKey);
-                        
-                        return (
-                          <button
-                            key={timeKey}
-                            type="button"
-                            onClick={() => handleTimeSelect(timeKey)}
-                            className={`p-2 text-xs rounded-lg border transition-colors ${
-                              isSelected
-                                ? 'bg-blue-500 text-white border-blue-500'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  .map(([period, times]) => {
+                    // Filter out past time slots if the selected date is today
+                    const today = new Date();
+                    const selectedDateStr = selectedDate ? 
+                      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : 
+                      null;
+                    const isToday = selectedDateStr && 
+                      selectedDate.toDateString() === today.toDateString();
+                    
+                    const availableTimes = isToday 
+                      ? times.filter(time => !isPastTime(time, selectedDateStr))
+                      : times;
+                    
+                    // Don't show the period if all times are past
+                    if (availableTimes.length === 0) {
+                      return null;
+                    }
+                    
+                    return (
+                      <div key={period} className="bg-gray-50 rounded-lg p-4">
+                        <h6 className="mb-3 capitalize">{period}</h6>
+                        <div className="grid grid-cols-2 gap-2">
+                          {availableTimes.map(time => {
+                            const timeKey = `${period}:${time}`;
+                            const isSelected = selectedTimes.includes(timeKey);
+                            
+                            return (
+                              <button
+                                key={timeKey}
+                                type="button"
+                                onClick={() => handleTimeSelect(timeKey)}
+                                className={`p-2 text-xs rounded-lg border transition-colors ${
+                                  isSelected
+                                    ? 'bg-blue-500 text-white border-blue-500'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
+                  .filter(Boolean)}
               </div>
               
               {/* Action Buttons */}
@@ -723,70 +942,96 @@ export default function FreeAssessmentTimeslotsPage() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h6>Current Availability</h6>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(availabilityData).map(([dateStr, data]) => {
-                // Only show dates that have been configured through the calendar (have timeSlots)
-                if (!data || !data.timeSlots) {
-                  return null;
-                }
-                
-                const date = new Date(dateStr);
-                const allSlots = [
-                  ...(data.timeSlots.morning || []),
-                  ...(data.timeSlots.noon || []),
-                  ...(data.timeSlots.evening || []),
-                  ...(data.timeSlots.night || [])
-                ];
-                
-                return (
-                  <div key={dateStr} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <h5 className="font-medium text-green-800">
-                        {date.toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
-                      </h5>
-                      <div className="flex items-center gap-2">
+              {Object.entries(availabilityData)
+                .filter(([dateStr, data]) => {
+                  // Only show dates that have been configured through the calendar (have timeSlots)
+                  if (!data || !data.timeSlots) {
+                    return false;
+                  }
+                  // Filter out past dates
+                  return !isPastDate(dateStr);
+                })
+                .map(([dateStr, data]) => {
+                  const date = new Date(dateStr);
+                  const allSlots = [
+                    ...(data.timeSlots.morning || []),
+                    ...(data.timeSlots.noon || []),
+                    ...(data.timeSlots.evening || []),
+                    ...(data.timeSlots.night || [])
+                  ];
+                  
+                  // Filter out past time slots for today's date
+                  const availableSlots = allSlots.filter(slot => {
+                    let displayText = slot;
+                    if (typeof slot === 'object' && slot !== null) {
+                      if (slot.displayTime) {
+                        displayText = slot.displayTime;
+                      } else if (slot.time) {
+                        displayText = slot.time;
+                      } else {
+                        displayText = JSON.stringify(slot);
+                      }
+                    }
+                    // If it's today, check if the time has passed
+                    return !isPastTime(displayText, dateStr);
+                  });
+                  
+                  // Don't show the date card if all slots have passed
+                  if (availableSlots.length === 0) {
+                    return null;
+                  }
+                  
+                  return (
+                    <div key={dateStr} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h5 className="font-medium text-green-800">
+                          {date.toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}
+                        </h5>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditDate(dateStr)}
+                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                          >
+                            Edit
+                          </button>
                         <button
                           type="button"
-                          onClick={() => handleEditDate(dateStr)}
-                          className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                          onClick={() => removeAvailability(dateStr)}
+                          className="text-red-500 hover:text-red-700 text-sm"
                         >
-                          Edit
+                          <X className="w-4 h-4" />
                         </button>
-                      <button
-                        type="button"
-                        onClick={() => removeAvailability(dateStr)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        {availableSlots.map((slot, slotIndex) => {
+                          let displayText = slot;
+                          if (typeof slot === 'object' && slot !== null) {
+                            if (slot.displayTime) {
+                              displayText = slot.displayTime;
+                            } else if (slot.time) {
+                              displayText = slot.time;
+                            } else {
+                              displayText = JSON.stringify(slot);
+                            }
+                          }
+                          
+                          return (
+                            <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
+                              {displayText}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      {allSlots.map((slot, slotIndex) => {
-                        let displayText = slot;
-                        if (typeof slot === 'object' && slot !== null) {
-                          if (slot.displayTime) {
-                            displayText = slot.displayTime;
-                          } else if (slot.time) {
-                            displayText = slot.time;
-                          } else {
-                            displayText = JSON.stringify(slot);
-                          }
-                        }
-                        
-                        return (
-                          <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
-                            {displayText}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              }).filter(Boolean)}
+                  );
+                })
+                .filter(Boolean)}
             </div>
           </div>
         )}

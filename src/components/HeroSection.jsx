@@ -166,7 +166,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
              {/* Content Area */}
                           <div className="p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
-                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left">
+                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left pt-12 md:pt-0">
                  {currentContent.title}
                </h1>
               
@@ -174,8 +174,8 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                 {currentContent.description}
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="text-white font-medium px-8 py-3 rounded-full transition-colors duration-200 shadow-lg"
+              <div className="flex flex-col sm:flex-row gap-4 items-center md:items-center justify-center md:justify-start">
+                <button className="text-white font-medium px-6 py-2.5 rounded-full transition-colors duration-200 shadow-lg w-fit"
                   style={{ backgroundColor: '#3f2e73' }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
@@ -184,7 +184,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                   Get started
                 </button>
                 
-                <div className="flex items-center gap-2 font-normal cursor-pointer transition-colors duration-200 justify-center md:justify-start" style={{ color: '#15171A' }}>
+                <div className="flex items-center gap-2 font-normal cursor-pointer transition-colors duration-200 justify-center md:justify-start w-fit" style={{ color: '#15171A' }}>
                   <span>See how it works</span>
                                      <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13l5 5 5-5" />

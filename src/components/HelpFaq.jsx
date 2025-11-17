@@ -90,6 +90,16 @@ export default function HelpFaq({ cmsData = null }) {
             font-size: 28px !important;
             font-weight: 600 !important;
             line-height: 0.95 !important;
+            text-align: left !important;
+          }
+          .help-faq-subheading {
+            text-align: left !important;
+          }
+          .help-faq-description {
+            text-align: left !important;
+          }
+          .faq-section-title {
+            text-align: left !important;
           }
           /* Force smaller answer text on mobile */
           .faq-answer {
@@ -106,20 +116,20 @@ export default function HelpFaq({ cmsData = null }) {
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0">
           <div className="space-y-1">
-            <h3 className="help-faq-heading font-bold text-gray-900 text-center md:text-left text-base md:text-xl">
+            <h3 className="help-faq-heading font-bold text-gray-900 text-left md:text-left text-base md:text-xl">
               Questions?
             </h3>
-            <h4 className="text-gray-900 text-center md:text-left text-base md:text-lg">
+            <h4 className="help-faq-subheading text-gray-900 text-left md:text-left text-base md:text-lg">
               We're here to help
             </h4>
           </div>
           <div>
-            <p className="text-sm md:text-base lg:text-lg text-center md:text-left">
+            <p className="help-faq-description text-sm md:text-base lg:text-lg text-left md:text-left">
               Visit our full <a className="underline font-medium" href="/faq">FAQ page</a> for more<br className="hidden md:block" />
               commonly asked questions.
             </p>
           </div>
-                     <div className="relative mt-4 md:mt-6 w-full max-w-[280px] md:w-[320px] h-[160px] md:h-[240px] overflow-hidden rounded-2xl mx-auto md:mx-0">
+                     <div className="relative mt-4 md:mt-6 w-full max-w-[280px] md:w-[320px] h-[160px] md:h-[240px] overflow-hidden rounded-2xl mx-0 md:mx-0">
             <Image
               src={leftImageUrl}
               alt="Smiling people"
@@ -137,7 +147,7 @@ export default function HelpFaq({ cmsData = null }) {
             const spacingClasses = isLastSection ? 'mt-16 md:mt-3' : 'mt-3';
             return (
             <div key={section.title} className={`faq-section mb-6 md:mb-10 ${spacingClasses}`}>
-              <h5 className={`${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-center md:text-left text-sm md:text-base lg:text-lg font-medium`}>
+              <h5 className={`faq-section-title ${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-left md:text-left text-sm md:text-base lg:text-lg font-medium`}>
                 {section.title}
               </h5>
               <div className="space-y-0">

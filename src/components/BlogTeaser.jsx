@@ -259,10 +259,20 @@ export default function BlogTeaser() {
             <button
               type="button"
               onClick={handleExploreClick}
-              className="inline-flex items-center rounded-full px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold text-white transition-colors duration-200"
-              style={{ backgroundColor: '#15171A' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
+              className="inline-flex items-center rounded-full px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold transition-colors duration-200"
+              style={{ 
+                backgroundColor: '#ffffff',
+                color: '#15171A',
+                border: '2px solid #15171A'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#15171A';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.color = '#15171A';
+              }}
             >
               Explore more articles
             </button>

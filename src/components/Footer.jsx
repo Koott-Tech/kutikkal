@@ -456,8 +456,8 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
                     <div className="w-full h-px my-8 bg-white/40"></div>
                     <div className="mt-0 text-white">
-                        <h5 className="mb-4 text-center md:text-left "><span className="italic" style={{ color: '#eae5ff', fontSize: '28px' }}>We're</span> Little Care</h5>
-                        <div className="space-y-3 text-center md:text-left">
+                        <h5 className="mb-4 text-left md:text-left "><span className="italic text-[20px] md:text-[28px]" style={{ color: '#eae5ff' }}>We're</span> <span className="text-[22px] md:text-[28px]">Little Care</span></h5>
+                        <div className="space-y-3 text-left md:text-left">
                             
                             <div className="text-base md:text-lg text-white/70 leading-[1] p2">
                              A team of psychologists who believe every child and parent deserves understanding, guidance, and a space to grow emotionally and happily.
