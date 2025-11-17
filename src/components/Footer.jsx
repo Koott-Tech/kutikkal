@@ -171,7 +171,10 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                             We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
                         </p>
-                        <button className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-4 md:py-3 md:px-6 rounded-full text-sm md:text-base transition-colors duration-200">
+                        <button 
+                            className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-4 md:py-3 md:px-6 rounded-full text-sm md:text-base transition-colors duration-200"
+                            onClick={() => router.push('/psychologists')}
+                        >
                             Get started
                         </button>
                     </div>

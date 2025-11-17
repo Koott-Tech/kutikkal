@@ -11,7 +11,8 @@ import {
   Search,
   Filter,
   Clock,
-  Calendar
+  Calendar,
+  GripVertical
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
@@ -62,6 +63,8 @@ export default function DoctorsPage() {
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [isCalendarViewOpen, setIsCalendarViewOpen] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
 
   useEffect(() => {
     // Check authentication and role
@@ -184,6 +187,76 @@ export default function DoctorsPage() {
     }
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target);
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedIndex(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    // Work with the full doctors list, not filtered
+    const newDoctors = [...doctors];
+    
+    // Find the actual indices in the full doctors array
+    const draggedDoctorInFiltered = filteredDoctors[draggedIndex];
+    const dropDoctorInFiltered = filteredDoctors[dropIndex];
+    
+    const draggedIndexInFull = newDoctors.findIndex(d => d.id === draggedDoctorInFiltered.id);
+    const dropIndexInFull = newDoctors.findIndex(d => d.id === dropDoctorInFiltered.id);
+    
+    if (draggedIndexInFull === -1 || dropIndexInFull === -1) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    // Reorder in the full doctors array
+    const draggedDoctor = newDoctors[draggedIndexInFull];
+    newDoctors.splice(draggedIndexInFull, 1);
+    newDoctors.splice(dropIndexInFull, 0, draggedDoctor);
+
+    // Update display_order for all doctors based on their new position (sequential: 1, 2, 3...)
+    setIsUpdatingOrder(true);
+    try {
+      const updatePromises = newDoctors.map((doctor, index) => {
+        const newOrder = index + 1; // Sequential order starting from 1
+        const doctorId = doctor.psychologist_id || doctor.id;
+        // Always update to ensure sequential ordering without gaps or duplicates
+        return adminApi.updatePsychologist(doctorId, { display_order: newOrder });
+      });
+
+      await Promise.all(updatePromises);
+      showSuccess('Doctor order updated successfully');
+      await loadDoctors(); // Reload to get updated order
+    } catch (error) {
+      console.error('Error updating doctor order:', error);
+      showError('Failed to update doctor order', 'Update Error');
+      await loadDoctors(); // Reload to revert changes
+    } finally {
+      setIsUpdatingOrder(false);
+      setDraggedIndex(null);
+    }
+  };
+
 
   const filteredDoctors = doctors.filter(doctor => {
     const matchesSearch = doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -275,46 +348,78 @@ export default function DoctorsPage() {
       </div>
 
       {/* Doctors List */}
+      {(searchTerm || filterSpecialty !== 'all') && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+          <p>⚠️ Drag and drop reordering works with the full list. Clear filters to see all doctors in order.</p>
+        </div>
+      )}
       <div className="flex flex-col gap-4">
-        {filteredDoctors.map((doctor) => (
-          <div
-            key={doctor.id}
-            className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 w-full rounded-[10px]"
-          >
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {getDoctorImageUrl(doctor) ? (
-                    <img
-                      src={getDoctorImageUrl(doctor)}
-                      alt={doctor.name || 'Doctor photo'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserCheck className="h-6 w-6 text-gray-500" />
-                )}
-            </div>
-
-                <div className="flex-1">
-                  <h6 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 600 }}>
-                    {doctor.name || 'No Name'}
-                  </h6>
-                  <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
-                  <div className="mt-3 text-sm">
-              {doctor.availability && doctor.availability.length > 0 ? (
-                      <span className="flex items-center text-green-600">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Available for sessions
-                      </span>
-              ) : (
-                      <span className="flex items-center text-gray-500">
-                  <Clock className="h-4 w-4 mr-2" />
-                  No availability schedule set
-                      </span>
+        {filteredDoctors.map((doctor, filteredIndex) => {
+          // Find the position in the full doctors array for accurate order number
+          const fullIndex = doctors.findIndex(d => d.id === doctor.id);
+          const displayOrder = doctor.display_order !== null && doctor.display_order !== undefined 
+            ? doctor.display_order 
+            : (fullIndex >= 0 ? fullIndex + 1 : filteredIndex + 1);
+          const isDragging = draggedIndex === filteredIndex;
+          
+          return (
+            <div
+              key={doctor.id}
+              draggable={!isUpdatingOrder}
+              onDragStart={(e) => handleDragStart(e, filteredIndex)}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, filteredIndex)}
+              className={`bg-white border-2 transition-all p-6 w-full rounded-[10px] ${
+                isDragging 
+                  ? 'opacity-50 border-blue-400 shadow-lg cursor-grabbing' 
+                  : 'border-gray-200 shadow-sm hover:shadow-md cursor-move hover:border-gray-300'
+              } ${isUpdatingOrder ? 'opacity-60 pointer-events-none' : ''}`}
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  {/* Order Number and Drag Handle */}
+                  <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-300">
+                      <span className="text-blue-700 font-bold text-base">{displayOrder}</span>
+                    </div>
+                    <div className="p-1 rounded hover:bg-gray-100 transition-colors">
+                      <GripVertical className="h-5 w-5 text-gray-500 cursor-grab active:cursor-grabbing" />
+                    </div>
+                  </div>
+                  
+                  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {getDoctorImageUrl(doctor) ? (
+                      <img
+                        src={getDoctorImageUrl(doctor)}
+                        alt={doctor.name || 'Doctor photo'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserCheck className="h-6 w-6 text-gray-500" />
                     )}
                   </div>
+
+                  <div className="flex-1">
+                    <h6 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 600 }}>
+                      {doctor.name || 'No Name'}
+                    </h6>
+                    <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
+                    <div className="mt-3 text-sm">
+                      {doctor.availability && doctor.availability.length > 0 ? (
+                        <span className="flex items-center text-green-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Available for sessions
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-gray-500">
+                          <Clock className="h-4 w-4 mr-2" />
+                          No availability schedule set
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-            </div>
 
               <div className="flex flex-wrap justify-start md:justify-end gap-2">
               <button
@@ -350,9 +455,10 @@ export default function DoctorsPage() {
                 Delete
               </button>
               </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Empty State */}

@@ -32,6 +32,13 @@ const Guide = () => {
       const psychologists = response?.data?.psychologists || [];
       console.log('Psychologists data:', psychologists);
       
+      // Debug: Log the order received from API
+      console.log('📊 Frontend - Psychologists order from API:', psychologists.map((psych, index) => ({
+        index,
+        name: psych.name || `${psych.first_name} ${psych.last_name}`,
+        id: psych.id
+      })));
+      
       // Debug image URLs
       psychologists.forEach(psych => {
         console.log(`🔍 Frontend - Image URL for ${psych.name || psych.first_name}:`, psych.cover_image_url);
@@ -39,6 +46,14 @@ const Guide = () => {
       
       const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
       const filteredPsychologists = psychologists.filter(psych => (psych.email || '').toLowerCase() !== assessmentEmail);
+      
+      // Debug: Log the order after filtering
+      console.log('📊 Frontend - Psychologists order after filtering:', filteredPsychologists.map((psych, index) => ({
+        index,
+        name: psych.name || `${psych.first_name} ${psych.last_name}`,
+        id: psych.id
+      })));
+      
       setDoctors(filteredPsychologists);
     } catch (err) {
       console.error('Error fetching doctors:', err);
@@ -225,7 +240,7 @@ const Guide = () => {
               margin: 0 !important; /* ensure no extra row spacing */
             }
             .guide-video-card:hover {
-              transform: scale(1.08) translateY(-12px);
+              transform: scale(1.04) translateY(-12px);
               z-index: 10;
               box-shadow: none !important;
             }
@@ -244,7 +259,7 @@ const Guide = () => {
                 height: 360px;
               }
               .guide-video-card:hover {
-                transform: scale(1.06) translateY(-10px);
+                transform: scale(1.03) translateY(-10px);
                 box-shadow: none !important;
               }
             }
@@ -263,7 +278,7 @@ const Guide = () => {
                 height: 380px;
               }
               .guide-video-card:hover {
-                transform: scale(1.08) translateY(-12px);
+                transform: scale(1.04) translateY(-12px);
                 box-shadow: none !important;
               }
             }
@@ -280,7 +295,7 @@ const Guide = () => {
                 height: 350px;
               }
               .guide-video-card:hover {
-                transform: scale(1.06) translateY(-10px);
+                transform: scale(1.03) translateY(-10px);
                 box-shadow: none !important;
               }
             }
@@ -297,7 +312,7 @@ const Guide = () => {
                 height: 330px;
               }
               .guide-video-card:hover {
-                transform: scale(1.05) translateY(-8px);
+                transform: scale(1.02) translateY(-8px);
                 box-shadow: none !important;
               }
             }
@@ -318,7 +333,7 @@ const Guide = () => {
                 width: 100%;
               }
               .guide-video-card:hover {
-                transform: scale(1.04) translateY(-8px);
+                transform: scale(1.02) translateY(-8px);
                 box-shadow: none !important;
               }
               /* Increase doctor name size on mobile */
@@ -339,7 +354,7 @@ const Guide = () => {
                 height: 440px;
               }
               .guide-video-card:hover {
-                transform: scale(1.03) translateY(-6px);
+                transform: scale(1.01) translateY(-6px);
                 box-shadow: none !important;
               }
             }
@@ -1110,7 +1125,7 @@ const Guide = () => {
                   style={{ background: '#3f2e73', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
                 >
-                  Find your Psychologist
+                  Book Now
                 </button>
 
                 <button

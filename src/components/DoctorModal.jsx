@@ -66,6 +66,7 @@ export default function DoctorModal({
     description: '',
     price: '',
     experience_years: '',
+    display_order: '',
     packages: [
       { name: 'Individual Session', price: '', sessions: 1 }
     ],
@@ -181,6 +182,8 @@ export default function DoctorModal({
       console.log('🔍 Doctor data for editing:', doctor);
       console.log('🔍 Doctor price field:', doctor.price);
       console.log('🔍 Doctor individual_session_price field:', doctor.individual_session_price);
+      console.log('🔍 Doctor display_order field:', doctor.display_order);
+      console.log('🔍 Doctor display_order type:', typeof doctor.display_order);
       
       // Reset the modification flag when opening for edit
       setHasUserModifiedAvailability(false);
@@ -199,6 +202,7 @@ export default function DoctorModal({
         description: doctor.description || '',
         price: doctor.price || doctor.individual_session_price || '',
         experience_years: doctor.experience_years || '',
+        display_order: doctor.display_order !== null && doctor.display_order !== undefined ? String(doctor.display_order) : '',
         packages: [
           // Start with individual session package
           { name: 'Individual Session', price: doctor.price || doctor.individual_session_price || '', sessions: 1 }
@@ -703,6 +707,8 @@ export default function DoctorModal({
     e.preventDefault();
     console.log('🚀 Form submission started');
     console.log('🚀 Form data:', formData);
+    console.log('🚀 Display order value:', formData.display_order);
+    console.log('🚀 Display order type:', typeof formData.display_order);
     console.log('🚀 Availability data:', availabilityData);
     console.log('🚀 Availability keys:', Object.keys(availabilityData));
     console.log('🚀 Price value:', formData.price);
@@ -758,6 +764,15 @@ export default function DoctorModal({
         description: formData.description,
         experience_years: parseInt(formData.experience_years) || 0,
         price: formData.price ? Number(formData.price) : undefined,
+        display_order: (() => {
+          const orderValue = formData.display_order;
+          if (!orderValue) return null;
+          // Handle both string and number inputs
+          const strValue = String(orderValue).trim();
+          if (strValue === '' || strValue === '0') return null;
+          const numValue = parseInt(strValue, 10);
+          return isNaN(numValue) ? null : numValue;
+        })(),
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
         personality_traits: formData.personalities.filter(p => p.trim()),
         availability: convertedAvailability,
@@ -772,6 +787,10 @@ export default function DoctorModal({
       } else if (mode === 'add') {
         doctorData.password = formData.password;
       }
+
+      console.log('📤 Sending doctor data to backend:', doctorData);
+      console.log('📤 Display order in doctorData:', doctorData.display_order);
+      console.log('📤 Display order type:', typeof doctorData.display_order);
 
       await onSave(doctorData);
       handleClose();
@@ -1220,6 +1239,31 @@ export default function DoctorModal({
             {errors.experience_years && (
               <p className="text-red-500 text-sm mt-1">{errors.experience_years}</p>
             )}
+          </div>
+
+          {/* Display Order */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Display Order
+            </label>
+            <input
+              type="number"
+              value={formData.display_order || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow empty string or valid numbers
+                if (value === '' || (!isNaN(value) && parseInt(value, 10) >= 1)) {
+                  handleInputChange('display_order', value);
+                }
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., 1, 2, 3, 10..."
+              min="1"
+              step="1"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Lower numbers appear first. Leave empty to use default ordering.
+            </p>
           </div>
 
 
