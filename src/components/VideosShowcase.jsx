@@ -248,8 +248,14 @@ export default function VideosShowcase({ cmsData = null }) {
   };
 
   return (
-    <section className="w-full pt-12 md:pt-16 pb-6 md:pb-8" style={{ marginTop: '96px' }}>
+    <section className="w-full pt-12 md:pt-16 pb-6 md:pb-8 videos-showcase-mobile" style={{ marginTop: '96px' }}>
       <style jsx global>{`
+        @media (max-width: 767px) {
+          .videos-showcase-mobile {
+            margin-top: 1rem !important;
+            padding-top: 2rem !important;
+          }
+        }
         /* Hide YouTube branding and UI elements */
         .youtube-embed-wrapper {
           position: relative;

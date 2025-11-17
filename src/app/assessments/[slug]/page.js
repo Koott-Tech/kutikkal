@@ -116,7 +116,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
         />
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12 hidden md:block">
         <TherapistCarousel therapists={therapists} />
       </div>
 
@@ -144,7 +144,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           }} 
         />
       </div>
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-4 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
             src: video.url || video.src,
@@ -162,7 +162,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-8 md:-mt-24">
         <Reviews cmsData={{ reviews: data?.reviews || [] }} />
       </div>
       <div className="mt-12 md:mt-16 px-4 pb-16">

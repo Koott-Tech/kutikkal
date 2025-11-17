@@ -223,9 +223,9 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
   
   const [isExpanded, setIsExpanded] = useState(showAllBenefits);
 
-  const sectionClass = `w-full bg-white${fluid ? '' : ' lg:h-screen'}`;
-  const containerClass = `mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 ${compactSpacing ? 'pb-2 lg:pb-0' : 'pb-4 lg:pb-0'}`;
-  const headerClass = `text-left md:text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-8 md:mb-12'} mt-8 md:mt-12`;
+  const sectionClass = `w-full bg-white pt-0 md:pt-2${fluid ? '' : ' lg:h-screen'}`;
+  const containerClass = `mx-auto max-w-[1400px] px-4 sm:px-8 lg:pl-8 lg:pr-16 ${compactSpacing ? 'pb-0 md:pb-0' : 'pb-2 md:pb-0'}`;
+  const headerClass = `text-left md:text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-12 md:mb-16'} mt-8 md:mt-12`;
 
   return (
     <section className={sectionClass}>

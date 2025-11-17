@@ -316,7 +316,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         />
       </div>
       {/* Videos showcase above InfoCards */}
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-4 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (serviceData.videos || []).map(video => ({
             url: video.url || video.src,
@@ -338,7 +338,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         </div>
       </div>
       {/* Reviews */}
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-8 md:-mt-24">
         <Reviews cmsData={{ reviews: serviceData.reviews }} />
       </div>
       {/* Blog Teaser above FAQ */}

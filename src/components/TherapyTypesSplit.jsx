@@ -117,7 +117,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <section className="w-full mt-4 md:mt-6 mb-0 md:mb-8 px-0 pt-8 md:pt-12">
+    <section className="w-full mt-4 md:mt-0 mb-0 md:mb-8 px-0 pt-8 md:pt-0">
       <div className="w-full overflow-hidden">
         <div className="flex flex-col md:grid md:grid-cols-2">
           {/* Content Area - with background */}

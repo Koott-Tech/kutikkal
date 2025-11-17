@@ -35,7 +35,7 @@ export default function Reviews({ cmsData = null }) {
   const loopReviews = reviews.length > 0 ? [...reviews, ...reviews, ...reviews] : defaultReviews;
 
   return (
-    <section className="w-screen py-0 mt-10 md:mt-0">
+    <section className="w-screen py-0 mt-4 md:mt-0">
       <style jsx>{`
         .marquee {
           display: flex;

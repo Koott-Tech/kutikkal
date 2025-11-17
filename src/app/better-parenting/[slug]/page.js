@@ -248,7 +248,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         <TherapyTypesSplit cmsData={{ title: data?.types_title || 'What we offer', types: data?.types || [], rightImageUrl: data?.right_image_url || '' }} />
       </div>
       {/* Videos showcase */}
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-4 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
             src: video.url || video.src,
@@ -262,7 +262,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         }} />
       </div>
       {/* Reviews */}
-      <div className="mt-16 md:-mt-24">
+      <div className="mt-8 md:-mt-24">
         <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
       </div>
       {(data?.info_cards && data.info_cards.length > 0) && (

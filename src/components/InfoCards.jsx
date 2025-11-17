@@ -59,11 +59,22 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     return null;
   };
 
-  const sectionClassName = `mobile-section ${compact ? '' : 'min-h-[90vh]'} flex items-center justify-center mt-2 ${isCmsPage ? 'info-cards-cms-mobile' : ''}`;
+  const sectionClassName = `mobile-section ${compact ? '' : (isCmsPage ? '' : 'min-h-[90vh]')} flex ${isCmsPage ? '' : 'items-center'} justify-center ${isCmsPage ? 'mt-0 info-cards-cms-mobile' : 'mt-2'}`;
 
   return (
     <section className={sectionClassName}>
       <style jsx>{`
+        .info-cards-cms-mobile {
+          margin-top: 0 !important;
+          padding-top: 4rem !important;
+          padding-bottom: 2rem !important;
+        }
+        @media (min-width: 768px) {
+          .info-cards-cms-mobile {
+            padding-top: 12rem !important;
+            padding-bottom: 12rem !important;
+          }
+        }
         @media (min-width: 768px) and (max-width: 1023px) {
           .info-card {
             min-height: 200px;
@@ -96,9 +107,6 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
           }
           .info-card-cta {
             font-size: 14px;
-          }
-          .info-cards-cms-mobile {
-            margin-top: 2rem !important;
           }
         }
       `}</style>
