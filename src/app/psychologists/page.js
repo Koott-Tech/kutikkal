@@ -14,6 +14,7 @@ const Guide = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selected, setSelected] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  const [doctorAvailability, setDoctorAvailability] = useState({}); // Store availability for each doctor
   // Modal animation state
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [isClosingDoctorModal, setIsClosingDoctorModal] = useState(false);
@@ -65,10 +66,104 @@ const Guide = () => {
     }
   };
 
+  // Fetch availability for a doctor (optimized - only 14 days)
+  const fetchDoctorAvailability = async (doctorId) => {
+    try {
+      const today = new Date();
+      const startDate = today.toISOString().split('T')[0]; // Today
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 14); // Only next 14 days (reduced from 30)
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr);
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      if (response.success && response.data && response.data.data) {
+        // Find the first date with available slots
+        const availabilityArray = response.data.data;
+        const firstAvailableDate = availabilityArray.find(day => {
+          const availableSlots = day.timeSlots?.filter(slot => slot.available) || [];
+          return availableSlots.length > 0;
+        });
+
+        if (firstAvailableDate) {
+          const availableSlots = firstAvailableDate.timeSlots
+            .filter(slot => slot.available)
+            .slice(0, 3) // Get first 3 available slots
+            .map(slot => slot.displayTime || slot.time);
+
+          return {
+            nextDate: firstAvailableDate.date,
+            timeSlots: availableSlots
+          };
+        }
+      }
+      return null;
+    } catch (err) {
+      // Silently fail - don't log timeout errors
+      if (err.message !== 'Timeout') {
+        console.error(`Error fetching availability for doctor ${doctorId}:`, err);
+      }
+      return null;
+    }
+  };
+
+  // Fetch availability for all doctors (optimized with batching)
+  const fetchAllDoctorsAvailability = async (doctorsList) => {
+    if (doctorsList.length === 0) return;
+    
+    // Process in batches of 5 to avoid overwhelming the server
+    const batchSize = 5;
+    const batches = [];
+    for (let i = 0; i < doctorsList.length; i += batchSize) {
+      batches.push(doctorsList.slice(i, i + batchSize));
+    }
+
+    // Process batches sequentially but doctors within batch in parallel
+    for (const batch of batches) {
+      const batchPromises = batch.map(async (doctor) => {
+        const availability = await fetchDoctorAvailability(doctor.id);
+        return { doctorId: doctor.id, availability };
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Update state incrementally for each batch (better UX)
+      setDoctorAvailability(prev => {
+        const updated = { ...prev };
+        batchResults.forEach(({ doctorId, availability }) => {
+          updated[doctorId] = availability;
+        });
+        return updated;
+      });
+
+      // Small delay between batches to avoid overwhelming
+      if (batches.indexOf(batch) < batches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+  };
+
   // Fetch doctors on component mount
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  // Fetch availability when doctors are loaded (non-blocking)
+  useEffect(() => {
+    if (doctors.length > 0) {
+      // Don't await - let it fetch in background
+      fetchAllDoctorsAvailability(doctors).catch(err => {
+        console.error('Error fetching doctors availability:', err);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctors.length]);
 
   // Open modal when a doctor is selected
   useEffect(() => {
@@ -219,7 +314,7 @@ const Guide = () => {
               margin-top: 3.2rem;
               display: grid;
               grid-template-columns: repeat(3, 1fr);
-              gap: 4px !important; /* unified row/column gap */
+              gap: 4px 40px; /* column gap, row gap */
               padding: 0 6rem !important; /* more side padding */
               justify-items: center;
             }
@@ -404,9 +499,9 @@ const Guide = () => {
           ) : (
             doctors.map((doc, idx) => {
               return (
+                <div key={doc.id || doc.name || idx} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div
                   className="guide-video-card"
-                  key={doc.id || doc.name || idx}
                   onClick={() => handleDoctorClick(doc, idx)}
                 >
                   {/* Doctor Profile Picture or Cover Image */}
@@ -505,7 +600,7 @@ const Guide = () => {
                   <div style={{
                     position: "absolute",
                     left: 18,
-                    bottom: 18,
+                    bottom: 10,
                     zIndex: 2,
                     display: "flex",
                     flexDirection: "column",
@@ -513,9 +608,9 @@ const Guide = () => {
                     gap: 0,
                     width: "80%"
                   }}>
-                    <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', paddingLeft: 10 }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
+                    <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', paddingLeft: 10, paddingBottom: 0, marginBottom: 0 }}>{doc.name || 'Dr. ' + (doc.first_name || 'Unknown')}</div>
                     {/* Expertise bubbles - Personality chips only */}
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 1 }}>
                       {/* Personality chips (replaces specialization) */}
                       {(() => {
                         const rawTraits = doc.personality_traits || doc.personalityTraits || doc.personalities || null;
@@ -526,17 +621,17 @@ const Guide = () => {
                           traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
                         }
                         return traits.slice(0, 1).map((trait, i) => (
-                          <span key={`p_${i}`} style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.85rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.2px solid rgba(255,255,255,0.18)' }}>{trait}</span>
+                          <span key={`p_${i}`} style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderRadius: 16, padding: '0.05em 0.5em', fontWeight: 400, fontSize: '0.85rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.2px solid rgba(255,255,255,0.18)' }}>{trait}</span>
                         ));
                       })()}
                       {/* Price chip (matches specialization chip style) */}
-                      <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.18em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
+                      <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.05em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>{doc.price ? `₹${doc.price}` : (doc.individual_session_price ? `₹${doc.individual_session_price}` : '₹—')}</span>
                       {/* Experience chip */}
                       <span style={{
                         background: 'rgba(255,255,255,0.22)',
                         color: '#fff',
                         borderRadius: 16,
-                        padding: '0.18em 0.5em',
+                        padding: '0.05em 0.5em',
                         fontWeight: 400,
                         fontSize: '0.9rem',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
@@ -550,18 +645,67 @@ const Guide = () => {
                         <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
                         {`${(doc.experience_years || 3)}+ yrs Experience`}
                       </span>
+                      {/* Consultant Psychologist chip */}
                       <span style={{
                         background: 'rgba(255,255,255,0.22)',
                         color: '#fff',
                         borderRadius: 16,
-                        padding: '0.18em 0.5em',
+                        padding: '0.05em 0.5em',
                         fontWeight: 400,
                         fontSize: '0.9rem',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
                         backdropFilter: 'blur(0.5px)',
                         WebkitBackdropFilter: 'blur(0.5px)',
                         border: '1.5px solid rgba(255,255,255,0.18)'
-                      }}>📚 Consultant Psychologist</span>
+                      }}>
+                        Consultant Psychologist
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {/* Availability information - below card */}
+                <div style={{
+                  marginTop: 8,
+                  marginBottom: 20,
+                  width: '100%'
+                }}>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.25)',
+                    color: '#000000',
+                    borderRadius: 12,
+                    padding: '0.05em 0.5em',
+                    fontWeight: 500,
+                    fontSize: '0.75rem',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                    backdropFilter: 'blur(0.5px)',
+                    WebkitBackdropFilter: 'blur(0.5px)',
+                    border: '1px solid #ffffff',
+                    display: 'inline-block'
+                  }}>
+                    {(() => {
+                      const availability = doctorAvailability[doc.id];
+                      if (availability && availability.nextDate && availability.timeSlots && availability.timeSlots.length > 0) {
+                        // Format the date (YYYY-MM-DD format)
+                        const [year, month, day] = availability.nextDate.split('-');
+                        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                        });
+                        
+                        return (
+                          <>
+                            Next available: {formattedDate}
+                            <br />
+                            {availability.timeSlots.join('    •    ')}
+                          </>
+                        );
+                      }
+                      return 'Nil';
+                    })()}
                     </div>
                   </div>
                 </div>

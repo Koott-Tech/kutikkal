@@ -352,17 +352,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 @media (max-width: 767px) {
   .hero-section {
     min-height: auto;
-    padding: 16px !important;
+    padding: 16px 0 0 0 !important;
     padding-bottom: 0 !important;
   }
 
   .hero-image-box {
-    height: clamp(215px, 66vw, 300px) !important;
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important;
     margin-top: 20px !important;
     margin-bottom: 0 !important;
-    width: calc(100% + 96px) !important;
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .hero-mobile-image {

@@ -110,11 +110,34 @@ export default function HelpFaq({ cmsData = null }) {
           .faq-section:last-child {
             margin-bottom: 1rem !important;
           }
+          /* Left align image in mobile view - match text alignment exactly */
+          .help-faq-image-container {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+            margin-inline-start: 0 !important;
+            margin-inline-end: auto !important;
+            align-self: flex-start !important;
+            width: 280px !important;
+            max-width: 280px !important;
+            text-align: left !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          /* Ensure parent container aligns content to left */
+          .help-faq-left-column {
+            align-items: flex-start !important;
+          }
+          /* Remove any centering from section */
+          section.w-full {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
         }
       `}} />
       <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 md:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
-        <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0">
+        <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0 help-faq-left-column">
           <div className="space-y-1">
             <h3 className="help-faq-heading font-bold text-gray-900 text-left md:text-left text-base md:text-xl">
               Questions?
@@ -129,7 +152,7 @@ export default function HelpFaq({ cmsData = null }) {
               commonly asked questions.
             </p>
           </div>
-                     <div className="relative mt-4 md:mt-6 w-full max-w-[280px] md:w-[320px] h-[160px] md:h-[240px] overflow-hidden rounded-2xl mx-0 md:mx-0">
+                     <div className="relative mt-4 md:mt-6 max-w-[280px] md:w-[320px] md:mx-0 h-[160px] md:h-[240px] overflow-hidden rounded-2xl help-faq-image-container">
             <Image
               src={leftImageUrl}
               alt="Smiling people"

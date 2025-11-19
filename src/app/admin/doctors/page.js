@@ -149,6 +149,25 @@ export default function DoctorsPage() {
     }
   };
 
+  const handleUpdateAllAvailability = async () => {
+    if (!confirm('This will add default availability (8 AM - 10 PM for 3 weeks) to ALL existing psychologists. Continue?')) {
+      return;
+    }
+
+    try {
+      showSuccess('Updating availability for all psychologists...', 'Processing');
+      const response = await adminApi.updateAllPsychologistsAvailability();
+      if (response && response.success) {
+        showSuccess(`Successfully updated ${response.data?.updated || 0} psychologists with default availability`, 'Success');
+      } else {
+        showError(response?.data?.message || 'Failed to update availability', 'Update Error');
+      }
+    } catch (error) {
+      console.error('Error updating all psychologists availability:', error);
+      showError('Failed to update availability for all psychologists', 'Update Error');
+    }
+  };
+
   const openFullProfile = (doctor) => {
     setSelectedDoctor(doctor);
     setIsFullProfileOpen(true);
@@ -307,13 +326,23 @@ export default function DoctorsPage() {
             Manage psychologists and therapists on the platform
           </p>
         </div>
+        <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-2">
         <button
           onClick={handleAddDoctor}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Doctor
         </button>
+          <button
+            onClick={handleUpdateAllAvailability}
+            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            title="Add default availability (8 AM - 10 PM for 3 weeks) to all existing psychologists"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Update All Availability
+          </button>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -363,8 +392,8 @@ export default function DoctorsPage() {
           const isDragging = draggedIndex === filteredIndex;
           
           return (
-            <div
-              key={doctor.id}
+          <div
+            key={doctor.id}
               draggable={!isUpdatingOrder}
               onDragStart={(e) => handleDragStart(e, filteredIndex)}
               onDragEnd={handleDragEnd}
@@ -375,9 +404,9 @@ export default function DoctorsPage() {
                   ? 'opacity-50 border-blue-400 shadow-lg cursor-grabbing' 
                   : 'border-gray-200 shadow-sm hover:shadow-md cursor-move hover:border-gray-300'
               } ${isUpdatingOrder ? 'opacity-60 pointer-events-none' : ''}`}
-            >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-start gap-4">
+          >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-start gap-4">
                   {/* Order Number and Drag Handle */}
                   <div className="flex flex-col items-center gap-2 flex-shrink-0">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-300">
@@ -388,38 +417,38 @@ export default function DoctorsPage() {
                     </div>
                   </div>
                   
-                  <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {getDoctorImageUrl(doctor) ? (
-                      <img
-                        src={getDoctorImageUrl(doctor)}
-                        alt={doctor.name || 'Doctor photo'}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <UserCheck className="h-6 w-6 text-gray-500" />
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {getDoctorImageUrl(doctor) ? (
+                    <img
+                      src={getDoctorImageUrl(doctor)}
+                      alt={doctor.name || 'Doctor photo'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserCheck className="h-6 w-6 text-gray-500" />
+                )}
+            </div>
+
+                <div className="flex-1">
+                  <h6 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 600 }}>
+                    {doctor.name || 'No Name'}
+                  </h6>
+                  <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
+                  <div className="mt-3 text-sm">
+              {doctor.availability && doctor.availability.length > 0 ? (
+                      <span className="flex items-center text-green-600">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Available for sessions
+                      </span>
+              ) : (
+                      <span className="flex items-center text-gray-500">
+                  <Clock className="h-4 w-4 mr-2" />
+                  No availability schedule set
+                      </span>
                     )}
                   </div>
-
-                  <div className="flex-1">
-                    <h6 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 600 }}>
-                      {doctor.name || 'No Name'}
-                    </h6>
-                    <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
-                    <div className="mt-3 text-sm">
-                      {doctor.availability && doctor.availability.length > 0 ? (
-                        <span className="flex items-center text-green-600">
-                          <Clock className="h-4 w-4 mr-2" />
-                          Available for sessions
-                        </span>
-                      ) : (
-                        <span className="flex items-center text-gray-500">
-                          <Clock className="h-4 w-4 mr-2" />
-                          No availability schedule set
-                        </span>
-                      )}
-                    </div>
-                  </div>
                 </div>
+            </div>
 
               <div className="flex flex-wrap justify-start md:justify-end gap-2">
               <button
@@ -455,8 +484,8 @@ export default function DoctorsPage() {
                 Delete
               </button>
               </div>
-              </div>
             </div>
+          </div>
           );
         })}
       </div>

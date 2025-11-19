@@ -79,15 +79,15 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                 <div className="logo-marquee">
                   {loopLogos.map((src, idx) => (
                     <div key={`${src}-${idx}`} className="flex items-center justify-center flex-shrink-0 min-w-[100px] p-0">
-                      <Image
-                        src={`/${src}`}
-                        alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
-                        width={144}
-                        height={56}
-                        className={`h-12 sm:h-14 w-auto object-contain ${logoFilter}`}
-                      />
-                    </div>
-                  ))}
+                        <Image
+                          src={`/${src}`}
+                          alt={`${src.replace('-logo-1.png', '').replace('-logo.png', '').replace('_', '').replace('.svg', '')} logo`}
+                          width={144}
+                          height={56}
+                          className={`h-12 sm:h-14 w-auto object-contain ${logoFilter}`}
+                        />
+                      </div>
+                    ))}
                 </div>
               </div>
                        {/* More partners text - visible on mobile, hidden on desktop */}

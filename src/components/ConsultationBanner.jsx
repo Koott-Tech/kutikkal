@@ -8,12 +8,22 @@ export default function ConsultationBanner() {
     <div className="section-mobile mt-16">
       <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
         <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
-          <div className="overflow-hidden relative rounded-[10px] main-container min-h-[320px] md:min-h-[240px]" style={{ borderRadius: "10px", minHeight: "240px" }}>
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/consultationbanner.png')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px' }}></div>
+          <div className="overflow-hidden relative rounded-[10px] main-container min-h-[280px] md:min-h-[200px]" style={{ borderRadius: "10px", minHeight: "200px" }}>
+            <div className="absolute top-0 left-0 right-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/consultationbanner.png')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px', height: '180px', maxHeight: '180px', width: '100%' }}></div>
           <style jsx>{`
             .main-container {
               border-radius: 10px;
               overflow: hidden;
+            }
+            .main-container > div[class*="absolute"][class*="bg-cover"] {
+              height: 180px !important;
+              max-height: 180px !important;
+            }
+            @media (min-width: 768px) {
+              .main-container > div[class*="absolute"][class*="bg-cover"] {
+                height: 200px !important;
+                max-height: 200px !important;
+              }
             }
             .mobile-container {
               border-radius: 10px;
@@ -21,7 +31,7 @@ export default function ConsultationBanner() {
             }
             @media (min-width: 768px) and (max-width: 1023px) {
               .main-container {
-                min-height: 220px;
+                min-height: 180px;
               }
               .mobile-text h4 {
                 font-size: 18px;
@@ -54,8 +64,8 @@ export default function ConsultationBanner() {
                 background-position: center;
                 background-repeat: no-repeat;
                 width: 100%;
-                height: 200px;
-                max-height: 200px;
+                height: 180px;
+                max-height: 180px;
                 top: 0;
                 left: 0;
                 right: 0;
@@ -64,7 +74,7 @@ export default function ConsultationBanner() {
               }
               .mobile-container {
                 padding: 8px;
-                min-height: 200px;
+                min-height: 180px;
                 gap: 0px;
               }
               .mobile-container[style] {
@@ -85,36 +95,50 @@ export default function ConsultationBanner() {
                 row-gap: 0px;
               }
               .mobile-container > div:last-child {
-                min-height: 200px;
-                height: 200px;
+                min-height: 180px;
+                height: 180px;
               }
               .mobile-text {
                 padding: 0px 4px 0px 4px !important;
+                padding-top: 0px !important;
+                max-width: 280px;
               }
               div[class*="p-4"].mobile-text {
                 padding: 0px 4px 0px 4px !important;
+                padding-top: 0px !important;
+                max-width: 280px;
               }
               .mobile-text h4 {
                 font-size: 16px;
                 line-height: 1.3;
                 margin-bottom: 4px;
+                margin-top: -8px;
+                text-align: left;
+              }
+              .mobile-text p.text-xs {
+                font-size: 12px !important;
+                line-height: 1.2 !important;
+                margin-bottom: 8px;
                 text-align: left;
               }
               .mobile-text p {
-                font-size: 11px;
-                line-height: 1.4;
+                font-size: 9px !important;
+                line-height: 1.2 !important;
                 margin-bottom: 8px;
                 text-align: left;
               }
               .mobile-text button {
-                font-size: 10px;
-                padding: 6px 12px;
+                font-size: 11px !important;
+                padding: 7px 14px !important;
                 margin-left: 0;
               }
+              .mobile-text .flex.items-center.gap-1 {
+                margin-top: 20px;
+              }
               .main-container {
-                min-height: 200px;
-                height: 200px;
-                max-height: 200px;
+                min-height: 180px;
+                height: 180px;
+                max-height: 180px;
                 padding: 0;
                 margin-top: 0;
                 margin-bottom: 0;
@@ -135,7 +159,7 @@ export default function ConsultationBanner() {
               }
               .mobile-image > div {
                 margin: 0;
-                margin-top: -4px !important;
+                margin-top: -80px !important;
                 padding: 0 !important;
                 width: 70px;
                 height: 100px;
@@ -157,10 +181,10 @@ export default function ConsultationBanner() {
             }
             @media (min-width: 768px) {
               .main-container {
-                min-height: 240px;
+                min-height: 200px;
               }
               .mobile-container {
-                min-height: 240px;
+                min-height: 200px;
                 gap: 0px;
                 align-items: center;
               }
@@ -214,7 +238,7 @@ export default function ConsultationBanner() {
               </h4>
               
               <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px' }}>
-               Book a free 20 minutes session with our psychologist.
+               Book a free 20 minutes  session<br className="md:hidden" /> with our psychologist.
               </p>
               
               <div className="flex items-center gap-1">

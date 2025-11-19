@@ -990,6 +990,20 @@ export const adminApi = {
     });
   },
   
+  // Update all psychologists with default availability
+  async updateAllPsychologistsAvailability() {
+    return apiRequest('/admin/availability/update-all', {
+      method: 'POST',
+    });
+  },
+
+  // Add next day availability (daily task)
+  async addNextDayAvailability() {
+    return apiRequest('/admin/availability/add-next-day', {
+      method: 'POST',
+    });
+  },
+  
   // Better Parenting CMS (admin)
   async getBetterParentingPages(params = {}) {
     const queryParams = new URLSearchParams();

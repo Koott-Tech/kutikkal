@@ -35,14 +35,14 @@ export default function PersonalizedCare() {
         {/* Main Content with Central Image */}
         <div className="flex items-center justify-center mt-6 md:-mt-4">
           {/* Central Large Image - Mobile optimized */}
-          <div className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[900px] xl:max-w-[1100px] h-[200px] sm:h-[250px] md:h-[400px] lg:h-[500px] xl:h-[550px] rounded-2xl overflow-hidden mx-auto">
+          <div className="w-full max-w-[220px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[480px] xl:max-w-[600px] h-[110px] sm:h-[150px] md:h-[220px] lg:h-[300px] xl:h-[360px] rounded-2xl overflow-hidden mx-auto mt-16 mb-16">
             <Image
               src="/Little Hope.webp"
               alt="Little Hope"
               width={1000}
               height={667}
               className="w-full h-full object-contain"
-              sizes="(max-width: 640px) 400px, (max-width: 768px) 500px, (max-width: 1024px) 600px, (max-width: 1280px) 900px, 1100px"
+              sizes="(max-width: 640px) 220px, (max-width: 768px) 280px, (max-width: 1024px) 320px, (max-width: 1280px) 480px, 600px"
             />
           </div>
         </div>
