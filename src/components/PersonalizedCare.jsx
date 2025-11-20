@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function PersonalizedCare() {
   return (
-    <section className="w-full flex items-center mt-16">
+    <section className="w-full personalized-care-section">
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1023px) {
           .personalized-care-heading {
@@ -14,35 +14,171 @@ export default function PersonalizedCare() {
           }
         }
         @media (max-width: 767px) {
+          .personalized-care-section {
+            margin-top: 64px !important;
+            margin-bottom: 64px !important;
+          }
           .personalized-care-heading {
             font-size: 28px;
             font-weight: 600;
             line-height: 0.95;
           }
+          .personalized-care-description {
+            line-height: 1.2 !important;
+          }
+          .personalized-care-image-wrapper .personalized-care-image-container {
+            margin-top: 70px !important;
+            margin-bottom: 40px !important;
+          }
+        }
+        .personalized-care-section {
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+        }
+        @media (min-width: 768px) {
+          .personalized-care-section {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+        }
+        .personalized-care-image-wrapper {
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+        }
+        .personalized-care-image-container {
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+        }
+        @media (min-width: 768px) {
+          .personalized-care-image-container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+        }
+        .personalized-care-image-container img {
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+          display: block !important;
+        }
+        .personalized-care-content {
+          margin-bottom: 0 !important;
+          padding-bottom: 0 !important;
+        }
+        @media (min-width: 768px) {
+          .personalized-care-section {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .personalized-care-content {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .personalized-care-section > div {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .personalized-care-header {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .personalized-care-heading {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          .personalized-care-description {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
+            line-height: 1.4 !important;
+          }
+          .personalized-care-header + .personalized-care-image-wrapper {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+          .personalized-care-image-wrapper {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            gap: 0 !important;
+            row-gap: 0 !important;
+            column-gap: 0 !important;
+          }
+          .personalized-care-image-container {
+            margin-top: 96px !important;
+            margin-bottom: 96px !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+          }
+          .personalized-care-image-container img,
+          .personalized-care-image-container span,
+          .personalized-care-image-container picture {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            display: block !important;
+            vertical-align: top !important;
+            line-height: 0 !important;
+            font-size: 0 !important;
+          }
+          .personalized-care-image-container {
+            line-height: 0 !important;
+            font-size: 0 !important;
+          }
+          .personalized-care-image-wrapper {
+            line-height: 0 !important;
+            font-size: 0 !important;
+          }
         }
       `}</style>
-      <div className="w-full px-4 sm:px-6 md:px-0">
+      <div className="w-full px-4 sm:px-6 md:px-0 personalized-care-content" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
         {/* Header Section */}
-        <div className="text-center mb-0 px-4">
-          <h3 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500 }}>
+        <div className="text-center px-4 personalized-care-header" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
+          <h3 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500, marginTop: 0, marginBottom: 0 }}>
             The care you need, whenever you need it
           </h3>
-          <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto mt-3 md:mt-4">
+          <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto personalized-care-description" style={{ marginTop: '12px', marginBottom: 0, paddingBottom: 0, paddingTop: 0 }}>
           No matter where your journey begins, Little Care is here to create a safe, supportive, and open space for you and your little ones.
           </p>
         </div>
 
-        {/* Main Content with Central Image */}
-        <div className="flex items-center justify-center mt-6 md:-mt-4">
-          {/* Central Large Image - Mobile optimized */}
-          <div className="w-full max-w-[220px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[480px] xl:max-w-[600px] h-[110px] sm:h-[150px] md:h-[220px] lg:h-[300px] xl:h-[360px] rounded-2xl overflow-hidden mx-auto mt-16 mb-16">
+        {/* Images - No top/bottom padding */}
+        <div className="flex items-center justify-center personalized-care-image-wrapper" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0, borderBottom: 'none' }}>
+          {/* Mobile Image - Hidden on laptop */}
+          <div className="w-full max-w-[380px] sm:max-w-[480px] md:max-w-[550px] h-[190px] sm:h-[270px] md:h-[350px] rounded-2xl overflow-hidden mx-auto md:hidden personalized-care-image-container" style={{ marginTop: '70px', marginBottom: '40px', paddingTop: 0, paddingBottom: 0 }}>
             <Image
               src="/Little Hope.webp"
               alt="Little Hope"
               width={1000}
               height={667}
               className="w-full h-full object-contain"
-              sizes="(max-width: 640px) 220px, (max-width: 768px) 280px, (max-width: 1024px) 320px, (max-width: 1280px) 480px, 600px"
+              sizes="(max-width: 640px) 380px, (max-width: 768px) 480px, 550px"
+              style={{ margin: 0, padding: 0 }}
+            />
+          </div>
+          {/* Laptop Image - Hidden on mobile */}
+          <div className="hidden md:block w-full max-w-[700px] lg:max-w-[1050px] xl:max-w-[1300px] rounded-2xl overflow-hidden mx-auto personalized-care-image-container" style={{ marginTop: '96px', marginBottom: '96px', paddingTop: 0, paddingBottom: 0 }}>
+            <Image
+              src="/Little Hope lap.webp"
+              alt="Little Hope"
+              width={1000}
+              height={667}
+              className="w-full h-auto object-contain"
+              sizes="(max-width: 1024px) 700px, (max-width: 1280px) 1050px, 1300px"
+              style={{ margin: 0, padding: 0, display: 'block', height: 'auto' }}
             />
           </div>
         </div>
