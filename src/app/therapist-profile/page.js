@@ -832,6 +832,31 @@ const TherapistProfileContent = () => {
     }
   }, [packageId, isAuthenticated, hasRole]);
 
+  // Automatically select today's date if it has available slots
+  useEffect(() => {
+    // Only auto-select if availability is loaded and no date is currently selected
+    if (!loadingAvailability && Object.keys(psychologistAvailability).length > 0 && !selectedDate && selectedDoctor) {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${dayStr}`;
+      
+      const todayAvailability = psychologistAvailability[todayStr];
+      
+      if (todayAvailability) {
+        const allTimeSlots = todayAvailability.timeSlots || [];
+        // Check if there are any available slots that are not in the past
+        const availableSlots = allTimeSlots.filter(slot => slot.available && !isSlotInPast(slot, today));
+        
+        if (availableSlots.length > 0) {
+          // Automatically select today's date
+          setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+        }
+      }
+    }
+  }, [psychologistAvailability, loadingAvailability, selectedDate, selectedDoctor]);
+
 
 
   if (loading) {
@@ -1392,7 +1417,7 @@ const TherapistProfileContent = () => {
                           isSelected
                             ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
                             : (isToday && isActuallyAvailable)
-                              ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
+                              ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
                               : isToday
                                 ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
                               : isActuallyAvailable
@@ -1407,7 +1432,11 @@ const TherapistProfileContent = () => {
                         {shouldHighlight && (
                           <div
                             className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
-                              isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                              isSelected 
+                                ? 'bg-[#f0edff]' 
+                                : (isToday && isActuallyAvailable)
+                                  ? 'bg-white'
+                                  : 'bg-[#3f2e73]'
                             }`}
                           ></div>
                         )}
@@ -1468,7 +1497,7 @@ const TherapistProfileContent = () => {
                                   onClick={() => handleTimeSelect(time)}
                                   className={`p-2 rounded-lg border text-xs transition-all duration-200 w-full h-10 flex items-center justify-center ${
                                     selectedTime === time
-                                      ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73]' 
+                                      ? 'border-[#3f2e73] bg-[#3f2e73] text-white font-bold shadow-lg' 
                                       : 'border-gray-300 bg-white hover:border-[#3f2e73] text-gray-700'
                                   }`}
                                 >

@@ -110,28 +110,40 @@ export default function HelpFaq({ cmsData = null }) {
           .faq-section:last-child {
             margin-bottom: 1rem !important;
           }
-          /* Left align image in mobile view - match text alignment exactly */
-          .help-faq-image-container {
-            margin-left: 0 !important;
-            margin-right: auto !important;
-            margin-inline-start: 0 !important;
-            margin-inline-end: auto !important;
-            align-self: flex-start !important;
-            width: 280px !important;
-            max-width: 280px !important;
-            text-align: left !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
           /* Ensure parent container aligns content to left */
           .help-faq-left-column {
             align-items: flex-start !important;
           }
-          /* Remove any centering from section */
-          section.w-full {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
+          /* Left align image in mobile view - match text alignment exactly */
+          .help-faq-image-container {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+            align-self: flex-start !important;
+            width: 280px !important;
+            max-width: 280px !important;
+            margin-inline-start: 0 !important;
+            margin-inline-end: auto !important;
+          }
+          /* Force image to align with heading text - remove any centering */
+          .help-faq-left-column .help-faq-image-container {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            left: 0 !important;
+            transform: translateX(0) !important;
+            margin-inline-start: 0 !important;
+            padding-inline-start: 0 !important;
+          }
+          /* Compensate for parent's ml-2 (8px) and px-2 (8px) to align with text */
+          @media (max-width: 767px) {
+            .help-faq-left-column .help-faq-image-container {
+              margin-left: -16px !important; /* Pull back to match text alignment (ml-2 + px-2 = 16px) */
+            }
+            /* Align FAQ section titles with image left alignment */
+            /* Right column has ml-1 (4px) + px-2 (8px) = 12px, so move -12px to align with image at 0px */
+            .faq-section-title {
+              margin-left: -12px !important;
+              padding-left: 0 !important;
+            }
           }
         }
       `}} />
