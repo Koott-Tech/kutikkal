@@ -113,7 +113,7 @@ export default function PersonalizedCare() {
             row-gap: 0 !important;
             column-gap: 0 !important;
           }
-          .personalized-care-image-container {
+          .personalized-care-image-wrapper .personalized-care-image-container {
             margin-top: 96px !important;
             margin-bottom: 96px !important;
             padding-top: 0 !important;
@@ -121,6 +121,18 @@ export default function PersonalizedCare() {
             height: auto !important;
             min-height: auto !important;
             max-height: none !important;
+            max-width: 550px !important;
+            width: 100% !important;
+          }
+          @media (min-width: 1024px) {
+            .personalized-care-image-wrapper .personalized-care-image-container {
+              max-width: 800px !important;
+            }
+          }
+          @media (min-width: 1280px) {
+            .personalized-care-image-wrapper .personalized-care-image-container {
+              max-width: 1000px !important;
+            }
           }
           .personalized-care-image-container img,
           .personalized-care-image-container span,
@@ -170,14 +182,14 @@ export default function PersonalizedCare() {
             />
           </div>
           {/* Laptop Image - Hidden on mobile */}
-          <div className="hidden md:block w-full max-w-[700px] lg:max-w-[1050px] xl:max-w-[1300px] rounded-2xl overflow-hidden mx-auto personalized-care-image-container" style={{ marginTop: '96px', marginBottom: '96px', paddingTop: 0, paddingBottom: 0 }}>
+          <div className="hidden md:block w-full max-w-[550px] lg:max-w-[800px] xl:max-w-[1000px] rounded-2xl overflow-hidden mx-auto personalized-care-image-container" style={{ marginTop: '96px', marginBottom: '96px', paddingTop: 0, paddingBottom: 0 }}>
             <Image
               src="/Little Hope lap.webp"
               alt="Little Hope"
               width={1000}
               height={667}
               className="w-full h-auto object-contain"
-              sizes="(max-width: 1024px) 700px, (max-width: 1280px) 1050px, 1300px"
+              sizes="(max-width: 1024px) 550px, (max-width: 1280px) 800px, 1000px"
               style={{ margin: 0, padding: 0, display: 'block', height: 'auto' }}
             />
           </div>
