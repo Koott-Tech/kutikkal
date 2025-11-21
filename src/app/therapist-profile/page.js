@@ -400,6 +400,51 @@ const TherapistProfileContent = () => {
     }
   };
 
+  const hasEducationDetails = !!(
+    selectedDoctor &&
+    (
+      (selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A') ||
+      (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') ||
+      (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A')
+    )
+  );
+
+  const renderEducationSection = () => {
+    if (!selectedDoctor || !hasEducationDetails) return null;
+    return (
+      <div className="p-4 rounded-lg">
+        <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I studied at</p>
+        <div className="space-y-1 text-left" style={{ lineHeight: '1.1' }}>
+          {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
+            <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
+              <strong>Education:</strong> {selectedDoctor.ug_college}
+            </p>
+          )}
+          {selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A' && (
+            <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
+              <strong>Post Graduate:</strong> {selectedDoctor.pg_college}
+            </p>
+          )}
+          {selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A' && (
+            <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
+              <strong>PhD:</strong> {selectedDoctor.phd_college}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderLanguagesSection = () => (
+    <div className="p-4 rounded-lg pl-0">
+      <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
+      <div className="space-y-1 text-left pl-1" style={{ lineHeight: '1.1' }}>
+        <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>English</p>
+        <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>Malayalam</p>
+      </div>
+    </div>
+  );
+
   const handleShare = async () => {
     try {
       const currentUrl = window.location.href;
@@ -917,17 +962,6 @@ const TherapistProfileContent = () => {
         <div className="w-full">
           {/* Top Section with Green Background */}
           <div className="w-screen max-w-[100vw] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] px-6 md:px-12 pt-2 md:pt-3 pb-2 md:pb-3 therapist-header-padding" style={{ zIndex: 0, background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff)', marginTop: 0, paddingTop: '24px' }}>
-            {/* Abstract Pattern Overlay */}
-            <div className="absolute inset-0 opacity-10" style={{ pointerEvents: 'none' }}>
-              <svg width="100%" height="100%" viewBox="0 0 400 200">
-                <path d="M50 50 Q100 30 150 50 Q200 70 250 50 Q300 30 350 50" 
-                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
-                <path d="M30 100 Q80 80 130 100 Q180 120 230 100 Q280 80 330 100" 
-                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
-                <path d="M70 150 Q120 130 170 150 Q220 170 270 150 Q320 130 370 150" 
-                      fill="none" stroke="#3f2e73" strokeWidth="2"/>
-              </svg>
-            </div>
             
             {/* Mobile: Profile Picture at top */}
             <div className="relative z-10 flex items-center justify-center md:hidden h-full mt-20" style={{ pointerEvents: 'auto' }}>
@@ -999,15 +1033,20 @@ const TherapistProfileContent = () => {
 
           {/* Mobile: Doctor Name below image */}
             <div className="text-center md:hidden mb-6 mt-4">
-              <h2 className="text-3xl font-semibold mb-2">
-              {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
-              </h2>
-              <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
-              {selectedDoctor.specialization || 'Licensed Psychologist'}
-            </p>
-              <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
-                {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
+              <div className="p-4 rounded-lg">
+                <h2 className="text-3xl font-semibold mb-2">
+                {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
+                </h2>
+                <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
+                {selectedDoctor.specialization || 'Licensed Psychologist'}
               </p>
+                <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
+                  {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
+                </p>
+              </div>
+            <div className="mt-4 space-y-4">
+              {renderEducationSection()}
+            </div>
           </div>
           
             {/* Desktop: Image and Name Section - Side by side */}
@@ -1081,6 +1120,7 @@ const TherapistProfileContent = () => {
               {/* Desktop: Name, Designation, and Pricing - Stacked */}
               <div className="flex-1">
                 <div className="text-left">
+                <div className="p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">
                     {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
                   </h3>
@@ -1089,9 +1129,13 @@ const TherapistProfileContent = () => {
                   </p>
                   <p className="text-gray-800 text-sm">
                     <span className="font-medium">
-                      {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price} per session` : 'Pricing available upon request'}
+                      {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
                     </span>
                   </p>
+                </div>
+                <div className="mt-4 space-y-4 max-w-lg">
+                  {renderEducationSection()}
+                </div>
               </div>
             </div>
           </div>
@@ -1136,7 +1180,7 @@ const TherapistProfileContent = () => {
             {/* Left Side - About Description */}
             <div className="space-y-6 mt-[20px] md:mt-[40px] therapist-about-section">
               <p className="font-bold text-gray-800 mb-4">About {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}</p>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <p className="text-gray-700 leading-relaxed mb-4 whitespace-pre-line">
                 {selectedDoctor.description || "This doctor is passionate about helping people achieve mental wellness through evidence-based therapy and compassionate guidance."}
               </p>
               
@@ -1155,48 +1199,11 @@ const TherapistProfileContent = () => {
                   </div>
                 </div>
               )}
-              
-              {/* Education */}
-              {(selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A') || 
-               (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') || 
-               (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A') ? (
-              <div className="p-4 rounded-lg">
-                  <p className="font-semibold text-gray-800 mb-3">Education & Qualifications</p>
-                  <div className="space-y-2">
-                    {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
-                      <p className="text-gray-700 text-sm">
-                        <strong>Education:</strong> {selectedDoctor.ug_college}
-                      </p>
-                    )}
-                    {selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A' && (
-                      <p className="text-gray-700 text-sm">
-                        <strong>Post Graduate:</strong> {selectedDoctor.pg_college}
-                      </p>
-                    )}
-                    {selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A' && (
-                      <p className="text-gray-700 text-sm">
-                        <strong>PhD:</strong> {selectedDoctor.phd_college}
-                      </p>
-                    )}
-                </div>
-              </div>
-              ) : null}
-              
               {/* Languages Section */}
-              <div className="p-4 rounded-lg">
-                <p className="font-semibold text-gray-800 mb-3">Languages</p>
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
-                    English
-                  </div>
-                  <div className="bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium">
-                    Malayalam
-                  </div>
-                </div>
-              </div>
+              {renderLanguagesSection()}
               
               {/* FAQ Section - Desktop/Laptop View */}
-              <div className="mt-6 hidden lg:block">
+              <div className="mt-20 hidden lg:block">
                 <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
                 
                 <div className="space-y-0">
@@ -1676,7 +1683,7 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* FAQ Section - Mobile View */}
-      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden" style={{ marginTop: '3rem' }}>
+      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden" style={{ marginTop: '4rem' }}>
         <div className="max-w-6xl mx-auto">
           <style dangerouslySetInnerHTML={{__html: `
             @media (max-width: 767px) {
