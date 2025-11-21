@@ -50,6 +50,42 @@ const getDoctorImageUrl = (doctor) => {
   return null;
 };
 
+const formatTimeSlotLabel = (slot) => {
+  if (typeof slot === 'string') return slot;
+  if (slot && typeof slot === 'object') {
+    if (slot.displayTime) return slot.displayTime;
+    if (slot.time) return slot.time;
+  }
+  return String(slot ?? '');
+};
+
+const parseTimeStringToMinutes = (timeLabel) => {
+  if (!timeLabel) return Number.POSITIVE_INFINITY;
+  const trimmed = timeLabel.trim();
+  const match12 = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let hours = parseInt(match12[1], 10);
+    const minutes = parseInt(match12[2], 10);
+    const period = match12[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+  const match24 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (match24) {
+    const hours = parseInt(match24[1], 10);
+    const minutes = parseInt(match24[2], 10);
+    return hours * 60 + minutes;
+  }
+  return Number.POSITIVE_INFINITY;
+};
+
+const sortTimeSlotsChronologically = (slots = []) => {
+  return [...slots]
+    .sort((a, b) => parseTimeStringToMinutes(formatTimeSlotLabel(a)) - parseTimeStringToMinutes(formatTimeSlotLabel(b)))
+    .map(formatTimeSlotLabel);
+};
+
 export default function DoctorsPage() {
   const { showError, showSuccess } = useNotification();
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -591,16 +627,7 @@ export default function DoctorsPage() {
                           <span className="text-gray-900">
                             {slot.date}: {
                               slot.time_slots && Array.isArray(slot.time_slots) 
-                                ? slot.time_slots.map(ts => {
-                                    // Handle both string and object time slots
-                                    if (typeof ts === 'string') {
-                                      return ts;
-                                    } else if (typeof ts === 'object' && ts !== null) {
-                                      return ts.displayTime || ts.time || String(ts);
-                                    } else {
-                                      return String(ts);
-                                    }
-                                  }).join(', ')
+                                ? sortTimeSlotsChronologically(slot.time_slots).join(', ')
                                 : 'Available'
                             }
                           </span>

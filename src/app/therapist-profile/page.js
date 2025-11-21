@@ -417,7 +417,7 @@ const TherapistProfileContent = () => {
         <div className="space-y-1 text-left" style={{ lineHeight: '1.1' }}>
           {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
             <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
-              <strong>Education:</strong> {selectedDoctor.ug_college}
+              <strong>Bachelor's:</strong> {selectedDoctor.ug_college}
             </p>
           )}
           {selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A' && (
@@ -435,15 +435,42 @@ const TherapistProfileContent = () => {
     );
   };
 
-  const renderLanguagesSection = () => (
-    <div className="p-4 rounded-lg pl-0">
-      <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
-      <div className="space-y-1 text-left pl-1" style={{ lineHeight: '1.1' }}>
-        <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>English</p>
-        <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>Malayalam</p>
+  const renderLanguagesSection = () => {
+    const derivedLanguages = Array.isArray(selectedDoctor.languages) && selectedDoctor.languages.length > 0
+      ? selectedDoctor.languages
+      : selectedDoctor.language
+        ? selectedDoctor.language.split(',').map(lang => lang.trim()).filter(Boolean)
+        : ['English', 'Malayalam'];
+
+    const testimonialColors = [
+      { bg: 'linear-gradient(135deg, #f5f1ff, #eae4ff)', border: '#e2d8ff' },
+      { bg: 'linear-gradient(135deg, #e4f5ff, #d2ecff)', border: '#b7e1ff' },
+      { bg: 'linear-gradient(135deg, #e8f8f6, #d0f0eb)', border: '#b2e3db' },
+      { bg: 'linear-gradient(135deg, #fef3e6, #fde4ca)', border: '#f9d6af' },
+      { bg: 'linear-gradient(135deg, #fce8f3, #fad0e7)', border: '#f5b3d6' }
+    ];
+
+    return (
+      <div className="p-4 rounded-lg pl-0">
+        <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
+        <div className="flex flex-wrap gap-2 pl-1" style={{ lineHeight: '1.1' }}>
+          {derivedLanguages.map((language, index) => (
+            <span
+              key={`${language}-${index}`}
+              className="px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm"
+              style={{
+                background: testimonialColors[index % testimonialColors.length].bg,
+                color: '#3f2e73',
+                border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`
+              }}
+            >
+              {language}
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const handleShare = async () => {
     try {
@@ -1468,7 +1495,13 @@ const TherapistProfileContent = () => {
                       const dayStr = String(selectedDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
                     const dateAvailability = psychologistAvailability[dateStr];
-                    const allTimeSlots = dateAvailability?.timeSlots || [];
+                    const allTimeSlots = Array.isArray(dateAvailability?.timeSlots)
+                      ? [...dateAvailability.timeSlots].sort((a, b) => {
+                          const aMinutes = getSlotMinutes(a);
+                          const bMinutes = getSlotMinutes(b);
+                          return (aMinutes ?? Infinity) - (bMinutes ?? Infinity);
+                        })
+                      : [];
                     const availableSlots = allTimeSlots
                       .filter(slot => slot.available && !isSlotInPast(slot, selectedDate))
                       .map(slot => formatSlotDisplayTime(slot))

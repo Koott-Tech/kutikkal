@@ -704,7 +704,7 @@ const Guide = () => {
                           </>
                         );
                       }
-                      return 'Nil';
+                      return 'Loading availability...';
                     })()}
                     </div>
                   </div>
@@ -1193,7 +1193,11 @@ const Guide = () => {
               </div>
               
               {/* Right: Details - Only name, years of experience, price, and description */}
-              <div className="doctor-modal-content" onClick={e => e.stopPropagation()}>
+              <div 
+                className="doctor-modal-content" 
+                onClick={e => e.stopPropagation()}
+                style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 12 }}
+              >
                 <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 4 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
                 </h3>
@@ -1243,7 +1247,7 @@ const Guide = () => {
                 })()}
                 
                 {/* Description */}
-                <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.2' }}>
+                <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.2', whiteSpace: 'pre-line' }}>
                   {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
                 </p>
                 

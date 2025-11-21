@@ -105,6 +105,42 @@ export default function DoctorModal({
     night: ['9:00 PM', '10:00 PM']
   };
 
+  const formatTimeSlotLabel = (slot) => {
+    if (typeof slot === 'string') return slot;
+    if (slot && typeof slot === 'object') {
+      if (slot.displayTime) return slot.displayTime;
+      if (slot.time) return slot.time;
+    }
+    return String(slot ?? '');
+  };
+
+  const parseTimeToMinutes = (timeLabel) => {
+    if (!timeLabel) return Number.POSITIVE_INFINITY;
+    const trimmed = timeLabel.trim();
+    const match12 = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let hours = parseInt(match12[1], 10);
+      const minutes = parseInt(match12[2], 10);
+      const period = match12[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    }
+    const match24 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (match24) {
+      const hours = parseInt(match24[1], 10);
+      const minutes = parseInt(match24[2], 10);
+      return hours * 60 + minutes;
+    }
+    return Number.POSITIVE_INFINITY;
+  };
+
+  const sortAndFormatTimeSlots = (slots = []) => {
+    return [...slots]
+      .sort((a, b) => parseTimeToMinutes(formatTimeSlotLabel(a)) - parseTimeToMinutes(formatTimeSlotLabel(b)))
+      .map(formatTimeSlotLabel);
+  };
+
   // Handlers for personalities similar to specializations
   const addPersonality = () => {
     setFormData(prev => ({ ...prev, personalities: [...prev.personalities, ''] }));
@@ -1609,6 +1645,7 @@ export default function DoctorModal({
                       ...(data.timeSlots.evening || []),
                       ...(data.timeSlots.night || [])
                     ];
+                    const sortedSlots = sortAndFormatTimeSlots(allSlots);
                     
                     console.log(`All slots for ${dateStr}:`, allSlots);
                     
@@ -1631,26 +1668,11 @@ export default function DoctorModal({
                           </button>
                         </div>
                         <div className="space-y-1">
-                          {allSlots.map((slot, slotIndex) => {
-                            // Handle both string and object time slots
-                            let displayText = slot;
-                            if (typeof slot === 'object' && slot !== null) {
-                              // If slot is an object, extract the display value
-                              if (slot.displayTime) {
-                                displayText = slot.displayTime;
-                              } else if (slot.time) {
-                                displayText = slot.time;
-                              } else {
-                                displayText = JSON.stringify(slot); // Fallback for debugging
-                              }
-                            }
-                            
-                            return (
-                              <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
-                                {displayText}
-                              </span>
-                            );
-                          })}
+                          {sortedSlots.map((displayText, slotIndex) => (
+                            <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
+                              {displayText}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     );
