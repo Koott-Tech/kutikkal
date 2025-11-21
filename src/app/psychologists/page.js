@@ -645,7 +645,7 @@ const Guide = () => {
                         <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
                         {`${(doc.experience_years || 3)}+ yrs Experience`}
                       </span>
-                      {/* Consultant Psychologist chip */}
+                      {/* Designation chip */}
                       <span style={{
                         background: 'rgba(255,255,255,0.22)',
                         color: '#fff',
@@ -658,7 +658,7 @@ const Guide = () => {
                         WebkitBackdropFilter: 'blur(0.5px)',
                         border: '1.5px solid rgba(255,255,255,0.18)'
                       }}>
-                        Consultant Psychologist
+                        {doc.designation || doc.specialization || 'Consultant Psychologist'}
                       </span>
                     </div>
                   </div>
@@ -1201,6 +1201,11 @@ const Guide = () => {
                 <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 4 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
                 </h3>
+                {(doctors[selected]?.designation || doctors[selected]?.specialization) && (
+                  <p style={{ margin: '4px 0 6px', color: '#4b5563', fontWeight: 500 }}>
+                    {doctors[selected]?.designation || doctors[selected]?.specialization}
+                  </p>
+                )}
                 
                 {/* Experience + Price grouped to remove container column gap */}
                 {(doctors[selected]?.experience_years || doctors[selected]?.price) && (

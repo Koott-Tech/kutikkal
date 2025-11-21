@@ -1191,6 +1191,11 @@ export const publicApi = {
   async getPsychologistPackages(psychologistId) {
     return apiRequest(`/public/psychologists/${psychologistId}/packages`);
   },
+
+  // Get single psychologist details (public)
+  async getPsychologistDetails(psychologistId) {
+    return apiRequest(`/public/psychologists/${psychologistId}/details`);
+  },
 };
 
 // Messages API

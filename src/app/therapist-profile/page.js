@@ -46,6 +46,7 @@ const TherapistProfileContent = () => {
   const [packages, setPackages] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loadingPackages, setLoadingPackages] = useState(false);
+  const [detailsFetched, setDetailsFetched] = useState({});
   
   // Client package state (for booking remaining sessions)
   const [clientPackage, setClientPackage] = useState(null);
@@ -435,12 +436,85 @@ const TherapistProfileContent = () => {
     );
   };
 
+  const getDoctorDesignation = (doctor) => {
+    if (!doctor) return '';
+    return (
+      doctor.designation ||
+      doctor.speaciality ||
+      doctor.specialty ||
+      doctor.title ||
+      doctor.role ||
+      ''
+    );
+  };
+
+  const getDoctorLanguages = (doctor) => {
+    if (!doctor) return [];
+
+    const normalizeArray = (arr) =>
+      Array.isArray(arr) ? arr.map((lang) => (typeof lang === 'string' ? lang.trim() : '')).filter(Boolean) : [];
+
+    const tryParseJsonString = (value) => {
+      if (typeof value !== 'string') return [];
+      const trimmed = value.trim();
+      if (!trimmed) return [];
+
+      if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          return normalizeArray(parsed);
+        } catch (error) {
+          console.warn('Failed to parse JSON string language value:', value, error);
+        }
+      }
+      return [];
+    };
+
+    const fromLanguagesArray = normalizeArray(doctor.languages);
+    if (fromLanguagesArray.length > 0) return fromLanguagesArray;
+
+    if (doctor.languages_json) {
+      if (Array.isArray(doctor.languages_json)) {
+        const parsed = normalizeArray(doctor.languages_json);
+        if (parsed.length > 0) return parsed;
+      } else if (typeof doctor.languages_json === 'string') {
+        try {
+          const parsed = JSON.parse(doctor.languages_json);
+          const normalized = normalizeArray(parsed);
+          if (normalized.length > 0) return normalized;
+        } catch (error) {
+          console.warn('Failed to parse languages_json:', doctor.languages_json, error);
+        }
+      }
+    }
+
+    if (typeof doctor.language === 'string' && doctor.language.trim()) {
+      const parsed = tryParseJsonString(doctor.language);
+      if (parsed.length > 0) return parsed;
+
+      const splitted = doctor.language
+        .split(/[,|/]/)
+        .map((lang) => lang.trim())
+        .filter(Boolean);
+      if (splitted.length > 0) return splitted;
+    }
+
+    if (typeof doctor.languages === 'string' && doctor.languages.trim()) {
+      const parsed = tryParseJsonString(doctor.languages);
+      if (parsed.length > 0) return parsed;
+
+      const splitted = doctor.languages
+        .split(/[,|/]/)
+        .map((lang) => lang.trim())
+        .filter(Boolean);
+      if (splitted.length > 0) return splitted;
+    }
+
+    return [];
+  };
+
   const renderLanguagesSection = () => {
-    const derivedLanguages = Array.isArray(selectedDoctor.languages) && selectedDoctor.languages.length > 0
-      ? selectedDoctor.languages
-      : selectedDoctor.language
-        ? selectedDoctor.language.split(',').map(lang => lang.trim()).filter(Boolean)
-        : ['English', 'Malayalam'];
+    const derivedLanguages = getDoctorLanguages(selectedDoctor);
 
     const testimonialColors = [
       { bg: 'linear-gradient(135deg, #f5f1ff, #eae4ff)', border: '#e2d8ff' },
@@ -453,21 +527,25 @@ const TherapistProfileContent = () => {
     return (
       <div className="p-4 rounded-lg pl-0">
         <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
-        <div className="flex flex-wrap gap-2 pl-1" style={{ lineHeight: '1.1' }}>
-          {derivedLanguages.map((language, index) => (
-            <span
-              key={`${language}-${index}`}
-              className="px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm"
-              style={{
-                background: testimonialColors[index % testimonialColors.length].bg,
-                color: '#3f2e73',
-                border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`
-              }}
-            >
-              {language}
-            </span>
-          ))}
-        </div>
+        {derivedLanguages.length > 0 ? (
+          <div className="flex flex-wrap gap-2 pl-1" style={{ lineHeight: '1.1' }}>
+            {derivedLanguages.map((language, index) => (
+              <span
+                key={`${language}-${index}`}
+                className="px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm"
+                style={{
+                  background: testimonialColors[index % testimonialColors.length].bg,
+                  color: '#3f2e73',
+                  border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`
+                }}
+              >
+                {language}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 pl-1">Languages not provided</p>
+        )}
       </div>
     );
   };
@@ -897,6 +975,52 @@ const TherapistProfileContent = () => {
     }
   }, [selectedDoctor]);
 
+  useEffect(() => {
+    if (selectedDoctor) {
+      const designation = getDoctorDesignation(selectedDoctor);
+      const langs = getDoctorLanguages(selectedDoctor);
+      console.log('🪪 Therapist designation:', designation || '(empty)');
+      console.log('🗣️ Therapist languages:', langs.length > 0 ? langs : '(none)');
+    }
+  }, [selectedDoctor]);
+
+  useEffect(() => {
+    if (!selectedDoctor?.id) return;
+
+    const hasDesignation = !!getDoctorDesignation(selectedDoctor);
+    const hasLanguages = getDoctorLanguages(selectedDoctor).length > 0;
+
+    if (hasDesignation && hasLanguages) return;
+    if (detailsFetched[selectedDoctor.id]) return;
+
+    const fetchDetails = async () => {
+      try {
+        const response = await publicApi.getPsychologistDetails(selectedDoctor.id);
+        if (response?.success && response.data?.psychologist) {
+          setSelectedDoctor((prevDoctor) => ({
+            ...prevDoctor,
+            ...response.data.psychologist
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch detailed psychologist profile:', error);
+      } finally {
+        setDetailsFetched((prev) => ({
+          ...prev,
+          [selectedDoctor.id]: true
+        }));
+      }
+    };
+
+    fetchDetails();
+  }, [
+    selectedDoctor?.id,
+    selectedDoctor?.designation,
+    selectedDoctor?.languages,
+    selectedDoctor?.languages_json,
+    detailsFetched,
+  ]);
+
   // Handle package_id parameter for booking remaining sessions
   useEffect(() => {
     if (packageId && isAuthenticated() && hasRole('client')) {
@@ -1064,8 +1188,8 @@ const TherapistProfileContent = () => {
                 <h2 className="text-3xl font-semibold mb-2">
                 {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
                 </h2>
-                <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
-                {selectedDoctor.specialization || 'Licensed Psychologist'}
+              <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
+              {getDoctorDesignation(selectedDoctor)}
               </p>
                 <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
                   {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
@@ -1152,7 +1276,7 @@ const TherapistProfileContent = () => {
                     {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
                   </h3>
                   <p className="text-lg text-gray-600 ">
-                    Psychologist
+                    {getDoctorDesignation(selectedDoctor)}
                   </p>
                   <p className="text-gray-800 text-sm">
                     <span className="font-medium">

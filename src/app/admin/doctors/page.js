@@ -596,6 +596,10 @@ export default function DoctorsPage() {
                       <label className="block text-sm font-medium text-gray-700">Specialty</label>
                       <p className="mt-1 text-sm text-gray-900">{selectedDoctor.specialty || 'Not specified'}</p>
                     </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Designation</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedDoctor.designation || 'Not specified'}</p>
+                  </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Role</label>
                       <p className="mt-1 text-sm text-gray-900 capitalize">{selectedDoctor.role}</p>

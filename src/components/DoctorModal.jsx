@@ -64,6 +64,7 @@ export default function DoctorModal({
       phd: ''
     },
     description: '',
+    designation: '',
     price: '',
     experience_years: '',
     display_order: '',
@@ -72,6 +73,7 @@ export default function DoctorModal({
     ],
     specializations: [''],
     personalities: [''],
+    languages: [''],
     coverImage: null
   });
 
@@ -224,11 +226,32 @@ export default function DoctorModal({
       // Reset the modification flag when opening for edit
       setHasUserModifiedAvailability(false);
       
+      const derivedLanguages = (() => {
+        if (Array.isArray(doctor.languages) && doctor.languages.length > 0) {
+          return doctor.languages;
+        }
+        if (typeof doctor.language === 'string' && doctor.language.trim().length > 0) {
+          return doctor.language.split(',').map(lang => lang.trim()).filter(Boolean);
+        }
+        if (doctor.languages_json && typeof doctor.languages_json === 'string') {
+          try {
+            const parsed = JSON.parse(doctor.languages_json);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed;
+            }
+          } catch (error) {
+            console.warn('Failed to parse languages_json:', doctor.languages_json, error);
+          }
+        }
+        return [''];
+      })();
+
       setFormData({
         firstName: doctor.first_name || doctor.firstName || '',
         lastName: doctor.last_name || doctor.lastName || '',
         phone: doctor.phone || '',
         email: doctor.email || '',
+        designation: doctor.designation || doctor.speaciality || doctor.specialty || doctor.title || '',
         password: '', // Don't load password for editing (passwords are hashed)
         education: {
           ug: doctor.ug_college || doctor.education?.ug || '',
@@ -245,6 +268,7 @@ export default function DoctorModal({
         ],
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
         personalities: doctor.personality_traits || doctor.personalities || [''],
+        languages: derivedLanguages,
         coverImage: resolveDoctorImage(doctor)
       });
       
@@ -722,6 +746,29 @@ export default function DoctorModal({
     }));
   };
 
+  const addLanguage = () => {
+    setFormData(prev => ({
+      ...prev,
+      languages: [...prev.languages, '']
+    }));
+  };
+
+  const removeLanguage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleLanguageChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.map((lang, i) => 
+        i === index ? value : lang
+      )
+    }));
+  };
+
   const removeImage = (field) => {
     setFormData(prev => ({
       ...prev,
@@ -798,6 +845,7 @@ export default function DoctorModal({
         pg_college: formData.education.pg,
         phd_college: formData.education.phd,
         description: formData.description,
+        designation: formData.designation?.trim() || null,
         experience_years: parseInt(formData.experience_years) || 0,
         price: formData.price ? Number(formData.price) : undefined,
         display_order: (() => {
@@ -814,8 +862,15 @@ export default function DoctorModal({
         availability: convertedAvailability,
         packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions),
         // Use single field only
-        cover_image_url: safeImageUrl,
+        cover_image_url: safeImageUrl
       };
+
+      const filteredLanguages = formData.languages
+        .map(lang => lang.trim())
+        .filter(Boolean);
+      if (filteredLanguages.length > 0) {
+        doctorData.languages_json = JSON.stringify(filteredLanguages);
+      }
 
       // Handle password for edit mode
       if (mode === 'edit' && showPasswordReset && newPassword.trim()) {
@@ -938,6 +993,19 @@ export default function DoctorModal({
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Designation / Title
+              </label>
+              <input
+                type="text"
+                value={formData.designation}
+                onChange={(e) => handleInputChange('designation', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Consultant Psychologist"
+              />
             </div>
 
             <div>
@@ -1342,6 +1410,43 @@ export default function DoctorModal({
             {errors.specializations && (
               <p className="text-red-500 text-sm mt-1">{errors.specializations}</p>
             )}
+          </div>
+
+          {/* Languages */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-medium text-gray-800">Languages</h3>
+              <button
+                type="button"
+                onClick={addLanguage}
+                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4 inline mr-1" />
+                Add Language
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {formData.languages.map((language, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={language}
+                    onChange={(e) => handleLanguageChange(index, e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., English"
+                  />
+                  {formData.languages.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeLanguage(index)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Personality Traits */}
