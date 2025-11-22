@@ -1196,7 +1196,7 @@ const Guide = () => {
               <div 
                 className="doctor-modal-content" 
                 onClick={e => e.stopPropagation()}
-                style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 12 }}
+                style={{ maxHeight: '60vh', overflowY: 'auto' }}
               >
                 <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 4 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
