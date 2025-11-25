@@ -22,9 +22,192 @@ const Guide = () => {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Fetch doctors from database
-  const fetchDoctors = async () => {
+  // Helper functions for time slot filtering (same as therapist profile page)
+  const parseTimeStringToMinutes = (timeStr) => {
+    if (!timeStr) return null;
+    const trimmed = timeStr.trim();
+    
+    // Handle 12-hour format (e.g., "2:30 PM", "10:00 AM")
+    const pmMatch = trimmed.match(/(\d{1,2}):(\d{2})\s*(PM|pm)/i);
+    const amMatch = trimmed.match(/(\d{1,2}):(\d{2})\s*(AM|am)/i);
+    
+    if (pmMatch) {
+      let hours = parseInt(pmMatch[1], 10);
+      const minutes = parseInt(pmMatch[2], 10);
+      if (hours !== 12) hours += 12;
+      return hours * 60 + minutes;
+    }
+    
+    if (amMatch) {
+      let hours = parseInt(amMatch[1], 10);
+      const minutes = parseInt(amMatch[2], 10);
+      if (hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    }
+    
+    // Handle 24-hour format (e.g., "14:30", "10:00")
+    const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      return hours * 60 + minutes;
+    }
+
+    return null;
+  };
+
+  const getSlotMinutes = (slot) => {
+    if (!slot) return null;
+    if (typeof slot === 'string') {
+      return parseTimeStringToMinutes(slot);
+    }
+    const possibleKeys = ['time', 'time_slot', 'startTime', 'start_time', 'displayTime'];
+    for (const key of possibleKeys) {
+      if (slot[key]) {
+        const minutes = parseTimeStringToMinutes(slot[key]);
+        if (minutes !== null) return minutes;
+      }
+    }
+    return null;
+  };
+
+  const isSlotInPast = (slot, date) => {
+    if (!slot || !date) return false;
+    const now = new Date();
+    const isSameDay =
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    if (!isSameDay) return false;
+    const slotMinutes = getSlotMinutes(slot);
+    if (slotMinutes === null) return false;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return slotMinutes <= nowMinutes;
+  };
+
+  // Cache management functions
+  const CACHE_KEY = 'psychologists_list_cache';
+  const CACHE_VERSION_KEY = 'psychologists_cache_version';
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+  const getCachedDoctors = () => {
     try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      const cachedVersion = localStorage.getItem(CACHE_VERSION_KEY);
+      const timestamp = localStorage.getItem(`${CACHE_KEY}_timestamp`);
+      
+      if (!cached || !timestamp) return null;
+      
+      const now = Date.now();
+      const cacheAge = now - parseInt(timestamp, 10);
+      
+      // Check if cache is expired
+      if (cacheAge > CACHE_TTL) {
+        console.log('📦 Cache expired, clearing...');
+        clearDoctorCache();
+        return null;
+      }
+      
+      const parsedCache = JSON.parse(cached);
+      console.log('📦 Using cached doctors data (age:', Math.round(cacheAge / 1000), 'seconds)');
+      return parsedCache;
+    } catch (error) {
+      console.error('Error reading cache:', error);
+      clearDoctorCache();
+      return null;
+    }
+  };
+
+  const setCachedDoctors = (doctors, version = null) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(doctors));
+      localStorage.setItem(`${CACHE_KEY}_timestamp`, Date.now().toString());
+      if (version) {
+        localStorage.setItem(CACHE_VERSION_KEY, version);
+      }
+      console.log('📦 Cached doctors data');
+    } catch (error) {
+      console.error('Error setting cache:', error);
+    }
+  };
+
+  const clearDoctorCache = () => {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(`${CACHE_KEY}_timestamp`);
+      localStorage.removeItem(CACHE_VERSION_KEY);
+      console.log('📦 Cleared doctors cache');
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+    }
+  };
+
+  // Check if cache version matches (for invalidation on updates)
+  const checkCacheVersion = async () => {
+    try {
+      const cachedVersion = localStorage.getItem(CACHE_VERSION_KEY);
+      
+      // Fetch current cache version from API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/public/psychologists/cache-version`);
+      if (!response.ok) {
+        // If endpoint fails, assume cache is valid (fallback)
+        return true;
+      }
+      
+      const data = await response.json();
+      const serverVersion = data?.data?.cache_version;
+      
+      if (!serverVersion) {
+        return true; // No version from server, assume valid
+      }
+      
+      // If we have a cached version, compare it
+      if (cachedVersion) {
+        const cachedVersionNum = parseInt(cachedVersion, 10);
+        const serverVersionNum = parseInt(serverVersion, 10);
+        
+        // If server version is newer, cache is invalid
+        if (serverVersionNum > cachedVersionNum) {
+          console.log('📦 Cache version mismatch, invalidating cache');
+          clearDoctorCache();
+          return false;
+        }
+      }
+      
+      // Update cached version
+      localStorage.setItem(CACHE_VERSION_KEY, serverVersion.toString());
+      return true;
+    } catch (error) {
+      console.error('Error checking cache version:', error);
+      // On error, assume cache is valid (fallback to prevent breaking)
+      return true;
+    }
+  };
+
+  // Fetch doctors from database with caching
+  const fetchDoctors = async (forceRefresh = false) => {
+    try {
+      // Check cache first (unless force refresh)
+      if (!forceRefresh) {
+        const cached = getCachedDoctors();
+        if (cached) {
+          // Check cache version
+          const versionValid = await checkCacheVersion();
+          if (versionValid) {
+            setDoctors(cached);
+            setLoading(false);
+            // Still fetch in background to update cache
+            fetchDoctorsInBackground();
+            return;
+          } else {
+            // Version mismatch, clear cache and fetch fresh
+            clearDoctorCache();
+          }
+        }
+      } else {
+        clearDoctorCache();
+      }
+
       console.log('Fetching doctors...');
       setLoading(true);
       setError(null);
@@ -55,14 +238,59 @@ const Guide = () => {
         id: psych.id
       })));
       
+      // Get cache version from response if available
+      const cacheVersion = response?.data?.cache_version || Date.now();
+      
+      // Cache the filtered doctors with version
+      setCachedDoctors(filteredPsychologists, cacheVersion);
       setDoctors(filteredPsychologists);
     } catch (err) {
       console.error('Error fetching doctors:', err);
-      setError('Failed to load doctors. Please try again later.');
-      // Fallback to empty array
-      setDoctors([]);
+      
+      // On error, try to use cache as fallback
+      const cached = getCachedDoctors();
+      if (cached) {
+        console.log('📦 Using cached data as fallback due to fetch error');
+        setDoctors(cached);
+        setError(null);
+      } else {
+        setError('Failed to load doctors. Please try again later.');
+        setDoctors([]);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Background fetch to update cache without blocking UI
+  const fetchDoctorsInBackground = async () => {
+    try {
+      const response = await publicApi.getPsychologists();
+      const psychologists = response?.data?.psychologists || [];
+      const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
+      const filteredPsychologists = psychologists.filter(psych => (psych.email || '').toLowerCase() !== assessmentEmail);
+      
+      // Get cache version from response if available
+      const cacheVersion = response?.data?.cache_version || Date.now();
+      
+      // Update cache with fresh data and version
+      setCachedDoctors(filteredPsychologists, cacheVersion);
+      
+      // Update state if doctors list changed
+      setDoctors(prevDoctors => {
+        const prevIds = new Set(prevDoctors.map(d => d.id));
+        const newIds = new Set(filteredPsychologists.map(d => d.id));
+        const idsChanged = prevIds.size !== newIds.size || 
+          [...prevIds].some(id => !newIds.has(id));
+        
+        if (idsChanged) {
+          console.log('📦 Background fetch: Doctors list changed, updating UI');
+          return filteredPsychologists;
+        }
+        return prevDoctors;
+      });
+    } catch (error) {
+      console.error('Background fetch error (non-critical):', error);
     }
   };
 
@@ -84,16 +312,35 @@ const Guide = () => {
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (response.success && response.data && response.data.data) {
-        // Find the first date with available slots
+        // Find the first date with available slots (filtering out past time slots)
         const availabilityArray = response.data.data;
         const firstAvailableDate = availabilityArray.find(day => {
-          const availableSlots = day.timeSlots?.filter(slot => slot.available) || [];
+          // Parse the date string to a Date object
+          const [year, month, dayNum] = day.date.split('-');
+          const dayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
+          
+          // Filter available slots and exclude past time slots if it's today
+          const availableSlots = day.timeSlots?.filter(slot => {
+            if (!slot.available) return false;
+            // If the date is today, filter out past time slots
+            return !isSlotInPast(slot, dayDate);
+          }) || [];
+          
           return availableSlots.length > 0;
         });
 
         if (firstAvailableDate) {
+          // Parse the date string to a Date object for filtering
+          const [year, month, dayNum] = firstAvailableDate.date.split('-');
+          const dayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
+          
+          // Filter available slots and exclude past time slots if it's today
           const availableSlots = firstAvailableDate.timeSlots
-            .filter(slot => slot.available)
+            .filter(slot => {
+              if (!slot.available) return false;
+              // If the date is today, filter out past time slots
+              return !isSlotInPast(slot, dayDate);
+            })
             .slice(0, 3) // Get first 3 available slots
             .map(slot => slot.displayTime || slot.time);
 
@@ -153,6 +400,24 @@ const Guide = () => {
   useEffect(() => {
     fetchDoctors();
   }, []);
+
+  // Periodic cache version check (every 2 minutes) to detect updates
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const cached = getCachedDoctors();
+      if (cached && doctors.length > 0) {
+        const versionValid = await checkCacheVersion();
+        if (!versionValid) {
+          // Cache was invalidated, fetch fresh data
+          console.log('📦 Cache invalidated, fetching fresh data...');
+          fetchDoctors(true);
+        }
+      }
+    }, 2 * 60 * 1000); // Check every 2 minutes
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctors.length]);
 
   // Fetch availability when doctors are loaded (non-blocking)
   useEffect(() => {
@@ -453,6 +718,36 @@ const Guide = () => {
                 box-shadow: none !important;
               }
             }
+            
+            /* Availability div width matching - responsive */
+            .availability-container {
+              max-width: 280px;
+              width: 100%;
+            }
+            
+            @media (min-width: 1200px) {
+              .availability-container {
+                max-width: 300px;
+              }
+            }
+            
+            @media (max-width: 1024px) and (min-width: 769px) {
+              .availability-container {
+                max-width: 320px;
+              }
+            }
+            
+            @media (max-width: 900px) and (min-width: 769px) {
+              .availability-container {
+                max-width: 280px;
+              }
+            }
+            
+            @media (max-width: 768px) {
+              .availability-container {
+                max-width: 100%;
+              }
+            }
           `}</style>
           
           {loading ? (
@@ -499,7 +794,7 @@ const Guide = () => {
           ) : (
             doctors.map((doc, idx) => {
               return (
-                <div key={doc.id || doc.name || idx} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div key={doc.id || doc.name || idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
                 <div
                   className="guide-video-card"
                   onClick={() => handleDoctorClick(doc, idx)}
@@ -646,41 +941,46 @@ const Guide = () => {
                         {`${(doc.experience_years || 3)}+ yrs Experience`}
                       </span>
                       {/* Designation chip */}
-                      <span style={{
-                        background: 'rgba(255,255,255,0.22)',
-                        color: '#fff',
-                        borderRadius: 16,
-                        padding: '0.05em 0.5em',
-                        fontWeight: 400,
-                        fontSize: '0.9rem',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                        backdropFilter: 'blur(0.5px)',
-                        WebkitBackdropFilter: 'blur(0.5px)',
-                        border: '1.5px solid rgba(255,255,255,0.18)'
-                      }}>
-                        {doc.designation || doc.specialization || 'Consultant Psychologist'}
-                      </span>
+                      {doc.designation || doc.specialization ? (
+                        <span style={{
+                          background: 'rgba(255,255,255,0.22)',
+                          color: '#fff',
+                          borderRadius: 16,
+                          padding: '0.05em 0.5em',
+                          fontWeight: 400,
+                          fontSize: '0.9rem',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                          backdropFilter: 'blur(0.5px)',
+                          WebkitBackdropFilter: 'blur(0.5px)',
+                          border: '1.5px solid rgba(255,255,255,0.18)'
+                        }}>
+                          {doc.designation || doc.specialization}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
                 {/* Availability information - below card */}
-                <div style={{
+                <div className="availability-container" style={{
                   marginTop: 8,
                   marginBottom: 20,
-                  width: '100%'
+                  minHeight: '50px' // Fixed height to prevent layout shift
                 }}>
                   <div style={{
                     background: 'rgba(255,255,255,0.25)',
                     color: '#000000',
                     borderRadius: 12,
-                    padding: '0.05em 0.5em',
+                    padding: '8px 12px',
                     fontWeight: 500,
                     fontSize: '0.75rem',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                    boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
                     backdropFilter: 'blur(0.5px)',
                     WebkitBackdropFilter: 'blur(0.5px)',
                     border: '1px solid #ffffff',
-                    display: 'inline-block'
+                    display: 'block',
+                    width: '100%',
+                    minHeight: '40px', // Fixed height for content area
+                    lineHeight: '1.4' // Better line spacing
                   }}>
                     {(() => {
                       const availability = doctorAvailability[doc.id];
@@ -1276,7 +1576,18 @@ const Guide = () => {
                 <button
                   className="doctor-modal-button find-guide-button"
                   style={{ background: '#3f2e73', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
-                  onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
+                  onClick={() => {
+                    const doctor = doctors[selected];
+                    if (doctor) {
+                      // Create URL-friendly slug from doctor name
+                      const nameSlug = (doctor.name || `${doctor.first_name} ${doctor.last_name}`)
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                      router.push(`/therapist-profile?doctor=${nameSlug}`);
+                    }
+                  }}
                 >
                   Book Now
                 </button>

@@ -16,7 +16,7 @@ import QuickContactModal from '@/components/QuickContactModal';
 const TherapistProfileContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const doctorIndex = searchParams.get('doctor');
+  const doctorParam = searchParams.get('doctor');
   const packageId = searchParams.get('package_id'); // Add package_id parameter
   const { user, token, isAuthenticated, hasRole } = useAuth();
   const { showError, showWarning, showSuccess } = useNotification();
@@ -208,26 +208,46 @@ const TherapistProfileContent = () => {
         );
         setDoctors(filteredPsychologists);
         
-        // Handle both index-based and ID-based doctor parameters
-        if (doctorIndex !== null) {
-          // Check if doctorIndex is a UUID (psychologist ID) or a number (index)
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorIndex);
+        // Handle doctor parameter (name slug, UUID, or index for backward compatibility)
+        if (doctorParam !== null) {
+          // Helper function to create slug from name
+          const createSlug = (name) => {
+            return name
+              .toLowerCase()
+              .trim()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '');
+          };
+          
+          // Check if it's a UUID (psychologist ID)
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
           
           if (isUUID) {
             // If it's a UUID, find the psychologist by ID
-            const psychologist = filteredPsychologists.find(doc => doc.id === doctorIndex);
+            const psychologist = filteredPsychologists.find(doc => doc.id === doctorParam);
             if (psychologist) {
               setSelectedDoctor(psychologist);
             } else {
               setError('Doctor not found');
             }
           } else {
-            // If it's a number, use it as an index
-            const index = parseInt(doctorIndex);
-            if (!Number.isNaN(index) && filteredPsychologists[index]) {
-              setSelectedDoctor(filteredPsychologists[index]);
+            // Try to find by name slug first
+            const psychologist = filteredPsychologists.find(doc => {
+              const name = doc.name || `${doc.first_name} ${doc.last_name}`;
+              const slug = createSlug(name);
+              return slug === doctorParam;
+            });
+            
+            if (psychologist) {
+              setSelectedDoctor(psychologist);
             } else {
-              setError('Doctor not found');
+              // Fallback: Check if it's a number (for backward compatibility)
+              const index = parseInt(doctorParam);
+              if (!Number.isNaN(index) && filteredPsychologists[index]) {
+                setSelectedDoctor(filteredPsychologists[index]);
+              } else {
+                setError('Doctor not found');
+              }
             }
           }
         }
@@ -532,11 +552,12 @@ const TherapistProfileContent = () => {
             {derivedLanguages.map((language, index) => (
               <span
                 key={`${language}-${index}`}
-                className="px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm"
+                className="px-3 py-1 text-xs md:text-sm font-medium shadow-sm"
                 style={{
                   background: testimonialColors[index % testimonialColors.length].bg,
                   color: '#3f2e73',
-                  border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`
+                  border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`,
+                  borderRadius: '10px'
                 }}
               >
                 {language}
@@ -948,16 +969,35 @@ const TherapistProfileContent = () => {
   }, []);
 
   useEffect(() => {
-    if (doctorIndex !== null && doctors.length > 0) {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorIndex);
+    if (doctorParam !== null && doctors.length > 0) {
+      // Helper function to create slug from name
+      const createSlug = (name) => {
+        return name
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      };
+      
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
       let doctor = null;
 
       if (isUUID) {
-        doctor = doctors.find(doc => doc.id === doctorIndex);
+        doctor = doctors.find(doc => doc.id === doctorParam);
       } else {
-        const index = parseInt(doctorIndex, 10);
-        if (!Number.isNaN(index)) {
-          doctor = doctors[index];
+        // Try to find by name slug first
+        doctor = doctors.find(doc => {
+          const name = doc.name || `${doc.first_name} ${doc.last_name}`;
+          const slug = createSlug(name);
+          return slug === doctorParam;
+        });
+        
+        // Fallback: Check if it's a number (for backward compatibility)
+        if (!doctor) {
+          const index = parseInt(doctorParam, 10);
+          if (!Number.isNaN(index)) {
+            doctor = doctors[index];
+          }
         }
       }
 
@@ -966,7 +1006,7 @@ const TherapistProfileContent = () => {
         setSelectedDoctor(doctor);
       }
     }
-  }, [doctorIndex, doctors]);
+  }, [doctorParam, doctors]);
 
   useEffect(() => {
     if (selectedDoctor) {
@@ -1028,7 +1068,7 @@ const TherapistProfileContent = () => {
     }
   }, [packageId, isAuthenticated, hasRole]);
 
-  // Automatically select today's date if it has available slots
+  // Automatically select today's date if it exists in availability (even if no slots available)
   useEffect(() => {
     // Only auto-select if availability is loaded and no date is currently selected
     if (!loadingAvailability && Object.keys(psychologistAvailability).length > 0 && !selectedDate && selectedDoctor) {
@@ -1040,15 +1080,11 @@ const TherapistProfileContent = () => {
       
       const todayAvailability = psychologistAvailability[todayStr];
       
+      // Auto-select today's date if it exists in availability (even if no slots available)
+      // This allows showing "No available slots" message when appropriate
       if (todayAvailability) {
-        const allTimeSlots = todayAvailability.timeSlots || [];
-        // Check if there are any available slots that are not in the past
-        const availableSlots = allTimeSlots.filter(slot => slot.available && !isSlotInPast(slot, today));
-        
-        if (availableSlots.length > 0) {
-          // Automatically select today's date
-          setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-        }
+        // Automatically select today's date
+        setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
       }
     }
   }, [psychologistAvailability, loadingAvailability, selectedDate, selectedDoctor]);
@@ -1671,14 +1707,22 @@ const TherapistProfileContent = () => {
                             </div>
                           </div>
                         ) : hadAvailableSlots ? (
+                          <div className="text-center py-3 text-xs text-gray-500">
+                            <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p style={{ lineHeight: '1.1', margin: 0 }}>All earlier slots for today have passed.</p>
+                            <p style={{ lineHeight: '1.1', marginTop: '2px' }}>Please pick another time or date.</p>
+                          </div>
+                        ) : (
                           <div className="text-center py-6 text-xs text-gray-500">
                             <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p>All earlier slots for today have passed.</p>
-                            <p className="mt-1">Please pick another time or date.</p>
+                            <p className="font-medium">No available slots</p>
+                            <p className="mt-1">Please select another date</p>
                           </div>
-                        ) : null}
+                        )}
                       </div>
                     );
                   })()
@@ -1692,7 +1736,7 @@ const TherapistProfileContent = () => {
               </div>
 
                 {/* Package Selection or Package Information */}
-                <div className="space-y-4 mb-4">
+                <div className="mb-4 mt-6">
                 {isBookingRemaining && clientPackage ? (
                   // Show package information when booking remaining sessions
                   <div>
@@ -1726,7 +1770,7 @@ const TherapistProfileContent = () => {
                 ) : (
                   // Show package selection for new bookings
                   <>
-                    <p className="font-semibold text-gray-800 mb-3 text-sm">Select Package</p>
+                    <p className="text-sm font-medium text-[#3f2e73] mb-3">Select Package</p>
                     
                     {/* Individual Session Option - Always Available */}
                     <button
@@ -1755,7 +1799,6 @@ const TherapistProfileContent = () => {
                         <span className="font-bold text-base">₹{selectedDoctor.price}</span>
                       </div>
                     </button>
-                    
                     {/* Dynamic Packages from Database */}
                     {loadingPackages ? (
                       <div className="text-center py-4">
@@ -1763,7 +1806,13 @@ const TherapistProfileContent = () => {
                         <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
                       </div>
                     ) : packages.length > 0 ? (
-                      <div className="space-y-2">
+                      <>
+                        <div className="flex items-center my-4">
+                          <div className="flex-1 border-t border-gray-300"></div>
+                          <span className="px-3 text-xs text-gray-500 font-medium">OR</span>
+                          <div className="flex-1 border-t border-gray-300"></div>
+                        </div>
+                        <div className="space-y-1">
                         {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
                           <button
                             key={pkg.id}
@@ -1790,7 +1839,8 @@ const TherapistProfileContent = () => {
                             </div>
                           </button>
                         ))}
-                      </div>
+                        </div>
+                      </>
                     ) : null}
                   </>
                 )}
