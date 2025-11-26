@@ -261,15 +261,15 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
           featuredIndex: data?.videos_featured_index
         }} />
       </div>
-      {/* Reviews */}
-      <div className="mt-8 md:-mt-24">
-        <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
-      </div>
       {(data?.info_cards && data.info_cards.length > 0) && (
         <div className="-mt-8 md:-mt-24">
           <InfoCards cmsData={{ items: data.info_cards }} isCmsPage={true} />
         </div>
       )}
+      {/* Reviews */}
+      <div className="mt-8 md:-mt-24">
+        <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
+      </div>
       {(data?.blog_teaser_enabled !== false) && (
         <div className="mt-12 md:mt-16">
           <BlogTeaser />
