@@ -20,6 +20,7 @@ const Guide = () => {
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [isClosingDoctorModal, setIsClosingDoctorModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
 
@@ -196,6 +197,7 @@ const Guide = () => {
           const versionValid = await checkCacheVersion();
           if (versionValid) {
             setDoctors(cached);
+            setImagesLoaded(false); // Reset images loaded state
             setLoading(false);
             // Still fetch in background to update cache
             fetchDoctorsInBackground();
@@ -245,6 +247,7 @@ const Guide = () => {
       // Cache the filtered doctors with version
       setCachedDoctors(filteredPsychologists, cacheVersion);
       setDoctors(filteredPsychologists);
+      setImagesLoaded(false); // Reset images loaded state when doctors change
     } catch (err) {
       console.error('Error fetching doctors:', err);
       
@@ -253,6 +256,7 @@ const Guide = () => {
       if (cached) {
         console.log('📦 Using cached data as fallback due to fetch error');
         setDoctors(cached);
+        setImagesLoaded(false); // Reset images loaded state
         setError(null);
       } else {
       setError('Failed to load doctors. Please try again later.');
@@ -420,6 +424,36 @@ const Guide = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
+  // Preload images when doctors are loaded
+  useEffect(() => {
+    if (doctors.length > 0 && !imagesLoaded) {
+      const imagePromises = doctors.map((doc) => {
+        return new Promise((resolve) => {
+          const imageSrc = doc.cover_image_url || doc.profile_picture_url;
+          if (!imageSrc) {
+            // No image to load, resolve immediately
+            resolve();
+            return;
+          }
+          
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve(); // Resolve even on error to not block
+          img.src = imageSrc;
+        });
+      });
+      
+      // Wait for all images to load (or timeout after 3 seconds)
+      Promise.race([
+        Promise.all(imagePromises),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]).then(() => {
+        setImagesLoaded(true);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctors.length]);
+
   // Fetch availability when doctors are loaded (non-blocking)
   useEffect(() => {
     if (doctors.length > 0) {
@@ -491,8 +525,8 @@ const Guide = () => {
     setShowDateTimePicker(true);
   };
 
-  // Show loading screen until doctors are loaded (excluding availability)
-  if (loading) {
+  // Show loading screen until doctors and images are loaded (excluding availability)
+  if (loading || (doctors.length > 0 && !imagesLoaded)) {
     return <LoadingScreen />;
   }
 
