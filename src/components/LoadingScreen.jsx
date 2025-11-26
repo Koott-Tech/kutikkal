@@ -26,9 +26,10 @@ export default function LoadingScreen({ message = "" }) {
         }}
       >
         <div
+          className="loading-logo"
           style={{
-            width: "320px",
-            height: "105px",
+            width: "240px",
+            height: "79px",
             margin: "0 auto",
             backgroundImage: "url('/mainlogo.webp')",
             backgroundSize: "contain",
@@ -56,6 +57,12 @@ export default function LoadingScreen({ message = "" }) {
             0% { transform: scale(1); opacity: 0.9; }
             50% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
+          }
+          @media (max-width: 767px) {
+            .loading-logo {
+              width: 200px !important;
+              height: 66px !important;
+            }
           }
         `}
       </style>
