@@ -61,7 +61,7 @@ export default function Testimonials() {
   const testimonialVideoRef = useRef(null);
   
   const photos = [
-    { src: "https://youtube.com/shorts/RSge3l2uKSI", alt: "Testimonial video", type: "video" },
+    { src: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Kids%20Need%20Care%20Too%20!!.webm", alt: "Testimonial video", type: "video" },
     { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
     { 
       text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
@@ -477,6 +477,27 @@ export default function Testimonials() {
             font-weight: 600;
             line-height: 1.1;
           }
+          /* Tablet: show 2 testimonial cards per carousel viewport */
+          .testimonials-infinite-carousel {
+            scroll-snap-type: x mandatory;
+          }
+          .testimonials-carousel-track {
+            gap: 0;
+            padding-inline: 0;
+          }
+          .testimonials-carousel-card {
+            flex: 0 0 50% !important;
+            width: 50% !important;
+            max-width: 50% !important;
+            min-width: 50% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .testimonials-carousel-card .testimonials-card-content {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
         }
         @media (max-width: 767px) {
           .testimonials-heading {
@@ -618,8 +639,8 @@ export default function Testimonials() {
           <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What families are saying</h3>
         </div>
 
-        {/* Desktop: 5-column layout with images */}
-        <div className="hidden lg:grid grid-cols-5 gap-2 px-2.5 items-start">
+        {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}
+        <div className="hidden xl:grid grid-cols-5 gap-2 px-2.5 items-start">
           {/* First column split vertically into two equal halves with padding and gap */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
@@ -759,8 +780,8 @@ export default function Testimonials() {
         </div>
 
 
-        {/* Mobile: Horizontal photo carousel */}
-        <div className="block lg:hidden w-full mt-6">
+        {/* Mobile + Tablet + Small laptop: Horizontal photo carousel */}
+        <div className="block xl:hidden w-full mt-6">
           {useMobileMarquee ? (
             <div
               className="testimonials-mobile-marquee-wrapper"
@@ -798,7 +819,23 @@ export default function Testimonials() {
                               width: '100%'
                             }}
                           >
-                            {getYouTubeEmbedUrl(photo.src, isMuted) && (
+                            {photo.src.includes('supabase.co') ? (
+                              <video
+                                className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                                autoPlay
+                                loop
+                                playsInline
+                                muted={isMuted}
+                                style={{ 
+                                  pointerEvents: 'none',
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              >
+                                <source src={photo.src} type="video/webm" />
+                              </video>
+                            ) : getYouTubeEmbedUrl(photo.src, isMuted) ? (
                               <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
                                 <iframe
                                   key={`youtube-${isMuted}-${index}`}
@@ -811,29 +848,29 @@ export default function Testimonials() {
                                   loading="lazy"
                                   style={{ border: 'none', pointerEvents: 'none' }}
                                 />
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    toggleMute();
-                                  }}
-                                  className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
-                                  aria-label={isMuted ? 'Unmute' : 'Mute'}
-                                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-                                >
-                                  {isMuted ? (
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                    </svg>
-                                  ) : (
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                    </svg>
-                                  )}
-                                </button>
                               </div>
-                            )}
+                            ) : null}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                toggleMute();
+                              }}
+                              className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 active:bg-black/90 flex items-center justify-center transition-colors"
+                              aria-label={isMuted ? 'Unmute' : 'Mute'}
+                              style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                            >
+                              {isMuted ? (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                </svg>
+                              )}
+                            </button>
                           </div>
                         ) : photo.type === "text" ? (
                           <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
@@ -914,19 +951,39 @@ export default function Testimonials() {
                               width: 'clamp(200px, 72vw, 300px)'
                             }}
                           >
-                        {getYouTubeEmbedUrl(photo.src, isMuted) && (
-                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                            <iframe
-                              key={`youtube-${isMuted}-${index}`}
-                              src={getYouTubeEmbedUrl(photo.src, isMuted)}
+                            {photo.src.includes('supabase.co') ? (
+                              <video
+                                className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                                autoPlay
+                                loop
+                                playsInline
+                                muted={isMuted}
+                                style={{ 
+                                  pointerEvents: 'none',
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              >
+                                <source src={photo.src} type="video/webm" />
+                              </video>
+                            ) : getYouTubeEmbedUrl(photo.src, isMuted) ? (
+                              <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                                <iframe
+                                  key={`youtube-${isMuted}-${index}`}
+                                  src={getYouTubeEmbedUrl(photo.src, isMuted)}
                                   className="absolute inset-0 w-full h-full"
                                   title={`testimonial-carousel-video-${index}`}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                   allowFullScreen={false}
-                              frameBorder="0"
-                              loading="lazy"
+                                  frameBorder="0"
+                                  loading="lazy"
                                   style={{ border: 'none', pointerEvents: 'none' }}
-                            />
+                                />
+                                <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                                <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
+                              </div>
+                            ) : null}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -951,11 +1008,7 @@ export default function Testimonials() {
                                 </svg>
                               )}
                             </button>
-                            <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
                           </div>
-                        )}
-                      </div>
                     ) : photo.type === "text" ? (
                       <div className="relative w-full h-[360px] rounded-[10px] overflow-hidden border border-gray-200 mx-auto" style={{ minHeight: '360px', maxHeight: '360px', width: '100%' }}>
                         <div
