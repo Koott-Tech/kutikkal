@@ -83,13 +83,10 @@ h7 {
  
 }
 
-/* Tablet responsive overrides (768px - 1023px) */
+/* Tablet responsive overrides (768px - 1023px)
+   Note: we intentionally do NOT override h1 here so tablet hero uses the same
+   heading size as laptop/desktop. */
 @media (min-width: 768px) and (max-width: 1023px) {
-  h1 {
-    font-size: 36px !important;
-    line-height: 2.25rem !important;
-  }
-  
   /* CMS hero section specific tablet line-height override */
   .cms-hero-title {
     line-height: 2.5rem !important;
@@ -402,30 +399,71 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   }
 }
 
+/* Tablet hero layout: mirror mobile hero layout but with slightly larger hero */
 @media (min-width: 768px) and (max-width: 1023px) {
-  .hero-section {
-    min-height: clamp(480px, 55vh, 680px) !important;
+  .hero-section.hero-home {
+    min-height: auto;
+    padding-top: 24px;
+    padding-bottom: 0;
+  }
+
+  .hero-mobile-wrapper {
+    /* Tablet: match hero’s inner width/padding like laptop (no extra horizontal constraints) */
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: -16px;
   }
 
   .hero-image-box {
-    height: 400px !important;
-    min-height: 400px !important;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin-top: 20px;
+    margin-bottom: 0;
+  }
+
+  .hero-mobile-image {
+    object-fit: cover;
+    object-position: center bottom;
   }
 
   .hero-title {
-    font-size: 36px !important;
-    line-height: 1.1 !important;
-    text-align: left !important;
+    /* Match laptop-style width on tablet: no extra max-width constraint */
+    text-align: center;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .hero-description {
-    font-size: 17px !important;
-    text-align: left !important;
+    text-align: center;
   }
 
-  .hero-badge-text {
-    font-size: 13px !important;
+  .hero-badge {
+    margin-left: auto;
+    margin-right: auto;
   }
+
+  .hero-buttons {
+    margin-top: 24px;
+    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-buttons button {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+
+  .hero-buttons button:first-child {
+    max-width: 220px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Tablet-specific hero overrides removed for global .hero-section to allow per-page control */
 }
 
 @media (min-width: 1024px) {

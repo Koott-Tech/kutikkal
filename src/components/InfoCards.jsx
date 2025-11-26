@@ -79,6 +79,10 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
           .info-card {
             min-height: 200px;
             padding: 20px;
+            /* On tablet, keep card width similar to laptop card width and center it */
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
           }
           .info-card-title {
             font-size: 18px;
@@ -110,7 +114,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
           }
         }
       `}</style>
-      <div className="mx-auto max-w-7xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 px-4 sm:px-6 md:px-8">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 px-4 sm:px-6 md:px-8">
         {items.map((item) => (
           <div
             key={item.title}

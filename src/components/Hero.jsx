@@ -33,9 +33,9 @@ export default function Hero() {
             '--hero-desktop-image-min-height': '480px'
           }}
         >
-          <div className="flex flex-col md:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
+          <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
             {/* Left: Text */}
-            <div className="hero-text flex flex-col justify-center md:w-[45%] md:order-1 md:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
+            <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
               {/* Badge */}
               <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -89,8 +89,8 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Mobile Image */}
-            <div className="block md:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2" style={{ marginBottom: '-16px' }}>
+            {/* Mobile / Tablet / Small-laptop Image */}
+            <div className="block xl:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2" style={{ marginBottom: '-16px' }}>
               <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"
@@ -104,8 +104,8 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Desktop Image */}
-            <div className="desktop-hero-image hidden md:block md:w-[55%] md:h-full md:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: 'var(--hero-desktop-image-min-height)', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
+            {/* Desktop Image (large laptop and above, aligned with header desktop nav breakpoint) */}
+            <div className="desktop-hero-image hidden xl:block xl:w-[55%] xl:h-full xl:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: 'var(--hero-desktop-image-min-height)', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
               {/* Responsive image box aligned to bottom of column */}
               <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image

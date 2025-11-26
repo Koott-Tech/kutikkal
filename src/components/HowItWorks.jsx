@@ -137,6 +137,7 @@ export default function HowItWorks() {
         @media (min-width: 768px) and (max-width: 1023px) {
           .how-it-works-card {
             height: 320px;
+            /* Tablet: keep card width similar to laptop so it doesn’t look stretched */
             width: 300px;
           }
           .how-it-works-title {
@@ -191,6 +192,7 @@ export default function HowItWorks() {
             margin-top: 10px;
           }
         }
+        /* Mobile carousel layout */
         @media (max-width: 767px) {
           .how-it-works-carousel-wrapper {
             width: 100vw !important;
@@ -229,6 +231,49 @@ export default function HowItWorks() {
             padding-right: clamp(18px, 7vw, 32px);
           }
         }
+        /* Tablet carousel layout: behave like mobile, with 50% cards and a tiny gap */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .how-it-works-carousel-wrapper {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .how-it-works-carousel {
+            scroll-padding-inline: 0;
+            padding-bottom: 12px;
+            margin-inline: 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .how-it-works-carousel::-webkit-scrollbar {
+            display: none;
+          }
+          .how-it-works-track {
+            /* No flex gap; spacing comes from a tiny slide margin */
+            gap: 0;
+            padding-inline: 0;
+          }
+          .how-it-works-slide {
+            /* Each card takes ~50% of the viewport, with an ultra‑small horizontal gap */
+            flex: 0 0 50%;
+            margin: 0 1px;
+            scroll-snap-align: center;
+          }
+          /* Keep gentle leading inset, but reduce trailing inset so gap before the last card is smaller */
+          .how-it-works-track > .how-it-works-slide:first-child {
+            margin-left: 0;
+            padding-left: clamp(24px, 5vw, 32px);
+          }
+          .how-it-works-track > .how-it-works-slide:last-child {
+            margin-right: 0;
+            padding-right: clamp(8px, 2vw, 16px);
+          }
+        }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6">
         <p className="text-center md:text-center mt-2 text-sm md:text-base">
@@ -252,9 +297,9 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-col md:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
-          {/* Mobile Carousel */}
-          <div className="md:hidden w-full how-it-works-carousel-wrapper">
+        <div className="mt-10 flex flex-col lg:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
+          {/* Mobile + Tablet Carousel */}
+          <div className="lg:hidden w-full how-it-works-carousel-wrapper">
             <div className="relative">
               {/* Scrollable Carousel Container */}
               <div 
@@ -420,8 +465,8 @@ export default function HowItWorks() {
             </div>
           </div>
 
-          {/* Desktop Layout */}
-          <div className="hidden md:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
+          {/* Desktop Layout (lg and above) */}
+          <div className="hidden lg:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
             <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
