@@ -222,7 +222,7 @@ export default function Testimonials() {
       }
         }, 700);
       }
-    }, 2000);
+    }, 5000);
   };
 
   const stopAutoPlay = () => {
