@@ -41,7 +41,7 @@ export default function Reviews({ cmsData = null }) {
           display: flex;
           gap: 16px;
           width: max-content;
-          animation: scroll-left 60s linear infinite;
+          animation: scroll-left 20s linear infinite;
         }
         .marquee:hover { animation-play-state: paused; }
         @keyframes scroll-left {

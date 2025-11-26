@@ -39,7 +39,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
             display: flex;
             gap: 0;
             width: max-content;
-            animation: scroll-left 60s linear infinite;
+            animation: scroll-left 20s linear infinite;
           }
           .logo-marquee:hover { animation-play-state: paused; }
         }
@@ -49,10 +49,10 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
         }
       `}</style>
        <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-8 px-2 sm:px-4 md:px-[70px]">
-                 {/* Insurance Coverage Text - Left on desktop, top on mobile */}
-          <div className="flex flex-col items-center md:items-start gap-2 order-1 md:order-1">
-                     <div className="text-center md:text-left">
-             <p className={`text-base font-medium ${textColor} leading-[1.5]`}>
+                 {/* Text Section - Left aligned on both mobile and desktop */}
+          <div className="flex flex-col items-start gap-2 order-1 md:order-1">
+                     <div className="text-left">
+             <p className={`text-sm font-normal ${textColor} leading-[1.5] m-0`}>
                Industry experts from <br className="hidden md:inline" /> renowned universities.
              </p>
            </div>
@@ -90,16 +90,14 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                     ))}
                 </div>
               </div>
-                       {/* More partners text - visible on mobile, hidden on desktop */}
-            <div className="md:hidden mt-2">
-              <span className={`text-base font-medium ${textColor} leading-[1.5]`}>About us →</span>
-            </div>
+              
+              {/* About us text - under logos carousel, visible on mobile and desktop, left aligned like title */}
+              <div className="mt-2 w-full flex justify-start">
+                <div className="pl-4">
+                  <span className={`text-sm font-medium ${textColor} leading-[1.5]`}>About us →</span>
+                </div>
+              </div>
          </div>
-        
-        {/* More Partners Link - Right on desktop, hidden on mobile */}
-        <div className="hidden md:flex items-center order-3">
-          <span className={`text-base font-medium ${textColor}`}>About us →</span>
-        </div>
       </div>
     </section>
   );

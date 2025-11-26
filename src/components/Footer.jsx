@@ -196,21 +196,21 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         <div className="flex items-center justify-center gap-3">
                             <a
                                 href={pathname === '/about' ? "/#choose-your-guide" : "https://wa.me/919539007766?text=Hi%20Little%20Care%2C%20I%27d%20like%20to%20know%20more%20about%20your%20services."}
-                                className="px-3 py-2 md:px-5 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200"
-                                style={{ backgroundColor: 'transparent', color: '#3f2e73', border: '2px solid #3f2e73' }}
+                                className="px-4 py-2 md:px-6 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200"
+                                style={{ backgroundColor: 'transparent', color: '#3f2e73', boxShadow: 'inset 0 0 0 2px #3f2e73' }}
                                 onClick={(e) => {
                                     if (pathname === '/about') {
                                         e.preventDefault();
                                         window.location.href = '/#choose-your-guide';
                                     }
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; }}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#3f2e73'; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.boxShadow = 'inset 0 0 0 2px #3f2e73'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#3f2e73'; e.currentTarget.style.boxShadow = 'inset 0 0 0 2px #3f2e73'; }}
                             >
                                 {pathname === '/about' ? 'Start Your Care' : 'WhatsApp Us'}
                             </a>
                             <button 
-                                className="text-white px-4 py-2 md:px-8 md:py-3 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200 shadow-sm" 
+                                className="text-white px-5 py-2 md:px-7 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200 shadow-sm" 
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}

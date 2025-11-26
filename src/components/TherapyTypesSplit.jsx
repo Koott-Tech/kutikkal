@@ -151,7 +151,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
                 
               <div className="flex justify-start md:justify-start">
             <button 
-                className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-6 md:px-8 py-2 md:py-3 shadow-lg transition-colors duration-200 text-xs md:text-sm lg:text-base text-white"
+                className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 py-3 md:py-4 shadow-lg transition-colors duration-200 text-sm md:text-base lg:text-lg text-white"
               style={{ 
                 backgroundColor: '#3f2e73',
                 fontWeight: 500,

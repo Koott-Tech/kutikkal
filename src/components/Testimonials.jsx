@@ -222,7 +222,7 @@ export default function Testimonials() {
       }
         }, 700);
       }
-    }, 5000);
+    }, 2000);
   };
 
   const stopAutoPlay = () => {
@@ -715,7 +715,7 @@ export default function Testimonials() {
 
           {/* Fourth column: split 40% top (text review), 60% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '236px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '260px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
                 style={{ backgroundImage: "url('/7.png')" }}
@@ -730,7 +730,7 @@ export default function Testimonials() {
                 </p>
               </div>
             </div>
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '372px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
