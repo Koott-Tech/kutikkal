@@ -233,7 +233,7 @@ export default function ChooseOptions() {
                 {/* Read More Button */}
                 <div className="read-more-button absolute bottom-6 md:bottom-8 left-6">
                   <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
-                    <span className="px-3">Read more.</span>
+                    <span className="px-3">Find more</span>
                      <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200">
                       <svg
                         className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"

@@ -254,8 +254,8 @@ const Guide = () => {
         setDoctors(cached);
         setError(null);
       } else {
-        setError('Failed to load doctors. Please try again later.');
-        setDoctors([]);
+      setError('Failed to load doctors. Please try again later.');
+      setDoctors([]);
       }
     } finally {
       setLoading(false);
@@ -942,20 +942,20 @@ const Guide = () => {
                       </span>
                       {/* Designation chip */}
                       {doc.designation || doc.specialization ? (
-                        <span style={{
-                          background: 'rgba(255,255,255,0.22)',
-                          color: '#fff',
-                          borderRadius: 16,
-                          padding: '0.05em 0.5em',
-                          fontWeight: 400,
-                          fontSize: '0.9rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                          backdropFilter: 'blur(0.5px)',
-                          WebkitBackdropFilter: 'blur(0.5px)',
-                          border: '1.5px solid rgba(255,255,255,0.18)'
-                        }}>
+                      <span style={{
+                        background: 'rgba(255,255,255,0.22)',
+                        color: '#fff',
+                        borderRadius: 16,
+                        padding: '0.05em 0.5em',
+                        fontWeight: 400,
+                        fontSize: '0.9rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        backdropFilter: 'blur(0.5px)',
+                        WebkitBackdropFilter: 'blur(0.5px)',
+                        border: '1.5px solid rgba(255,255,255,0.18)'
+                      }}>
                           {doc.designation || doc.specialization}
-                        </span>
+                      </span>
                       ) : null}
                     </div>
                   </div>

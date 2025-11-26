@@ -58,6 +58,7 @@ export default function Testimonials() {
   const [useMobileMarquee, setUseMobileMarquee] = useState(false);
   const [isMobileMarqueePaused, setIsMobileMarqueePaused] = useState(false);
   const marqueeResumeTimeoutRef = useRef(null);
+  const testimonialVideoRef = useRef(null);
   
   const photos = [
     { src: "https://youtube.com/shorts/RSge3l2uKSI", alt: "Testimonial video", type: "video" },
@@ -432,7 +433,17 @@ export default function Testimonials() {
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
+    if (testimonialVideoRef.current) {
+      testimonialVideoRef.current.muted = !isMuted;
+    }
   };
+
+  // Sync video mute state
+  useEffect(() => {
+    if (testimonialVideoRef.current) {
+      testimonialVideoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   return (
     <section className="w-full bg-white testimonials-section mt-8">
@@ -648,7 +659,61 @@ export default function Testimonials() {
               <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
-          {/* Third column: split 40% top (text review), 60% bottom (image) */}
+          {/* Third column: split 30% top (image), 70% bottom (video) */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
+              <img 
+                src="/testimonial3.PNG" 
+                alt="Testimonial" 
+                className="w-full h-full object-cover object-bottom scale-100" 
+              />
+            </div>
+            <div 
+              className="rounded-[10px] relative overflow-hidden" 
+              style={{height: '446px'}}
+            >
+              <video
+                ref={testimonialVideoRef}
+                className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                autoPlay
+                loop
+                playsInline
+                muted={isMuted}
+                style={{ 
+                  pointerEvents: 'none',
+                  width: '102%',
+                  height: '102%',
+                  left: '-1%',
+                  top: '-1%',
+                  objectFit: 'cover'
+                }}
+              >
+                <source src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Kids%20Need%20Care%20Too%20!!.webm" type="video/webm" />
+              </video>
+              {/* Mute/Unmute button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                }}
+                className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
+                aria-label={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? (
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Fourth column: split 40% top (text review), 60% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '236px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <div
@@ -665,57 +730,7 @@ export default function Testimonials() {
                 </p>
               </div>
             </div>
-            <div 
-              className="rounded-[10px] relative overflow-hidden" 
-              style={{height: '396px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}
-            >
-              {embedUrl && (
-                <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden">
-                  <iframe
-                    key={`youtube-${isMuted}`}
-                    src={embedUrl}
-                    className="absolute inset-0 w-full h-full"
-                    title="testimonial-featured-video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen={false}
-                    frameBorder="0"
-                    style={{ pointerEvents: 'none' }}
-                  />
-                  {/* Mute/Unmute button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleMute();
-                    }}
-                    className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
-                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                  >
-                    {isMuted ? (
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Fourth column: split 30% top (image), 70% bottom (image) */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
-              <img 
-                src="/testimonial3.PNG" 
-                alt="Testimonial" 
-                className="w-full h-full object-cover object-bottom scale-100" 
-              />
-            </div>
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '446px'}}>
+            <div className="rounded-[10px] relative overflow-hidden" style={{height: '396px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
