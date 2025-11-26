@@ -157,6 +157,15 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         line-height: 1.2 !important;
                     }
                 }
+                .copyright-symbol {
+                    color: #3f2e73 !important;
+                }
+                p .copyright-symbol {
+                    color: #3f2e73 !important;
+                }
+                .p2 .copyright-symbol {
+                    color: #3f2e73 !important;
+                }
             `}</style>
             {/* New section above footer */}
             {isHomePage ? (
@@ -474,7 +483,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                           
                         </div>
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm mt-6">
-                            <p className="p2 text-center md:text-left">©️ Little Care by Koott Care Pvt. Ltd. All rights reserved</p>
+                            <p className="p2 text-center md:text-left">
+                                <span style={{ color: '#3f2e73', display: 'inline-block', marginRight: '2px' }}>©</span> Little Care by Koott Care Pvt. Ltd. All rights reserved
+                            </p>
                             <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
                                 <a href="/terms-and-conditions" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
                                 <a href="/privacy-policy" className="hover:text-white transition-colors">PRIVACY POLICY</a>
