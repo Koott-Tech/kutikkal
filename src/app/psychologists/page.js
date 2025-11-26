@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
+import LoadingScreen from '@/components/LoadingScreen';
 
 const Guide = () => {
   const [showOnboarding, setShowOnboarding] = React.useState(false);
@@ -489,6 +490,11 @@ const Guide = () => {
     setShowPaymentModal(false);
     setShowDateTimePicker(true);
   };
+
+  // Show loading screen until doctors are loaded (excluding availability)
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", background: "#f8fafc", overflowX: "hidden", position: "relative" }}>
