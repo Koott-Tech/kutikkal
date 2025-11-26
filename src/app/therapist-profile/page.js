@@ -548,7 +548,7 @@ const TherapistProfileContent = () => {
       <div className="p-4 rounded-lg pl-0">
         <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
         {derivedLanguages.length > 0 ? (
-          <div className="flex flex-wrap gap-2 pl-1" style={{ lineHeight: '1.1' }}>
+          <div className="flex flex-wrap gap-2 pl-0" style={{ lineHeight: '1.1' }}>
             {derivedLanguages.map((language, index) => (
               <span
                 key={`${language}-${index}`}
@@ -565,7 +565,7 @@ const TherapistProfileContent = () => {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 pl-1">Languages not provided</p>
+          <p className="text-sm text-gray-500 pl-0">Languages not provided</p>
         )}
       </div>
     );
