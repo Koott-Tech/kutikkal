@@ -816,6 +816,7 @@ export default function SuperAdminPage() {
       </div>
     </div>
   );
+  };
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -1757,5 +1758,4 @@ export default function SuperAdminPage() {
       )}
     </div>
   );
-}
 }
