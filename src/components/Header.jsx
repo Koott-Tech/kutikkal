@@ -139,7 +139,14 @@ export default function Header() {
           };
           
           services
-            .filter(service => service.status === 'published' && service.category)
+            .filter(service => service.status === 'published' && service.category && service.slug)
+            .filter(service => {
+              // Filter out any service with slug that matches category names or invalid patterns
+              // This prevents 404 errors when Razorpay or other crawlers try to access pages like
+              // /counselling/emotional-and-mental-health which don't exist (these are category headers, not actual pages)
+              const invalidSlugs = ['emotional-and-mental-health', 'emotional-mental-health', 'emotional', 'mental-health'];
+              return !invalidSlugs.includes(service.slug.toLowerCase());
+            })
             .forEach(service => {
               if (grouped[service.category]) {
                 grouped[service.category].push({
@@ -1515,6 +1522,21 @@ export default function Header() {
                             </div>
                           )}
                         </div>
+                      </div>
+                      <div className="px-4 pt-4">
+                        <button
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-md text-lg font-medium text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                          onClick={() => {
+                            router.push('/free-assessment');
+                            setIsMobileMenuOpen(false);
+                            setIsMobileAssessmentsOpen(false);
+                          }}
+                        >
+                          <span>Free 20 Min Assessment</span>
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   )}

@@ -80,7 +80,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
             min-height: 200px;
             padding: 20px;
             /* On tablet, keep card width similar to laptop card width and center it */
-            max-width: 380px;
+            max-width: 520px;
             margin-left: auto;
             margin-right: auto;
           }

@@ -89,7 +89,7 @@ h7 {
 @media (min-width: 768px) and (max-width: 1023px) {
   /* CMS hero section specific tablet line-height override */
   .cms-hero-title {
-    line-height: 2.5rem !important;
+    line-height: 1.2 !important;
   }
   
   h2 {
@@ -115,6 +115,14 @@ h7 {
   h6 {
     font-size: 18px !important;
     line-height: 1.25rem !important;
+  }
+}
+
+/* Laptop responsive overrides (1024px and above) */
+@media (min-width: 1024px) {
+  /* CMS hero section specific laptop line-height override */
+  .cms-hero-title {
+    line-height: 1.2 !important;
   }
 }
 
@@ -403,7 +411,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 @media (min-width: 768px) and (max-width: 1023px) {
   .hero-section.hero-home {
     min-height: auto;
-    padding-top: 24px;
+    padding-top: 40px;
     padding-bottom: 0;
   }
 
@@ -418,7 +426,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
   .hero-image-box {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 2.2;
     margin-top: 20px;
     margin-bottom: 0;
   }

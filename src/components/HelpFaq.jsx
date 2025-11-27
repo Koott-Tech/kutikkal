@@ -83,7 +83,7 @@ export default function HelpFaq({ cmsData = null }) {
   const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
 
   return (
-    <section className="w-full px-4 lg:px-6 mt-8 md:mt-24">
+    <section className="w-full px-4 lg:px-6 mt-8 lg:mt-24">
       <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 767px) {
           .help-faq-heading {
@@ -146,8 +146,30 @@ export default function HelpFaq({ cmsData = null }) {
             }
           }
         }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .help-faq-image-container {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            align-self: center !important;
+            width: 600px !important;
+            max-width: 600px !important;
+            height: 450px !important;
+          }
+          .help-faq-right-column {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 600px !important;
+          }
+          .help-faq-left-column {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 600px !important;
+            align-items: flex-start !important;
+            margin-top: 2rem !important;
+          }
+        }
       `}} />
-      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 md:gap-8 px-0 md:grid-cols-[0.9fr_1.1fr]">
+      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 lg:gap-8 px-0 lg:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0 help-faq-left-column">
           <div className="space-y-1">
@@ -176,7 +198,7 @@ export default function HelpFaq({ cmsData = null }) {
         </div>
 
                  {/* Right column: Accordion FAQ */}
-         <div className="mr-4 md:mr-8 lg:mr-12 w-full md:max-w-2xl ml-1 md:ml-0 px-2 md:px-0">
+         <div className="help-faq-right-column mr-4 md:mr-8 lg:mr-12 w-full md:max-w-2xl ml-1 md:ml-0 px-2 md:px-0">
            {faqData.map((section, ci) => {
             const isLastSection = ci === faqData.length - 1;
             const spacingClasses = isLastSection ? 'mt-16 md:mt-3' : 'mt-3';

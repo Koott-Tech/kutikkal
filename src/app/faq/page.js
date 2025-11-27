@@ -58,7 +58,7 @@ export default function FAQ() {
         }
       `}} />
       {/* Hero Section */}
-      <section className="w-full py-16 md:py-20 px-4 md:px-6">
+      <section className="w-full py-16 md:py-20 px-4 md:px-6 lg:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="faq-main-heading text-[2.5rem] md:text-4xl lg:text-5xl font-medium leading-[1.0] md:leading-tight mb-4 md:mb-6 mt-8 md:mt-0 tracking-[-0.195rem]" style={{ color: '#1d1733' }}>
             Frequently Asked Questions
@@ -70,7 +70,7 @@ export default function FAQ() {
       </section>
 
       {/* FAQ Section */}
-      <section className="w-full px-4 lg:px-6 pb-16 md:pb-24">
+      <section className="w-full px-4 md:px-6 lg:px-6 pb-16 md:pb-24">
         <style dangerouslySetInnerHTML={{__html: `
           @media (max-width: 767px) {
             .faq-heading {

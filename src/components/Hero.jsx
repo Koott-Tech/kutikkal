@@ -20,9 +20,25 @@ export default function Hero() {
   
   return (
     <div className="w-full overflow-hidden mt-12">
+      <style jsx>{`
+        /* Tablet: ensure hero section has no bottom padding so image can touch bottom */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .hero-section.hero-home {
+            padding-bottom: 0 !important;
+          }
+          .hero-mobile-wrapper {
+            margin-bottom: 0 !important;
+            margin-top: 24px;
+          }
+          .hero-image-box {
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+          }
+        }
+      `}</style>
       <div className="hero-wrapper mx-auto max-w-[1400px] px-0 md:px-0">
         <section 
-          className="hero-section text-black p-4 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] overflow-hidden relative"
+          className="hero-section hero-home text-black p-4 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] overflow-hidden relative"
           style={{ 
             backgroundColor: '#E4E4F9',
             border: 'none',
@@ -90,7 +106,7 @@ export default function Hero() {
             </div>
 
             {/* Mobile / Tablet / Small-laptop Image */}
-            <div className="block xl:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2" style={{ marginBottom: '-16px' }}>
+            <div className="hero-mobile-wrapper block xl:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
               <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"

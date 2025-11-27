@@ -6,7 +6,7 @@ export default function ConsultationBanner() {
   const router = useRouter();
   return (
     <div className="section-mobile mt-16">
-      <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-0">
+      <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-6 lg:px-0">
         <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
           <div className="overflow-hidden relative rounded-[10px] main-container min-h-[280px] md:min-h-[200px]" style={{ borderRadius: "10px", minHeight: "200px" }}>
             <div className="absolute top-0 left-0 right-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/consultationbanner.png')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px', height: '180px', maxHeight: '180px', width: '100%' }}></div>
@@ -44,6 +44,20 @@ export default function ConsultationBanner() {
               .mobile-text button {
                 font-size: 12px;
                 padding: 8px 16px;
+              }
+              .mobile-image {
+                overflow: visible !important;
+              }
+              .desktop-image {
+                overflow: visible !important;
+                width: 130px !important;
+                height: 180px !important;
+              }
+              .desktop-image img {
+                object-fit: contain !important;
+                object-position: center !important;
+                width: 100% !important;
+                height: 100% !important;
               }
             }
             @media (max-width: 767px) {
@@ -163,7 +177,6 @@ export default function ConsultationBanner() {
                 padding: 0 !important;
                 width: 70px;
                 height: 100px;
-                background-color: #3b82f6;
               }
               .mobile-image > div img {
                 padding: 0 !important;
@@ -220,7 +233,6 @@ export default function ConsultationBanner() {
                 position: relative;
                 top: 40%;
                 transform: translateY(-50%);
-                background-color: #3b82f6;
                 padding: 0;
                 margin: 0;
               }

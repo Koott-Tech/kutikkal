@@ -117,14 +117,57 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <section className="w-full mt-4 md:mt-0 mb-0 md:mb-8 px-0 pt-8 md:pt-0">
+    <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0">
+      <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .therapy-types-section {
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+          }
+          .therapy-types-content-area {
+            border-radius: 10px !important;
+            overflow: hidden !important;
+          }
+          .therapy-types-button {
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+          }
+          .therapy-types-content {
+            padding-left: 80px !important;
+            padding-right: 80px !important;
+          }
+          .therapy-types-content h3 {
+            line-height: 1.2 !important;
+          }
+          .therapy-types-content p {
+            line-height: 1.4 !important;
+          }
+          .therapy-types-list > div {
+            margin-top: 1rem !important;
+          }
+          .therapy-types-list > div:first-child {
+            margin-top: 0 !important;
+          }
+          .therapy-types-image {
+            padding-left: 80px !important;
+            padding-right: 80px !important;
+            margin-bottom: 2rem !important;
+          }
+          .therapy-types-image > div {
+            left: 80px !important;
+            right: 80px !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+          }
+        }
+      `}</style>
       <div className="w-full overflow-hidden">
-        <div className="flex flex-col md:grid md:grid-cols-2">
+        <div className="flex flex-col lg:grid lg:grid-cols-2">
           {/* Content Area - with background */}
           <div
-            className="flex flex-col justify-start px-0 pt-10 pb-0 md:py-20 text-[#1c331d] order-1 md:order-1 relative bg-[#DEEFDC]"
+            className="therapy-types-content-area flex flex-col justify-start px-0 pt-10 pb-0 lg:py-20 text-[#1c331d] order-1 lg:order-1 relative bg-[#DEEFDC]"
           >
-            <div className="px-6 sm:px-8 md:px-[100px] lg:px-[120px]">
+            <div className="therapy-types-content px-6 sm:px-8 lg:px-[120px]">
             <h3 
               className="mb-2"
               style={{
@@ -136,22 +179,22 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
               {currentContent.title}
             </h3>
            
-            <div className="mt-8 md:mt-12 space-y-6 md:space-y-8">
+            <div className="therapy-types-list mt-8 lg:mt-12 space-y-6 lg:space-y-8">
               {currentContent.types.map((type, index) => (
                 <div key={index}>
-                  <p className="font-semibold text-sm md:text-base lg:text-lg mb-2 md:mb-3">
+                  <p className="font-semibold text-sm lg:text-lg mb-2 lg:mb-3">
                     {type.title}
                   </p>
-                  <p className="leading-relaxed font-normal text-xs md:text-sm lg:text-base">
+                  <p className="leading-relaxed font-normal text-xs lg:text-base">
                     {type.description}
                   </p>
                 </div>
               ))}
             </div>
                 
-              <div className="flex justify-start md:justify-start">
+              <div className="flex justify-start lg:justify-start">
             <button 
-                className="mt-6 md:mt-8 inline-flex items-center justify-center rounded-full px-8 md:px-10 py-3 md:py-4 shadow-lg transition-colors duration-200 text-sm md:text-base lg:text-lg text-white"
+                className="therapy-types-button mt-6 lg:mt-8 inline-flex items-center justify-center rounded-full px-8 lg:px-10 py-3 lg:py-4 shadow-lg transition-colors duration-200 text-sm lg:text-lg text-white"
               style={{ 
                 backgroundColor: '#3f2e73',
                 fontWeight: 500,
@@ -171,7 +214,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             </div>
 
             {/* Mobile Image - Inside the green background area */}
-            <div className="block md:hidden mt-8 mx-0 relative" style={{ minHeight: '380px', height: '55vh', marginBottom: 0, paddingBottom: 0 }}>
+            <div className="therapy-types-image block lg:hidden mt-8 mx-0 relative" style={{ minHeight: '380px', height: '55vh', marginBottom: 0, paddingBottom: 0 }}>
               <div className="absolute inset-0" style={{ borderRadius: 0 }}>
                 <Image
                   src={currentContent.rightImageUrl || "/rightside5th.png"}
@@ -187,7 +230,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
           </div>
 
           {/* Image Area - Desktop Only */}
-          <div className="hidden md:block relative" style={{ minHeight: '400px' }}>
+          <div className="hidden lg:block relative" style={{ minHeight: '400px' }}>
             <div className="absolute inset-0">
               <Image
                 src={currentContent.rightImageUrl || "/rightside5th.png"}

@@ -48,19 +48,19 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
           100% { transform: translateX(-50%); }
         }
       `}</style>
-       <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-8 px-2 sm:px-4 md:px-[70px]">
+       <div className="flex flex-col lg:flex-row items-center justify-between gap-2 lg:gap-8 px-2 sm:px-4 lg:px-[70px]">
                  {/* Text Section - Left aligned on both mobile and desktop */}
-          <div className="flex flex-col items-start gap-2 order-1 md:order-1">
-                     <div className="text-left">
+          <div className="flex flex-col items-center lg:items-start gap-2 order-1 lg:order-1">
+                     <div className="text-center lg:text-left">
              <p className={`text-sm font-normal ${textColor} leading-[1.5] m-0`}>
-               Industry experts from <br className="hidden md:inline" /> renowned universities.
+               Industry experts from <br className="hidden lg:inline" /> renowned universities.
              </p>
            </div>
          </div>
          
-                                    {/* Logo Grid - Center on mobile, right on desktop */}
-          <div className="flex flex-col items-center order-2 md:order-2">
-                        <div className="hidden md:flex md:flex-nowrap items-center justify-between w-full max-w-4xl gap-6">
+                                    {/* Logo Grid - Center on mobile, centered on laptop */}
+          <div className="flex flex-col lg:flex-row items-center lg:items-center lg:justify-center lg:flex-1 order-2 lg:order-2">
+                        <div className="hidden md:flex md:flex-nowrap items-center justify-center gap-6">
               {logosToShow.map((src) => (
                 <div key={src} className="flex-shrink-0">
                   <Image
@@ -91,11 +91,9 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                 </div>
               </div>
               
-              {/* About us text - under logos carousel, visible on mobile and desktop, left aligned like title */}
-              <div className="mt-2 w-full flex justify-start">
-                <div className="pl-4">
-                  <span className={`text-sm font-medium ${textColor} leading-[1.5]`}>About us →</span>
-                </div>
+              {/* About us text - under logos on mobile/tablet, to the right on laptop */}
+              <div className="mt-2 lg:mt-0 lg:ml-8 w-full lg:w-auto flex justify-center lg:justify-start">
+                <a href="/about" className={`text-sm font-medium ${textColor} leading-[1.5] hover:opacity-80 transition-opacity`}>About us →</a>
               </div>
          </div>
       </div>

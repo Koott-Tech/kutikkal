@@ -256,6 +256,12 @@ export default function VideosShowcase({ cmsData = null }) {
             padding-top: 2rem !important;
           }
         }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .videos-showcase-mobile {
+            margin-top: 7rem !important;
+            padding-top: 2rem !important;
+          }
+        }
         /* Hide YouTube branding and UI elements */
         .youtube-embed-wrapper {
           position: relative;
@@ -299,7 +305,7 @@ export default function VideosShowcase({ cmsData = null }) {
           bottom: 0;
           background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
         }
-        @media (max-width: 767px) {
+        @media (max-width: 1023px) {
           .videos-carousel-container {
             width: 100vw !important;
             max-width: 100vw !important;
@@ -309,7 +315,7 @@ export default function VideosShowcase({ cmsData = null }) {
             padding-right: 0 !important;
           }
         }
-        @media (min-width: 768px) and (max-width: 1279px) {
+        @media (min-width: 1024px) and (max-width: 1279px) {
           .video-card-outer {
             width: clamp(180px, 12vw, 240px) !important;
             height: clamp(270px, 18vw, 360px) !important;
@@ -364,7 +370,7 @@ export default function VideosShowcase({ cmsData = null }) {
 
           <div
             ref={scrollerRef}
-            className="flex gap-5 md:gap-8 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar md:overflow-visible md:snap-none md:justify-center md:items-center"
+            className="flex gap-5 lg:gap-8 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar lg:overflow-visible lg:snap-none lg:justify-center lg:items-center"
             style={{ paddingLeft: '0', paddingRight: '0' }}
           >
             {[0,1,2,3,4].map((i) => {
@@ -376,10 +382,10 @@ export default function VideosShowcase({ cmsData = null }) {
                   className={`video-card relative rounded-[14px] overflow-hidden bg-white cursor-pointer group
                     ${'w-[200px] h-[320px]'}
                     ${i === 2 
-                      ? 'md:w-[300px] md:h-[460px] md:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
+                      ? 'lg:w-[300px] lg:h-[460px] lg:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'md:w-[220px] md:h-[340px] video-card-outer'
-                        : 'md:w-[250px] md:h-[380px] video-card-middle'}
+                        ? 'lg:w-[220px] lg:h-[340px] video-card-outer'
+                        : 'lg:w-[250px] lg:h-[380px] video-card-middle'}
                   `}
                   style={cardShadow ? { boxShadow: cardShadow } : undefined}
                   onClick={() => handleVideoClick(i)}

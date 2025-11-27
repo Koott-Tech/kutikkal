@@ -56,6 +56,13 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
                 (services || [])
                     .filter(item => item?.status === 'published' && item?.category && item?.slug)
+                    .filter(item => {
+                        // Filter out any service with slug that matches category names or invalid patterns
+                        // This prevents 404 errors when Razorpay or other crawlers try to access pages like
+                        // /counselling/emotional-and-mental-health which don't exist (these are category headers, not actual pages)
+                        const invalidSlugs = ['emotional-and-mental-health', 'emotional-mental-health', 'emotional', 'mental-health'];
+                        return !invalidSlugs.includes(item.slug.toLowerCase());
+                    })
                     .forEach(item => {
                         const category = item.category.toLowerCase();
                         if (!grouped[category]) return;
@@ -237,228 +244,240 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3 bg-white"></div>
                 
-                <div className="w-full flex flex-col justify-center px-8 md:px-16 lg:px-24 mt-4">
+                <div className="w-full flex flex-col px-8 md:px-16 lg:px-24 mt-4">
                     {/* Main footer content - header-like FAQ dropdowns */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 xl:gap-16">
                         {/* Counselling (mirrors header nested submenu) */}
-                        <div className="space-y-5">
+                        <div className="space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('counselling')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white">Counselling</h5>
+                                <h5 className="text-white text-left">Counselling</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8">Counselling</h5>
-                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3`}>
+                            <h5 className="hidden md:block text-white mb-8 text-left">Counselling</h5>
+                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
                                 {/* Category: Emotional & Mental Health */}
-                                <div className="space-y-1">
+                                <div className="space-y-1 text-left">
                                     <button
                                         onClick={() => toggleSection('c_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Emotional & Mental Health</span>
+                                        <span className="text-left">Emotional & Mental Health</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_emotional ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_emotional ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.emotional.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Child Development & Learning */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_development')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Child Development & Learning</span>
+                                        <span className="text-left">Child Development & Learning</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_development ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_development ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_development ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.development.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Behaviour & Confidence */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Behaviour & Confidence</span>
+                                        <span className="text-left">Behaviour & Confidence</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_behaviour ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_behaviour ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_behaviour ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.behaviour.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Stress & Academic Support */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Stress & Academic Support</span>
+                                        <span className="text-left">Stress & Academic Support</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_stress ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_stress ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_stress ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.stress.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Trauma & Healing */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Trauma & Healing</span>
+                                        <span className="text-left">Trauma & Healing</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_trauma ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.c_trauma ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_trauma ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.trauma.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                             </div>
                         </div>
                         {/* Assessments (mirrors header groups) */}
-                        <div className="space-y-5">
+                        <div className="space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('assessments')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white">Assessments</h5>
+                                <h5 className="text-white text-left">Assessments</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8">Assessments</h5>
-                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3`}>
+                            <h5 className="hidden md:block text-white mb-8 text-left">Assessments</h5>
+                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
                                 {/* ADHD Assessments */}
-                                <div className="space-y-1">
+                                <div className="space-y-1 text-left">
                                     <button
                                         onClick={() => toggleSection('a_adhd')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>ADHD</span>
+                                        <span className="text-left">ADHD</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_adhd ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_adhd ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.adhd.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* EBS Assessments */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_ebs')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Emotional & Behavioural Scales</span>
+                                        <span className="text-left">Emotional & Behavioural Scales</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_ebs ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_ebs ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_ebs ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.ebs.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Intelligence Assessments */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Intelligence</span>
+                                        <span className="text-left">Intelligence</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.intelligence.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Projective Assessments */}
-                                <div className="space-y-1 mt-2">
+                                <div className="space-y-1 mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer"
+                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span>Projective</span>
+                                        <span className="text-left">Projective</span>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 ${openSections.a_projective ? 'block' : 'hidden'}`}>
+                                    <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_projective ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.projective.map((item) => (
-                                            <li key={item.url}><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
                                         ))}
                                     </ul>
+                                </div>
+                                {/* Free 20 Min Assessment */}
+                                <div className="mt-4 pt-4 border-t border-white/20">
+                                    <a 
+                                        href="/free-assessment"
+                                        className="flex items-center justify-between text-base font-medium text-white hover:text-green-200 transition-colors duration-200 text-left"
+                                    >
+                                        <span>Free 20 Min Assessment</span>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
                                 </div>
                             </div>
                         </div>
 
                         {/* Better Parenting (flat list) */}
-                        <div className="space-y-5">
+                        <div className="space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('better_parenting')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white">Better Parenting</h5>
+                                <h5 className="text-white text-left">Better Parenting</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.better_parenting ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8">Better Parenting</h5>
-                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
+                            <h5 className="hidden md:block text-white mb-8 text-left">Better Parenting</h5>
+                            <ul className={`space-y-1 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
-                                    <li key={item.url}><a href={item.url} className="text-white font-medium text-sm">{item.title}</a></li>
+                                    <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-sm text-left block">{item.title}</a></li>
                                 ))}
                             </ul>
                         </div>
                         {/* About Us */}
-                        <div className="space-y-5">
+                        <div className="space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('about')}
-                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white"
+                                className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white">About Us</h5>
+                                <h5 className="text-white text-left">About Us</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8">About Us</h5>
-                            <ul className={`space-y-1 text-base leading-relaxed ${openSections.about ? 'block' : 'hidden md:block'}`}>
-                                <li><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Company</a></li>
-                                <li><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Career</a></li>
-                                <li><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">FAQ</a></li>
-                                <li><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium">Blog</a></li>
+                            <h5 className="hidden md:block text-white mb-8 text-left">About Us</h5>
+                            <ul className={`space-y-1 text-base leading-relaxed text-left ${openSections.about ? 'block' : 'hidden md:block'}`}>
+                                <li className="text-left"><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Company</a></li>
+                                <li className="text-left"><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Career</a></li>
+                                <li className="text-left"><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">FAQ</a></li>
+                                <li className="text-left"><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Blog</a></li>
                             </ul>
                         </div>
                     </div>
@@ -482,11 +501,11 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                            
                           
                         </div>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-white/90 text-sm mt-6">
-                            <p className="p2 text-center md:text-left">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-white/90 text-sm mt-6">
+                            <p className="p2 text-center lg:text-left">
                                 <span style={{ color: '#3f2e73', display: 'inline-block', marginRight: '2px' }}>©</span> Little Care by Koott Care Pvt. Ltd. All rights reserved
                             </p>
-                            <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-3">
+                            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-x-6 gap-y-3">
                                 <a href="/terms-and-conditions" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
                                 <a href="/privacy-policy" className="hover:text-white transition-colors">PRIVACY POLICY</a>
                                 <a href="/therapy-agreement" className="hover:text-white transition-colors">THERAPY AGREEMENT</a>

@@ -161,12 +161,33 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
 
   return (
     <div className="w-full">
+      <style jsx>{`
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .cms-hero-content-area {
+            padding-top: 0 !important;
+            padding-bottom: 2.5rem !important;
+          }
+          .cms-hero-image-container {
+            height: 600px !important;
+            min-height: 600px !important;
+            margin-top: 0 !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+          }
+          .cms-hero-image-container > div {
+            left: 2rem !important;
+            right: 2rem !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+          }
+        }
+      `}</style>
       <section className="w-full">
         <div className="w-full overflow-hidden" style={{ backgroundColor: '#F3FAF0' }}>
                      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
              {/* Content Area */}
-                          <div className="p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
-                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-none md:whitespace-pre-line text-center md:text-left pt-12 md:pt-0">
+                          <div className="cms-hero-content-area p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
+                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-[1.2] lg:leading-[1.2] md:whitespace-pre-line text-center md:text-left pt-12 md:pt-0">
                  {currentContent.title}
                </h1>
               
@@ -224,7 +245,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
             </div>
             
                          {/* Image Area - Below content on mobile, right side on desktop */}
-             <div className="relative h-96 md:h-full order-2 lg:order-2" style={{ minHeight: '300px' }}>
+             <div className="cms-hero-image-container relative h-96 md:h-full order-2 lg:order-2" style={{ minHeight: '300px' }}>
                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
                  {currentContent.image ? (
                    <Image

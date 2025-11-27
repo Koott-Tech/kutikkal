@@ -101,7 +101,14 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
         const services = json?.data?.services || json?.message?.services || json?.services || [];
         const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
         services
-          .filter(s => s.status === 'published' && s.category)
+          .filter(s => s.status === 'published' && s.category && s.slug)
+          .filter(s => {
+            // Filter out any service with slug that matches category names or invalid patterns
+            // This prevents 404 errors when Razorpay or other crawlers try to access pages like
+            // /counselling/emotional-and-mental-health which don't exist (these are category headers, not actual pages)
+            const invalidSlugs = ['emotional-and-mental-health', 'emotional-mental-health', 'emotional', 'mental-health'];
+            return !invalidSlugs.includes(s.slug.toLowerCase());
+          })
           .forEach(s => {
             if (grouped[s.category]) {
               grouped[s.category].push({
