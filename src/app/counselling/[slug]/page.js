@@ -47,8 +47,7 @@ export async function generateMetadata({ params, searchParams }) {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = isPreview ? '?preview=1' : '';
     const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
-      cache: 'no-store',
-      next: { revalidate: 0 }
+      cache: 'no-store'
     });
     
     if (response.ok) {
@@ -101,7 +100,6 @@ async function fetchCounsellingService(slug, { preview = false } = {}) {
     const previewSuffix = preview ? '?preview=1' : '';
     const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
       cache: 'no-store',
-      next: { revalidate: 0 },
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Pragma': 'no-cache',
@@ -131,8 +129,7 @@ async function fetchPublicTherapists(limit = 6) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
     const response = await fetch(`${baseUrl}/api/public/psychologists`, {
-      cache: 'no-store',
-      next: { revalidate: 0 }
+      cache: 'no-store'
     });
 
     if (response.ok) {

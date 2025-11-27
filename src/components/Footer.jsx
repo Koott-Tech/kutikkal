@@ -455,7 +455,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 </svg>
                             </button>
                             <h5 className="hidden md:block text-white mb-8 text-left">Better Parenting</h5>
-                            <ul className={`space-y-1 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
+                            <ul className={`space-y-3 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
                                     <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-sm text-left block">{item.title}</a></li>
                                 ))}

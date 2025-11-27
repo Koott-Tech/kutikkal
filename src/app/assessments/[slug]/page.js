@@ -19,8 +19,7 @@ async function fetchAssessment(slug, { preview = false } = {}) {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = preview ? '?preview=1' : '';
     const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, {
-      cache: 'no-store',
-      next: { revalidate: 0 }
+      cache: 'no-store'
     });
 
     if (response.ok) {
@@ -46,8 +45,7 @@ async function fetchPublicTherapists(limit = 6) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const response = await fetch(`${baseUrl}/api/public/psychologists`, {
-      cache: 'no-store',
-      next: { revalidate: 0 }
+      cache: 'no-store'
     });
 
     if (response.ok) {

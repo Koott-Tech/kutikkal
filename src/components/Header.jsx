@@ -924,8 +924,8 @@ export default function Header() {
                     <div className="header-dropdown absolute top-full left-0 mt-4 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                       <div className="px-4 space-y-2">
                         {betterParentingMenuItems.map((item, idx) => (
-                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3" onClick={() => { router.push(item.url); setIsBetterParentingOpen(false); }}>
-                            <span className="text-gray-700 text-sm">{item.name}</span>
+                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3 transition-all duration-200" onClick={() => { router.push(item.url); setIsBetterParentingOpen(false); }}>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
                           </div>
                         ))}
                       </div>
@@ -1568,8 +1568,8 @@ export default function Header() {
                     <div className="ml-4 space-y-2 py-2">
                       <div className="px-4 py-2 space-y-2">
                         {betterParentingMenuItems.map((item, idx) => (
-                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                            <span className="text-gray-700 text-sm">{item.name}</span>
+                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
                           </div>
                         ))}
                       </div>
