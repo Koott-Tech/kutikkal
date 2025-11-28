@@ -134,11 +134,12 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="w-full mobile-section mt-16">
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .how-it-works-card {
             height: 320px;
-            /* Tablet: keep card width similar to laptop so it doesn’t look stretched */
-            width: 300px;
+            /* Tablet: card should fill its container (300px) */
+            width: 100%;
+            max-width: 300px;
           }
           .how-it-works-title {
             font-size: 20px;
@@ -232,7 +233,7 @@ export default function HowItWorks() {
           }
         }
         /* Tablet carousel layout: behave like mobile, with 50% cards and a tiny gap */
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .how-it-works-carousel-wrapper {
             width: 100vw !important;
             max-width: 100vw !important;
@@ -254,24 +255,38 @@ export default function HowItWorks() {
             display: none;
           }
           .how-it-works-track {
-            /* No flex gap; spacing comes from a tiny slide margin */
             gap: 0;
             padding-inline: 0;
           }
           .how-it-works-slide {
-            /* Each card takes ~50% of the viewport, with an ultra‑small horizontal gap */
-            flex: 0 0 50%;
-            margin: 0 1px;
+            /* Each slide container - width includes card + gap padding */
+            flex: 0 0 auto;
+            margin: 0;
+            box-sizing: content-box;
             scroll-snap-align: center;
           }
-          /* Keep gentle leading inset, but reduce trailing inset so gap before the last card is smaller */
+          /* Use padding for spacing - width is content width, padding adds to it */
           .how-it-works-track > .how-it-works-slide:first-child {
-            margin-left: 0;
             padding-left: clamp(24px, 5vw, 32px);
+            padding-right: 16px;
+            width: 300px;
+          }
+          .how-it-works-track > .how-it-works-slide:not(:first-child):not(:last-child) {
+            padding-left: 0;
+            padding-right: 16px;
+            width: 300px;
           }
           .how-it-works-track > .how-it-works-slide:last-child {
-            margin-right: 0;
+            padding-left: 0;
             padding-right: clamp(8px, 2vw, 16px);
+            width: 300px;
+          }
+          /* Hide navigation dots and numbers in tablet view */
+          .how-it-works-dots {
+            display: none;
+          }
+          .how-it-works-slide-number {
+            display: none;
           }
         }
       `}</style>
@@ -297,9 +312,9 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-col lg:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
+        <div className="mt-10 flex flex-col xl:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
           {/* Mobile + Tablet Carousel */}
-          <div className="lg:hidden w-full how-it-works-carousel-wrapper">
+          <div className="xl:hidden w-full how-it-works-carousel-wrapper">
             <div className="relative">
               {/* Scrollable Carousel Container */}
               <div 
@@ -427,7 +442,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Navigation Dots */}
-            <div className="flex justify-center mt-6 gap-2">
+            <div className="how-it-works-dots flex justify-center mt-6 gap-2">
               {carouselData.map((_, index) => (
                 <button
                   key={index}
@@ -440,7 +455,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Navigation Arrows */}
-            <div className="flex justify-between items-center mt-4 px-4">
+            <div className="flex justify-center items-center mt-4 px-4 gap-206">
               <button
                 onClick={prevSlide}
                 className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
@@ -450,7 +465,7 @@ export default function HowItWorks() {
                 </svg>
               </button>
               
-              <span className="text-sm text-gray-500">
+              <span className="how-it-works-slide-number text-sm text-gray-500">
                 {currentSlide + 1} of {carouselData.length}
               </span>
               
@@ -465,8 +480,8 @@ export default function HowItWorks() {
             </div>
           </div>
 
-          {/* Desktop Layout (lg and above) */}
-          <div className="hidden lg:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
+          {/* Desktop Layout (xl and above, but exclude landscape tablets) */}
+          <div className="hidden xl:flex flex-row justify-center gap-4 max-w-7xl mx-auto px-0">
             {/* Card 01 - Desktop */}
             <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"

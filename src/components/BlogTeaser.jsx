@@ -66,7 +66,8 @@ export default function BlogTeaser() {
     const loadBlogs = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
-        const response = await fetch(`${baseUrl}/blogs?status=published&limit=3`, {
+        // Fetch more blogs to support larger screens (up to 5 columns)
+        const response = await fetch(`${baseUrl}/blogs?status=published&limit=6`, {
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -79,7 +80,8 @@ export default function BlogTeaser() {
 
         const result = await response.json();
         if (result.success && Array.isArray(result.data?.blogs) && result.data.blogs.length > 0) {
-          setPosts(result.data.blogs.slice(0, 3));
+          // Use all available blogs (up to 6)
+          setPosts(result.data.blogs.slice(0, 6));
         } else {
           setPosts([]);
         }
@@ -144,7 +146,7 @@ export default function BlogTeaser() {
   return (
     <section className="w-full px-4 md:px-6 lg:px-6 mt-16 md:mt-24 mb-16 md:mb-0">
       <style dangerouslySetInnerHTML={{__html: `
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .blog-teaser-heading {
             font-size: 32px !important;
             font-weight: 600 !important;
@@ -280,7 +282,7 @@ export default function BlogTeaser() {
         </div>
 
         <div className="overflow-hidden md:overflow-visible">
-          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-1" id="blog-carousel" suppressHydrationWarning>
+          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post) => {
             const imageSrc = post.featured_image_url || post.src;
             const author = post.author_name || post.author || "Kuttikal Team";
@@ -304,7 +306,7 @@ export default function BlogTeaser() {
                   alt={altText}
                   fill
                     className="object-contain object-left"
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
+                  sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
                 />
               </div>
               )}

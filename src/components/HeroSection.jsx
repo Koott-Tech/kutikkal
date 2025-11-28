@@ -162,32 +162,56 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
   return (
     <div className="w-full">
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .cms-hero-content-area {
-            padding-top: 0 !important;
-            padding-bottom: 2.5rem !important;
+            padding-top: 0;
+            padding-bottom: 2.5rem;
           }
           .cms-hero-image-container {
-            height: 600px !important;
-            min-height: 600px !important;
-            margin-top: 0 !important;
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
+            height: 600px;
+            min-height: 600px;
+            margin-top: 0;
+            padding-left: 2rem;
+            padding-right: 2rem;
           }
           .cms-hero-image-container > div {
-            left: 2rem !important;
-            right: 2rem !important;
-            border-radius: 10px !important;
-            overflow: hidden !important;
+            left: 2rem;
+            right: 2rem;
+            border-radius: 10px;
+            overflow: hidden;
+          }
+        }
+        /* Landscape tablets (1180x810): same layout as portrait tablets, but with reduced image width */
+        @media (min-width: 1024px) and (max-width: 1180px) and (max-height: 850px) {
+          .cms-hero-content-area {
+            padding-top: 0;
+            padding-bottom: 2.5rem;
+          }
+          .cms-hero-image-container {
+            height: 600px;
+            min-height: 600px;
+            margin-top: 0;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            padding-left: 4rem;
+            padding-right: 4rem;
+          }
+          .cms-hero-image-container > div {
+            left: 4rem;
+            right: 4rem;
+            border-radius: 10px;
+            overflow: hidden;
           }
         }
       `}</style>
       <section className="w-full">
         <div className="w-full overflow-hidden" style={{ backgroundColor: '#F3FAF0' }}>
-                     <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start">
+                     <div className="flex flex-col xl:grid xl:grid-cols-2 xl:items-start">
              {/* Content Area */}
                           <div className="cms-hero-content-area p-8 md:p-12 pb-20 md:pb-24 pt-16 md:pt-20 mt-2 md:mt-21 space-y-6 order-1 lg:order-1">
-                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-[1.2] lg:leading-[1.2] md:whitespace-pre-line text-center md:text-left pt-12 md:pt-0">
+                            <h1 className="cms-hero-title text-[2.5rem] md:text-5xl lg:text-6xl font-medium text-[#1d1733] leading-none md:leading-[1.2] lg:leading-[1.2] md:whitespace-pre-line text-center xl:text-left pt-12 md:pt-0">
                  {currentContent.title}
                </h1>
               
@@ -237,7 +261,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
               {/* Additional CTA Text */}
               {currentContent.ctaText && (
                 <div className="pt-6">
-                  <p className="text-lg md:text-xl font-medium text-[#123331] text-center md:text-left">
+                  <p className="text-lg md:text-xl font-medium text-[#123331] text-center xl:text-left">
                     {currentContent.ctaText}
                   </p>
                 </div>

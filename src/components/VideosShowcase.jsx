@@ -256,7 +256,7 @@ export default function VideosShowcase({ cmsData = null }) {
             padding-top: 2rem !important;
           }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .videos-showcase-mobile {
             margin-top: 7rem !important;
             padding-top: 2rem !important;
@@ -305,7 +305,7 @@ export default function VideosShowcase({ cmsData = null }) {
           bottom: 0;
           background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
         }
-        @media (max-width: 1023px) {
+        @media (max-width: 1180px) and (max-height: 1180px) {
           .videos-carousel-container {
             width: 100vw !important;
             max-width: 100vw !important;

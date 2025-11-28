@@ -146,7 +146,7 @@ export default function HelpFaq({ cmsData = null }) {
             }
           }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .help-faq-image-container {
             margin-left: auto !important;
             margin-right: auto !important;
@@ -169,7 +169,7 @@ export default function HelpFaq({ cmsData = null }) {
           }
         }
       `}} />
-      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 lg:gap-8 px-0 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 lg:gap-8 px-0 xl:grid-cols-[0.9fr_1.1fr]">
         {/* Left column: Heading + link + image */}
         <div className="flex flex-col ml-2 md:ml-0 space-y-3 md:space-y-4 px-2 md:px-0 help-faq-left-column">
           <div className="space-y-1">

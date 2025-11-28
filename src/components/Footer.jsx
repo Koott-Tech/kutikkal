@@ -144,7 +144,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
     return (
         <footer className={`w-full ${isTherapistProfile ? 'mt-0' : 'mt-14'}`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
-                @media (min-width: 768px) and (max-width: 1023px) {
+                @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
                     .footer-heading {
                         font-size: 32px !important;
                         line-height: 1.1 !important;
@@ -501,11 +501,11 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                            
                           
                         </div>
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-white/90 text-sm mt-6">
-                            <p className="p2 text-center lg:text-left">
+                        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 text-white/90 text-sm mt-6">
+                            <p className="p2 text-center xl:text-left">
                                 <span style={{ color: '#3f2e73', display: 'inline-block', marginRight: '2px' }}>©</span> Little Care by Koott Care Pvt. Ltd. All rights reserved
                             </p>
-                            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-x-6 gap-y-3">
+                            <div className="flex flex-wrap items-center justify-center xl:justify-end gap-x-6 gap-y-3">
                                 <a href="/terms-and-conditions" className="hover:text-white transition-colors">TERMS AND CONDITIONS</a>
                                 <a href="/privacy-policy" className="hover:text-white transition-colors">PRIVACY POLICY</a>
                                 <a href="/therapy-agreement" className="hover:text-white transition-colors">THERAPY AGREEMENT</a>

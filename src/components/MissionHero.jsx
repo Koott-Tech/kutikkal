@@ -24,7 +24,7 @@ export default function MissionHero() {
             min-height: 100vh;
           }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .mission-hero-container {
             height: auto;
             min-height: 60vh;
@@ -78,7 +78,7 @@ export default function MissionHero() {
             flex: 0 1 auto;
           }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .mission-hero-image-container {
             max-width: 80%;
             max-height: 45vh;

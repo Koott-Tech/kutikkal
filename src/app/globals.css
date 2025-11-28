@@ -408,20 +408,21 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 }
 
 /* Tablet hero layout: mirror mobile hero layout but with slightly larger hero */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
   .hero-section.hero-home {
     min-height: auto;
-    padding-top: 40px;
+    padding-top: 24px;
     padding-bottom: 0;
   }
 
   .hero-mobile-wrapper {
-    /* Tablet: match hero’s inner width/padding like laptop (no extra horizontal constraints) */
+    /* Tablet: match hero's inner width/padding like laptop (no extra horizontal constraints) */
     width: 100%;
     max-width: 100%;
     margin-left: 0;
     margin-right: 0;
     margin-bottom: -16px;
+    display: block !important;
   }
 
   .hero-image-box {
@@ -436,28 +437,51 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     object-position: center bottom;
   }
 
+  .hero-content-wrapper {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .hero-text {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   .hero-title {
     /* Match laptop-style width on tablet: no extra max-width constraint */
-    text-align: center;
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
+    text-align: center !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
   }
 
   .hero-description {
-    text-align: center;
+    text-align: center !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   .hero-badge {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   .hero-buttons {
-    margin-top: 24px;
-    gap: 12px;
-    flex-direction: column;
-    align-items: center;
+    margin-top: 24px !important;
+    gap: 12px !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
 
   .hero-buttons button {
@@ -470,11 +494,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
   /* Tablet-specific hero overrides removed for global .hero-section to allow per-page control */
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .hero-section {
     min-height: var(--hero-desktop-min-height);
   }

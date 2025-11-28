@@ -29,7 +29,7 @@ export default function ConsultationBanner() {
               border-radius: 10px;
               overflow: hidden;
             }
-            @media (min-width: 768px) and (max-width: 1023px) {
+            @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
               .main-container {
                 min-height: 180px;
               }

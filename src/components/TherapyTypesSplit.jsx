@@ -119,7 +119,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
   return (
     <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0">
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .therapy-types-section {
             padding-left: 24px !important;
             padding-right: 24px !important;

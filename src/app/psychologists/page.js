@@ -1242,7 +1242,7 @@ const Guide = () => {
                 }
                 
                 /* Tablet specific styles */
-                @media (min-width: 768px) and (max-width: 1023px) {
+                @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
                   .doctor-modal-title {
                     font-size: 28px !important; /* Tablet size */
                   }

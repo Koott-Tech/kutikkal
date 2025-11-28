@@ -6,7 +6,7 @@ export default function PersonalizedCare() {
   return (
     <section className="w-full personalized-care-section">
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .personalized-care-heading {
             font-size: 32px;
             font-weight: 600;

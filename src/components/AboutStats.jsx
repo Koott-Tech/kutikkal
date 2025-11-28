@@ -6,7 +6,7 @@ export default function AboutStats() {
   return (
     <div className="w-full">
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .about-stats-container {
             min-height: 90vh !important;
             height: 90vh !important;

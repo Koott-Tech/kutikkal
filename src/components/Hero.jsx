@@ -22,17 +22,48 @@ export default function Hero() {
     <div className="w-full overflow-hidden mt-12">
       <style jsx>{`
         /* Tablet: ensure hero section has no bottom padding so image can touch bottom */
-        @media (min-width: 768px) and (max-width: 1023px) {
+        /* Also force center alignment for landscape tablets (1180x810) */
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .hero-section.hero-home {
-            padding-bottom: 0 !important;
+            padding-bottom: 0;
           }
           .hero-mobile-wrapper {
-            margin-bottom: 0 !important;
+            margin-bottom: 0;
             margin-top: 24px;
           }
           .hero-image-box {
-            margin-bottom: 0 !important;
-            margin-top: 0 !important;
+            margin-bottom: 0;
+            margin-top: 0;
+          }
+          /* Center the entire hero-text container horizontally - make it full width and centered */
+          .hero-content-wrapper {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          .hero-text {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 0;
+            padding-right: 0;
+          }
+          .hero-text .hero-title {
+            text-align: center;
+            width: 100%;
+          }
+          .hero-text .hero-description {
+            text-align: center;
+            width: 100%;
+          }
+          .hero-text .hero-badge {
+            margin-left: auto;
+            margin-right: auto;
           }
         }
       `}</style>
@@ -51,9 +82,9 @@ export default function Hero() {
         >
           <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
             {/* Left: Text */}
-            <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-left mt-0 px-0 sm:px-0 order-1">
+            <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0 order-1">
               {/* Badge */}
-              <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
+              <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-auto xl:mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>

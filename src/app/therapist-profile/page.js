@@ -1100,7 +1100,7 @@ const TherapistProfileContent = () => {
   return (
     <div className="min-h-screen bg-white -mt-0" style={{ marginTop: 0, paddingTop: 0, marginBottom: 0, paddingBottom: 0 }}>
       <style jsx>{`
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .therapist-header-padding {
             padding: 6rem 1.5rem 3rem !important;
           }

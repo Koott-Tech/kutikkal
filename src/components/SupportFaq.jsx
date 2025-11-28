@@ -80,7 +80,7 @@ export default function SupportFaq() {
         .faq-mobile-content {
           position: relative;
         }
-        @media (max-width: 1023px) {
+        @media (max-width: 1180px) and (max-height: 1180px) {
           .faq-background {
             position: absolute;
             top: 0;
@@ -101,7 +101,7 @@ export default function SupportFaq() {
           padding-bottom: 0;
           overflow: visible;
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .our-promise-section {
             padding: 0 24px;
           }
@@ -119,6 +119,17 @@ export default function SupportFaq() {
           .faq-mobile-content p {
             font-size: 14px;
             line-height: 1.5;
+          }
+        }
+        /* Landscape tablets (1180x810): reduce FAQ width */
+        @media (min-width: 1024px) and (max-width: 1180px) and (max-height: 850px) {
+          .our-promise-section > div {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+          .our-promise-section .xl\\:hidden {
+            max-width: 100%;
           }
         }
         @media (max-width: 767px) {
@@ -175,7 +186,7 @@ export default function SupportFaq() {
           min-width: 100%;
           border-radius: 10px;
         }
-        @media (min-width: 1024px) {
+        @media (min-width: 1280px) {
           .our-promise-section {
             min-height: clamp(520px, 60vh, 820px);
             height: clamp(520px, 60vh, 820px);
@@ -191,7 +202,7 @@ export default function SupportFaq() {
         </h3>
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
-        <div className="hidden lg:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>
+        <div className="hidden xl:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>
           {/* Left: Image with true crossfade between previous and next */}
             <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
               {prevSrc && (
@@ -289,7 +300,7 @@ export default function SupportFaq() {
         </div>
 
         {/* Mobile/Tablet Layout: FAQ centered with image below when opened */}
-        <div className="lg:hidden">
+        <div className="xl:hidden">
           <div className="rounded-2xl bg-white space-y-2">
             {items.map((item, idx) => {
               const open = active === idx;

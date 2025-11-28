@@ -117,11 +117,17 @@ export default function Testimonials() {
       
       if (containerWidth === 0) return; // Wait for container to have width
       
-      const thresholdStart = photos.length * containerWidth;
-      const thresholdEnd = photos.length * 2 * containerWidth;
+      // Detect if we're on landscape tablet (3 cards) or portrait tablet (2 cards)
+      const isLandscapeTablet = typeof window !== 'undefined' && 
+        window.matchMedia('(min-width: 1024px) and (max-width: 1180px) and (max-height: 850px)').matches;
+      const cardsPerView = isLandscapeTablet ? 3 : 2;
+      const cardWidth = containerWidth / cardsPerView;
+      
+      const thresholdStart = photos.length * cardWidth;
+      const thresholdEnd = photos.length * 2 * cardWidth;
       
       // If scrolled past the end of middle set, instantly jump to corresponding position in middle set
-      if (scrollLeft >= thresholdEnd - (containerWidth * 0.5)) {
+      if (scrollLeft >= thresholdEnd - (cardWidth * 0.5)) {
         isScrollingRef.current = true;
         // Temporarily disable smooth scrolling and scroll snap
         const originalScrollBehavior = container.style.scrollBehavior;
@@ -131,7 +137,7 @@ export default function Testimonials() {
         
         // Calculate offset more precisely
         const positionInLastSet = scrollLeft - thresholdEnd;
-        const offset = positionInLastSet >= 0 ? (positionInLastSet % (photos.length * containerWidth)) : 0;
+        const offset = positionInLastSet >= 0 ? (positionInLastSet % (photos.length * cardWidth)) : 0;
         const targetScroll = thresholdStart + offset;
 
         // Set scroll position instantly
@@ -149,7 +155,7 @@ export default function Testimonials() {
         });
       }
       // If scrolled before the start of middle set, instantly jump to corresponding position in middle set
-      else if (scrollLeft <= thresholdStart - (containerWidth * 0.5)) {
+      else if (scrollLeft <= thresholdStart - (cardWidth * 0.5)) {
         isScrollingRef.current = true;
         // Temporarily disable smooth scrolling and scroll snap
         const originalScrollBehavior = container.style.scrollBehavior;
@@ -159,7 +165,7 @@ export default function Testimonials() {
         
         // Calculate offset more precisely
         const positionBeforeStart = thresholdStart - scrollLeft;
-        const offset = positionBeforeStart >= 0 ? (positionBeforeStart % (photos.length * containerWidth)) : 0;
+        const offset = positionBeforeStart >= 0 ? (positionBeforeStart % (photos.length * cardWidth)) : 0;
         const targetScroll = thresholdEnd - offset;
         
         // Set scroll position instantly
@@ -194,19 +200,25 @@ export default function Testimonials() {
         const containerWidth = container.offsetWidth || (typeof window !== 'undefined' ? window.innerWidth : 0);
         if (containerWidth === 0) return;
         
+        // Detect if we're on landscape tablet (3 cards) or portrait tablet (2 cards)
+        const isLandscapeTablet = typeof window !== 'undefined' && 
+          window.matchMedia('(min-width: 1024px) and (max-width: 1180px) and (max-height: 850px)').matches;
+        const cardsPerView = isLandscapeTablet ? 3 : 2;
+        const cardWidth = containerWidth / cardsPerView;
+        
         container.scrollBy({
-          left: containerWidth,
+          left: cardWidth,
           behavior: 'smooth'
         });
 
-        const thresholdStart = photos.length * containerWidth;
-        const thresholdEnd = photos.length * 2 * containerWidth;
+        const thresholdStart = photos.length * cardWidth;
+        const thresholdEnd = photos.length * 2 * cardWidth;
 
         // After the scroll animation, ensure we loop back to the first card
         setTimeout(() => {
           if (!scrollContainerRef.current) return;
           const currentScroll = scrollContainerRef.current.scrollLeft;
-          if (currentScroll >= thresholdEnd - (containerWidth * 0.25)) {
+          if (currentScroll >= thresholdEnd - (cardWidth * 0.25)) {
             const originalScrollBehavior = scrollContainerRef.current.style.scrollBehavior;
             const originalScrollSnap = scrollContainerRef.current.style.scrollSnapType;
             scrollContainerRef.current.style.scrollBehavior = 'auto';
@@ -379,10 +391,15 @@ export default function Testimonials() {
         // Wait for container to have proper width
         const containerWidth = container.offsetWidth || window.innerWidth;
         if (containerWidth > 0) {
+          // Detect if we're on landscape tablet (3 cards) or portrait tablet (2 cards)
+          const isLandscapeTablet = window.matchMedia('(min-width: 1024px) and (max-width: 1180px) and (max-height: 850px)').matches;
+          const cardsPerView = isLandscapeTablet ? 3 : 2;
+          const cardWidth = containerWidth / cardsPerView;
+          
           // Disable smooth scrolling for initial positioning
           container.style.scrollBehavior = 'auto';
           // Start at the middle set (infinite loop starting point)
-          container.scrollLeft = photos.length * containerWidth;
+          container.scrollLeft = photos.length * cardWidth;
           // Re-enable smooth scrolling after positioning
           requestAnimationFrame(() => {
             container.style.scrollBehavior = 'smooth';
@@ -462,7 +479,7 @@ export default function Testimonials() {
           background-position: center center;
           background-repeat: no-repeat;
         }
-        @media (max-width: 1023px) {
+        @media (max-width: 1180px) and (max-height: 1180px) {
           .testimonial-faq-bg {
             transform: rotate(90deg) scale(2.3);
             width: 240%;
@@ -471,13 +488,16 @@ export default function Testimonials() {
             top: -20%;
           }
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 768px) and (max-width: 1180px) and (min-height: 850px) and (max-height: 1180px) {
+          .testimonials-section {
+            margin-top: 128px;
+          }
           .testimonials-heading {
             font-size: 32px;
             font-weight: 600;
             line-height: 1.1;
           }
-          /* Tablet: show 2 testimonial cards per carousel viewport */
+          /* Portrait tablet: show 2 testimonial cards per carousel viewport */
           .testimonials-infinite-carousel {
             scroll-snap-type: x mandatory;
           }
@@ -490,6 +510,37 @@ export default function Testimonials() {
             width: 50% !important;
             max-width: 50% !important;
             min-width: 50% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .testimonials-carousel-card .testimonials-card-content {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
+        }
+        /* Landscape tablets (1180x810): show 3 cards per carousel viewport */
+        @media (min-width: 1024px) and (max-width: 1180px) and (max-height: 850px) {
+          .testimonials-section {
+            margin-top: 128px;
+          }
+          .testimonials-heading {
+            font-size: 32px;
+            font-weight: 600;
+            line-height: 1.1;
+          }
+          .testimonials-infinite-carousel {
+            scroll-snap-type: x mandatory;
+          }
+          .testimonials-carousel-track {
+            gap: 0;
+            padding-inline: 0;
+          }
+          .testimonials-carousel-card {
+            flex: 0 0 33.333% !important;
+            width: 33.333% !important;
+            max-width: 33.333% !important;
+            min-width: 33.333% !important;
             box-sizing: border-box !important;
             margin: 0 !important;
             padding: 0 !important;
