@@ -1108,7 +1108,19 @@ const Guide = () => {
                 <button
                   className="doctor-modal-button find-guide-button"
                   style={{ background: '#0a7f3f', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
-                  onClick={() => router.push(`/therapist-profile?doctor=${selected}`)}
+                  onClick={() => {
+                    const doctor = doctors[selected];
+                    if (doctor) {
+                      // Create URL-friendly slug from doctor name or use ID
+                      const nameSlug = (doctor.name || `${doctor.first_name} ${doctor.last_name}`)
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                      const doctorIdentifier = doctor.id || nameSlug;
+                      router.push(`/therapist-profile?doctor=${doctorIdentifier}`);
+                    }
+                  }}
                 >
                   Find your Guide
                 </button>

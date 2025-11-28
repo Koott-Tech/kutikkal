@@ -109,11 +109,17 @@ export default function TherapistCarousel({ therapists = [] }) {
         {therapists.map((doc, idx) => {
           const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
           const name = doc.name || doc.first_name || 'Therapist';
+          // Create URL-friendly slug from name or use ID
+          const doctorIdentifier = doc.id || (name
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, ''));
           const isFirst = idx === 0;
           return (
             <a 
               key={idx} 
-              href={`/therapist-profile?doctor=${idx}`} 
+              href={`/therapist-profile?doctor=${doctorIdentifier}`} 
               className="block snap-start flex-shrink-0 w-[90%]"
               style={{ 
                 paddingLeft: isFirst ? 'clamp(18px, 7vw, 32px)' : '0',
