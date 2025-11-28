@@ -140,33 +140,9 @@ const TherapistProfileContent = () => {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
-      // First, trigger Google Calendar sync to get latest external bookings
-      try {
-        console.log('🔄 Syncing Google Calendar for psychologist:', psychologistId);
-        const syncResponse = await fetch(`/api/availability-controller/sync-google-calendar`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            psychologist_id: psychologistId,
-            start_date: startDate,
-            end_date: endDate
-          })
-        });
-        
-        if (syncResponse.ok) {
-          const syncData = await syncResponse.json();
-          console.log('✅ Google Calendar sync completed:', syncData);
-        } else {
-          console.log('⚠️ Google Calendar sync failed, continuing with cached data');
-        }
-      } catch (syncError) {
-        console.log('⚠️ Google Calendar sync error, continuing with cached data:', syncError);
-        // Continue with availability fetch even if sync fails
-      }
-      
-      // Use real API call to get psychologist availability range (now includes Google Calendar data)
+      // Get psychologist availability range - this endpoint automatically checks Google Calendar
+      // in real-time and blocks external events before returning availability
+      // No need for separate sync call - the endpoint handles it efficiently
       const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
       
       if (response.success) {
