@@ -39,7 +39,7 @@ export default function ConsultationBanner() {
               .mobile-text h4 {
                 font-size: 18px;
                 line-height: 1.35;
-                margin-top: 0 !important;
+                margin-top: -12px !important;
                 padding-top: 0 !important;
                 margin-bottom: 4px !important;
               }
@@ -50,7 +50,7 @@ export default function ConsultationBanner() {
                 margin-bottom: 20px !important;
               }
               .mobile-text .flex.items-center.gap-1 {
-                margin-top: 0px !important;
+                margin-top: 16px !important;
               }
               .mobile-text button {
                 font-size: 12px;
@@ -146,7 +146,7 @@ export default function ConsultationBanner() {
                 font-size: 16px;
                 line-height: 1.3;
                 margin-bottom: 4px !important;
-                margin-top: -8px;
+                margin-top: -12px !important;
                 text-align: left;
               }
               .mobile-text p.text-xs {
@@ -169,7 +169,7 @@ export default function ConsultationBanner() {
                 margin-left: 0;
               }
               .mobile-text .flex.items-center.gap-1 {
-                margin-top: 20px;
+                margin-top: 24px !important;
               }
               .main-container {
                 min-height: 180px;
@@ -236,12 +236,15 @@ export default function ConsultationBanner() {
                 max-width: none;
               }
               .mobile-text h4 {
-                margin-top: 0 !important;
+                margin-top: -12px !important;
                 padding-top: 0 !important;
                 margin-bottom: 4px !important;
               }
               .mobile-text p {
                 margin-top: 0px !important;
+              }
+              .mobile-text .flex.items-center.gap-1 {
+                margin-top: 16px !important;
               }
               .mobile-image {
                 align-items: center;
@@ -285,7 +288,7 @@ export default function ConsultationBanner() {
           <div className="grid grid-cols-1 md:grid-cols-[8fr_2fr] items-center min-h-[280px] md:min-h-[240px] mobile-container no-gap rounded-[10px] overflow-hidden relative z-10 desktop-banner">
             {/* Left: Text and Button */}
             <div className="px-4 pb-4 pt-0 md:px-6 md:pb-6 md:pt-0 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none', paddingTop: 0 }}>
-              <h4 className="text-left font-semibold text-lg md:text-xl" style={{ marginTop: 0, paddingTop: 0, marginBottom: '4px' }}>
+              <h4 className="text-left font-semibold text-lg md:text-xl" style={{ marginTop: '-12px', paddingTop: 0, marginBottom: '4px' }}>
               Confused where to start?
               </h4>
               
@@ -293,7 +296,7 @@ export default function ConsultationBanner() {
                Book a free 20 minutes  session<br className="md:hidden" /> with our psychologist.
               </p>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" style={{ marginTop: '16px' }}>
                 <button 
                   onClick={() => router.push('/free-assessment')}
                   className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" 
