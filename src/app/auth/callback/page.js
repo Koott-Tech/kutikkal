@@ -199,10 +199,10 @@ function AuthCallbackContent() {
             console.log('Skipping client contact verification for role:', resolvedUserData.role);
           }
 
-          const isPopupMode =
-            mode === 'popup' &&
-            typeof window !== 'undefined' &&
-            (window.opener || window.parent !== window);
+          // Treat any callback with mode=popup as a true popup flow.
+          // This avoids doing a full-page redirect inside the small popup window,
+          // which previously caused the homepage to flash in the popup before close.
+          const isPopupMode = mode === 'popup';
 
           if (isPopupMode) {
             try {
@@ -223,7 +223,11 @@ function AuthCallbackContent() {
             } catch (postMessageError) {
               console.warn('Failed to post auth success message to opener:', postMessageError);
             }
+
+            // Critical: in popup mode, do NOT navigate inside the popup window.
+            // Just close it and let the opener handle navigation based on the message.
             window.close();
+            return;
           } else {
             // On success: reload the original page instead of redirecting to /
             // Priority: 1) returnUrl from query params, 2) sessionStorage, 3) referrer (excluding Google)
