@@ -66,8 +66,8 @@ export default function BlogTeaser() {
     const loadBlogs = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
-        // Fetch more blogs to support larger screens (up to 5 columns)
-        const response = await fetch(`${baseUrl}/blogs?status=published&limit=6`, {
+        // Fetch 3 blogs for all screen sizes
+        const response = await fetch(`${baseUrl}/blogs?status=published&limit=3`, {
           headers: { 'Content-Type': 'application/json' }
         });
 
@@ -80,8 +80,8 @@ export default function BlogTeaser() {
 
         const result = await response.json();
         if (result.success && Array.isArray(result.data?.blogs) && result.data.blogs.length > 0) {
-          // Use all available blogs (up to 6)
-          setPosts(result.data.blogs.slice(0, 6));
+          // Use 3 blogs for all screen sizes
+          setPosts(result.data.blogs.slice(0, 3));
         } else {
           setPosts([]);
         }
@@ -153,17 +153,34 @@ export default function BlogTeaser() {
             line-height: 1.1 !important;
           }
           .blog-card {
-            max-width: 280px !important;
+            max-width: none !important;
+            width: 100% !important;
           }
           .blog-image {
-            height: 140px !important;
+            height: 200px !important;
           }
           .blog-title {
-            font-size: 14px !important;
-            line-height: 1.35 !important;
+            font-size: 16px !important;
+            line-height: 1.4 !important;
           }
           .blog-meta {
-            font-size: 12px !important;
+            font-size: 13px !important;
+          }
+        }
+        @media (min-width: 1024px) and (max-width: 1440px) {
+          .blog-card {
+            max-width: none !important;
+            width: 100% !important;
+          }
+          .blog-image {
+            height: 220px !important;
+          }
+          .blog-title {
+            font-size: 17px !important;
+            line-height: 1.4 !important;
+          }
+          .blog-meta {
+            font-size: 14px !important;
           }
         }
         @media (max-width: 767px) {
@@ -282,7 +299,7 @@ export default function BlogTeaser() {
         </div>
 
         <div className="overflow-hidden md:overflow-visible">
-          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
+          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post) => {
             const imageSrc = post.featured_image_url || post.src;
             const author = post.author_name || post.author || "Kuttikal Team";

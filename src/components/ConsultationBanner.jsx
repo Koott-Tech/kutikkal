@@ -33,13 +33,24 @@ export default function ConsultationBanner() {
               .main-container {
                 min-height: 180px;
               }
+              .mobile-text {
+                padding-top: 0 !important;
+              }
               .mobile-text h4 {
                 font-size: 18px;
                 line-height: 1.35;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                margin-bottom: 4px !important;
               }
               .mobile-text p {
                 font-size: 13px;
                 line-height: 1.45;
+                margin-top: 0px !important;
+                margin-bottom: 20px !important;
+              }
+              .mobile-text .flex.items-center.gap-1 {
+                margin-top: 0px !important;
               }
               .mobile-text button {
                 font-size: 12px;
@@ -48,16 +59,25 @@ export default function ConsultationBanner() {
               .mobile-image {
                 overflow: visible !important;
               }
+              .desktop-image-container {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+              }
               .desktop-image {
                 overflow: visible !important;
                 width: 130px !important;
                 height: 180px !important;
+                display: block !important;
+                visibility: visible !important;
               }
               .desktop-image img {
                 object-fit: contain !important;
                 object-position: center !important;
                 width: 100% !important;
                 height: 100% !important;
+                display: block !important;
+                visibility: visible !important;
               }
             }
             @media (max-width: 767px) {
@@ -125,7 +145,7 @@ export default function ConsultationBanner() {
               .mobile-text h4 {
                 font-size: 16px;
                 line-height: 1.3;
-                margin-bottom: 4px;
+                margin-bottom: 4px !important;
                 margin-top: -8px;
                 text-align: left;
               }
@@ -133,12 +153,14 @@ export default function ConsultationBanner() {
                 font-size: 12px !important;
                 line-height: 1.2 !important;
                 margin-bottom: 8px;
+                margin-top: 0px !important;
                 text-align: left;
               }
               .mobile-text p {
                 font-size: 9px !important;
                 line-height: 1.2 !important;
                 margin-bottom: 8px;
+                margin-top: 0px !important;
                 text-align: left;
               }
               .mobile-text button {
@@ -209,8 +231,17 @@ export default function ConsultationBanner() {
                 margin-bottom: 0;
               }
               .mobile-text {
-                padding: 16px 8px;
+                padding: 0px 8px 16px 8px !important;
+                padding-top: 0 !important;
                 max-width: none;
+              }
+              .mobile-text h4 {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                margin-bottom: 4px !important;
+              }
+              .mobile-text p {
+                margin-top: 0px !important;
               }
               .mobile-image {
                 align-items: center;
@@ -229,27 +260,36 @@ export default function ConsultationBanner() {
                 top: 40%;
                 transform: translateY(-50%);
               }
+              .desktop-image-container {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+              }
               .desktop-image {
                 position: relative;
                 top: 40%;
                 transform: translateY(-50%);
                 padding: 0;
                 margin: 0;
+                display: block !important;
+                visibility: visible !important;
               }
               .desktop-image img {
                 padding: 0;
                 margin: 0;
+                display: block !important;
+                visibility: visible !important;
               }
             }
           `}</style>
           <div className="grid grid-cols-1 md:grid-cols-[8fr_2fr] items-center min-h-[280px] md:min-h-[240px] mobile-container no-gap rounded-[10px] overflow-hidden relative z-10 desktop-banner">
             {/* Left: Text and Button */}
-            <div className="p-4 md:p-6 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none' }}>
-              <h4 className="text-left font-semibold text-lg md:text-xl">
+            <div className="px-4 pb-4 pt-0 md:px-6 md:pb-6 md:pt-0 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none', paddingTop: 0 }}>
+              <h4 className="text-left font-semibold text-lg md:text-xl" style={{ marginTop: 0, paddingTop: 0, marginBottom: '4px' }}>
               Confused where to start?
               </h4>
               
-              <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px' }}>
+              <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px', marginTop: '0px' }}>
                Book a free 20 minutes  session<br className="md:hidden" /> with our psychologist.
               </p>
               
@@ -283,8 +323,8 @@ export default function ConsultationBanner() {
               </div>
             </div>
 
-            {/* Right: Image - Desktop only */}
-            <div className="mobile-image relative h-full col-span-1 hidden md:flex justify-center items-center p-8">
+            {/* Right: Image - Desktop and Tablet */}
+            <div className="relative h-full col-span-1 hidden md:flex justify-center items-center p-8 desktop-image-container">
               <div className="desktop-image overflow-hidden" style={{ width: '112px', height: '160px', borderRadius: '10px', padding: 0, margin: 0 }}>
                 <img
                   src="/consultation.png"
