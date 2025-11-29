@@ -423,6 +423,48 @@ const Guide = () => {
     }
   };
 
+  // Handle scroll restoration on page load/refresh
+  useEffect(() => {
+    // Disable browser's automatic scroll restoration
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    
+    // Save scroll position before page unload
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('psychologistsPageScroll', window.scrollY.toString());
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+    };
+  }, []);
+
+  // Restore scroll position after content is loaded
+  useEffect(() => {
+    // Only restore scroll if doctors are loaded and images are loaded (or timed out)
+    if (doctors.length > 0 && imagesLoaded && !loading) {
+      const savedScroll = sessionStorage.getItem('psychologistsPageScroll');
+      if (savedScroll) {
+        // Use requestAnimationFrame to ensure DOM is fully rendered
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const scrollY = parseInt(savedScroll, 10);
+            window.scrollTo(0, scrollY);
+            // Clear saved scroll after restoring
+            sessionStorage.removeItem('psychologistsPageScroll');
+          }, 100);
+        });
+      }
+    }
+  }, [doctors.length, imagesLoaded, loading]);
+
   // Fetch doctors on component mount
   useEffect(() => {
     fetchDoctors();
