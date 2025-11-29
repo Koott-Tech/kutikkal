@@ -214,7 +214,15 @@ const Guide = () => {
       console.log('Fetching doctors...');
       setLoading(true);
       setError(null);
-      const response = await publicApi.getPsychologists();
+      
+      // Add timeout to prevent hanging if backend is down
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - backend may be down')), 10000)
+      );
+      
+      const fetchPromise = publicApi.getPsychologists();
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
       console.log('API Response:', response);
       const psychologists = response?.data?.psychologists || [];
       console.log('Psychologists data:', psychologists);
@@ -259,10 +267,11 @@ const Guide = () => {
         setImagesLoaded(false); // Reset images loaded state
         setError(null);
       } else {
-      setError('Failed to load doctors. Please try again later.');
-      setDoctors([]);
+        setError('Failed to load doctors. Please check if the backend server is running.');
+        setDoctors([]);
       }
     } finally {
+      // Always clear loading state, even on error
       setLoading(false);
     }
   };
@@ -308,18 +317,23 @@ const Guide = () => {
       endDate.setDate(endDate.getDate() + 14); // Only next 14 days (reduced from 30)
       const endDateStr = endDate.toISOString().split('T')[0];
 
-      // Add timeout to prevent hanging
+      // Add shorter timeout to prevent hanging (3 seconds)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
+        setTimeout(() => reject(new Error('Timeout')), 3000)
       );
 
       const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (response.success && response.data && response.data.data) {
-        // Find the first date with available slots (filtering out past time slots)
+        // Collect slots across multiple days until we have 3 slots
+        // Store slots with their dates so we can display them correctly
         const availabilityArray = response.data.data;
-        const firstAvailableDate = availabilityArray.find(day => {
+        const collectedSlots = []; // Array of {date, time} objects
+        let firstDateWithSlots = null;
+        
+        // Loop through dates until we have 3 slots
+        for (const day of availabilityArray) {
           // Parse the date string to a Date object
           const [year, month, dayNum] = day.date.split('-');
           const dayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
@@ -331,27 +345,35 @@ const Guide = () => {
             return !isSlotInPast(slot, dayDate);
           }) || [];
           
-          return availableSlots.length > 0;
-        });
+          if (availableSlots.length > 0) {
+            // Track the first date that has slots
+            if (!firstDateWithSlots) {
+              firstDateWithSlots = day.date;
+            }
+            
+            // Calculate how many slots we still need
+            const slotsNeeded = 3 - collectedSlots.length;
+            const slotsToAdd = availableSlots
+              .slice(0, slotsNeeded) // Only take what we need
+              .map(slot => ({
+                date: day.date,
+                time: slot.displayTime || slot.time
+              }));
+            
+            collectedSlots.push(...slotsToAdd);
+            
+            // Stop if we have 3 slots
+            if (collectedSlots.length >= 3) {
+              break;
+            }
+          }
+        }
 
-        if (firstAvailableDate) {
-          // Parse the date string to a Date object for filtering
-          const [year, month, dayNum] = firstAvailableDate.date.split('-');
-          const dayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
-          
-          // Filter available slots and exclude past time slots if it's today
-          const availableSlots = firstAvailableDate.timeSlots
-            .filter(slot => {
-              if (!slot.available) return false;
-              // If the date is today, filter out past time slots
-              return !isSlotInPast(slot, dayDate);
-            })
-            .slice(0, 3) // Get first 3 available slots
-            .map(slot => slot.displayTime || slot.time);
-
+        if (collectedSlots.length > 0 && firstDateWithSlots) {
           return {
-            nextDate: firstAvailableDate.date,
-            timeSlots: availableSlots
+            nextDate: firstDateWithSlots,
+            timeSlots: collectedSlots.slice(0, 3), // Ensure max 3 slots
+            slotsByDate: collectedSlots // Keep date info for each slot
           };
         }
       }
@@ -525,8 +547,9 @@ const Guide = () => {
     setShowDateTimePicker(true);
   };
 
-  // Show loading screen until doctors and images are loaded (excluding availability)
-  if (loading || (doctors.length > 0 && !imagesLoaded)) {
+  // Show loading screen only while fetching doctors (not waiting for images)
+  // Images will load in background - don't block the page
+  if (loading) {
     return <LoadingScreen />;
   }
 
@@ -1004,7 +1027,7 @@ const Guide = () => {
                 <div className="availability-container" style={{
                   marginTop: 8,
                   marginBottom: 20,
-                  minHeight: '50px' // Fixed height to prevent layout shift
+                  height: '72px' // Fixed height for 3 lines to keep all cards same size
                 }}>
                   <div style={{
                     background: 'rgba(255,255,255,0.25)',
@@ -1017,30 +1040,79 @@ const Guide = () => {
                     backdropFilter: 'blur(0.5px)',
                     WebkitBackdropFilter: 'blur(0.5px)',
                     border: '1px solid #ffffff',
-                    display: 'block',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
                     width: '100%',
-                    minHeight: '40px', // Fixed height for content area
-                    lineHeight: '1.4' // Better line spacing
+                    height: '100%', // Fill parent container
+                    lineHeight: '1.4', // Better line spacing
+                    overflow: 'hidden' // Hide overflow if content is too long
                   }}>
                     {(() => {
                       const availability = doctorAvailability[doc.id];
-                      if (availability && availability.nextDate && availability.timeSlots && availability.timeSlots.length > 0) {
-                        // Format the date (YYYY-MM-DD format)
-                        const [year, month, day] = availability.nextDate.split('-');
-                        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                      if (availability && availability.timeSlots && availability.timeSlots.length > 0) {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-                        const formattedDate = dateObj.toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                        
+                        // Group slots by date
+                        // Handle both old format (strings) and new format (objects with date/time)
+                        const slotsByDate = {};
+                        availability.timeSlots.forEach(slot => {
+                          let slotDate, slotTime;
+                          
+                          if (typeof slot === 'string') {
+                            // Old format: just a time string, use nextDate
+                            slotDate = availability.nextDate;
+                            slotTime = slot;
+                          } else if (slot && slot.date && slot.time) {
+                            // New format: object with date and time
+                            slotDate = slot.date;
+                            slotTime = slot.time;
+                          } else {
+                            // Fallback
+                            slotDate = availability.nextDate;
+                            slotTime = slot.time || slot;
+                          }
+                          
+                          if (!slotsByDate[slotDate]) {
+                            slotsByDate[slotDate] = [];
+                          }
+                          slotsByDate[slotDate].push(slotTime);
+                        });
+                        
+                        // Format and display slots grouped by date
+                        const formattedSlots = Object.entries(slotsByDate).map(([dateStr, times]) => {
+                          const [year, month, day] = dateStr.split('-');
+                          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                          const isToday = dateObj.getTime() === today.getTime();
+                          const isTomorrow = dateObj.getTime() === today.getTime() + 86400000;
+                          
+                          let dateLabel;
+                          if (isToday) {
+                            dateLabel = 'Today';
+                          } else if (isTomorrow) {
+                            dateLabel = 'Tomorrow';
+                          } else {
+                            dateLabel = dateObj.toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric',
+                              year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                            });
+                          }
+                          
+                          return `${dateLabel}: ${times.join(' • ')}`;
                         });
                         
                         return (
                           <>
-                            Next available: {formattedDate}
+                            Next available:
                             <br />
-                            {availability.timeSlots.join('    •    ')}
+                            {formattedSlots.map((slotGroup, index) => (
+                              <React.Fragment key={index}>
+                                {slotGroup}
+                                {index < formattedSlots.length - 1 && <br />}
+                              </React.Fragment>
+                            ))}
                           </>
                         );
                       }
