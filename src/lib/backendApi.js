@@ -468,6 +468,11 @@ export const clientApi = {
   async downloadReceipt(receiptId) {
     return apiRequest(`/clients/receipts/${receiptId}/download`);
   },
+
+  // Get receipt by Razorpay order ID
+  async getReceiptByOrderId(orderId) {
+    return apiRequest(`/clients/receipts/order/${orderId}`);
+  },
 };
 
 // Psychologist API

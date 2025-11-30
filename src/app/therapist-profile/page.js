@@ -672,6 +672,7 @@ const TherapistProfileContent = () => {
 
       // First, reserve the time slot and get payment details
       let slotReservation;
+      let sessionResponse;
       if (isBookingRemaining && clientPackage) {
         // Book remaining session from package (no payment needed)
         const bookingData = {
@@ -779,47 +780,95 @@ const TherapistProfileContent = () => {
       console.log('🔍 Payment Response:', paymentResponse);
 
       if (paymentResponse.success) {
-        console.log('✅ Payment response successful, opening PayU popup...');
-        console.log('🔗 Redirect URL:', paymentResponse.data.redirectUrl);
-        console.log('📋 PayU Params:', paymentResponse.data.payuParams);
+        console.log('✅ Payment response successful, opening Razorpay checkout...');
+        console.log('📋 Razorpay Order:', paymentResponse.data);
 
-        if (!paymentResponse.data.redirectUrl) {
-          console.error('❌ No redirect URL provided');
-          showError('Payment gateway error: No redirect URL');
+        // Load Razorpay checkout script if not already loaded
+        if (!window.Razorpay) {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => {
+            openRazorpayCheckout(paymentResponse.data);
+          };
+          script.onerror = () => {
+            console.error('❌ Failed to load Razorpay checkout script');
+            showError('Payment gateway error: Failed to load payment script');
           setIsBooking(false);
-          return;
+          };
+          document.body.appendChild(script);
+        } else {
+          openRazorpayCheckout(paymentResponse.data);
         }
 
-        try {
-          new URL(paymentResponse.data.redirectUrl);
-        } catch (urlError) {
-          console.error('❌ Invalid redirect URL:', paymentResponse.data.redirectUrl, urlError);
-          showError('Payment gateway error: Invalid URL');
-          setIsBooking(false);
-          return;
+        function openRazorpayCheckout(paymentData) {
+          const options = {
+            key: paymentData.keyId,
+            amount: paymentData.amountInPaise,
+            currency: paymentData.currency || 'INR',
+            name: paymentData.name || 'Little Care',
+            description: paymentData.description,
+            order_id: paymentData.orderId,
+            prefill: paymentData.prefill || {},
+            notes: paymentData.notes || {},
+            theme: paymentData.theme || { color: '#3b82f6' },
+            handler: async function (response) {
+              console.log('✅ Razorpay payment successful:', response);
+              
+              // Redirect immediately - don't wait for backend processing
+              // Backend will process payment asynchronously (gmeet creation, emails, receipt, etc.)
+              // Payment success page will handle receipt loading with retry logic
+              setTimeout(() => {
+                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+              }, 100);
+              
+              // Send payment verification to backend asynchronously (fire and forget)
+              // This allows backend to process booking, gmeet creation, emails, receipt generation in background
+              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              }).catch(err => {
+                console.error('❌ Background payment processing error (non-blocking):', err);
+                // Error is logged but doesn't block redirect - backend will retry if needed
+              });
+            },
+            modal: {
+              ondismiss: function() {
+                console.log('Payment modal closed');
+                // Don't reset booking state if redirect is in progress
+                // Only reset if payment was not successful (handled in error cases)
+                // The redirect will handle navigation away from this page
+              }
+            }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response) {
+            console.error('❌ Razorpay payment failed:', response);
+            showError(`Payment failed: ${response.error?.description || 'Unknown error'}`, 'Payment Failed');
+            setIsBooking(false);
+            
+            // Send failure to backend
+            fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/failure`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.error?.metadata?.order_id,
+                error: response.error
+              })
+            }).catch(err => console.error('Failed to send failure notification:', err));
+          });
+          
+          rzp.open();
         }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = paymentResponse.data.redirectUrl;
-        form.style.display = 'none';
-
-        Object.entries(paymentResponse.data.payuParams || {}).forEach(([key, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = value ?? '';
-          form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-
-        setTimeout(() => {
-          if (document.body.contains(form)) {
-            document.body.removeChild(form);
-          }
-        }, 1000);
       } else {
         console.error('❌ Payment response failed:', paymentResponse);
         showError(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`, 'Payment Error');
@@ -1822,8 +1871,7 @@ const TherapistProfileContent = () => {
                 )}
               </div>
 
-              {/* Book Button - original flow temporarily disabled for payment verification */}
-              {/*
+              {/* Book Button */}
               <button 
                 onClick={handleBookSession}
                 disabled={isBooking}
@@ -1834,21 +1882,6 @@ const TherapistProfileContent = () => {
                 }`}
               >
                 {isBooking ? 'Booking...' : isBookingRemaining ? 'Book Remaining Session' : `Book ${selectedPackage?.name || 'Session'}`}
-              </button>
-              */}
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    window.open(
-                      'https://docs.google.com/forms/d/e/1FAIpQLSc5SwNgS6oqPm4BsaGYFaXBQ9W21ydSBqvJTQF5PuvFIuCGcA/viewform?usp=publish-editor',
-                      '_blank',
-                      'noopener,noreferrer'
-                    );
-                  }
-                }}
-                className="w-full mt-4 py-2 px-4 rounded-lg font-semibold transition-colors duration-200 text-sm bg-[#3f2e73] text-white hover:bg-[#1d1733]"
-              >
-                Book Session
               </button>
 
               {/* Success Message */}

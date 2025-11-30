@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * @deprecated This component is no longer used. 
+ * Payment processing has been migrated from PayU to Razorpay.
+ * Razorpay uses its own built-in checkout modal, so this component is obsolete.
+ * 
+ * This file is kept for reference only and can be safely deleted.
+ */
+
 import { useEffect, useMemo, useRef } from "react";
 
 const DEFAULT_ORIGINS = typeof window !== "undefined" ? [window.location.origin] : [];

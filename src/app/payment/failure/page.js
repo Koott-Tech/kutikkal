@@ -16,19 +16,16 @@ export default function PaymentFailure() {
     try {
       // Get URL parameters safely
       const urlParams = new URLSearchParams(window.location.search);
-      const txnid = urlParams.get('txnid');
-      const status = urlParams.get('status');
-      const error_code = urlParams.get('error_code');
-      const error_Message = urlParams.get('error_Message');
+      const razorpay_order_id = urlParams.get('razorpay_order_id');
+      const error_description = urlParams.get('error_description');
+      const error_reason = urlParams.get('error_reason');
 
-      console.log('🔍 Payment Failure Params:', { txnid, status, error_code, error_Message });
+      console.log('🔍 Payment Failure Params:', { razorpay_order_id, error_description, error_reason });
 
-      if (txnid) {
+      if (razorpay_order_id) {
         const details = {
-          transactionId: txnid,
-          status: status,
-          errorCode: error_code,
-          errorMessage: error_Message
+          orderId: razorpay_order_id,
+          errorMessage: error_description || error_reason || 'Payment failed'
         };
 
         setPaymentDetails(details);
@@ -36,7 +33,7 @@ export default function PaymentFailure() {
         if (window.parent && window.parent !== window) {
           window.parent.postMessage(
             {
-              type: 'PAYU_PAYMENT_RESULT',
+              type: 'RAZORPAY_PAYMENT_RESULT',
               status: 'failure',
               payload: details
             },
@@ -48,7 +45,7 @@ export default function PaymentFailure() {
           try {
             window.opener.postMessage(
               {
-                type: 'PAYU_PAYMENT_REFRESH',
+                type: 'RAZORPAY_PAYMENT_REFRESH',
                 status: 'failure',
                 payload: details
               },
@@ -118,15 +115,9 @@ export default function PaymentFailure() {
           <div className="bg-red-50 rounded-lg p-4 mb-6">
             <div className="text-sm text-gray-600 space-y-2">
               <div className="flex justify-between">
-                <span>Transaction ID:</span>
-                <span className="font-mono text-xs">{paymentDetails.transactionId}</span>
+                <span>Order ID:</span>
+                <span className="font-mono text-xs">{paymentDetails.orderId}</span>
               </div>
-              {paymentDetails.errorCode && (
-                <div className="flex justify-between">
-                  <span>Error Code:</span>
-                  <span className="font-medium text-red-600">{paymentDetails.errorCode}</span>
-                </div>
-              )}
               {paymentDetails.errorMessage && (
                 <div className="text-left">
                   <span className="text-red-600 font-medium">Error:</span>

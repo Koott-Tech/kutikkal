@@ -374,7 +374,7 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
         paymentMethod: paymentMethod // 'online' or 'cash'
       };
 
-      // If cash payment, handle directly without PayU redirect
+      // If cash payment, handle directly without Razorpay checkout
       if (paymentMethod === 'cash') {
         const cashPaymentResponse = await paymentApi.createCashPayment(paymentData);
         if (cashPaymentResponse.success) {
@@ -392,33 +392,98 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       if (paymentResponse.success) {
-        if (!paymentResponse.data?.redirectUrl) {
-          showError('Payment gateway error: missing redirect URL', 'Payment Error');
+        console.log('✅ Payment response successful, opening Razorpay checkout...');
+        
+        // Load Razorpay checkout script if not already loaded
+        if (!window.Razorpay) {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => {
+            openRazorpayCheckout(paymentResponse.data);
+          };
+          script.onerror = () => {
+            console.error('❌ Failed to load Razorpay checkout script');
+            showError('Payment gateway error: Failed to load payment script');
           setIsBooking(false);
-          return;
+          };
+          document.body.appendChild(script);
+        } else {
+          openRazorpayCheckout(paymentResponse.data);
         }
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = paymentResponse.data.redirectUrl;
-        form.style.display = 'none';
+        function openRazorpayCheckout(paymentData) {
+          const options = {
+            key: paymentData.keyId,
+            amount: paymentData.amountInPaise,
+            currency: paymentData.currency || 'INR',
+            name: paymentData.name || 'Little Care',
+            description: paymentData.description,
+            order_id: paymentData.orderId,
+            prefill: paymentData.prefill || {},
+            notes: paymentData.notes || {},
+            theme: paymentData.theme || { color: '#3b82f6' },
+            handler: async function (response) {
+              console.log('✅ Razorpay payment successful:', response);
+              
+              // Send payment verification to backend
+              try {
+                const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                });
 
-        Object.entries(paymentResponse.data.payuParams || {}).forEach(([key, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = value ?? '';
-          form.appendChild(input);
-        });
+                const verifyData = await verifyResponse.json();
+                
+                if (verifyData.success) {
+                  // Don't show success notification - booking is asynchronous
+                  // Redirect to success page
+                  window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+                } else {
+                  showError(verifyData.message || 'Payment verification failed. Please contact support.', 'Verification Error');
+                }
+              } catch (error) {
+                console.error('❌ Payment verification error:', error);
+                showError('Payment verification failed. Please contact support.', 'Verification Error');
+              } finally {
+                setIsBooking(false);
+              }
+            },
+            modal: {
+              ondismiss: function() {
+                console.log('Payment modal closed');
+                setIsBooking(false);
+              }
+            }
+          };
 
-        document.body.appendChild(form);
-        form.submit();
-
-        setTimeout(() => {
-          if (document.body.contains(form)) {
-            document.body.removeChild(form);
-          }
-        }, 1000);
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response) {
+            console.error('❌ Razorpay payment failed:', response);
+            showError(`Payment failed: ${response.error?.description || 'Unknown error'}`, 'Payment Failed');
+            setIsBooking(false);
+            
+            // Send failure to backend
+            fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/failure`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.error?.metadata?.order_id,
+                error: response.error
+              })
+            }).catch(err => console.error('Failed to send failure notification:', err));
+          });
+          
+          rzp.open();
+        }
       } else {
         showError('Failed to create payment order. Please try again.', 'Payment Error');
         setIsBooking(false);

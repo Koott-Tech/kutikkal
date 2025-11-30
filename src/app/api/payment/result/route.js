@@ -5,7 +5,11 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req) {
   try {
-    console.log('🔍 PayU POST request received');
+    console.log('🔍 Razorpay webhook POST request received');
+    
+    // Note: Razorpay uses webhooks for payment notifications
+    // This endpoint may be used for legacy redirects or can be removed
+    // Razorpay payments are handled via JavaScript callbacks in the frontend
     
     // Handle null URL gracefully
     let requestUrl = req.url;
@@ -15,64 +19,49 @@ export async function POST(req) {
     }
     
     console.log('🔍 Request URL:', requestUrl);
-    console.log('🔍 Request headers:', Object.fromEntries(req.headers.entries()));
     
-    // Simple form data parsing
-    const formData = await req.formData();
-    const txnid = formData.get('txnid') || '';
-    const status = formData.get('status') || '';
-    const amount = formData.get('amount') || '';
-    
-    console.log('🔍 PayU Data:', { txnid, status, amount });
-
-    // Call backend API
+    // Parse Razorpay webhook data if present
     try {
+      const body = await req.json();
+      console.log('🔍 Razorpay Webhook Data:', body);
+
+      // Forward to backend for processing
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
-      const backendResponse = await fetch(`${backendUrl}/payment/success`, {
+      const backendResponse = await fetch(`${backendUrl}/payment/webhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txnid, status, amount })
+        body: JSON.stringify(body)
       });
       
       if (backendResponse.ok) {
-        console.log('✅ Backend processing successful');
+        console.log('✅ Backend webhook processing successful');
+        return NextResponse.json({ success: true });
       } else {
-        console.log('⚠️ Backend processing failed');
-      }
-    } catch (backendError) {
-      console.log('⚠️ Backend not available:', backendError.message);
+        console.log('⚠️ Backend webhook processing failed');
+        return NextResponse.json({ success: false }, { status: 500 });
     }
-
-    // Determine redirect base URL based on environment
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : 'https://little.care');
-
-    // Redirect to success page
-    const dest = status === "success" ? "/payment/success" : "/payment/failure";
-    return NextResponse.redirect(`${baseUrl}${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+    } catch (parseError) {
+      console.error('❌ Error parsing webhook data:', parseError);
+      return NextResponse.json({ error: 'Invalid webhook data' }, { status: 400 });
+    }
     
   } catch (error) {
     console.error('❌ Error in POST handler:', error);
-    
-    // Determine redirect base URL based on environment
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : 'https://little.care');
-      
-    return NextResponse.redirect(`${baseUrl}/payment/failure?error=processing`, { status: 302 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function GET(req) {
   try {
-    console.log('🔍 PayU GET request received');
+    console.log('🔍 Razorpay redirect GET request received');
+    
+    // Note: Razorpay typically uses JavaScript callbacks, not GET redirects
+    // This endpoint is kept for legacy support or manual redirects
     
     // Validate req.url before using it
     if (!req.url) {
       console.error('❌ No URL provided in request');
       
-      // Determine redirect base URL based on environment
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
         : 'https://little.care');
@@ -86,7 +75,6 @@ export async function GET(req) {
     } catch (urlError) {
       console.error('❌ Invalid URL in request:', req.url, urlError);
       
-      // Determine redirect base URL based on environment
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
         : 'https://little.care');
@@ -94,24 +82,27 @@ export async function GET(req) {
       return NextResponse.redirect(`${baseUrl}/payment/failure?error=invalid_url`, { status: 302 });
     }
     
-    const txnid = url.searchParams.get('txnid') || '';
-    const status = url.searchParams.get('status') || '';
+    const razorpay_order_id = url.searchParams.get('razorpay_order_id') || '';
+    const razorpay_payment_id = url.searchParams.get('razorpay_payment_id') || '';
+    const status = url.searchParams.get('status') || 'success';
     
-    console.log('🔍 PayU GET Data:', { txnid, status });
+    console.log('🔍 Razorpay GET Data:', { razorpay_order_id, razorpay_payment_id, status });
 
-    // Determine redirect base URL based on environment
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
         ? 'http://localhost:3000' 
         : 'https://little.care');
 
-    // Redirect to success page
+    // Redirect to success/failure page with Razorpay parameters
     const dest = status === "success" ? "/payment/success" : "/payment/failure";
-    return NextResponse.redirect(`${baseUrl}${dest}?txnid=${encodeURIComponent(txnid)}`, { status: 302 });
+    const params = new URLSearchParams();
+    if (razorpay_order_id) params.set('razorpay_order_id', razorpay_order_id);
+    if (razorpay_payment_id) params.set('razorpay_payment_id', razorpay_payment_id);
+    
+    return NextResponse.redirect(`${baseUrl}${dest}?${params.toString()}`, { status: 302 });
     
   } catch (error) {
     console.error('❌ Error in GET handler:', error);
     
-    // Determine redirect base URL based on environment
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
       : 'https://little.care');

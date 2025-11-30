@@ -17,6 +17,9 @@ export default function PageLoadingOverlay() {
     return search ? `${pathname}?${search}` : pathname;
   }, [pathname, searchParams]);
 
+  // Show loading overlay for all pages including payment success
+  const isPaymentSuccessPage = pathname === '/payment/success';
+
   useLayoutEffect(() => {
     // show overlay immediately on mount and whenever the path/search changes
     setIsVisible(true);
