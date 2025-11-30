@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
@@ -23,6 +23,8 @@ const Guide = () => {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const loadedImagesCount = useRef(0);
+  const totalImagesCount = useRef(0);
 
   // Helper functions for time slot filtering (same as therapist profile page)
   const parseTimeStringToMinutes = (timeStr) => {
@@ -197,8 +199,8 @@ const Guide = () => {
           const versionValid = await checkCacheVersion();
           if (versionValid) {
             setDoctors(cached);
-            setImagesLoaded(false); // Reset images loaded state
-            setLoading(false);
+            setImagesLoaded(false); // Reset images loaded state - wait for images to load
+            setLoading(false); // Set loading to false, but LoadingScreen will still show until images load
             // Still fetch in background to update cache
             fetchDoctorsInBackground();
             return;
@@ -488,32 +490,65 @@ const Guide = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
-  // Preload images when doctors are loaded
+  // Reset image loading counters and count total images when doctors change
   useEffect(() => {
-    if (doctors.length > 0 && !imagesLoaded) {
-      const imagePromises = doctors.map((doc) => {
-        return new Promise((resolve) => {
-          const imageSrc = doc.cover_image_url || doc.profile_picture_url;
-          if (!imageSrc) {
-            // No image to load, resolve immediately
-            resolve();
-            return;
+    if (doctors.length > 0) {
+      // Count total images (doctors with image URLs)
+      const totalImages = doctors.filter(doc => {
+        const imageSrc = doc.cover_image_url || doc.profile_picture_url;
+        // Also count fallback images
+        if (!imageSrc) {
+          const name = (doc.name || doc.first_name || '').toLowerCase();
+          if (name.includes('irene') || name.includes('marium') || 
+              name.includes('doug') || name.includes('douglas') || 
+              name.includes('ashley') || name.includes('ash') || 
+              name.includes('sarah') || name.includes('child') || 
+              name.includes('teen') || name.includes('liana')) {
+            return true;
           }
-          
-          const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve(); // Resolve even on error to not block
-          img.src = imageSrc;
-        });
-      });
+        }
+        return !!imageSrc;
+      }).length;
       
-      // Wait for all images to load (or timeout after 3 seconds)
-      Promise.race([
-        Promise.all(imagePromises),
-        new Promise(resolve => setTimeout(resolve, 3000))
-      ]).then(() => {
+      totalImagesCount.current = totalImages;
+      loadedImagesCount.current = 0;
+      
+      // If no images to load, mark as loaded immediately
+      if (totalImages === 0) {
+        console.log('No images to load - showing content immediately');
         setImagesLoaded(true);
-      });
+      } else {
+        setImagesLoaded(false);
+        console.log(`Tracking ${totalImages} images to load`);
+        
+        // Check for already-loaded images (from browser cache) after a short delay
+        setTimeout(() => {
+          const images = document.querySelectorAll('.guide-video-card img.doctor-card-image');
+          let alreadyLoadedCount = 0;
+          images.forEach((img) => {
+            if (img.complete && img.naturalHeight !== 0) {
+              alreadyLoadedCount++;
+              handleImageLoad();
+            }
+          });
+          if (alreadyLoadedCount > 0) {
+            console.log(`Found ${alreadyLoadedCount} images already loaded from cache`);
+          }
+        }, 100);
+        
+        // Set a timeout to show content even if images don't load (max 5 seconds)
+        const timeoutId = setTimeout(() => {
+          setImagesLoaded(prev => {
+            if (!prev) {
+              console.log('Image loading timeout - showing content anyway');
+              return true;
+            }
+            return prev;
+          });
+        }, 5000);
+        
+        return () => clearTimeout(timeoutId);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
@@ -563,6 +598,16 @@ const Guide = () => {
     setShowDateTimePicker(true);
   };
 
+  // Track image loading - called by each image's onLoad/onError handler
+  const handleImageLoad = () => {
+    loadedImagesCount.current += 1;
+    // Check if all images have loaded
+    if (loadedImagesCount.current >= totalImagesCount.current) {
+      console.log(`All ${totalImagesCount.current} images loaded`);
+      setImagesLoaded(true);
+    }
+  };
+
   const handleDoctorClick = (doctor, index) => {
     // Open modal with selected doctor for all screen sizes
     setSelected(index);
@@ -589,9 +634,9 @@ const Guide = () => {
     setShowDateTimePicker(true);
   };
 
-  // Show loading screen only while fetching doctors (not waiting for images)
-  // Images will load in background - don't block the page
-  if (loading) {
+  // Show loading screen while fetching doctors OR until images are loaded
+  // Availability can fetch asynchronously in the background
+  if (loading || (doctors.length > 0 && !imagesLoaded)) {
     return <LoadingScreen />;
   }
 
@@ -694,6 +739,7 @@ const Guide = () => {
               transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
               z-index: 1;
               width: 100%;
+              min-width: 280px; /* Ensure minimum width even without images */
               max-width: 280px;
               height: 360px;
               border-radius: 10px;
@@ -720,6 +766,7 @@ const Guide = () => {
                 padding: 0 5rem !important; /* more side padding */
               }
               .guide-video-card {
+                min-width: 280px;
                 max-width: 280px;
                 height: 360px;
               }
@@ -739,6 +786,7 @@ const Guide = () => {
                 padding: 0 7rem !important; /* more side padding */
               }
               .guide-video-card {
+                min-width: 300px;
                 max-width: 300px;
                 height: 380px;
               }
@@ -756,6 +804,7 @@ const Guide = () => {
                 padding: 0 4rem !important; /* more side padding */
               }
               .guide-video-card {
+                min-width: 320px;
                 max-width: 320px;
                 height: 350px;
               }
@@ -905,6 +954,14 @@ const Guide = () => {
                   onClick={() => handleDoctorClick(doc, idx)}
                 >
                   {/* Doctor Profile Picture or Cover Image */}
+                  <div style={{ 
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    minHeight: "100%"
+                  }}>
                   {(() => {
                     // First try actual image URLs from database
                     let imageSrc = doc.cover_image_url || doc.profile_picture_url;
@@ -930,27 +987,37 @@ const Guide = () => {
                     if (imageSrc) {
                       return (
                         <img
+                          key={`img-${doc.id || idx}`}
                           src={imageSrc}
                           alt={`${doc.name || doc.first_name} profile`}
+                          className="doctor-card-image"
                           style={{ 
                             width: "100%", 
                             height: "100%", 
-                            objectFit: "cover"
+                            minHeight: "100%",
+                            objectFit: "cover",
+                            display: "block"
                           }}
                           onError={(e) => {
                             console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);
                             // Fallback to initials if image fails to load
                             e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
+                            if (e.target.nextSibling) {
+                              e.target.nextSibling.style.display = 'flex';
+                            }
+                            // Mark as loaded even on error so we don't block the page
+                            handleImageLoad();
                           }}
-                          onLoad={() => {
+                          onLoad={(e) => {
                             console.log(`Image loaded successfully for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            handleImageLoad();
                           }}
                         />
                       );
                     }
                     return null;
                   })()}
+                  </div>
                   
                   {/* Gradient Overlay - Black fade from bottom to top */}
                   <div style={{

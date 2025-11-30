@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, Clock, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import QuickContactModal from '@/components/QuickContactModal';
 import { clientApi } from '@/lib/backendApi';
@@ -27,7 +27,11 @@ export default function FreeAssessmentPage() {
   const [availableTimeslots, setAvailableTimeslots] = useState([]);
   const [loadingTimeslots, setLoadingTimeslots] = useState(false);
 
-  const canBookFreeAssessment = user ? Boolean(assessmentStatus?.canBook) : true;
+  // Show calendar for logged-in users by default, unless we explicitly know they can't book
+  // This allows calendar to show even if assessmentStatus hasn't loaded yet or profile doesn't exist
+  const canBookFreeAssessment = user 
+    ? (assessmentStatus === null ? true : Boolean(assessmentStatus?.canBook))
+    : true;
 
   // Get assessment status
   const fetchAssessmentStatus = async () => {
@@ -45,8 +49,17 @@ export default function FreeAssessmentPage() {
       
       if (data.success) {
         setAssessmentStatus(data.data);
+        setError(''); // Clear any previous errors
       } else {
-        setError(data.message || 'Failed to fetch assessment status');
+        // Don't block calendar for "Client profile not found" - it will be created on booking
+        const errorMessage = data.message || 'Failed to fetch assessment status';
+        if (errorMessage.includes('Client profile not found') || errorMessage.includes('profile not found')) {
+          // Set assessmentStatus to allow booking (will be created on booking attempt)
+          setAssessmentStatus({ canBook: true, totalAssessments: 3, usedAssessments: 0, availableAssessments: 3 });
+          setError(''); // Don't show error - profile will be created when booking
+        } else {
+          setError(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error fetching assessment status:', error);
@@ -278,15 +291,16 @@ export default function FreeAssessmentPage() {
 
   const handleAuthSuccess = async () => {
     setShowAuth(false);
-    await fetchAssessmentStatus();
-    await fetchFreeAssessmentAvailability(currentDate);
-    if (pendingBooking?.date && pendingBooking?.time) {
-      await ensureContactAndBook(pendingBooking.date, pendingBooking.time);
-    }
+    // Note: AuthModal will reload the page, so we rely on sessionStorage
+    // and useEffect to check contact info after reload
   };
 
   const handleRequireContactInfo = () => {
     setShowAuth(false);
+    // Set flag in sessionStorage so contact form shows after page reload
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('showQuickContact', 'true');
+    }
     setShowQuickContact(true);
   };
 
@@ -361,6 +375,32 @@ export default function FreeAssessmentPage() {
     if (user && token) {
       console.log('[FreeAssess] useEffect:init', { user: { id: user?.id, role: user?.role, email: user?.email }, tokenPreview: (token || '').slice(0,10) + '...' });
       fetchAssessmentStatus();
+      
+      // Check if we need to show contact form (after signup/login)
+      const shouldShowContact = typeof window !== 'undefined' && sessionStorage.getItem('showQuickContact') === 'true';
+      if (shouldShowContact && user?.role === 'client') {
+        // Check contact info completeness
+        setTimeout(async () => {
+          try {
+            const clientProfileResponse = await clientApi.getProfile();
+            const clientProfile = clientProfileResponse.data;
+            if (!isClientContactComplete(clientProfile)) {
+              setShowQuickContact(true);
+            }
+            // Clear the flag regardless of whether contact is complete
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('showQuickContact');
+            }
+          } catch (e) {
+            console.error('Error checking profile after auth:', e);
+            // If check fails and we have the flag, show contact form anyway
+            setShowQuickContact(true);
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('showQuickContact');
+            }
+          }
+        }, 500);
+      }
     } else {
       setAssessmentStatus(null);
     }
@@ -385,9 +425,6 @@ export default function FreeAssessmentPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h5 className="font-bold text-gray-900 mb-4">Free Assessment Sessions</h5>
-          <p className="text-lg text-gray-600">
-            Get 3 free 20-minute assessment sessions with our qualified therapists
-          </p>
         </div>
 
         {/* Login info for guests */}
@@ -398,52 +435,6 @@ export default function FreeAssessmentPage() {
           </div>
         )}
 
-        {/* Status Card */}
-        {user && assessmentStatus && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h5 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              Your Assessment Status
-            </h5>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{assessmentStatus.totalAssessments}</div>
-                <div className="text-sm text-blue-600">Total Assessments</div>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{assessmentStatus.availableAssessments}</div>
-                <div className="text-sm text-green-600">Available</div>
-              </div>
-              <div className="bg-orange-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">{assessmentStatus.usedAssessments}</div>
-                <div className="text-sm text-orange-600">Used</div>
-              </div>
-            </div>
-
-            {assessmentStatus.canBook && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                  <span className="text-green-800 font-medium">
-                    You can book your {assessmentStatus.nextAssessmentNumber} assessment now!
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {!assessmentStatus.canBook && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
-                  <span className="text-yellow-800">
-                    You have used all your free assessments. Consider booking a paid session.
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Existing Assessments */}
         {user && assessmentStatus?.assessments && assessmentStatus.assessments.length > 0 && (
