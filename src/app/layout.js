@@ -24,6 +24,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-PBKE518Y0H"></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PBKE518Y0H');
+          `
+        }} />
         <link rel="icon" href="/favicon.gif" type="image/gif" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
