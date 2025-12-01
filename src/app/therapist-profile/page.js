@@ -409,7 +409,19 @@ const TherapistProfileContent = () => {
   const renderEducationSection = () => {
     if (!selectedDoctor || !hasEducationDetails) return null;
     return (
-      <div className="p-4 rounded-lg">
+      <div className="p-4 rounded-lg education-section-container">
+        <style>{`
+          @media (max-width: 768px) {
+            .education-section-container {
+              margin-left: auto !important;
+              margin-right: auto !important;
+              max-width: fit-content !important;
+            }
+            .education-section-container > div {
+              text-align: left !important;
+            }
+          }
+        `}</style>
         <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I studied at</p>
         <div className="space-y-1 text-left" style={{ lineHeight: '1.1' }}>
           {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
@@ -955,6 +967,100 @@ const TherapistProfileContent = () => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
 
+  // Get FAQs from selectedDoctor
+  const getFAQs = () => {
+    if (!selectedDoctor) return [];
+    const faqs = [];
+    if (selectedDoctor.faq_question_1 && selectedDoctor.faq_answer_1) {
+      faqs.push({ question: selectedDoctor.faq_question_1, answer: selectedDoctor.faq_answer_1 });
+    }
+    if (selectedDoctor.faq_question_2 && selectedDoctor.faq_answer_2) {
+      faqs.push({ question: selectedDoctor.faq_question_2, answer: selectedDoctor.faq_answer_2 });
+    }
+    if (selectedDoctor.faq_question_3 && selectedDoctor.faq_answer_3) {
+      faqs.push({ question: selectedDoctor.faq_question_3, answer: selectedDoctor.faq_answer_3 });
+    }
+    return faqs;
+  };
+
+  // Render FAQ item component (desktop version)
+  const renderFAQItem = (faq, index) => (
+    <div key={index} className="border-b border-gray-200 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => toggleFAQ(index)}
+        className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
+      >
+        <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+          {faq.question}
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === index ? "rotate-180" : "rotate-0"}`}
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          openFAQ === index ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-0 pb-3 md:pb-4">
+          <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
+            {faq.answer}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render FAQ item component (mobile version with different padding)
+  const renderFAQItemMobile = (faq, index) => (
+    <div key={index} className="border-b border-gray-200 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => toggleFAQ(index)}
+        className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
+      >
+        <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+          {faq.question}
+        </span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === index ? "rotate-180" : "rotate-0"}`}
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          openFAQ === index ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-2 pb-3 md:px-0 md:pb-4">
+          <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
+            {faq.answer}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   const openTreatmentModal = (treatment) => {
     setSelectedTreatment(treatment);
     setShowTreatmentModal(true);
@@ -1165,7 +1271,19 @@ const TherapistProfileContent = () => {
           }
           .therapist-calendar-section {
             margin-top: 3rem !important;
-            margin-left: 1.5rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+          }
+        }
+        /* Portrait tablet 810 x 1180 - add padding to FAQ */
+        @media (min-width: 768px) and (max-width: 900px) and (max-height: 1180px) {
+          .therapist-faq-mobile-section {
+            padding-left: 3rem !important;
+            padding-right: 3rem !important;
+          }
+          .therapist-faq-desktop-section {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
           }
         }
       `}</style>
@@ -1415,122 +1533,14 @@ const TherapistProfileContent = () => {
               {renderLanguagesSection()}
               
               {/* FAQ Section - Desktop/Laptop View */}
-              <div className="mt-20 hidden lg:block">
-                <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
-                
-                <div className="space-y-0">
-                  {/* FAQ 1 */}
-                  <div className="border-b border-gray-200 last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleFAQ(0)}
-                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
-                    >
-                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                        What makes your approach to therapy unique?
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 0 ? "rotate-180" : "rotate-0"}`}
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-out ${
-                        openFAQ === 0 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="px-0 pb-3 md:pb-4">
-                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                          &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* FAQ 2 */}
-                  <div className="border-b border-gray-200 last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleFAQ(1)}
-                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
-                    >
-                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                        How do you help hesitant clients?
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 1 ? "rotate-180" : "rotate-0"}`}
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-out ${
-                        openFAQ === 1 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="px-0 pb-3 md:pb-4">
-                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                          &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* FAQ 3 */}
-                  <div className="border-b border-gray-200 last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleFAQ(2)}
-                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors cursor-pointer"
-                    >
-                      <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                        What&apos;s most important in successful therapy?
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 2 ? "rotate-180" : "rotate-0"}`}
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-out ${
-                        openFAQ === 2 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="px-0 pb-3 md:pb-4">
-                        <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                          &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
-                        </p>
-                      </div>
-                    </div>
+              {getFAQs().length > 0 && (
+                <div className="mt-20 hidden lg:block therapist-faq-desktop-section">
+                  <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
+                  <div className="space-y-0">
+                    {getFAQs().map((faq, index) => renderFAQItem(faq, index))}
                   </div>
                 </div>
-              </div>
+              )}
               
             </div>
             
@@ -1899,7 +1909,7 @@ const TherapistProfileContent = () => {
       </div>
       
       {/* FAQ Section - Mobile View */}
-      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden" style={{ marginTop: '4rem' }}>
+      <div className="w-full px-4 lg:px-6 pb-0 bg-white lg:hidden therapist-faq-mobile-section" style={{ marginTop: '4rem' }}>
         <div className="max-w-6xl mx-auto">
           <style dangerouslySetInnerHTML={{__html: `
             @media (max-width: 767px) {
@@ -1914,122 +1924,14 @@ const TherapistProfileContent = () => {
               }
             }
           `}} />
-          <div className="mt-6">
-            <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
-            
-            <div className="space-y-0">
-              {/* FAQ 1 */}
-              <div className="border-b border-gray-200 last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => toggleFAQ(0)}
-                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
-                >
-                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                    What makes your approach to therapy unique?
-                  </span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 0 ? "rotate-180" : "rotate-0"}`}
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${
-                    openFAQ === 0 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="px-2 pb-3 md:px-0 md:pb-4">
-                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                      &quot;My approach is unique because I combine evidence-based therapeutic techniques with a deeply empathetic and personalized approach. I don&apos;t believe in one-size-fits-all therapy. Each person&apos;s journey is unique, so I adapt my methods to fit their specific needs and cultural background.&quot;
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* FAQ 2 */}
-              <div className="border-b border-gray-200 last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => toggleFAQ(1)}
-                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
-                >
-                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                    How do you help hesitant clients?
-                  </span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 1 ? "rotate-180" : "rotate-0"}`}
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${
-                    openFAQ === 1 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="px-2 pb-3 md:px-0 md:pb-4">
-                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                      &quot;I understand that starting therapy can be intimidating. I always begin by building trust and explaining the process clearly. I encourage clients to ask questions and express their concerns openly. Many people worry about being judged, so I make sure they know this is a collaborative journey.&quot;
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* FAQ 3 */}
-              <div className="border-b border-gray-200 last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => toggleFAQ(2)}
-                  className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
-                >
-                  <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
-                    What&apos;s most important in successful therapy?
-                  </span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${openFAQ === 2 ? "rotate-180" : "rotate-0"}`}
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.19l3.71-2.96a.75.75 0 11.94 1.17l-4.24 3.38a.75.75 0 01-.94 0L5.27 8.34a.75.75 0 01-.04-1.13z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-out ${
-                    openFAQ === 2 ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="px-2 pb-3 md:px-0 md:pb-4">
-                    <p className="faq-answer md:text-sm leading-relaxed text-gray-700">
-                      &quot;The therapeutic relationship is absolutely crucial. Research consistently shows that the connection between therapist and client is one of the strongest predictors of successful outcomes. Beyond that, I believe in the power of collaboration and client involvement.&quot;
-                    </p>
-                  </div>
-                </div>
+          {getFAQs().length > 0 && (
+            <div className="mt-6">
+              <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
+              <div className="space-y-0">
+                {getFAQs().map((faq, index) => renderFAQItemMobile(faq, index))}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       

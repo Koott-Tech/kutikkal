@@ -74,7 +74,13 @@ export default function DoctorModal({
     specializations: [''],
     personalities: [''],
     languages: [''],
-    coverImage: null
+    coverImage: null,
+    faq_question_1: '',
+    faq_answer_1: '',
+    faq_question_2: '',
+    faq_answer_2: '',
+    faq_question_3: '',
+    faq_answer_3: ''
   });
 
   // Simple step-by-step availability state
@@ -269,7 +275,13 @@ export default function DoctorModal({
         specializations: doctor.area_of_expertise || doctor.specializations || [''],
         personalities: doctor.personality_traits || doctor.personalities || [''],
         languages: derivedLanguages,
-        coverImage: resolveDoctorImage(doctor)
+        coverImage: resolveDoctorImage(doctor),
+        faq_question_1: doctor.faq_question_1 || '',
+        faq_answer_1: doctor.faq_answer_1 || '',
+        faq_question_2: doctor.faq_question_2 || '',
+        faq_answer_2: doctor.faq_answer_2 || '',
+        faq_question_3: doctor.faq_question_3 || '',
+        faq_answer_3: doctor.faq_answer_3 || ''
       });
       
       // Fetch packages for this psychologist
@@ -862,7 +874,13 @@ export default function DoctorModal({
         availability: convertedAvailability,
         packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions),
         // Use single field only
-        cover_image_url: safeImageUrl
+        cover_image_url: safeImageUrl,
+        faq_question_1: formData.faq_question_1?.trim() || null,
+        faq_answer_1: formData.faq_answer_1?.trim() || null,
+        faq_question_2: formData.faq_question_2?.trim() || null,
+        faq_answer_2: formData.faq_answer_2?.trim() || null,
+        faq_question_3: formData.faq_question_3?.trim() || null,
+        faq_answer_3: formData.faq_answer_3?.trim() || null
       };
 
       const filteredLanguages = formData.languages
@@ -1176,6 +1194,84 @@ export default function DoctorModal({
             {errors.description && (
               <p className="text-red-500 text-sm mt-1">{errors.description}</p>
             )}
+          </div>
+
+          {/* FAQ Section */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Frequently Asked Questions (Optional)</h3>
+            <p className="text-sm text-gray-600 mb-4">Add up to 3 FAQ questions and answers that will appear on the therapist profile page.</p>
+            
+            {/* FAQ 1 */}
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Question 1
+              </label>
+              <input
+                type="text"
+                value={formData.faq_question_1}
+                onChange={(e) => handleInputChange('faq_question_1', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                placeholder="e.g., What makes your approach to therapy unique?"
+              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Answer 1
+              </label>
+              <textarea
+                value={formData.faq_answer_1}
+                onChange={(e) => handleInputChange('faq_answer_1', e.target.value)}
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter the answer to the first FAQ question..."
+              />
+            </div>
+
+            {/* FAQ 2 */}
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Question 2
+              </label>
+              <input
+                type="text"
+                value={formData.faq_question_2}
+                onChange={(e) => handleInputChange('faq_question_2', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                placeholder="e.g., How do you help hesitant clients?"
+              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Answer 2
+              </label>
+              <textarea
+                value={formData.faq_answer_2}
+                onChange={(e) => handleInputChange('faq_answer_2', e.target.value)}
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter the answer to the second FAQ question..."
+              />
+            </div>
+
+            {/* FAQ 3 */}
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Question 3
+              </label>
+              <input
+                type="text"
+                value={formData.faq_question_3}
+                onChange={(e) => handleInputChange('faq_question_3', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                placeholder="e.g., What's most important in successful therapy?"
+              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FAQ Answer 3
+              </label>
+              <textarea
+                value={formData.faq_answer_3}
+                onChange={(e) => handleInputChange('faq_answer_3', e.target.value)}
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter the answer to the third FAQ question..."
+              />
+            </div>
           </div>
 
           {/* Pricing */}

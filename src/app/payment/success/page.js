@@ -820,7 +820,7 @@ function PaymentSuccessContent() {
                   padding: '16px',
                   marginBottom: '16px',
                   border: '1px solid #e5e7eb'
-                }}>
+        }}>
                   <div style={{ marginBottom: '8px' }}>
                     <strong style={{ color: '#374151' }}>Session Date:</strong>{' '}
                     <span style={{ color: '#6b7280' }}>{formatDate(sessionDetails.date)}</span>

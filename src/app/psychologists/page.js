@@ -756,8 +756,29 @@ const Guide = () => {
               box-shadow: none !important;
             }
             
-            /* Medium laptop view - 4 cards per row */
-            @media (min-width: 1025px) and (max-width: 1199px) {
+            /* Landscape tablet (1180 x 810) - 3 cards per row to prevent overflow */
+            @media (min-width: 1100px) and (max-width: 1199px) and (max-height: 900px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px 20px !important; /* column gap, row gap */
+                row-gap: 10px !important;
+                max-width: 1200px;
+                padding: 0 3rem !important; /* reduced padding to fit 3 cards */
+              }
+              .guide-video-card {
+                min-width: 280px;
+                max-width: 280px;
+                width: 280px !important;
+                height: 360px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.03) translateY(-10px);
+                box-shadow: none !important;
+              }
+            }
+            
+            /* Medium laptop view - 4 cards per row (for taller screens) */
+            @media (min-width: 1025px) and (max-width: 1199px) and (min-height: 901px) {
               .guide-cards-container {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 4px !important; /* base gap */
@@ -806,6 +827,7 @@ const Guide = () => {
               .guide-video-card {
                 min-width: 320px;
                 max-width: 320px;
+                width: 320px !important; /* Ensure exact width on tablet */
                 height: 350px;
               }
               .guide-video-card:hover {
@@ -823,6 +845,7 @@ const Guide = () => {
               }
               .guide-video-card {
                 max-width: 280px;
+                width: 280px !important; /* Ensure exact width on tablet */
                 height: 330px;
               }
               .guide-video-card:hover {
@@ -885,15 +908,25 @@ const Guide = () => {
               }
             }
             
+            /* Landscape tablet (1180 x 810) - match 3 cards layout */
+            @media (min-width: 1100px) and (max-width: 1199px) and (max-height: 900px) {
+              .availability-container {
+                max-width: 280px;
+                width: 280px !important; /* Match exact card width */
+              }
+            }
+            
             @media (max-width: 1024px) and (min-width: 769px) {
               .availability-container {
                 max-width: 320px;
+                width: 320px !important; /* Match exact card width on tablet */
               }
             }
             
             @media (max-width: 900px) and (min-width: 769px) {
               .availability-container {
                 max-width: 280px;
+                width: 280px !important; /* Match exact card width on tablet */
               }
             }
             
@@ -1370,7 +1403,8 @@ const Guide = () => {
                   /* Ensure right side respects rounded corners */
                   border-top-right-radius: 10px;
                   border-bottom-right-radius: 10px;
-                  overflow: hidden; /* clip inner content to reveal radius visually */
+                  /* By default hide overflow, tablet/mobile overrides will enable vertical scroll when needed */
+                  overflow: hidden;
                   background-clip: padding-box;
                 }
                 .doctor-modal-title {
@@ -1422,31 +1456,91 @@ const Guide = () => {
                   }
                 }
                 
-                /* Tablet specific styles */
+                /* Tablet specific styles (portrait & general tablet) */
                 @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
                   .doctor-modal-title {
                     font-size: 28px !important; /* Tablet size */
                   }
                   .doctor-modal {
-                    width: 85vw;
-                    max-width: 800px;
-                    height: 80vh;
-                    max-height: 750px;
+                    /* Make the modal a bit wider on tablet so it uses more horizontal space */
+                    width: 92vw;
+                    max-width: 860px;
+                    /* Make the popup clearly shorter on tablet and let inner columns scroll */
+                    height: 60vh;
+                    max-height: 580px;
                   }
                   .doctor-modal-image {
-                    padding: 12px clamp(6px, 1.4vw, 12px) 36px 12px; /* further increased bottom padding on tablet */
+                    /* Tighten bottom padding so gap under the image is much smaller */
+                    padding: 12px clamp(6px, 1.4vw, 12px) 12px 12px;
+                  }
+                  .doctor-modal-image img,
+                  .doctor-modal-img {
+                    /* Ensure the image fills the left column height on tablet */
+                    width: 100% !important;
+                    height: 100% !important;
+                    object-fit: cover !important;
+                    object-position: center top !important;
                   }
                   .doctor-modal-content {
-                    padding: 32px 40px 32px 12px;
+                    padding: 24px 32px 24px 12px;
+                    /* Right side scrolls within the same fixed modal height, similar to mobile behavior */
+                    overflow-y: auto;
+                    max-height: 100%;
+                    overflow-x: hidden;
+                    position: relative;
+                  }
+                  /* Disable the scrolling blur on tablet - it should be fixed at bottom */
+                  .doctor-modal-content::after {
+                    display: none !important;
+                  }
+                  /* Add fixed blur above buttons container on tablet (like mobile) */
+                  .doctor-modal-buttons-container {
+                    position: relative;
+                    flex-wrap: nowrap !important; /* Keep all buttons on one line */
+                    gap: 6px !important; /* Reduced gap */
+                    padding: 10px 12px !important; /* Reduced padding */
+                  }
+                  .doctor-modal-buttons-container::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: -20px;
+                    height: 20px;
+                    pointer-events: none;
+                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95));
+                    z-index: 1;
                   }
                   .doctor-modal-buttons {
                     gap: 8px;
                     margin-top: 12px;
                   }
                   .doctor-modal-button {
-                    padding: 10px 18px;
-                    font-size: 14px;
-                    min-width: 120px;
+                    padding: 8px 12px !important; /* Reduced padding */
+                    font-size: 13px !important; /* Reduced font size */
+                    min-width: auto !important; /* Remove min-width constraint */
+                    white-space: nowrap !important; /* Prevent text wrapping */
+                    flex-shrink: 0 !important; /* Prevent buttons from shrinking */
+                  }
+                  /* Reduce Book Now button size on tablet */
+                  .find-guide-button {
+                    padding: 8px 32px !important; /* Reduced from 16px 120px */
+                    font-size: 13px !important; /* Reduced from 16px */
+                    white-space: nowrap !important; /* Prevent text wrapping */
+                    height: auto !important;
+                    flex: 0 0 auto !important; /* Don't grow or shrink */
+                  }
+                  /* Keep prev/next buttons compact */
+                  .doctor-modal-button:not(.find-guide-button) {
+                    padding: 8px 10px !important;
+                    font-size: 12px !important;
+                    white-space: nowrap !important;
+                  }
+                }
+                /* Wider tablet landscape (~1180 x 810): reduce image column width */
+                @media (min-width: 1024px) and (max-width: 1180px) and (max-height: 900px) {
+                  .doctor-modal {
+                    grid-template-columns: 40% 60% !important;
                   }
                 }
                 
