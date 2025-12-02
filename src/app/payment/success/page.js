@@ -232,13 +232,10 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
   const [paymentData, setPaymentData] = useState(null);
-  const [receiptData, setReceiptData] = useState(null);
   const [sessionDetails, setSessionDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadingReceipt, setLoadingReceipt] = useState(false);
   const [loadingSessionDetails, setLoadingSessionDetails] = useState(true);
   const [error, setError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
   const [showCenteredAnimation, setShowCenteredAnimation] = useState(false);
   const [loadingScreenComplete, setLoadingScreenComplete] = useState(false);
 
@@ -303,15 +300,8 @@ function PaymentSuccessContent() {
 
     setPaymentData(payload);
     
-    // Fetch transaction ID from receipt when available
+    // Fetch session details if authenticated and order ID is available
     if (isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A') {
-      fetchTransactionId(razorpay_order_id);
-    }
-
-    // Fetch receipt and session details if authenticated and order ID is available
-    // Start polling for receipt immediately
-    if (isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A') {
-      fetchReceiptWithRetry(razorpay_order_id);
       fetchSessionDetails(razorpay_order_id);
     }
 
@@ -331,74 +321,7 @@ function PaymentSuccessContent() {
 
   }, [searchParams, isAuthenticated]);
 
-  const fetchTransactionId = async (orderId) => {
-    try {
-      const response = await clientApi.getReceiptByOrderId(orderId);
-      if (response.success && response.data && response.data.transaction_id) {
-        setPaymentData(prev => ({
-          ...prev,
-          transactionId: response.data.transaction_id
-        }));
-      }
-    } catch (error) {
-      console.log('Could not fetch transaction ID:', error.message);
-    }
-  };
-
-  const fetchReceipt = async (orderId) => {
-    try {
-      const response = await clientApi.getReceiptByOrderId(orderId);
-      
-      if (response.success && response.data && response.data.file_url) {
-        setReceiptData(response.data);
-        console.log('✅ Receipt fetched:', response.data);
-        
-        // Update payment data with transaction ID if available
-        if (response.data.transaction_id) {
-          setPaymentData(prev => ({
-            ...prev,
-            transactionId: response.data.transaction_id
-          }));
-        }
-        
-        return true; // Receipt found
-      } else {
-        console.log('ℹ️ Receipt not found yet, may still be generating...');
-        return false; // Receipt not found
-      }
-    } catch (error) {
-      console.log('ℹ️ Could not fetch receipt:', error.message);
-      return false; // Error fetching
-    }
-  };
-
-  const fetchReceiptWithRetry = async (orderId, attempt = 0) => {
-    setLoadingReceipt(true);
-    setRetryCount(attempt);
-    
-    // Try to fetch receipt
-    const found = await fetchReceipt(orderId);
-    
-    if (found) {
-      setLoadingReceipt(false);
-      return;
-    }
-
-    // If not found and haven't exceeded max retries, retry after delay
-    const maxRetries = 15; // Increased to wait longer for async receipt generation
-    if (attempt < maxRetries) {
-      // Retry after 2 seconds (first retry), then 3s, 4s, etc.
-      const delay = 2000 + (attempt * 1000);
-      setTimeout(() => {
-        fetchReceiptWithRetry(orderId, attempt + 1);
-      }, delay);
-    } else {
-      // Max retries reached - receipt might still be generating
-      // Keep loading state visible so user knows it's still processing
-      console.log('⏱️ Receipt generation taking longer than expected - still processing in background');
-      // Don't set loadingReceipt to false - let user see it's still generating
-    }
-  };
+  // Receipt fetching removed from success page.
 
   const fetchSessionDetails = async (orderId, attempt = 0) => {
     try {
@@ -410,11 +333,11 @@ function PaymentSuccessContent() {
       console.log('Receipt response:', receiptResponse);
       
       if (receiptResponse.success && receiptResponse.data) {
-        const receiptData = receiptResponse.data;
+        const receiptSession = receiptResponse.data.session;
         
         // Check if session details are included in receipt response
-        if (receiptData.session) {
-          const session = receiptData.session;
+        if (receiptSession) {
+          const session = receiptSession;
           
           // Extract psychologist name
           let psychologistName = 'your therapist';
@@ -520,18 +443,7 @@ function PaymentSuccessContent() {
     }
   };
 
-  const handleDownloadReceipt = () => {
-    if (receiptData?.file_url) {
-      // Create a temporary anchor element to trigger download
-      const link = document.createElement('a');
-      link.href = receiptData.file_url;
-      link.download = `receipt-${receiptData.receipt_number || 'payment'}.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+  // Receipt download handled via email/WhatsApp; no manual download button on success page.
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -676,77 +588,7 @@ function PaymentSuccessContent() {
                 <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
               </div>
               
-              {/* Download Receipt Button */}
-              <div style={{ paddingTop: '10px' }}>
-                <button
-                  onClick={handleDownloadReceipt}
-                  disabled={loadingReceipt || !receiptData?.file_url}
-                  style={{
-                    backgroundColor: loadingReceipt ? '#9ca3af' : '#3f2e73',
-                    color: 'white',
-                    padding: '10px 20px',
-                    border: 'none',
-                    borderRadius: '9999px',
-                    cursor: loadingReceipt || !receiptData?.file_url ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                    transition: 'background-color 0.2s ease-in-out',
-                    opacity: loadingReceipt || !receiptData?.file_url ? 0.7 : 1,
-                    width: '100%',
-                    maxWidth: '300px'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!loadingReceipt && receiptData?.file_url) {
-                      e.currentTarget.style.backgroundColor = '#1d1733';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!loadingReceipt && receiptData?.file_url) {
-                      e.currentTarget.style.backgroundColor = '#3f2e73';
-                    }
-                  }}
-                >
-                  {loadingReceipt ? (
-                    <>
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderTop: '2px solid white',
-                        borderRadius: '50%',
-                        animation: 'spin 0.8s linear infinite'
-                      }}></div>
-                      Generating receipt...
-                    </>
-                  ) : receiptData?.file_url ? (
-                    <>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      Download Receipt
-                    </>
-                  ) : (
-                    <>
-                      <div style={{
-                        width: '14px',
-                        height: '14px',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderTop: '2px solid white',
-                        borderRadius: '50%',
-                        animation: 'spin 0.8s linear infinite'
-                      }}></div>
-                      Generating receipt...
-                    </>
-                  )}
-                </button>
-              </div>
+              {/* Receipt is sent automatically via email and WhatsApp; no manual download button. */}
             </div>
           </div>
         )}
