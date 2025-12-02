@@ -369,15 +369,40 @@ const TherapistProfileContent = () => {
 
   const isSlotInPast = (slot, date) => {
     if (!slot || !date) return false;
+
+    // Always compare using IST (Asia/Kolkata) so behaviour is consistent
     const now = new Date();
+    const istString = now.toLocaleString('en-US', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+
+    const [datePart, timePart] = istString.split(', ');
+    const [monthStr, dayStr, yearStr] = datePart.split('/');
+    const [hourStr, minuteStr] = timePart.split(':');
+
+    const istYear = parseInt(yearStr, 10);
+    const istMonth = parseInt(monthStr, 10) - 1; // JS months 0-11
+    const istDay = parseInt(dayStr, 10);
+    const istHour = parseInt(hourStr, 10);
+    const istMinute = parseInt(minuteStr, 10);
+
     const isSameDay =
-      date.getFullYear() === now.getFullYear() &&
-      date.getMonth() === now.getMonth() &&
-      date.getDate() === now.getDate();
+      date.getFullYear() === istYear &&
+      date.getMonth() === istMonth &&
+      date.getDate() === istDay;
+
     if (!isSameDay) return false;
+
     const slotMinutes = getSlotMinutes(slot);
     if (slotMinutes === null) return false;
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const nowMinutes = istHour * 60 + istMinute;
     return slotMinutes <= nowMinutes;
   };
 
@@ -1535,11 +1560,11 @@ const TherapistProfileContent = () => {
               {/* FAQ Section - Desktop/Laptop View */}
               {getFAQs().length > 0 && (
                 <div className="mt-20 hidden lg:block therapist-faq-desktop-section">
-                  <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
-                  <div className="space-y-0">
+                <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
+                <div className="space-y-0">
                     {getFAQs().map((faq, index) => renderFAQItem(faq, index))}
-                  </div>
-                </div>
+                      </div>
+                    </div>
               )}
               
             </div>
@@ -1925,12 +1950,12 @@ const TherapistProfileContent = () => {
             }
           `}} />
           {getFAQs().length > 0 && (
-            <div className="mt-6">
-              <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
-              <div className="space-y-0">
+          <div className="mt-6">
+            <p className="font-semibold text-gray-800 mb-4">Frequently Asked Questions</p>
+            <div className="space-y-0">
                 {getFAQs().map((faq, index) => renderFAQItemMobile(faq, index))}
-              </div>
-            </div>
+                  </div>
+                </div>
           )}
         </div>
       </div>

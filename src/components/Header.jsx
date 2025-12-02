@@ -495,7 +495,7 @@ export default function Header() {
                   
                   {/* Counselling Dropdown */}
                   {isFindCareOpen && (
-                    <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50 mt-4">
+                    <div className="counselling-dropdown header-dropdown absolute top-full left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-lg border border-gray-100 pt-4 pb-2 z-50 mt-4">
                       {/* Counselling Services */}
                       <div className="px-6 pb-4">
                         <div className="space-y-3">
@@ -750,13 +750,7 @@ export default function Header() {
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Other Services */}
-                      <div className="px-4 pt-3">
-                        <div className="space-y-2">
                           
-                        </div>
-                      </div>
                     </div>
                   )}
                 </li>
@@ -924,8 +918,17 @@ export default function Header() {
                     <div className="header-dropdown absolute top-full left-0 mt-4 w-96 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
                       <div className="px-4 space-y-2">
                         {betterParentingMenuItems.map((item, idx) => (
-                          <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3 transition-all duration-200" onClick={() => { router.push(item.url); setIsBetterParentingOpen(false); }}>
-                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">{item.name}</span>
+                          <div
+                            key={idx}
+                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3 transition-all duration-200"
+                            onClick={() => {
+                              router.push(item.url);
+                              setIsBetterParentingOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700 text-sm hover:translate-x-1 transition-all duration-200">
+                              {item.name}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -966,7 +969,7 @@ export default function Header() {
                           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                           </svg>
-                          <span className="text-gray-700 text-sm">Company</span>
+                          <span className="text-gray-700 text-base font-medium">Company</span>
                          </div>
                          <div 
                            className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
@@ -975,7 +978,7 @@ export default function Header() {
                           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                           </svg>
-                          <span className="text-gray-700 text-sm">Career</span>
+                          <span className="text-gray-700 text-base font-medium">Career</span>
                          </div>
                        </div>
                      </div>
@@ -1016,7 +1019,7 @@ export default function Header() {
                           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                           </svg>
-                          <span className="text-gray-700 text-sm">Blog</span>
+                          <span className="text-gray-700 text-base font-medium">Blog</span>
                         </div>
                         <div 
                           className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
@@ -1028,7 +1031,7 @@ export default function Header() {
                           <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-gray-700 text-sm">FAQ</span>
+                          <span className="text-gray-700 text-base font-medium">FAQ</span>
                         </div>
                       </div>
                     </div>

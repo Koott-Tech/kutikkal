@@ -317,17 +317,21 @@ export default function BlogPost({ slug }) {
 
   if (error || !blogPost) {
     return (
-      <article className="min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center py-16">
-          <h6 className="mb-4">Article Not Found</h6>
-            <p className="p2 mb-6">
-              {error ? `Error: ${error}` : "The article you're looking for doesn't exist."}
+      <article className="min-h-screen flex flex-col items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-5xl font-bold mb-4" style={{ color: '#3f2e73' }}>404</h1>
+          <h2 className="text-2xl font-semibold mb-3" style={{ color: '#3f2e73' }}>
+            Article not found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error ? `Error: ${error}` : "The article you're looking for doesn't exist or is no longer available."}
             </p>
-          <Link href="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">
-            ← Back to Blog
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200 bg-[#3f2e73] hover:bg-[#1d1733]"
+          >
+            Go back home
           </Link>
-        </div>
       </div>
       </article>
     );

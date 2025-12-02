@@ -54,9 +54,7 @@ export default function RootLayout({ children }) {
           `
         }} />
       </head>
-      <body
-        className="antialiased"
-      >
+      <body className="antialiased bg-gray-50">
         <Suspense fallback={null}>
           <PageLoadingOverlay />
         </Suspense>

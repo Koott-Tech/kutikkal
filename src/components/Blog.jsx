@@ -252,7 +252,7 @@ export default function Blog() {
                   
                   {/* Meta Info */}
                   <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
-                    <span>{post.author_name || "Kuttikal Team"}</span>
+                    <span>{post.author_name || "Little Care Team"}</span>
                     <span className="px-1 md:px-2">•</span>
                     <span>{formatDate(post.published_at || post.created_at)}</span>
                   </div>

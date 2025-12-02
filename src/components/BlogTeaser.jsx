@@ -302,7 +302,7 @@ export default function BlogTeaser() {
           <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post) => {
             const imageSrc = post.featured_image_url || post.src;
-            const author = post.author_name || post.author || "Kuttikal Team";
+            const author = post.author_name || post.author || "Little Care Team";
             const date = post.published_at || post.created_at || post.date || '';
             const altText = post.alt || post.title || "Blog cover image";
 

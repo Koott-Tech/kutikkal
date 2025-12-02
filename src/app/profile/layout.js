@@ -82,15 +82,20 @@ export default function ProfileLayout({ children }) {
     return pathname === href;
   };
 
+  useEffect(() => {
+    // If user not logged in, redirect to home and trigger login popup via header
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        // Let Header know to show AuthModal
+        localStorage.setItem('auth_error', 'Please log in to view your profile.');
+      }
+      router.replace('/');
+    }
+  }, [user, router]);
+
   if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    // Show nothing while redirecting; Header will show login modal on home
+    return null;
   }
 
   return (
@@ -103,7 +108,7 @@ export default function ProfileLayout({ children }) {
             <div className="flex items-center">
               <img 
                 src="/mainlogo.webp" 
-                alt="Kuttikal Logo" 
+                alt="Little Care Logo" 
                 className="h-8 w-auto hover:opacity-80 transition-opacity"
               />
             </div>
