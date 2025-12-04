@@ -271,7 +271,7 @@ export default function BlogTeaser() {
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
                  <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl font-semibold">
-               Tips to become a better parent
+               Parenting Tips & Child Mental Health Guidance for Everyday Life
              </h3>
            </div>
           <div className="flex justify-center md:justify-end md:self-start md:pt-8">

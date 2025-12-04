@@ -177,7 +177,7 @@ export default function ChooseOptions() {
         <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4">
           <p className="p1 text-base md:text-lg mb-2">Let us guide you.</p>
           <h3 className="choose-options-heading text-base md:text-xl lg:text-2xl font-medium">
-            Choose your options to get started
+            Choose the Right Child Counseling Option to Get Started
           </h3>
         </div>
 

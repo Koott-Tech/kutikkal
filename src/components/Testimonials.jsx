@@ -687,7 +687,7 @@ export default function Testimonials() {
         {/* Heading */}
         <div className="text-center px-4 ">
           <p className="p1">Testimonials</p>
-          <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What families are saying</h3>
+          <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What Families Are Saying About Our Child Counseling Support</h3>
         </div>
 
         {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}

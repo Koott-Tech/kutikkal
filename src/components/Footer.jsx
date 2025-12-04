@@ -182,7 +182,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 }}>
                     <div className="text-center max-w-4xl mx-auto">
                         <h4 className="footer-heading mb-2 font-semibold">
-                            Ready to start your journey to mental well-being?
+                            Ready to Begin Your Child's Mental Well-Being & Therapy Journey?
                         </h4>
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                             We'll find you a provider in-network with your insurance that specializes in the care you're looking for.

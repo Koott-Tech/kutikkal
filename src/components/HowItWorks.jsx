@@ -298,7 +298,7 @@ export default function HowItWorks() {
         {/* Inline CTA under the heading */}
         <div className="mt-3 mb-8 md:mb-6 text-center md:text-center px-4">
           <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-          Your journey to a happier, calmer home begins here.
+          Start Your Child's Therapy Journey Toward a Happier, Calmer Home
           </h3>
           <button
             type="button"

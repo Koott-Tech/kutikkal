@@ -95,7 +95,7 @@ export default function Hero() {
                 Your Partner  in <br />  Child Counselling <br /> & Parent Support
               </h1>
               <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
-                 You and your child deserve quality care from someone who care
+                 Connect with a trusted child psychologist online for quick, gentle child counseling from home.
               </p>
               <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button

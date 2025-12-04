@@ -7,7 +7,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     {
       icon: "speech-bubble",
       iconColor: "purple",
-      title: "Find licensed therapist to support your child's bigger emotions",
+      title: "Find Licensed Child Psychologists to Support Your Child's Emotions",
       description:
         "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.",
       cta: "Find a therapist",
@@ -15,7 +15,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     {
       icon: "pill",
       iconColor: "green",
-      title: "Get clarity with experts for your child's needs and strengths",
+      title: "Get Expert Guidance to Understand Your Child's Needs & Strengths",
       description:
         "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.",
       cta: "Book an assessment",
@@ -23,7 +23,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
     {
       icon: "combination",
       iconColor: "blue",
-      title: "Learn strategies and tools to be a better parent that you always wanted to be",
+      title: "Learn Parenting Counseling Strategies to Support Your Child Better",
       description:
         "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.",
       cta: "Start parent coaching",
