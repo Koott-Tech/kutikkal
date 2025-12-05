@@ -154,7 +154,6 @@ export default function SupportFaq() {
           .our-promise-title {
             font-size: 28px;
             font-weight: 600;
-            line-height: 0.95;
           }
         }
         .our-promise-grid {
@@ -197,9 +196,9 @@ export default function SupportFaq() {
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
-        <h3 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-        Supporting You and Your Little One With Compassionate Child Counseling
-        </h3>
+        <h2 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+        Supporting You and Your Little One <br /> With Compassionate Child Counseling
+        </h2>
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
         <div className="hidden xl:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>

@@ -64,6 +64,12 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
   return (
     <section className={sectionClassName}>
       <style jsx>{`
+        /* Override global h2 styles with h6 styles from globals.css (lines 74-76) */
+        .info-card-title {
+          font-size: 18px !important;
+          line-height: 1.5rem !important;
+          letter-spacing: -0.65px !important;
+        }
         .info-cards-cms-mobile {
           margin-top: 0 !important;
           padding-top: 4rem !important;
@@ -85,8 +91,9 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
             margin-right: auto;
           }
           .info-card-title {
-            font-size: 18px;
-            line-height: 1.35;
+            font-size: 18px !important;
+            line-height: 1.25rem !important;
+            letter-spacing: -0.65px !important;
           }
           .info-card-description {
             font-size: 14px;
@@ -102,8 +109,9 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
             padding: 16px;
           }
           .info-card-title {
-            font-size: 16px;
-            line-height: 1.3;
+            font-size: 20px !important;
+            line-height: 1.5rem !important;
+            letter-spacing: -0.65px !important;
           }
           .info-card-description {
             font-size: 13px;
@@ -127,9 +135,9 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
                   {getIcon(item.icon)}
                 </div>
               )}
-              <h6 className="info-card-title text-left font-medium text-sm md:text-base">
+              <h2 className="info-card-title text-left font-medium text-sm md:text-base">
                 {item.title}
-              </h6>
+              </h2>
             </div>
             
             {/* Description */}

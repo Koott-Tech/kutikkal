@@ -8,10 +8,10 @@ export default function CounsellingNotFound({ slug }) {
       <div className="max-w-md text-center">
         <h1 className="text-5xl font-bold mb-4" style={{ color: '#3f2e73' }}>404</h1>
         <h2 className="text-2xl font-semibold mb-3" style={{ color: '#3f2e73' }}>
-          Counselling service not found
+          Counseling service not found
           </h2>
           <p className="text-gray-600 mb-6">
-          The counselling service &quot;{slug?.replace(/[-_]/g, ' ')}&quot; is not available or hasn&apos;t been published yet.
+          The counseling service &quot;{slug?.replace(/[-_]/g, ' ')}&quot; is not available or hasn&apos;t been published yet.
           </p>
           <Link 
           href="/"

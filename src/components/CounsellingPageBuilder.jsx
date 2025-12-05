@@ -283,7 +283,7 @@ export default function CounsellingPageBuilder({
             </div>
             <div>
               <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                Hero CTA Text (e.g., "Start Child Anxiety Counselling Online Today")
+                Hero CTA Text (e.g., "Start Child Anxiety Counseling Online Today")
               </label>
               <input
                 type="text"
@@ -856,7 +856,7 @@ export default function CounsellingPageBuilder({
                     type="text"
                     value={formData.seo_title}
                     onChange={(e) => handleInputChange('seo_title', e.target.value)}
-                    placeholder="e.g., Anxiety Counselling for Children - Little Care"
+                    placeholder="e.g., Anxiety Counseling for Children - Little Care"
                     maxLength={60}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -884,7 +884,7 @@ export default function CounsellingPageBuilder({
                     type="text"
                     value={formData.seo_keywords || ''}
                     onChange={(e) => handleInputChange('seo_keywords', e.target.value)}
-                    placeholder="e.g., child anxiety, kids counselling, therapy for children"
+                    placeholder="e.g., child anxiety, kids counseling, therapy for children"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">Main keywords for this page (3-5 recommended)</p>
@@ -997,7 +997,7 @@ export default function CounsellingPageBuilder({
                     type="text"
                     value={formData.schema_service_type || ''}
                     onChange={(e) => handleInputChange('schema_service_type', e.target.value)}
-                    placeholder="e.g., Child Anxiety Counselling, ADHD Therapy"
+                    placeholder="e.g., Child Anxiety Counseling, ADHD Therapy"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">Specific service type for schema markup</p>
@@ -1240,7 +1240,7 @@ export default function CounsellingPageBuilder({
                 {showSidebar ? 'Hide Editor' : 'Show Editor'}
               </button>
               <h1 className="text-xs md:text-sm font-light text-gray-400 truncate">
-                {formData.slug ? `/counselling/${formData.slug}` : 'New Counselling Page'}
+                {formData.slug ? `/counselling/${formData.slug}` : 'New Counseling Page'}
               </h1>
             </div>
             <div className="flex items-center space-x-2 w-full sm:w-auto">

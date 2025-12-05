@@ -7,15 +7,15 @@ const DATA = [
     title: "Getting started",
     items: [
       {
-        q: "How do I know if my child needs counselling?",
-        a: "Look out for changes in behavior, emotions, or daily routines — such as frequent sadness, anxiety, anger, withdrawal, or school difficulties. Counselling can help even if challenges seem small.",
+        q: "How do I know if my child needs counseling?",
+        a: "Look out for changes in behavior, emotions, or daily routines — such as frequent sadness, anxiety, anger, withdrawal, or school difficulties. Counseling can help even if challenges seem small.",
       },
       {
         q: "Are your sessions online or in-person?",
         a: "Our online sessions make it easy for families to access expert support from the comfort of their homes.",
       },
       {
-        q: "How long is a counselling session?",
+        q: "How long is a counseling session?",
         a: "50-60 minutes.",
       },
     ],

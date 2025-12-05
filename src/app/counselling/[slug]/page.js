@@ -29,8 +29,8 @@ const EXCLUDED = new Set([
 // Fallback metadata for when API fails
 const FALLBACK_META = {
   'depression': {
-    title: 'Depression Counselling - Little Care',
-    description: 'Compassionate, evidence-based counselling to support children experiencing depression.'
+    title: 'Depression Counseling - Little Care',
+    description: 'Compassionate, evidence-based counseling to support children experiencing depression.'
   },
   'anxiety-sadness': {
     title: 'Anxiety, Sadness or Low mood - Little Care',
@@ -56,7 +56,7 @@ export async function generateMetadata({ params, searchParams }) {
         const service = data.data || data.message;
         if (service && typeof service === 'object' && !Array.isArray(service)) {
           const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
-          const description = service.hero_subtext || 'Specialized counselling services for children and families.';
+          const description = service.hero_subtext || 'Specialized counseling services for children and families.';
           
           return {
             title,
@@ -83,8 +83,8 @@ export async function generateMetadata({ params, searchParams }) {
   
   // Fallback to static metadata if API fails
   const meta = FALLBACK_META[slug] || {
-    title: `${slug?.replace(/[-_]/g, ' ') || 'Counselling'} - Little Care`,
-    description: 'Specialized counselling services for children and families.'
+    title: `${slug?.replace(/[-_]/g, ' ') || 'Counseling'} - Little Care`,
+    description: 'Specialized counseling services for children and families.'
   };
   return meta;
 }
@@ -156,7 +156,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
     return (
       <div className="px-6 py-16 text-center">
         <h3 className="text-2xl font-medium">Section coming soon</h3>
-        <p className="mt-2 text-gray-600">Please choose a specific counselling topic from the menu.</p>
+        <p className="mt-2 text-gray-600">Please choose a specific counseling topic from the menu.</p>
       </div>
     );
   }
@@ -179,7 +179,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       <HeroSection 
         therapyType={slug} 
         cmsData={{
-          title: serviceData.hero_title || 'Counselling',
+          title: serviceData.hero_title || 'Counseling',
           subtext: serviceData.hero_subtext || '',
           ctaText: serviceData.hero_cta_text || '',
           imageUrl: serviceData.hero_image_url || '',

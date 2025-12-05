@@ -253,12 +253,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('counselling')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white text-left">Counselling</h5>
+                                <h5 className="text-white text-left">Counseling</h5>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8 text-left">Counselling</h5>
+                            <h5 className="hidden md:block text-white mb-8 text-left">Counseling</h5>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1 text-left">

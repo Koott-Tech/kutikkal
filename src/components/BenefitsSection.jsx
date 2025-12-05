@@ -193,14 +193,14 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
         },
         {
           title: "Kids learn tools to manage fears",
-          description: "With child anxiety counselling online, children develop coping strategies."
+          description: "With child anxiety counseling online, children develop coping strategies."
         },
         {
           title: "Parents receive guidance through support",
           description: "Support for child anxiety helps parents understand and assist their children."
         },
         {
-          title: "Get Child Anxiety Counselling Online With Parent Support",
+          title: "Get Child Anxiety Counseling Online With Parent Support",
           description: "Comprehensive care that addresses both child and family needs."
         }
       ]

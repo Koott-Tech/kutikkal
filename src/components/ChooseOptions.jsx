@@ -10,8 +10,8 @@ export default function ChooseOptions() {
   const cards = [
     {
       id: 1,
-      tags: ["Counselling", "Emotions"],
-      title: "Child\nCounselling",
+      tags: ["Counseling", "Emotions"],
+      title: "Child\nCounseling",
       description: "A safe space for your kids to express & grow.",
       image: "/letusguide1.webp",
       gradient: "from-[#DEEFDC] to-white",
@@ -176,9 +176,9 @@ export default function ChooseOptions() {
         {/* Header */}
         <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4">
           <p className="p1 text-base md:text-lg mb-2">Let us guide you.</p>
-          <h3 className="choose-options-heading text-base md:text-xl lg:text-2xl font-medium">
+          <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-medium">
             Choose the Right Child Counseling Option to Get Started
-          </h3>
+          </h2>
         </div>
 
         {/* Cards Grid */}

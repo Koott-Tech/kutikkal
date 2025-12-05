@@ -103,7 +103,7 @@ export default function AnxietyTestimonials() {
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-1 gap-3">
             <div className="rounded-[10px] bg-[#E6F5EC] border border-gray-200 p-4" style={{height: '314px'}}>
               <p className="text-[15px] leading-relaxed text-gray-900">
-                "My 9-year-old struggled with anxiety, and I felt helpless. The online counselling gave him tools to feel safe, and I finally felt supported as a parent too."
+                "My 9-year-old struggled with anxiety, and I felt helpless. The online counseling gave him tools to feel safe, and I finally felt supported as a parent too."
               </p>
               <div className="mt-3 text-xs text-gray-600 font-medium">Priya, Parent of a 9-year-old</div>
             </div>

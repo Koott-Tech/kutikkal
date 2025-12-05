@@ -74,8 +74,8 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
       alt: "Child learning social skills"
     },
     "anxiety-sadness": {
-      title: "Helping Kids Find Calm: Child Anxiety Counselling Online",
-      description: "Our licensed child therapists specialize in child anxiety counselling online, offering personalized care to help kids manage their worries and feel safe. Parents also receive meaningful support for child anxiety, so the whole family feels stronger.",
+      title: "Helping Kids Find Calm: Child Anxiety Counseling Online",
+      description: "Our licensed child therapists specialize in child anxiety counseling online, offering personalized care to help kids manage their worries and feel safe. Parents also receive meaningful support for child anxiety, so the whole family feels stronger.",
       image: "/kids.png",
       alt: "Child managing anxiety and sadness",
       features: [

@@ -5,7 +5,7 @@ import { useState } from "react";
 const FAQ_DATA = [
   {
     q: "What is Little Care?",
-    a: "Little Care is an online child counselling platform that supports children and parents through therapy, assessments, and emotional wellness sessions — all from the comfort of your home.",
+    a: "Little Care is an online child counseling platform that supports children and parents through therapy, assessments, and emotional wellness sessions — all from the comfort of your home.",
   },
   {
     q: "Who are the therapists at Little Care?",
@@ -16,7 +16,7 @@ const FAQ_DATA = [
     a: "We primarily work with children aged 4 to 16 years, depending on their emotional and developmental needs.",
   },
   {
-    q: "How does online child counselling work?",
+    q: "How does online child counseling work?",
     a: "Sessions take place over Google Meet, designed to be interactive and child-friendly using games, stories, and visual tools to make therapy engaging and comfortable.",
   },
   {

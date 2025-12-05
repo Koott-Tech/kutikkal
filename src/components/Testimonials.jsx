@@ -687,12 +687,18 @@ export default function Testimonials() {
         {/* Heading */}
         <div className="text-center px-4 ">
           <p className="p1">Testimonials</p>
-          <h3 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What Families Are Saying About Our Child Counseling Support</h3>
+          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-semibold">What Families Are Saying About Our Child Counseling Support</h2>
         </div>
 
         {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}
         <div className="hidden xl:grid grid-cols-5 gap-2 px-2.5 items-start">
-          {/* First column split vertically into two equal halves with padding and gap */}
+          {/* First column: full-length image edge-to-edge */}
+          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
+            <div className="flex-1 rounded-[10px] relative overflow-hidden">
+              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+            </div>
+          </div>
+          {/* Second column split vertically into two equal halves with padding and gap */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
               <div
@@ -723,12 +729,6 @@ export default function Testimonials() {
                   12-year-old girl
                 </p>
               </div>
-            </div>
-          </div>
-          {/* Second column: full-length image edge-to-edge */}
-          <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
-            <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
           {/* Third column: split 30% top (image), 70% bottom (video) */}

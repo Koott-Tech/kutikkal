@@ -23,7 +23,7 @@ export default function HowItWorks() {
       number: "01",
       title: "Tell Us What's Important",
       gradient: "radial-gradient(circle at top right, #fffdff 0%, #fffdff 30%, #d6cae9 50%, #b19cd3 100%)",
-      tags: ["Assessment", "Child counselling", "Better parenting"],
+      tags: ["Assessment", "Child counseling", "Better parenting"],
       description: "Choose what do you want to prioritize to get started."
     },
     {
@@ -177,6 +177,9 @@ export default function HowItWorks() {
             font-weight: 600;
             line-height: 0.95;
           }
+          .how-it-works-slide-number {
+            display: none !important;
+          }
         }
         .card-bg-mobile {
           background-size: cover;
@@ -289,6 +292,11 @@ export default function HowItWorks() {
             display: none;
           }
         }
+        @media (max-width: 767px) {
+          .how-it-works-slide-number {
+            display: none !important;
+          }
+        }
       `}</style>
       <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6">
         <p className="text-center md:text-center mt-2 text-sm md:text-base">
@@ -297,9 +305,9 @@ export default function HowItWorks() {
 
         {/* Inline CTA under the heading */}
         <div className="mt-3 mb-8 md:mb-6 text-center md:text-center px-4">
-          <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-          Start Your Child's Therapy Journey Toward a Happier, Calmer Home
-          </h3>
+          <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+          Start Your Child's Therapy Journey Towards <br /> a Happier, Calmer Home
+          </h2>
           <button
             type="button"
             className="mt-4 md:mt-5 inline-flex items-center rounded-full px-6 md:px-8 py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
@@ -510,7 +518,7 @@ export default function HowItWorks() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Child counselling</span>
+                  <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Child counseling</span>
                 </div>
                 <div className="bg-white/90 rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 w-fit">
                   <div className="w-5 h-5 rounded-full border border-gray-800 flex items-center justify-center flex-shrink-0">

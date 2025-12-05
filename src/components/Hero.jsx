@@ -92,7 +92,7 @@ export default function Hero() {
               </div>
               
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
-                Your Partner  in <br />  Child Counselling <br /> & Parent Support
+                Your Partner  in <br />  Child Counseling <br /> & Parent Support
               </h1>
               <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
                  Connect with a trusted child psychologist online for quick, gentle child counseling from home.

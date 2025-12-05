@@ -52,14 +52,14 @@ export default function TermsAndConditionsPage() {
                             affiliates.
                         </li>
                         <li>
-                            <strong>Services:</strong> Provision of psychological counselling, behavioural guidance, and emotional
+                            <strong>Services:</strong> Provision of psychological counseling, behavioural guidance, and emotional
                             wellness support for children and families to address personal, academic, emotional, or developmental
-                            challenges. Services exclude counselling for psychotic disorders, crisis intervention for suicidal tendencies,
+                            challenges. Services exclude counseling for psychotic disorders, crisis intervention for suicidal tendencies,
                             or emergency psychiatric care.
                         </li>
                         <li>
-                            <strong>Counsellors:</strong> Qualified and verified mental health professionals (psychologists, therapists,
-                            counsellors) registered on the Website who provide emotional and behavioural support.
+                            <strong>Counselors:</strong> Qualified and verified mental health professionals (psychologists, therapists,
+                            counselors) registered on the Website who provide emotional and behavioural support.
                         </li>
                     </ul>
                 </section>
@@ -89,9 +89,9 @@ export default function TermsAndConditionsPage() {
                     <h5 className="text-gray-900 font-semibold">1.2 Features</h5>
                     <p className="text-base leading-relaxed text-gray-700 font-semibold">For Registered Users</p>
                     <ul className="space-y-2 text-base leading-relaxed text-gray-700 list-disc list-inside">
-                        <li>Obtain general information and guidance from Counsellors.</li>
-                        <li>Schedule counselling sessions for children or family members.</li>
-                        <li>Interact privately with Counsellors via chat, phone, or video.</li>
+                        <li>Obtain general information and guidance from Counselors.</li>
+                        <li>Schedule counseling sessions for children or family members.</li>
+                        <li>Interact privately with Counselors via chat, phone, or video.</li>
                         <li>View past consultations and recommendations securely.</li>
                         <li>Pay consultation fees (including LittleCare&rsquo;s handling fee).</li>
                     </ul>
@@ -101,7 +101,7 @@ export default function TermsAndConditionsPage() {
                         <li>View indicative appointment availability.</li>
                         <li>Access general wellness articles and resources.</li>
                     </ul>
-                    <p className="text-base leading-relaxed text-gray-700 font-semibold">For Counsellors</p>
+                    <p className="text-base leading-relaxed text-gray-700 font-semibold">For Counselors</p>
                     <ul className="space-y-2 text-base leading-relaxed text-gray-700 list-disc list-inside">
                         <li>Publish professional profiles visible to Users.</li>
                         <li>Interact privately with Registered Users via Website features.</li>
@@ -114,7 +114,7 @@ export default function TermsAndConditionsPage() {
                             <strong>User Content:</strong> Questions, data, and interactions submitted by Users.
                         </li>
                         <li>
-                            <strong>Counsellor Content:</strong> Responses, articles, and educational materials from Counsellors.
+                            <strong>Counselor Content:</strong> Responses, articles, and educational materials from Counselors.
                         </li>
                         <li>
                             <strong>LittleCare Content:</strong> Proprietary content generated or procured by LittleCare.
@@ -137,9 +137,9 @@ export default function TermsAndConditionsPage() {
                     <ul className="space-y-2 text-base leading-relaxed text-gray-700 list-disc list-inside">
                         <li>Only a parent, legal guardian, or adult caregiver may register and book sessions on behalf of a child below 18.</li>
                         <li>By registering, you confirm that you are legally authorized to provide consent for the child’s participation.</li>
-                        <li>LittleCare and its Counsellors are not substitutes for emergency or psychiatric medical care.</li>
-                        <li>Verify any information received from Counsellors independently before taking decisions related to diagnosis or medication.</li>
-                        <li>LittleCare facilitates appointments but does not endorse or guarantee the professional advice of Counsellors.</li>
+                        <li>LittleCare and its Counselors are not substitutes for emergency or psychiatric medical care.</li>
+                        <li>Verify any information received from Counselors independently before taking decisions related to diagnosis or medication.</li>
+                        <li>LittleCare facilitates appointments but does not endorse or guarantee the professional advice of Counselors.</li>
                         <li>Fees are payable in advance to LittleCare and are non-transferable except under the Refund Policy.</li>
                     </ul>
                     <h5 className="text-gray-900 font-semibold">2.3 Non-Registered Users</h5>
@@ -151,7 +151,7 @@ export default function TermsAndConditionsPage() {
                 <section className="mt-10 space-y-4">
                     <h4 className={`${styles.sectionHeading} text-gray-900`}>3. Role of LittleCare</h4>
                     <p className="text-base leading-relaxed text-gray-700">
-                        LittleCare acts as a technology intermediary under the Information Technology Act, 2000. It provides a platform to connect Users with Counsellors for child and family mental health support.
+                        LittleCare acts as a technology intermediary under the Information Technology Act, 2000. It provides a platform to connect Users with Counselors for child and family mental health support.
                     </p>
                     <p className="text-base leading-relaxed text-gray-700">
                         LittleCare is not liable for clinical outcomes, counsellor performance, or delays beyond its control.
@@ -194,7 +194,7 @@ export default function TermsAndConditionsPage() {
                 <section className="mt-10 space-y-4">
                     <h4 className={`${styles.sectionHeading} text-gray-900`}>7. Disclaimers</h4>
                     <ul className="space-y-2 text-base leading-relaxed text-gray-700 list-disc list-inside">
-                        <li>Counsellors are independent professionals; LittleCare does not control their methods or conclusions.</li>
+                        <li>Counselors are independent professionals; LittleCare does not control their methods or conclusions.</li>
                         <li>LittleCare does not provide medical diagnosis or prescribe medication.</li>
                         <li>Counsellor qualifications and details are self-declared; Users should verify independently.</li>
                         <li>The Website is provided &ldquo;as is&rdquo; and &ldquo;as available.&rdquo;</li>
@@ -220,7 +220,7 @@ export default function TermsAndConditionsPage() {
                 <section className="mt-10 space-y-4">
                     <h4 className={`${styles.sectionHeading} text-gray-900`}>10. Indemnification</h4>
                     <p className="text-base leading-relaxed text-gray-700">
-                        You agree to indemnify and hold harmless LittleCare, its affiliates, employees, Counsellors, and service providers from any claims or damages arising from your use of the Website, breach of this Agreement, misrepresentation, negligence, or misconduct.
+                        You agree to indemnify and hold harmless LittleCare, its affiliates, employees, Counselors, and service providers from any claims or damages arising from your use of the Website, breach of this Agreement, misrepresentation, negligence, or misconduct.
                     </p>
                 </section>
 

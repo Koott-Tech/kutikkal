@@ -37,11 +37,11 @@ export default function RefundPolicyPage() {
                             for Services.
                         </li>
                         <li>
-                            <strong>Services:</strong> counselling, coaching, supporting services, training, workshops, and ancillary services provided by
+                            <strong>Services:</strong> counseling, coaching, supporting services, training, workshops, and ancillary services provided by
                             LittleCare, delivered online, remotely, synchronously, or asynchronously.
                         </li>
                         <li>
-                            <strong>Session:</strong> a single scheduled service interaction (e.g., a 50-minute counselling slot).
+                            <strong>Session:</strong> a single scheduled service interaction (e.g., a 50-minute counseling slot).
                         </li>
                         <li>
                             <strong>Package:</strong> any bundle of Sessions sold for a single fee.

@@ -159,9 +159,9 @@ export default function PersonalizedCare() {
       <div className="w-full px-4 sm:px-6 md:px-0 personalized-care-content" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
         {/* Header Section */}
         <div className="text-center px-4 personalized-care-header" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
-          <h3 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500, marginTop: 0, marginBottom: 0 }}>
+          <h2 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500, marginTop: 0, marginBottom: 0 }}>
             The care your child needs, whenever you need it
-          </h3>
+          </h2>
           <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto personalized-care-description" style={{ marginTop: '12px', marginBottom: 0, paddingBottom: 0, paddingTop: 0 }}>
           No matter where your journey begins, Little Care is here to create a safe, supportive, and open space for you and your little ones.
           </p>

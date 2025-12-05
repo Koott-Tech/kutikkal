@@ -488,7 +488,7 @@ export default function Header() {
                       }
                     }}
                   >
-                  <span className="header-nav-item inline-block">Counselling</span>
+                  <span className="header-nav-item inline-block">Counseling</span>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>

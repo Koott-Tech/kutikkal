@@ -52,7 +52,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
   const options = [
     {
       key: 'counselling',
-      title: "Child Counselling",
+      title: "Child Counseling",
       description: "A safe space for your kids to express & grow.",
       image: "/letusguide1.webp",
     },
@@ -71,7 +71,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
   ];
 
   const headingByKey = useMemo(() => ({
-    'counselling': 'Choose a counselling service',
+    'counselling': 'Choose a counseling service',
     'assessments': 'Choose an assessment',
     'better-parenting': 'Choose a better parenting program',
   }), []);

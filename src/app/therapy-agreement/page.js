@@ -26,7 +26,7 @@ export default function TherapyAgreementPage() {
                     <ul className="space-y-2 text-base leading-relaxed text-gray-700 list-disc list-inside">
                         <li><strong>Company:</strong> LittleCare by Koott Care Pvt. Ltd.</li>
                         <li>
-                            <strong>Services Covered:</strong> Child Counselling, Child Assessment, Better Parenting — delivered
+                            <strong>Services Covered:</strong> Child Counseling, Child Assessment, Better Parenting — delivered
                             exclusively through online/tele-therapy platforms.
                         </li>
                     </ul>

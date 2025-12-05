@@ -872,7 +872,13 @@ export default function DoctorModal({
         area_of_expertise: formData.specializations.filter(spec => spec.trim()),
         personality_traits: formData.personalities.filter(p => p.trim()),
         availability: convertedAvailability,
-        packages: formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions),
+        packages: formData.packages
+          .filter(pkg => pkg.name && pkg.price && pkg.sessions)
+          .map(pkg => ({
+            ...pkg,
+            // Ensure ID is preserved - if it's a temp ID, remove it so backend knows it's new
+            id: (pkg.id && !isNaN(parseInt(pkg.id)) && parseInt(pkg.id) > 0) ? parseInt(pkg.id) : undefined
+          })),
         // Use single field only
         cover_image_url: safeImageUrl,
         faq_question_1: formData.faq_question_1?.trim() || null,
