@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import QuickContactModal from '@/components/QuickContactModal';
 import { clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
 
 export default function FreeAssessmentPage() {
+  const router = useRouter();
   const { user, token, authLoading } = useAuth();
   const [assessmentStatus, setAssessmentStatus] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,7 @@ export default function FreeAssessmentPage() {
   const [showAuth, setShowAuth] = useState(false);
   const [showQuickContact, setShowQuickContact] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Calendar state (like therapist profile)
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -207,6 +210,13 @@ export default function FreeAssessmentPage() {
       setShowAuth(true);
       return;
     }
+    
+    // Start timer immediately when booking starts - show modal after 3 seconds
+    const successTimer = setTimeout(() => {
+      setShowSuccessModal(true);
+      setLoading(false);
+    }, 3000);
+    
     try {
       setLoading(true);
       setError('');
@@ -232,22 +242,33 @@ export default function FreeAssessmentPage() {
       const data = await response.json();
 
       if (data.success) {
-        setSuccess('Free assessment booked successfully! Check your email for confirmation.');
+        // Clear selections immediately
         setSelectedDate(null);
         setSelectedTime(null);
         setAvailableTimeslots([]);
         setPendingBooking(null);
+        
+        // Refresh data
         if (user && token) {
           fetchAssessmentStatus();
         }
         fetchFreeAssessmentAvailability(currentDate);
+        
+        // Modal will show after 2 seconds (already started timer above)
+        // Don't set loading to false here - let the timer handle it
       } else {
+        // If booking failed, cancel the success timer and show error
+        clearTimeout(successTimer);
+        setShowSuccessModal(false);
         setError(data.message || 'Failed to book assessment');
+        setLoading(false);
       }
     } catch (error) {
+      // If booking failed, cancel the success timer and show error
+      clearTimeout(successTimer);
+      setShowSuccessModal(false);
       console.error('Error booking assessment:', error);
       setError('Failed to book assessment');
-    } finally {
       setLoading(false);
     }
   };
@@ -779,6 +800,51 @@ export default function FreeAssessmentPage() {
           onClose={() => setShowQuickContact(false)}
           onSaved={handleQuickContactSaved}
         />
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full relative">
+            {/* Close button at top right */}
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Modal Content */}
+            <div className="p-6 pt-12">
+              <div className="text-center mb-6">
+                <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Session Booked Successfully!
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  The meet link will be shared via WhatsApp and email and also will be listed in the sessions page.
+                </p>
+              </div>
+
+              {/* Sessions Page Button */}
+              <div className="mt-6">
+                <button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    router.push('/profile/sessions');
+                  }}
+                  className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
+                  style={{ backgroundColor: '#3f2e73' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                >
+                  Sessions Page
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
