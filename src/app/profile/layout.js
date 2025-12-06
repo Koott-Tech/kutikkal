@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function ProfileLayout({ children }) {
-  const { user, logout, hasRole, login, token } = useAuth();
+  const { user, logout, hasRole, login, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -83,7 +83,13 @@ export default function ProfileLayout({ children }) {
   };
 
   useEffect(() => {
-    // If user not logged in, redirect to home and trigger login popup via header
+    // Only redirect if auth has finished loading AND user is not authenticated
+    // This prevents redirecting on page refresh when auth is still loading
+    if (authLoading) {
+      return; // Don't redirect while auth is loading - wait for auth to finish
+    }
+    
+    // Only redirect when auth has finished loading and user is confirmed to be null
     if (!user) {
       if (typeof window !== 'undefined') {
         // Let Header know to show AuthModal
@@ -91,8 +97,19 @@ export default function ProfileLayout({ children }) {
       }
       router.replace('/');
     }
-  }, [user, router]);
+  }, [user, router, authLoading]);
 
+  // Show loading while auth is loading (prevents premature redirect)
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Only show nothing/redirect if auth has finished loading and user is still null
+  // This means user is definitely not authenticated
   if (!user) {
     // Show nothing while redirecting; Header will show login modal on home
     return null;
@@ -216,7 +233,7 @@ export default function ProfileLayout({ children }) {
         <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
           <div className="flex items-center">
             <img 
-              src="/mainlogo.svg" 
+              src="/mainlogo.webp" 
               alt="Kuttikal Logo" 
               className="h-8 w-auto hover:opacity-80 transition-opacity"
             />

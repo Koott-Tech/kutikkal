@@ -13,10 +13,22 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
   // Availability state - EXACT same as therapist profile
   const [psychologistAvailability, setPsychologistAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [availableTimeslots, setAvailableTimeslots] = useState([]);
+  const [loadingTimeslots, setLoadingTimeslots] = useState(false);
   
   // Reschedule state
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [error, setError] = useState(null);
+
+  // Helper function to convert 24-hour time to 12-hour format with AM/PM
+  const formatTime12Hour = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12; // Convert 0 to 12, 13-23 to 1-11
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   // EXACT same helper functions as therapist profile
   const getMonthName = (date) => {
@@ -60,23 +72,53 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
     // Clear selected time when date changes
     setSelectedTime(null);
     
-    // Check if the selected date has availability
-    // Use local date formatting to avoid timezone conversion issues
-    const year = newSelectedDate.getFullYear();
-    const month = String(newSelectedDate.getMonth() + 1).padStart(2, '0');
-    const dayStr = String(newSelectedDate.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${dayStr}`;
-    const dateAvailability = psychologistAvailability[dateStr];
-    
-    if (!dateAvailability || !dateAvailability.availableSlots || dateAvailability.availableSlots === 0) {
-      // No availability for this date
-    } else {
-      // Date has availability
+    // For free assessments, fetch time slots for the selected date (same as free assessment page)
+    if (session.session_type === 'free_assessment') {
+      fetchAvailableTimeslots(newSelectedDate);
     }
   };
 
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
+  };
+
+  // Fetch available timeslots for selected date - same as free assessment page
+  const fetchAvailableTimeslots = async (date) => {
+    try {
+      setLoadingTimeslots(true);
+      console.log('[Reschedule] fetchAvailableTimeslots:start', { date, iso: date?.toISOString() });
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log('[Reschedule] fetchAvailableTimeslots:dateStr', dateStr);
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(
+        `/api/free-assessments/available-slots?date=${dateStr}`,
+        Object.keys(headers).length ? { headers } : undefined
+      );
+      
+      const data = await response.json();
+      console.log('[Reschedule] fetchAvailableTimeslots:response', data);
+      
+      if (data.success) {
+        const slots = data.data.availableSlots || [];
+        console.log('[Reschedule] Setting availableTimeslots:', slots);
+        setAvailableTimeslots(slots);
+      } else {
+        console.error('Failed to fetch timeslots:', data);
+        setAvailableTimeslots([]);
+      }
+    } catch (error) {
+      console.error('Error fetching timeslots:', error);
+      setAvailableTimeslots([]);
+    } finally {
+      setLoadingTimeslots(false);
+      console.log('[Reschedule] fetchAvailableTimeslots:done');
+    }
   };
 
   // EXACT same availability fetching as therapist profile
@@ -102,19 +144,62 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
     }
   };
 
-  // Fetch free assessment availability
+  // Fetch free assessment availability - same method as free assessment page
   const fetchFreeAssessmentAvailability = async () => {
     try {
-      const response = await clientApi.getFreeAssessmentAvailabilityForReschedule(session.id);
+      setLoadingAvailability(true);
       
-      if (response.success && response.data) {
-        setPsychologistAvailability(response.data.availability || {});
+      // Get current month dates - same as free assessment page
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      // Format start date (first day of month)
+      const startYear = year;
+      const startMonth = String(month + 1).padStart(2, '0');
+      const startDay = '01';
+      const startDate = `${startYear}-${startMonth}-${startDay}`;
+      
+      // Format end date (last day of month)
+      const endYear = year;
+      const endMonth = String(month + 1).padStart(2, '0');
+      const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
+      const endDate = `${endYear}-${endMonth}-${endDay}`;
+      
+      console.log('🔍 Fetching free assessment availability for reschedule:', startDate, 'to', endDate);
+      
+      // Use the same endpoint as free assessment page
+      const response = await fetch(
+        `/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        }
+      );
+      
+      const data = await response.json();
+      console.log('🔍 Free assessment availability response:', data);
+      
+      if (data.success) {
+        // Convert array to object with date keys - same as free assessment page
+        const availabilityObject = {};
+        data.data.forEach(dayAvailability => {
+          availabilityObject[dayAvailability.date] = dayAvailability;
+        });
+        
+        console.log('🔍 Processed availability object:', availabilityObject);
+        setPsychologistAvailability(availabilityObject);
       } else {
+        console.error('Failed to fetch availability:', data);
         setError('Failed to fetch free assessment availability');
+        setPsychologistAvailability({});
       }
     } catch (error) {
       console.error('Error fetching free assessment availability:', error);
       setError('Failed to fetch free assessment availability');
+      setPsychologistAvailability({});
+    } finally {
+      setLoadingAvailability(false);
     }
   };
 
@@ -311,7 +396,23 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                       const dateStr = `${year}-${month}-${dayStr}`;
                       const dateAvailability = psychologistAvailability[dateStr];
-                      const isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
+                      
+                      // For free assessments, use same highlighting logic as free assessment page
+                      let isPsychologistAvailable = false;
+                      let shouldHighlight = false;
+                      
+                      if (session.session_type === 'free_assessment') {
+                        // Highlight if the date is configured OR has available slots > 0
+                        shouldHighlight = !!dateAvailability && (
+                          (typeof dateAvailability.isConfigured === 'boolean' && dateAvailability.isConfigured) ||
+                          (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0)
+                        );
+                        isPsychologistAvailable = shouldHighlight;
+                      } else {
+                        // Regular session logic
+                        isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
+                        shouldHighlight = isPsychologistAvailable;
+                      }
                       
                       // Only show dates as available if they actually have availability data
                       const isActuallyAvailable = isPsychologistAvailable && isAvailable;
@@ -326,23 +427,45 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                             }
                           }}
                           className={`text-center py-0.5 sm:py-1 rounded-lg transition-all duration-200 text-xs ${
-                            isSelected 
-                              ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
-                              : isToday
-                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                                : isPsychologistAvailable
-                                  ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform' // Dates with actual availability - highlighted with hover effects
-                                : isAvailable
-                                  ? 'hover:bg-gray-100 text-gray-500 cursor-pointer' // Future dates without availability (now clickable)
-                                  : 'text-gray-300 cursor-not-allowed' // Past dates
+                            session.session_type === 'free_assessment' 
+                              ? (
+                                // Free assessment styling - same as free assessment page
+                                isSelected
+                                  ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
+                                  : (isToday && shouldHighlight)
+                                    ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
+                                    : isToday
+                                      ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
+                                      : shouldHighlight
+                                        ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
+                                        : isAvailable
+                                          ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
+                                          : 'text-gray-300 cursor-not-allowed'
+                              )
+                              : (
+                                // Regular session styling
+                                isSelected 
+                                  ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
+                                  : isToday
+                                    ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
+                                    : isPsychologistAvailable
+                                      ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
+                                    : isAvailable
+                                      ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
+                                      : 'text-gray-300 cursor-not-allowed'
+                              )
                           }`}
-                          title={isPsychologistAvailable ? 'Available for booking' : isAvailable ? 'Click to check availability' : 'Past date'}
+                          title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
                         >
                           {day}
-                          {isPsychologistAvailable && (
-                            <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 shadow-sm"></div>
+                          {shouldHighlight && (
+                            <div
+                              className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
+                                isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                              }`}
+                            ></div>
                           )}
-                          {!isPsychologistAvailable && isAvailable && (
+                          {!shouldHighlight && isAvailable && session.session_type !== 'free_assessment' && (
                             <div className="w-1 h-1 bg-gray-400 rounded-full mx-auto mt-1"></div>
                           )}
                         </div>
@@ -359,9 +482,9 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
             {/* Time Selection - EXACT same as therapist profile */}
             <div className="space-y-4 sm:space-y-6">
               <div>
-                <div className="mb-3 sm:mb-4">
+                <div className="mb-3 sm:mb-4 flex items-center justify-between">
                   <h6 className="text-xs sm:text-sm font-semibold text-gray-900">
-                  Select New Time
+                    Select New Time
                   </h6>
                   {selectedDate && (
                     <p className="text-[10px] sm:text-xs text-gray-500">
@@ -383,47 +506,118 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                     </div>
                   </div>
                                  ) : (() => {
-                   // EXACT same logic as therapist profile
-                   // Use local date formatting to avoid timezone conversion issues
-                   const year = selectedDate.getFullYear();
-                   const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-                   const dayStr = String(selectedDate.getDate()).padStart(2, '0');
-                   const dateStr = `${year}-${month}-${dayStr}`;
-                   const dateAvailability = psychologistAvailability[dateStr];
+                  // For free assessments, use availableTimeslots from fetchAvailableTimeslots (same as free assessment page)
+                  // Check this FIRST before checking dateAvailability
+                  if (session.session_type === 'free_assessment') {
+                    console.log('[Reschedule] Rendering free assessment slots:', {
+                      loadingTimeslots,
+                      availableTimeslotsLength: availableTimeslots.length,
+                      availableTimeslots
+                    });
+                    
+                    if (loadingTimeslots) {
+                      return (
+                        <div className="flex items-center justify-center py-4 min-h-[200px]">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-3"></div>
+                            <span className="text-gray-600 text-sm">Creating a safe place for you</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    // Filter slots for today (same as free assessment page)
+                    const filteredSlots = availableTimeslots.filter((timeslot) => {
+                      if (!selectedDate) return true;
+                      const now = new Date();
+                      const isToday =
+                        selectedDate.getFullYear() === now.getFullYear() &&
+                        selectedDate.getMonth() === now.getMonth() &&
+                        selectedDate.getDate() === now.getDate();
+                      if (!isToday) return true;
+                      const [hh, mm] = timeslot.time.split(':');
+                      const slotMinutes = parseInt(hh, 10) * 60 + parseInt(mm, 10);
+                      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+                      return slotMinutes > nowMinutes;
+                    });
+
+                    console.log('[Reschedule] Filtered slots:', filteredSlots);
+                    
+                    if (filteredSlots.length === 0) {
+                      console.log('[Reschedule] No filtered slots, showing empty message');
+                      return (
+                        <div className="flex items-center justify-center h-32 text-gray-500 text-sm italic">
+                          No available time slots for this date
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-3 gap-2">
+                        {filteredSlots.map((timeslot, index) => {
+                          const isSelected = selectedTime === timeslot.time;
+                          const isFullyBooked = timeslot.currentBookings >= timeslot.maxBookings;
+                          const remainingSlots = timeslot.maxBookings - timeslot.currentBookings;
+                          
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => !isFullyBooked && handleTimeSelect(timeslot.time)}
+                              disabled={isFullyBooked}
+                              className={`p-2 text-xs rounded-lg border transition-colors ${
+                                isSelected
+                                  ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                                  : isFullyBooked
+                                    ? 'bg-red-100 text-red-600 border-red-300 cursor-not-allowed'
+                                    : 'bg-white text-[#3f2e73] border-[#3f2e73] hover:bg-[#f0edff]'
+                              }`}
+                              title={isFullyBooked ? 'Fully booked' : `Available: ${remainingSlots} slots left`}
+                            >
+                              <div className="text-center">
+                                <div>{timeslot.displayTime || timeslot.time}</div>
+                                {isFullyBooked && (
+                                  <div className="text-xs text-red-500 mt-1">Fully booked</div>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
                   
-                  if (!dateAvailability || !dateAvailability.availableSlots || dateAvailability.availableSlots === 0) {
+                  // Regular session structure: { timeSlots: [{ available, displayTime, ... }] }
+                  const allTimeSlots = dateAvailability.timeSlots || [];
+                  const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
+                  
+                  if (availableSlots.length === 0) {
                     return (
                       <div className="text-center py-8">
                         <div className="text-gray-500 text-sm">
                           <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <p>No availability for this date</p>
-                          <p className="text-xs mt-1">Please select another date</p>
+                          <p>No available time slots for this date</p>
                         </div>
                       </div>
                     );
                   }
                   
-                  // EXACT same time slots calculation as therapist profile
-                  const allTimeSlots = dateAvailability.timeSlots || [];
-                  const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
-                  
                   return (
-                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                            {availableSlots.map((time) => (
-                              <button
-                                key={time}
-                                onClick={() => handleTimeSelect(time)}
-                                className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
-                                  selectedTime === time
-                                    ? 'border-green-500 bg-green-50 text-green-700' 
-                                    : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
-                                }`}
-                              >
-                                {time}
-                              </button>
-                            ))}
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                      {availableSlots.map((time) => (
+                        <button
+                          key={time}
+                          onClick={() => handleTimeSelect(time)}
+                          className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
+                            selectedTime === time
+                              ? 'border-green-500 bg-green-50 text-green-700 font-semibold' 
+                              : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      ))}
                     </div>
                   );
                 })()}
@@ -440,11 +634,25 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               <button
                 onClick={handleReschedule}
                 disabled={!selectedDate || !selectedTime || isRescheduling}
-                className={`w-full py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base ${
+                className={`w-full py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base text-white shadow-sm ${
                   selectedDate && selectedTime && !isRescheduling
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105'
+                    ? 'cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
+                style={selectedDate && selectedTime && !isRescheduling 
+                  ? { backgroundColor: '#3f2e73' }
+                  : {}
+                }
+                onMouseEnter={(e) => {
+                  if (selectedDate && selectedTime && !isRescheduling) {
+                    e.currentTarget.style.backgroundColor = '#1d1733';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedDate && selectedTime && !isRescheduling) {
+                    e.currentTarget.style.backgroundColor = '#3f2e73';
+                  }
+                }}
               >
                 {isRescheduling ? 'Rescheduling...' : 'Reschedule Session'}
               </button>
@@ -462,7 +670,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                     })}
                   </p>
                   <p className="text-blue-800 text-xs sm:text-sm">
-                    🕐 {selectedTime}
+                    🕐 {formatTime12Hour(selectedTime)}
                   </p>
                 </div>
               )}

@@ -90,7 +90,8 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 const removeAssessmentSpecialist = (docs = []) => {
-  const filtered = docs.filter(doc => (doc?.name || doc?.first_name || '').toLowerCase() !== 'assessment specialist');
+  const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
+  const filtered = docs.filter(doc => (doc?.email || '').toLowerCase() !== assessmentEmail);
   return filtered.length > 0 ? filtered : docs;
 };
 

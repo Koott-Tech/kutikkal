@@ -241,7 +241,7 @@ const Guide = () => {
         console.log(`🔍 Frontend - Image URL for ${psych.name || psych.first_name}:`, psych.cover_image_url);
       });
       
-      const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
+      const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
       const filteredPsychologists = psychologists.filter(psych => (psych.email || '').toLowerCase() !== assessmentEmail);
       
       // Debug: Log the order after filtering
@@ -283,7 +283,7 @@ const Guide = () => {
     try {
       const response = await publicApi.getPsychologists();
       const psychologists = response?.data?.psychologists || [];
-      const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
+      const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
       const filteredPsychologists = psychologists.filter(psych => (psych.email || '').toLowerCase() !== assessmentEmail);
       
       // Get cache version from response if available

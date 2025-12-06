@@ -177,7 +177,7 @@ const TherapistProfileContent = () => {
       setLoading(true);
       const response = await publicApi.getPsychologists();
       if (response.success) {
-        const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'koottfordeveloper@gmail.com').toLowerCase();
+        const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
         const allPsychologists = response.data.psychologists || [];
         const filteredPsychologists = allPsychologists.filter(
           (psych) => (psych.email || '').toLowerCase() !== assessmentEmail

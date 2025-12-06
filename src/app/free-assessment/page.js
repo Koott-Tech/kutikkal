@@ -3,11 +3,128 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, CheckCircle, XCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import QuickContactModal from '@/components/QuickContactModal';
 import { clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
+
+// Success Animation Component (Google Pay style)
+function SuccessAnimationContent() {
+  const confettiColors = ['#22c55e', '#3f2e73', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const particles = Array.from({ length: 20 }, (_, i) => i);
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      {/* Checkmark Circle */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{
+          type: 'spring',
+          stiffness: 200,
+          damping: 15,
+          duration: 0.6
+        }}
+        style={{
+          width: '80px',
+          height: '80px',
+          borderRadius: '50%',
+          backgroundColor: '#f0fdf4',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 2,
+          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
+        }}
+      >
+        <motion.svg
+          width="50"
+          height="50"
+          viewBox="0 0 52 52"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{
+            pathLength: { delay: 0.2, duration: 0.5, ease: 'easeInOut' },
+            opacity: { delay: 0.2, duration: 0.3 }
+          }}
+        >
+          <motion.circle
+            cx="26"
+            cy="26"
+            r="25"
+            fill="none"
+            stroke="#22c55e"
+            strokeWidth="2"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.1, duration: 0.4, ease: 'easeInOut' }}
+          />
+          <motion.path
+            fill="none"
+            stroke="#22c55e"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M14.1 27.2l7.1 7.2 16.7-16.8"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.5, duration: 0.3, ease: 'easeInOut' }}
+          />
+        </motion.svg>
+      </motion.div>
+
+      {/* Confetti Particles */}
+      <AnimatePresence>
+        {particles.map((particle) => {
+          const angle = (360 / particles.length) * particle;
+          const distance = 60 + Math.random() * 40;
+          const x = Math.cos((angle * Math.PI) / 180) * distance;
+          const y = Math.sin((angle * Math.PI) / 180) * distance;
+          const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+          const delay = Math.random() * 0.3;
+          const size = 6 + Math.random() * 4;
+
+          return (
+            <motion.div
+              key={particle}
+              initial={{ 
+                x: 0, 
+                y: 0, 
+                scale: 0, 
+                opacity: 1,
+                rotate: 0
+              }}
+              animate={{ 
+                x: x, 
+                y: y, 
+                scale: [0, 1, 0.8, 0],
+                opacity: [1, 1, 0.8, 0],
+                rotate: 360
+              }}
+              transition={{
+                delay: delay,
+                duration: 0.8,
+                ease: 'easeOut'
+              }}
+              style={{
+                position: 'absolute',
+                width: `${size}px`,
+                height: `${size}px`,
+                backgroundColor: color,
+                borderRadius: '50%',
+                zIndex: 1,
+                boxShadow: `0 0 ${size}px ${color}`
+              }}
+            />
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function FreeAssessmentPage() {
   const router = useRouter();
@@ -105,11 +222,19 @@ export default function FreeAssessmentPage() {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(newSelectedDate);
     setSelectedTime(null);
+    // Clear stored selection when user manually changes date
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('freeAssessmentPendingSelection');
+    }
     fetchAvailableTimeslots(newSelectedDate);
   };
 
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
+    // Clear stored selection when user manually changes time
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('freeAssessmentPendingSelection');
+    }
   };
 
   // Fetch free assessment availability for current month
@@ -248,6 +373,11 @@ export default function FreeAssessmentPage() {
         setAvailableTimeslots([]);
         setPendingBooking(null);
         
+        // Clear stored selection after successful booking
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('freeAssessmentPendingSelection');
+        }
+        
         // Refresh data
         if (user && token) {
           fetchAssessmentStatus();
@@ -303,6 +433,15 @@ export default function FreeAssessmentPage() {
     setPendingBooking(bookingDetails);
 
     if (!user || !token) {
+      // Save selected date and time to localStorage before showing auth modal
+      if (typeof window !== 'undefined') {
+        const selectionToStore = {
+          date: selectedDate.toISOString(),
+          time: selectedTime,
+          currentMonth: currentDate.toISOString()
+        };
+        localStorage.setItem('freeAssessmentPendingSelection', JSON.stringify(selectionToStore));
+      }
       setShowAuth(true);
       return;
     }
@@ -330,6 +469,10 @@ export default function FreeAssessmentPage() {
     await fetchAssessmentStatus();
     await fetchFreeAssessmentAvailability(currentDate);
     if (pendingBooking?.date && pendingBooking?.time) {
+      // Clear stored selection before proceeding with booking
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('freeAssessmentPendingSelection');
+      }
       await ensureContactAndBook(pendingBooking.date, pendingBooking.time);
     }
   };
@@ -397,6 +540,61 @@ export default function FreeAssessmentPage() {
       console.log('[FreeAssess] useEffect:init', { user: { id: user?.id, role: user?.role, email: user?.email }, tokenPreview: (token || '').slice(0,10) + '...' });
       fetchAssessmentStatus();
       
+      // Restore selected date and time from localStorage after login
+      let hasRestoredSelection = false;
+      if (typeof window !== 'undefined') {
+        const storedSelection = localStorage.getItem('freeAssessmentPendingSelection');
+        if (storedSelection) {
+          try {
+            const selection = JSON.parse(storedSelection);
+            const restoredDate = new Date(selection.date);
+            const restoredTime = selection.time;
+            const restoredCurrentMonth = selection.currentMonth ? new Date(selection.currentMonth) : null;
+            
+            // Validate that the restored date is not in the past
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const restoredDateOnly = new Date(restoredDate);
+            restoredDateOnly.setHours(0, 0, 0, 0);
+            
+            if (restoredDateOnly >= now) {
+              hasRestoredSelection = true;
+              
+              // Restore the current month view if available
+              if (restoredCurrentMonth) {
+                setCurrentDate(restoredCurrentMonth);
+                fetchFreeAssessmentAvailability(restoredCurrentMonth);
+              } else {
+                // If no month stored, use the date's month
+                const monthForDate = new Date(restoredDate.getFullYear(), restoredDate.getMonth(), 1);
+                setCurrentDate(monthForDate);
+                fetchFreeAssessmentAvailability(monthForDate);
+              }
+              
+              // Restore selected date and time
+              setSelectedDate(restoredDate);
+              setSelectedTime(restoredTime);
+              
+              // Fetch timeslots for the restored date
+              fetchAvailableTimeslots(restoredDate);
+              
+              console.log('[FreeAssess] Restored selection from localStorage:', { date: restoredDate, time: restoredTime });
+            } else {
+              // Clear invalid stored selection (past date)
+              localStorage.removeItem('freeAssessmentPendingSelection');
+            }
+          } catch (e) {
+            console.error('Error restoring selection from localStorage:', e);
+            localStorage.removeItem('freeAssessmentPendingSelection');
+          }
+        }
+      }
+      
+      // Only fetch availability if we didn't restore from localStorage
+      if (!hasRestoredSelection) {
+        fetchFreeAssessmentAvailability(currentDate);
+      }
+      
       // Check if we need to show contact form (after signup/login)
       const shouldShowContact = typeof window !== 'undefined' && sessionStorage.getItem('showQuickContact') === 'true';
       if (shouldShowContact && user?.role === 'client') {
@@ -424,9 +622,8 @@ export default function FreeAssessmentPage() {
       }
     } else {
       setAssessmentStatus(null);
-    }
-
     fetchFreeAssessmentAvailability(currentDate);
+    }
   }, [authLoading, token, user]);
 
   if (authLoading) {
@@ -521,9 +718,17 @@ export default function FreeAssessmentPage() {
           </div>
         )}
 
-        {/* Booking Section */}
-        {canBookFreeAssessment && (
+        {/* Booking Section - Always show calendar */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Show message if logged-in user can't book */}
+          {user && assessmentStatus && !assessmentStatus.canBook && (
+            <div className="col-span-2 mb-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                <p className="font-semibold mb-1">You've used all 3 free assessments</p>
+                <p>You can still view your existing bookings below.</p>
+              </div>
+            </div>
+          )}
             {/* Left Side - Calendar */}
             <div className="bg-white rounded-2xl shadow-2xl p-6">
               <div className="text-center mb-4">
@@ -672,9 +877,11 @@ export default function FreeAssessmentPage() {
                 <div className="mb-6">
                   <h6 className="font-semibold text-gray-800 mb-3">Time Slots</h6>
                   {loadingTimeslots ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-gray-600">Loading timeslots...</span>
+                    <div className="flex items-center justify-center py-4 min-h-[200px]">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-3"></div>
+                        <span className="text-gray-600 text-sm">Creating a safe place for you</span>
+                      </div>
                     </div>
                   ) : (() => {
                     const filteredSlots = availableTimeslots.filter((timeslot) => {
@@ -740,11 +947,17 @@ export default function FreeAssessmentPage() {
                 <div className="mt-6">
                   <button
                     onClick={bookAssessment}
-                    disabled={loading}
+                    disabled={loading || !canBookFreeAssessment}
                     className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    title={!canBookFreeAssessment ? 'You have used all 3 free assessments' : ''}
                   >
                     {loading ? 'Booking...' : 'Book Free Assessment'}
                   </button>
+                  {!canBookFreeAssessment && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      You've used all available free assessments
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -757,7 +970,6 @@ export default function FreeAssessmentPage() {
               )}
             </div>
           </div>
-        )}
 
         {/* Information Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mt-8">
@@ -803,49 +1015,80 @@ export default function FreeAssessmentPage() {
       )}
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full relative">
-            {/* Close button at top right */}
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Close"
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-white rounded-lg shadow-xl max-w-md w-full relative"
             >
-              <X className="h-5 w-5" />
-            </button>
+              {/* Close button at top right */}
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            {/* Modal Content */}
-            <div className="p-6 pt-12">
-              <div className="text-center mb-6">
-                <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Session Booked Successfully!
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  The meet link will be shared via WhatsApp and email and also will be listed in the sessions page.
-                </p>
-              </div>
+              {/* Modal Content */}
+              <div className="p-6 pt-12">
+                <div className="text-center mb-6">
+                  {/* Success Animation */}
+                  <div className="mb-4 flex justify-center">
+                    <SuccessAnimationContent />
+                  </div>
+                  <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="text-xl font-semibold text-gray-900 mb-2"
+                  >
+                    Session Booked Successfully!
+                  </motion.h3>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.4 }}
+                    className="text-gray-600 text-sm"
+                  >
+                    The meet link will be shared via WhatsApp and email and also will be listed in the sessions page.
+                  </motion.p>
+                </div>
 
-              {/* Sessions Page Button */}
-              <div className="mt-6">
-                <button
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    router.push('/profile/sessions');
-                  }}
-                  className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
-                  style={{ backgroundColor: '#3f2e73' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                {/* Sessions Page Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.4 }}
+                  className="mt-6"
                 >
-                  Sessions Page
-                </button>
+                  <button
+                    onClick={() => {
+                      setShowSuccessModal(false);
+                      router.push('/profile/sessions');
+                    }}
+                    className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
+                    style={{ backgroundColor: '#3f2e73' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                  >
+                    Sessions Page
+                  </button>
+                </motion.div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
