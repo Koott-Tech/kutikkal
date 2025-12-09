@@ -346,8 +346,18 @@ const Guide = () => {
             // If the date is today, filter out past time slots
             return !isSlotInPast(slot, dayDate);
           }) || [];
+
+          // Sort available slots by time so display is chronological
+          const sortedAvailableSlots = [...availableSlots].sort((a, b) => {
+            const aMinutes = getSlotMinutes(a);
+            const bMinutes = getSlotMinutes(b);
+            if (aMinutes === null && bMinutes === null) return 0;
+            if (aMinutes === null) return 1;
+            if (bMinutes === null) return -1;
+            return aMinutes - bMinutes;
+          });
           
-          if (availableSlots.length > 0) {
+          if (sortedAvailableSlots.length > 0) {
             // Track the first date that has slots
             if (!firstDateWithSlots) {
               firstDateWithSlots = day.date;
@@ -355,7 +365,7 @@ const Guide = () => {
             
             // Calculate how many slots we still need
             const slotsNeeded = 3 - collectedSlots.length;
-            const slotsToAdd = availableSlots
+            const slotsToAdd = sortedAvailableSlots
               .slice(0, slotsNeeded) // Only take what we need
               .map(slot => ({
                 date: day.date,

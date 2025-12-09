@@ -444,13 +444,13 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                               )
                               : (
                                 // Regular session styling
-                                isSelected 
-                                  ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
-                                  : isToday
-                                    ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                                    : isPsychologistAvailable
+                            isSelected 
+                              ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
+                              : isToday
+                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
+                                : isPsychologistAvailable
                                       ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
-                                    : isAvailable
+                                : isAvailable
                                       ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
                                       : 'text-gray-300 cursor-not-allowed'
                               )
@@ -484,7 +484,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               <div>
                 <div className="mb-3 sm:mb-4 flex items-center justify-between">
                   <h6 className="text-xs sm:text-sm font-semibold text-gray-900">
-                    Select New Time
+                  Select New Time
                   </h6>
                   {selectedDate && (
                     <p className="text-[10px] sm:text-xs text-gray-500">
@@ -604,20 +604,20 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   }
                   
                   return (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                      {availableSlots.map((time) => (
-                        <button
-                          key={time}
-                          onClick={() => handleTimeSelect(time)}
-                          className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
-                            selectedTime === time
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                            {availableSlots.map((time) => (
+                              <button
+                                key={time}
+                                onClick={() => handleTimeSelect(time)}
+                                className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
+                                  selectedTime === time
                               ? 'border-green-500 bg-green-50 text-green-700 font-semibold' 
-                              : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
+                                    : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            ))}
                     </div>
                   );
                 })()}
