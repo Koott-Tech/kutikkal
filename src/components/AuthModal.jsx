@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { authApi, clientApi } from "@/lib/backendApi";
-import { isClientContactComplete } from "@/lib/contactValidation";
-import GoogleSignIn from "@/components/GoogleSignIn";
+import { authApi } from "@/lib/backendApi";
+// import { isClientContactComplete } from "@/lib/contactValidation"; // Removed - contact details collected during signup
+// import GoogleSignIn from "@/components/GoogleSignIn"; // Commented out - users login with email/password only
 
 export default function AuthModal({
   open,
   onClose,
   defaultTab = "login",
-  onAuthSuccess,
-  onRequireContactInfo
+  onAuthSuccess
+  // onRequireContactInfo // Removed - contact details collected during signup
 }) {
   const { login, isRemembered } = useAuth();
 
@@ -20,6 +20,7 @@ export default function AuthModal({
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [showEmailExistsMessage, setShowEmailExistsMessage] = useState(false);
 
   // Login form state
   const [email, setEmail] = useState("");
@@ -28,7 +29,17 @@ export default function AuthModal({
   const [rememberMe, setRememberMe] = useState(isRemembered ?? false);
 
   // Signup form state
-  const [signup, setSignup] = useState({ email: "", password: "", confirmPassword: "" });
+  const [signup, setSignup] = useState({ 
+    fullName: "", 
+    childName: "", 
+    countryCode: "+91", 
+    phoneNumber: "", 
+    email: "", 
+    password: "",
+    clientMessage: "",
+    termsAccepted: false,
+    therapyAgreementAccepted: false
+  });
   const [signupShowPassword, setSignupShowPassword] = useState(false);
 
   // Forgot password minimal state
@@ -44,8 +55,21 @@ export default function AuthModal({
     setIsLoading(false);
     setShowForgot(false);
     setForgotStep(1);
+    setShowEmailExistsMessage(false);
     onClose?.();
     setRememberMe(false);
+    // Reset signup form
+    setSignup({ 
+      fullName: "", 
+      childName: "", 
+      countryCode: "+91", 
+      phoneNumber: "", 
+      email: "", 
+      password: "",
+      clientMessage: "",
+      termsAccepted: false,
+      therapyAgreementAccepted: false
+    });
   }, [onClose]);
 
   useEffect(() => {
@@ -57,6 +81,13 @@ export default function AuthModal({
     const t = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(t);
   }, [open]);
+
+  // Reset to defaultTab when modal opens
+  useEffect(() => {
+    if (open) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
 
   useEffect(() => {
     if (open) {
@@ -84,9 +115,7 @@ export default function AuthModal({
       login(loggedInUser, token, { remember: rememberMe });
       try { await onAuthSuccess?.(loggedInUser); } catch (_) {}
 
-      if (loggedInUser?.role === "client") {
-        await maybePromptContactInfo();
-      }
+      // Contact details are now collected during signup, so no need to prompt here
       closeAndReset();
       // Reload the page to refresh auth state
       window.location.reload();
@@ -117,43 +146,110 @@ export default function AuthModal({
     e?.preventDefault?.();
     setIsLoading(true);
     setError("");
-    if (signup.password !== signup.confirmPassword) {
-      setError("Passwords do not match");
+    
+    // Validation
+    if (!signup.fullName || signup.fullName.trim().length === 0) {
+      setError("Full name is required");
       setIsLoading(false);
       return;
     }
+    
+    if (!signup.phoneNumber || signup.phoneNumber.trim().length === 0) {
+      setError("Mobile number is required");
+      setIsLoading(false);
+      return;
+    }
+    
     if ((signup.password || "").length < 6) {
       setError("Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
+    
+    if (!signup.termsAccepted) {
+      setError("You must accept the Terms and Conditions");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!signup.therapyAgreementAccepted) {
+      setError("You must accept the Therapy Agreement");
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const data = await authApi.registerClient({ email: signup.email, password: signup.password, role: "client" });
+      // Combine country code with phone number
+      const fullPhoneNumber = `${signup.countryCode}${signup.phoneNumber.trim()}`;
+      
+      // Split full name into first and last name
+      const nameParts = signup.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const registrationData = {
+        email: signup.email,
+        password: signup.password,
+        role: "client",
+        first_name: firstName,
+        last_name: lastName,
+        phone_number: fullPhoneNumber,
+        child_name: signup.childName?.trim() || null,
+        client_message: signup.clientMessage?.trim() || null,
+        terms_accepted: signup.termsAccepted,
+        therapy_agreement_accepted: signup.therapyAgreementAccepted
+      };
+      
+      const data = await authApi.registerClient(registrationData);
       login(data.data.user, data.data.token, { remember: rememberMe });
       try { await onAuthSuccess?.(data.data.user); } catch (_) {}
-      await maybePromptContactInfo();
+      // All contact details are saved during signup, so no additional form needed
       closeAndReset();
       // Reload the page to refresh auth state
       window.location.reload();
     } catch (err) {
-      const msg = err?.message || "Registration failed. Please try again.";
-      setError(msg);
+      // Extract error message - could be in different formats
+      let msg = err?.message || err?.error || err?.toString() || "Registration failed. Please try again.";
+      
+      // Debug: Log the error to see what we're getting
+      console.log('🔍 Registration error caught:', {
+        err,
+        message: err?.message,
+        error: err?.error,
+        msg
+      });
+      
+      // Check if error is about email already existing
+      // Check the error message (case-insensitive)
+      const errorMsgLower = String(msg).toLowerCase();
+      
+      // Check for various forms of "email already exists" messages
+      const isDuplicateEmail = 
+          errorMsgLower.includes('already exists') || 
+          errorMsgLower.includes('email already') ||
+          errorMsgLower.includes('client with this email') ||
+          errorMsgLower.includes('user with this email') ||
+          errorMsgLower.includes('account with this email') ||
+          errorMsgLower.includes('duplicate') ||
+          errorMsgLower.includes('unique constraint') ||
+          errorMsgLower.includes('please login instead') ||
+          errorMsgLower.includes('login instead');
+      
+      console.log('🔍 Is duplicate email?', isDuplicateEmail, 'Message:', errorMsgLower);
+      
+      if (isDuplicateEmail) {
+        setShowEmailExistsMessage(true);
+        setError(""); // Clear generic error
+      } else {
+        setError(msg);
+        setShowEmailExistsMessage(false);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const maybePromptContactInfo = async () => {
-    try {
-      const response = await clientApi.getProfile();
-      const profile = response?.data;
-      if (!isClientContactComplete(profile)) {
-        onRequireContactInfo?.(profile);
-      }
-    } catch (contactErr) {
-      console.warn("Unable to verify contact information:", contactErr);
-    }
-  };
+  // Removed maybePromptContactInfo - contact details are now collected during signup
 
   const handleSendOTP = async (e) => {
     e?.preventDefault?.();
@@ -226,6 +322,24 @@ export default function AuthModal({
         {error && (
           <div className="mx-4 mt-2 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm" style={{ color: '#2C1A4A' }}>{error}</div>
         )}
+        {showEmailExistsMessage && (
+          <div className="mx-4 mt-2 p-3 text-sm" style={{ color: '#2C1A4A' }}>
+            <p className="mb-2">An account with this email already exists. Please login instead.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowEmailExistsMessage(false);
+                setActiveTab("login");
+                setError("");
+                // Pre-fill email in login form
+                setEmail(signup.email);
+              }}
+              className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white hover:bg-[#2d1f52] transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
+        )}
         {successMessage && (
           <div className="mx-4 mt-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{successMessage}</div>
         )}
@@ -266,8 +380,9 @@ export default function AuthModal({
             <>
               {activeTab === "login" ? (
                 <form onSubmit={handleLogin} className="space-y-3">
-                  <GoogleSignIn onSuccess={()=>closeAndReset()} onError={(err)=>setError(err?.message || 'Google Sign-In failed.')} />
-                  <div className="flex items-center gap-3"><div className="h-px flex-1 bg-gray-200" /><div className="text-xs text-gray-500">or</div><div className="h-px flex-1 bg-gray-200" /></div>
+                  {/* Google Sign-In commented out - users login with email/password */}
+                  {/* <GoogleSignIn onSuccess={()=>closeAndReset()} onError={(err)=>setError(err?.message || 'Google Sign-In failed.')} />
+                  <div className="flex items-center gap-3"><div className="h-px flex-1 bg-gray-200" /><div className="text-xs text-gray-500">or</div><div className="h-px flex-1 bg-gray-200" /></div> */}
                   <div>
                     <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="Email" />
                   </div>
@@ -310,29 +425,199 @@ export default function AuthModal({
                 </form>
               ) : (
                 <form onSubmit={handleSignup} className="space-y-3">
-                  <GoogleSignIn onSuccess={()=>closeAndReset()} onError={(err)=>setError(err?.message || 'Google Sign-In failed.')} />
-                  <div className="flex items-center gap-3"><div className="h-px flex-1 bg-gray-200" /><div className="text-xs text-gray-500">or</div><div className="h-px flex-1 bg-gray-200" /></div>
-                  <div>
-                    <input type="email" value={signup.email} onChange={(e)=>setSignup(s=>({...s, email: e.target.value}))} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="Email" />
-                  </div>
-                  <div>
-                    <input type={signupShowPassword ? 'text':'password'} value={signup.password} onChange={(e)=>setSignup(s=>({...s, password: e.target.value}))} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="Password (min 6 characters)" />
-                  </div>
-                  <div>
-                    <input type={signupShowPassword ? 'text':'password'} value={signup.confirmPassword} onChange={(e)=>setSignup(s=>({...s, confirmPassword: e.target.value}))} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="Confirm password" />
-                    <button type="button" onClick={()=>setSignupShowPassword(!signupShowPassword)} className="mt-1 text-xs text-gray-500">{signupShowPassword ? 'Hide' : 'Show'} passwords</button>
-                  </div>
-                  <button type="submit" disabled={isLoading} className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isLoading ? 'Creating…' : 'Create account'}</button>
-                  <div className="text-center mt-3 text-sm text-gray-600">
-                    Already have an account?{" "}
+                  {/* Already a user? Login - moved to top */}
+                  <div className="text-center mb-2 text-sm text-gray-600">
+                    Already a user?{" "}
                     <button
                       type="button"
                       onClick={()=>{ setActiveTab("login"); setError(""); }}
                       className="text-[#3f2e73] hover:text-black font-medium"
                     >
-                      Sign in
+                      Login
                     </button>
                   </div>
+                  
+                  <div>
+                    <input 
+                      type="text" 
+                      value={signup.fullName} 
+                      onChange={(e)=>setSignup(s=>({...s, fullName: e.target.value}))} 
+                      required 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Full Name *" 
+                    />
+                  </div>
+                  
+                  <div>
+                    <input 
+                      type="text" 
+                      value={signup.childName} 
+                      onChange={(e)=>setSignup(s=>({...s, childName: e.target.value}))} 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Child Name (Optional)" 
+                    />
+                  </div>
+                  
+                  <div className="relative flex gap-2">
+                    <select
+                      value={signup.countryCode}
+                      onChange={(e)=>setSignup(s=>({...s, countryCode: e.target.value}))}
+                      className="rounded-md border border-gray-300 px-2 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73] text-sm"
+                      style={{ width: '100px', flexShrink: 0 }}
+                    >
+                      <option value="+91">🇮🇳 +91</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+971">🇦🇪 +971</option>
+                      <option value="+966">🇸🇦 +966</option>
+                      <option value="+65">🇸🇬 +65</option>
+                      <option value="+60">🇲🇾 +60</option>
+                      <option value="+61">🇦🇺 +61</option>
+                      <option value="+64">🇳🇿 +64</option>
+                      <option value="+27">🇿🇦 +27</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+39">🇮🇹 +39</option>
+                      <option value="+34">🇪🇸 +34</option>
+                      <option value="+31">🇳🇱 +31</option>
+                      <option value="+32">🇧🇪 +32</option>
+                      <option value="+41">🇨🇭 +41</option>
+                      <option value="+46">🇸🇪 +46</option>
+                      <option value="+47">🇳🇴 +47</option>
+                      <option value="+45">🇩🇰 +45</option>
+                      <option value="+358">🇫🇮 +358</option>
+                      <option value="+351">🇵🇹 +351</option>
+                      <option value="+353">🇮🇪 +353</option>
+                      <option value="+48">🇵🇱 +48</option>
+                      <option value="+420">🇨🇿 +420</option>
+                      <option value="+36">🇭🇺 +36</option>
+                      <option value="+40">🇷🇴 +40</option>
+                      <option value="+7">🇷🇺 +7</option>
+                      <option value="+81">🇯🇵 +81</option>
+                      <option value="+82">🇰🇷 +82</option>
+                      <option value="+86">🇨🇳 +86</option>
+                      <option value="+852">🇭🇰 +852</option>
+                      <option value="+886">🇹🇼 +886</option>
+                      <option value="+66">🇹🇭 +66</option>
+                      <option value="+62">🇮🇩 +62</option>
+                      <option value="+63">🇵🇭 +63</option>
+                      <option value="+84">🇻🇳 +84</option>
+                      <option value="+880">🇧🇩 +880</option>
+                      <option value="+94">🇱🇰 +94</option>
+                      <option value="+92">🇵🇰 +92</option>
+                      <option value="+977">🇳🇵 +977</option>
+                      <option value="+95">🇲🇲 +95</option>
+                      <option value="+855">🇰🇭 +855</option>
+                      <option value="+856">🇱🇦 +856</option>
+                      <option value="+673">🇧🇳 +673</option>
+                      <option value="+670">🇹🇱 +670</option>
+                    </select>
+                    <div className="relative flex-1">
+                      <input 
+                        type="tel" 
+                        value={signup.phoneNumber} 
+                        onChange={(e)=>setSignup(s=>({...s, phoneNumber: e.target.value.replace(/\D/g, '')}))} 
+                        required
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 pl-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                        placeholder="Mobile Number *" 
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+                            fill="#3f2e73"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <input 
+                      type="email" 
+                      value={signup.email} 
+                      onChange={(e)=>setSignup(s=>({...s, email: e.target.value}))} 
+                      required 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Email *" 
+                    />
+                  </div>
+                  
+                  <div>
+                    <textarea 
+                      value={signup.clientMessage} 
+                      onChange={(e)=>setSignup(s=>({...s, clientMessage: e.target.value}))} 
+                      rows={3}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Any message for us? (Optional)" 
+                    />
+                  </div>
+                  
+                  <div className="relative">
+                    <input 
+                      type={signupShowPassword ? 'text':'password'} 
+                      value={signup.password} 
+                      onChange={(e)=>setSignup(s=>({...s, password: e.target.value}))} 
+                      required 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Password (min 6 characters) *" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={()=>setSignupShowPassword(!signupShowPassword)} 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                    >
+                      {signupShowPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 mt-0.5 cursor-pointer"
+                        checked={signup.termsAccepted}
+                        onChange={(e)=>setSignup(s=>({...s, termsAccepted: e.target.checked}))}
+                        required
+                        style={{ accentColor: '#3f2e73', cursor: 'pointer' }}
+                      />
+                      <span>I accept the <a href="/terms-and-conditions" target="_blank" className="text-[#3f2e73] hover:underline">Terms and Conditions</a> *</span>
+                    </label>
+                    <label className="flex items-start gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 mt-0.5 cursor-pointer"
+                        checked={signup.therapyAgreementAccepted}
+                        onChange={(e)=>setSignup(s=>({...s, therapyAgreementAccepted: e.target.checked}))}
+                        required
+                        style={{ accentColor: '#3f2e73', cursor: 'pointer' }}
+                      />
+                      <span>I accept the <a href="/therapy-agreement" target="_blank" className="text-[#3f2e73] hover:underline">Therapy Agreement</a> *</span>
+                    </label>
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    disabled={
+                      isLoading || 
+                      !signup.fullName?.trim() || 
+                      !signup.phoneNumber?.trim() || 
+                      !signup.email?.trim() || 
+                      !signup.password || 
+                      signup.password.length < 6 ||
+                      !signup.termsAccepted || 
+                      !signup.therapyAgreementAccepted
+                    } 
+                    className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? 'Creating…' : 'Create account'}
+                  </button>
                 </form>
               )}
             </>

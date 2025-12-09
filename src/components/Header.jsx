@@ -390,24 +390,38 @@ export default function Header() {
     if (!user) return 'User';
     
     // Priority 1: Use name from profileData if available (most up-to-date)
-    if (profileData?.first_name && profileData?.last_name) {
-      return `${profileData.first_name} ${profileData.last_name}`.trim();
+    // Check if last_name exists and is not empty/default values
+    const hasValidLastName = (lastName) => {
+      return lastName && lastName.trim() && lastName.trim() !== 'Update' && lastName.trim() !== '';
+    };
+    
+    // Priority 1: Use name from profileData (from API)
+    if (profileData?.first_name) {
+      if (hasValidLastName(profileData?.last_name)) {
+        return `${profileData.first_name} ${profileData.last_name}`.trim();
+      }
+      return profileData.first_name.trim();
     }
     
     // Priority 2: Use name from user.profile (from AuthContext)
-    if (user.profile?.first_name && user.profile?.last_name) {
-      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+    if (user.profile?.first_name) {
+      if (hasValidLastName(user.profile?.last_name)) {
+        return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+      }
+      return user.profile.first_name.trim();
     }
     
     // Priority 3: Use name directly from user object
-    if (user.first_name || user.last_name) {
-      const name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-      if (name) return name;
+    if (user.first_name) {
+      if (hasValidLastName(user.last_name)) {
+        return `${user.first_name} ${user.last_name}`.trim();
+      }
+      return user.first_name.trim();
     }
     
     // Priority 4: Use partial name (first_name only or last_name only)
     if (user.profile?.first_name) {
-      return user.profile.first_name;
+      return user.profile.first_name.trim();
     }
     if (user.first_name) {
       return user.first_name;

@@ -228,6 +228,7 @@ export default function DoctorModal({
       console.log('🔍 Doctor individual_session_price field:', doctor.individual_session_price);
       console.log('🔍 Doctor display_order field:', doctor.display_order);
       console.log('🔍 Doctor display_order type:', typeof doctor.display_order);
+      console.log('🔍 Doctor designation field:', doctor.designation);
       
       // Reset the modification flag when opening for edit
       setHasUserModifiedAvailability(false);
@@ -257,7 +258,7 @@ export default function DoctorModal({
         lastName: doctor.last_name || doctor.lastName || '',
         phone: doctor.phone || '',
         email: doctor.email || '',
-        designation: doctor.designation || doctor.speaciality || doctor.specialty || doctor.title || '',
+        designation: doctor.designation || '', // Use designation directly from doctor object (same as other fields)
         password: '', // Don't load password for editing (passwords are hashed)
         education: {
           ug: doctor.ug_college || doctor.education?.ug || '',

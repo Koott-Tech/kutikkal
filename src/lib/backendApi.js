@@ -39,11 +39,15 @@ const handleResponse = async (response, options = {}) => {
       const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
                             options.endpoint?.includes('/auth/register');
       
-      // For login/register endpoints, let them handle their own errors
-      if ((response.status === 401 || response.status === 403) && isAuthEndpoint) {
+      // For login/register endpoints, let them handle their own errors (including 400 for validation/duplicate email)
+      if (isAuthEndpoint && (response.status === 400 || response.status === 401 || response.status === 403)) {
         // Return the actual error message from the backend for login/register
         const backendError = error?.message || error?.error || 'Authentication failed';
-        throw new Error(backendError);
+        // Create and throw error immediately - don't let it fall through to other handlers
+        // This error will be caught by the outer catch and re-thrown
+        const authError = new Error(backendError);
+        // Store the error in a way that won't be caught by the parseError handler
+        throw authError;
       }
       
       if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
@@ -91,13 +95,22 @@ const handleResponse = async (response, options = {}) => {
         }
       }
       
-      // For login endpoint, preserve the original error message from backend
-      const errorMsg = options.endpoint?.includes('/auth/login') && error?.message 
-        ? error.message 
-        : (error.message || error.error || `HTTP error! status: ${response.status}`);
+      // For login/register endpoints, we already handled them above, so this shouldn't be reached
+      // But just in case, preserve the original error message from backend
+      const errorMsg = error?.message || error?.error || `HTTP error! status: ${response.status}`;
       throw new Error(errorMsg);
     } catch (parseError) {
-      console.error('Failed to parse error response:', parseError);
+      // If this is already an Error object (from our throw above), re-throw it immediately
+      // This preserves the original error message from the backend
+      if (parseError instanceof Error && parseError.message && !parseError.message.includes('HTTP error')) {
+        // This is a valid error we threw - re-throw it as-is
+        throw parseError;
+      }
+      
+      // Only log if it's actually a parse error (not an Error we threw)
+      if (!(parseError instanceof Error)) {
+        console.error('Failed to parse error response:', parseError);
+      }
       
       // If JSON parsing fails, provide a more helpful error message
       let errorMessage = `HTTP error! status: ${response.status}`;
@@ -106,9 +119,25 @@ const handleResponse = async (response, options = {}) => {
       }
       
       // Add specific error messages for common status codes
+      // But preserve any specific error message we might have
+      const isAuthEndpoint = options.endpoint?.includes('/auth/login') || 
+                            options.endpoint?.includes('/auth/register');
+      
       switch (response.status) {
         case 400:
-          errorMessage = 'Please check your input and try again.';
+          // For auth endpoints, preserve the error message we threw earlier
+          // The error should have been re-thrown above, but if we reach here, use the error message
+          if (isAuthEndpoint) {
+            // If parseError is an Error with a message, use it (it should have been re-thrown, but just in case)
+            if (parseError instanceof Error && parseError.message && !parseError.message.includes('HTTP error')) {
+              errorMessage = parseError.message;
+            } else {
+              // Fallback: try to get message from the error object if available
+              errorMessage = 'Please check your input and try again.';
+            }
+          } else {
+            errorMessage = 'Please check your input and try again.';
+          }
           break;
         case 401:
         case 403:

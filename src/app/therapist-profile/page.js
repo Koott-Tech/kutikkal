@@ -7,10 +7,10 @@ import { clientApi, paymentApi } from '../../lib/backendApi';
 import backendApi from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
-import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation';
-import ContactCompletionWarning from '../../components/ContactCompletionWarning';
+// import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation'; // Removed - contact details collected during signup
+// import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
-import QuickContactModal from '@/components/QuickContactModal';
+// import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
 // Separate component that uses useSearchParams
 const TherapistProfileContent = () => {
@@ -407,7 +407,7 @@ const TherapistProfileContent = () => {
   };
 
   const [showAuth, setShowAuth] = useState(false);
-  const [showQuickContact, setShowQuickContact] = useState(false);
+  // const [showQuickContact, setShowQuickContact] = useState(false); // Removed - contact details collected during signup
 
   const scrollToCalendar = () => {
     const calendarSection = document.getElementById('calendar-section');
@@ -638,24 +638,17 @@ const TherapistProfileContent = () => {
       return;
     }
 
+    // Contact details are now collected during signup, so no need to check here
     // Declare clientProfile at function level so it's accessible throughout
     let clientProfile = null;
 
-    // Check if client contact information is complete
+    // Get client profile for booking (but don't require contact completion check)
     try {
       const clientProfileResponse = await clientApi.getProfile();
-      clientProfile = clientProfileResponse.data; // Extract the actual profile data
-      console.log('🔍 Client profile response:', clientProfileResponse);
-      console.log('🔍 Client profile data:', clientProfile);
-      
-      if (!isClientContactComplete(clientProfile)) {
-        setShowQuickContact(true);
-        return;
-      }
+      clientProfile = clientProfileResponse.data;
     } catch (error) {
-      console.error('Error checking client profile:', error);
-      showError('Unable to verify profile completion. Please try again.', 'Profile Error');
-      return;
+      console.error('Error fetching client profile:', error);
+      // Continue with booking even if profile fetch fails
     }
 
     setIsBooking(true);
@@ -2017,38 +2010,20 @@ const TherapistProfileContent = () => {
         </div>
       )}
 
-      {/* Contact Completion Warning Modal */}
-      {/* Legacy warning kept but unused in flow; quick contact replaces it */}
-      <ContactCompletionWarning
-        isOpen={false}
-        onClose={() => {}}
-        incompleteFields={[]}
-        onCompleteProfile={() => {}}
-      />
+      {/* Contact Completion Warning Modal removed - contact details collected during signup */}
 
       {/* Auth modal for unauthenticated booking */}
       {showAuth && (
       <AuthModal
         open={showAuth}
+        defaultTab="signup"
         onAuthSuccess={async () => {
-            // After successful signup/login, check if contact details are complete
+            // After successful signup/login, proceed with booking if selections were made
             setShowAuth(false);
             setTimeout(async () => {
-              try {
-                const clientProfileResponse = await clientApi.getProfile();
-                const clientProfile = clientProfileResponse.data;
-                if (!isClientContactComplete(clientProfile)) {
-                  // Show quick contact modal to collect profile details
-                  setShowQuickContact(true);
-                } else {
-                  // Profile complete → proceed with booking if selections made; otherwise just stay
-                  if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
-                    handleBookSession();
-                  }
-                }
-              } catch (e) {
-                // If check fails, do nothing; user can retry booking
-                console.error('Error checking profile after auth:', e);
+              // Contact details are collected during signup, so proceed directly with booking
+              if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
+                handleBookSession();
               }
             }, 300);
           }}
@@ -2058,20 +2033,7 @@ const TherapistProfileContent = () => {
         />
       )}
 
-      {/* Quick contact modal to collect minimal details */}
-      {showQuickContact && (
-        <QuickContactModal
-          open={showQuickContact}
-          onClose={() => setShowQuickContact(false)}
-          onSaved={() => {
-            setShowQuickContact(false);
-            // After saving contact details, proceed with booking if selections made; else user can click Book again
-            if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
-              handleBookSession();
-            }
-          }}
-        />
-      )}
+      {/* Quick contact modal removed - contact details collected during signup */}
 
     </div>
   );

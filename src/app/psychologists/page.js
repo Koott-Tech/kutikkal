@@ -195,19 +195,27 @@ const Guide = () => {
       if (!forceRefresh) {
         const cached = getCachedDoctors();
         if (cached) {
-          // Check cache version
-          const versionValid = await checkCacheVersion();
-          if (versionValid) {
-            setDoctors(cached);
-            setImagesLoaded(false); // Reset images loaded state - wait for images to load
-            setLoading(false); // Set loading to false, but LoadingScreen will still show until images load
-            // Still fetch in background to update cache
+          // Use cached data immediately - don't wait for version check
+          setDoctors(cached);
+          setImagesLoaded(true); // Don't wait for images - show content immediately
+          setLoading(false);
+          
+          // Check cache version in background (non-blocking)
+          checkCacheVersion().then(versionValid => {
+            if (!versionValid) {
+              // Version mismatch, fetch fresh data in background
+              console.log('📦 Cache version mismatch, fetching fresh data in background...');
+              fetchDoctorsInBackground();
+            } else {
+              // Still fetch in background to update cache
+              fetchDoctorsInBackground();
+            }
+          }).catch(err => {
+            console.error('Error checking cache version:', err);
+            // On error, still fetch in background to update cache
             fetchDoctorsInBackground();
-            return;
-          } else {
-            // Version mismatch, clear cache and fetch fresh
-            clearDoctorCache();
-          }
+          });
+          return;
         }
       } else {
         clearDoctorCache();
@@ -257,7 +265,8 @@ const Guide = () => {
       // Cache the filtered doctors with version
       setCachedDoctors(filteredPsychologists, cacheVersion);
       setDoctors(filteredPsychologists);
-      setImagesLoaded(false); // Reset images loaded state when doctors change
+      // Don't wait for images - show content immediately after doctors are loaded
+      setImagesLoaded(true); // Set to true immediately so page shows without waiting for images
     } catch (err) {
       console.error('Error fetching doctors:', err);
       
@@ -266,7 +275,7 @@ const Guide = () => {
       if (cached) {
         console.log('📦 Using cached data as fallback due to fetch error');
         setDoctors(cached);
-        setImagesLoaded(false); // Reset images loaded state
+        setImagesLoaded(true); // Don't wait for images - show content immediately
         setError(null);
       } else {
         setError('Failed to load doctors. Please check if the backend server is running.');
@@ -482,17 +491,21 @@ const Guide = () => {
     fetchDoctors();
   }, []);
 
-  // Periodic cache version check (every 2 minutes) to detect updates
+  // Periodic cache version check (every 2 minutes) to detect updates (non-blocking)
   useEffect(() => {
     const interval = setInterval(async () => {
       const cached = getCachedDoctors();
       if (cached && doctors.length > 0) {
-        const versionValid = await checkCacheVersion();
-        if (!versionValid) {
-          // Cache was invalidated, fetch fresh data
-          console.log('📦 Cache invalidated, fetching fresh data...');
-          fetchDoctors(true);
-        }
+        // Check version in background - don't block UI
+        checkCacheVersion().then(versionValid => {
+          if (!versionValid) {
+            // Cache was invalidated, fetch fresh data in background
+            console.log('📦 Cache invalidated, fetching fresh data in background...');
+            fetchDoctorsInBackground();
+          }
+        }).catch(err => {
+          console.error('Error checking cache version:', err);
+        });
       }
     }, 2 * 60 * 1000); // Check every 2 minutes
 
@@ -500,7 +513,7 @@ const Guide = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
-  // Reset image loading counters and count total images when doctors change
+  // Image loading tracking (non-blocking - images load in background)
   useEffect(() => {
     if (doctors.length > 0) {
       // Count total images (doctors with image URLs)
@@ -523,53 +536,38 @@ const Guide = () => {
       totalImagesCount.current = totalImages;
       loadedImagesCount.current = 0;
       
-      // If no images to load, mark as loaded immediately
-      if (totalImages === 0) {
-        console.log('No images to load - showing content immediately');
-        setImagesLoaded(true);
-      } else {
-        setImagesLoaded(false);
-        console.log(`Tracking ${totalImages} images to load`);
-        
-        // Check for already-loaded images (from browser cache) after a short delay
-        setTimeout(() => {
-          const images = document.querySelectorAll('.guide-video-card img.doctor-card-image');
-          let alreadyLoadedCount = 0;
-          images.forEach((img) => {
-            if (img.complete && img.naturalHeight !== 0) {
-              alreadyLoadedCount++;
-              handleImageLoad();
-            }
-          });
-          if (alreadyLoadedCount > 0) {
-            console.log(`Found ${alreadyLoadedCount} images already loaded from cache`);
+      // Images load in background - don't block page rendering
+      // Content is shown immediately, images will load progressively
+      console.log(`Tracking ${totalImages} images to load in background`);
+      
+      // Check for already-loaded images (from browser cache) after a short delay
+      setTimeout(() => {
+        const images = document.querySelectorAll('.guide-video-card img.doctor-card-image');
+        let alreadyLoadedCount = 0;
+        images.forEach((img) => {
+          if (img.complete && img.naturalHeight !== 0) {
+            alreadyLoadedCount++;
+            handleImageLoad();
           }
-        }, 100);
-        
-        // Set a timeout to show content even if images don't load (max 5 seconds)
-        const timeoutId = setTimeout(() => {
-          setImagesLoaded(prev => {
-            if (!prev) {
-              console.log('Image loading timeout - showing content anyway');
-              return true;
-            }
-            return prev;
-          });
-        }, 5000);
-        
-        return () => clearTimeout(timeoutId);
-      }
+        });
+        if (alreadyLoadedCount > 0) {
+          console.log(`Found ${alreadyLoadedCount} images already loaded from cache`);
+        }
+      }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
-  // Fetch availability when doctors are loaded (non-blocking)
+  // Fetch availability when doctors are loaded (fully async - doesn't block page render)
   useEffect(() => {
     if (doctors.length > 0) {
-      // Don't await - let it fetch in background
-      fetchAllDoctorsAvailability(doctors).catch(err => {
-        console.error('Error fetching doctors availability:', err);
-      });
+      // Fetch availability asynchronously after a short delay to let page render first
+      // This ensures the page shows immediately while availability loads in background
+      setTimeout(() => {
+        fetchAllDoctorsAvailability(doctors).catch(err => {
+          console.error('Error fetching doctors availability:', err);
+        });
+      }, 100); // Small delay to let page render first
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
@@ -646,7 +644,8 @@ const Guide = () => {
 
   // Show loading screen while fetching doctors OR until images are loaded
   // Availability can fetch asynchronously in the background
-  if (loading || (doctors.length > 0 && !imagesLoaded)) {
+  // Only show loading screen while fetching doctors data, not while waiting for images
+  if (loading) {
     return <LoadingScreen />;
   }
 
