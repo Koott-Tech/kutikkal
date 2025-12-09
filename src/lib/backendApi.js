@@ -109,7 +109,7 @@ const handleResponse = async (response, options = {}) => {
       
       // Only log if it's actually a parse error (not an Error we threw)
       if (!(parseError instanceof Error)) {
-        console.error('Failed to parse error response:', parseError);
+      console.error('Failed to parse error response:', parseError);
       }
       
       // If JSON parsing fails, provide a more helpful error message
@@ -133,7 +133,7 @@ const handleResponse = async (response, options = {}) => {
               errorMessage = parseError.message;
             } else {
               // Fallback: try to get message from the error object if available
-              errorMessage = 'Please check your input and try again.';
+          errorMessage = 'Please check your input and try again.';
             }
           } else {
             errorMessage = 'Please check your input and try again.';

@@ -2022,8 +2022,8 @@ const TherapistProfileContent = () => {
             setShowAuth(false);
             setTimeout(async () => {
               // Contact details are collected during signup, so proceed directly with booking
-              if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
-                handleBookSession();
+                  if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
+                    handleBookSession();
               }
             }, 300);
           }}

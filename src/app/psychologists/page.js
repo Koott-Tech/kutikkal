@@ -196,7 +196,7 @@ const Guide = () => {
         const cached = getCachedDoctors();
         if (cached) {
           // Use cached data immediately - don't wait for version check
-          setDoctors(cached);
+            setDoctors(cached);
           setImagesLoaded(true); // Don't wait for images - show content immediately
           setLoading(false);
           
@@ -207,15 +207,15 @@ const Guide = () => {
               console.log('📦 Cache version mismatch, fetching fresh data in background...');
               fetchDoctorsInBackground();
             } else {
-              // Still fetch in background to update cache
-              fetchDoctorsInBackground();
+            // Still fetch in background to update cache
+            fetchDoctorsInBackground();
             }
           }).catch(err => {
             console.error('Error checking cache version:', err);
             // On error, still fetch in background to update cache
             fetchDoctorsInBackground();
           });
-          return;
+            return;
         }
       } else {
         clearDoctorCache();
@@ -498,11 +498,11 @@ const Guide = () => {
       if (cached && doctors.length > 0) {
         // Check version in background - don't block UI
         checkCacheVersion().then(versionValid => {
-          if (!versionValid) {
+        if (!versionValid) {
             // Cache was invalidated, fetch fresh data in background
             console.log('📦 Cache invalidated, fetching fresh data in background...');
             fetchDoctorsInBackground();
-          }
+        }
         }).catch(err => {
           console.error('Error checking cache version:', err);
         });
@@ -539,21 +539,21 @@ const Guide = () => {
       // Images load in background - don't block page rendering
       // Content is shown immediately, images will load progressively
       console.log(`Tracking ${totalImages} images to load in background`);
-      
-      // Check for already-loaded images (from browser cache) after a short delay
-      setTimeout(() => {
-        const images = document.querySelectorAll('.guide-video-card img.doctor-card-image');
-        let alreadyLoadedCount = 0;
-        images.forEach((img) => {
-          if (img.complete && img.naturalHeight !== 0) {
-            alreadyLoadedCount++;
-            handleImageLoad();
+        
+        // Check for already-loaded images (from browser cache) after a short delay
+        setTimeout(() => {
+          const images = document.querySelectorAll('.guide-video-card img.doctor-card-image');
+          let alreadyLoadedCount = 0;
+          images.forEach((img) => {
+            if (img.complete && img.naturalHeight !== 0) {
+              alreadyLoadedCount++;
+              handleImageLoad();
+            }
+          });
+          if (alreadyLoadedCount > 0) {
+            console.log(`Found ${alreadyLoadedCount} images already loaded from cache`);
           }
-        });
-        if (alreadyLoadedCount > 0) {
-          console.log(`Found ${alreadyLoadedCount} images already loaded from cache`);
-        }
-      }, 100);
+        }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
@@ -564,9 +564,9 @@ const Guide = () => {
       // Fetch availability asynchronously after a short delay to let page render first
       // This ensures the page shows immediately while availability loads in background
       setTimeout(() => {
-        fetchAllDoctorsAvailability(doctors).catch(err => {
-          console.error('Error fetching doctors availability:', err);
-        });
+      fetchAllDoctorsAvailability(doctors).catch(err => {
+        console.error('Error fetching doctors availability:', err);
+      });
       }, 100); // Small delay to let page render first
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1418,7 +1418,7 @@ const Guide = () => {
                 }
                 .doctor-modal-title {
                   font-weight: 700;
-                  margin-bottom: 8px;
+                  margin-bottom: 0 !important;
                   font-size: 32px !important; /* Override global h3 */
                 }
                 .doctor-modal-buttons {
@@ -1498,11 +1498,10 @@ const Guide = () => {
                     overflow-x: hidden;
                     position: relative;
                   }
-                  /* Disable the scrolling blur on tablet - it should be fixed at bottom */
+                  /* Blur effects removed */
                   .doctor-modal-content::after {
                     display: none !important;
                   }
-                  /* Add fixed blur above buttons container on tablet (like mobile) */
                   .doctor-modal-buttons-container {
                     position: relative;
                     flex-wrap: nowrap !important; /* Keep all buttons on one line */
@@ -1510,15 +1509,7 @@ const Guide = () => {
                     padding: 10px 12px !important; /* Reduced padding */
                   }
                   .doctor-modal-buttons-container::before {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: -20px;
-                    height: 20px;
-                    pointer-events: none;
-                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95));
-                    z-index: 1;
+                    display: none !important; /* Remove blur effect */
                   }
                   .doctor-modal-buttons {
                     gap: 8px;
@@ -1564,18 +1555,7 @@ const Guide = () => {
                   .doctor-modal-image {
                     grid-row: 1 / span 2;
                   }
-                  /* Add subtle bottom fade above buttons on right content */
-                  .doctor-modal-content::after {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    bottom: -1px;
-                    height: 20px;
-                    pointer-events: none;
-                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.96));
-                    z-index: 1;
-                  }
+                  /* Blur effect removed - no longer needed */
                 }
                 
                 @media (max-width: 768px) {
@@ -1640,17 +1620,9 @@ const Guide = () => {
                     margin-top: auto;
                     position: relative;
                   }
-                  /* Soft fade/blur above buttons so last line looks gently faded */
+                  /* Blur effect removed */
                   .doctor-modal-buttons-container::before {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: -20px;
-                    height: 20px;
-                    pointer-events: none;
-                    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95));
-                    z-index: 1;
+                    display: none !important; /* Remove blur effect */
                   }
                   .doctor-modal-image {
                     order: 1;
@@ -1822,31 +1794,55 @@ const Guide = () => {
                 onClick={e => e.stopPropagation()}
                 style={{ maxHeight: '60vh', overflowY: 'auto' }}
               >
-                <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 4 }}>
+                <h3 className="doctor-modal-title" style={{ lineHeight: 1.1, fontWeight: 400, margin: 0, color: '#111', marginBottom: 0, paddingBottom: 0 }}>
                   {doctors[selected]?.name || 'Dr. ' + (doctors[selected]?.first_name || 'Unknown')}
                 </h3>
-                {(doctors[selected]?.designation || doctors[selected]?.specialization) && (
-                  <p style={{ margin: '4px 0 6px', color: '#4b5563', fontWeight: 500 }}>
-                    {doctors[selected]?.designation || doctors[selected]?.specialization}
+                {/* Doctor Info Card with Light Background */}
+                <div style={{
+                  background: 'rgba(63, 46, 115, 0.08)',
+                  padding: '16px 20px',
+                  borderRadius: '12px',
+                  marginTop: '0px',
+                  marginBottom: '4px'
+                }}>
+                  <p style={{ margin: '0 0 8px 0', color: '#3f2e73', fontWeight: 600, fontSize: '16px' }}>
+                    Consultant Psychologist
                   </p>
-                )}
-                
-                {/* Experience + Price grouped to remove container column gap */}
-                {(doctors[selected]?.experience_years || doctors[selected]?.price) && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: -4 }}>
-                    {doctors[selected]?.experience_years && (
-                      <h6 style={{ margin: 0, lineHeight: '1.2' }}>
-                        {doctors[selected].experience_years} {doctors[selected].experience_years === 1 ? 'year' : 'years'} of experience
-                      </h6>
-                    )}
-                    {doctors[selected]?.price && (
-                      <h6 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 12, lineHeight: '1.2' }}>
+                  <p style={{ margin: '0 0 8px 0', color: '#4b5563', fontSize: '14px' }}>
+                    3 years of experience
+                  </p>
+                  <p style={{ margin: 0, color: '#4b5563', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span>Starting from</span>
-                        <span style={{ color: "#3f2e73" }}>₹{doctors[selected].price}</span>
-                      </h6>
-                    )}
+                    <span style={{ color: "#3f2e73", fontWeight: 600 }}>₹999</span>
+                  </p>
                   </div>
-                )}
+
+                {/* Personality traits list (same chips as card) */}
+                {(() => {
+                  const rawTraits = doctors[selected]?.personality_traits || doctors[selected]?.personalityTraits || doctors[selected]?.personalities || null;
+                  let traits = [];
+                  if (Array.isArray(rawTraits)) {
+                    traits = rawTraits;
+                  } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
+                    traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
+                  }
+                  return traits.length > 0 ? (
+                    <div style={{ marginTop: 2, marginBottom: 6, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {traits.map((trait, i) => (
+                        <span key={`trait_${i}`} style={{
+                          background: '#f0f0f0',
+                          color: '#333',
+                          borderRadius: 16,
+                          padding: '4px 12px',
+                          fontSize: '14px',
+                          fontWeight: 400
+                        }}>
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
                 
                 {/* Specialization (replaces Personality in modal) */}
                 {(() => {
@@ -1893,7 +1889,15 @@ const Guide = () => {
                   }}
                 >
                   <span className="button-arrow-desktop">&lt;</span>
-                  <span className="button-text">{`Meet ${doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.name?.split(' ')[0] || doctors[(selected === 0 ? doctors.length - 1 : selected - 1)]?.first_name || 'Prev'}`}</span>
+                  <span className="button-text">{(() => {
+                    const prevDoctor = doctors[(selected === 0 ? doctors.length - 1 : selected - 1)];
+                    if (!prevDoctor) return 'Prev';
+                    const name = prevDoctor.name || '';
+                    const firstName = prevDoctor.first_name || '';
+                    const hasDr = name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('dr ');
+                    const firstWord = name.split(' ').find(word => word.toLowerCase() !== 'dr.' && word.toLowerCase() !== 'dr' && word.trim() !== '') || firstName;
+                    return `Meet ${hasDr ? 'Dr. ' : ''}${firstWord || 'Prev'}`;
+                  })()}</span>
                   <span className="button-arrow-mobile">&lt;</span>
                 </button>
 
@@ -1924,7 +1928,15 @@ const Guide = () => {
                     setSelected(nextIndex);
                   }}
                 >
-                  <span className="button-text">{`Meet ${doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.name?.split(' ')[0] || doctors[(selected === doctors.length - 1 ? 0 : selected + 1)]?.first_name || 'Next'}`}</span>
+                  <span className="button-text">{(() => {
+                    const nextDoctor = doctors[(selected === doctors.length - 1 ? 0 : selected + 1)];
+                    if (!nextDoctor) return 'Next';
+                    const name = nextDoctor.name || '';
+                    const firstName = nextDoctor.first_name || '';
+                    const hasDr = name.toLowerCase().startsWith('dr.') || name.toLowerCase().startsWith('dr ');
+                    const firstWord = name.split(' ').find(word => word.toLowerCase() !== 'dr.' && word.toLowerCase() !== 'dr' && word.trim() !== '') || firstName;
+                    return `Meet ${hasDr ? 'Dr. ' : ''}${firstWord || 'Next'}`;
+                  })()}</span>
                   <span className="button-arrow-desktop">&gt;</span>
                   <span className="button-arrow-mobile">&gt;</span>
                 </button>

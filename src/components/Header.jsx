@@ -398,7 +398,7 @@ export default function Header() {
     // Priority 1: Use name from profileData (from API)
     if (profileData?.first_name) {
       if (hasValidLastName(profileData?.last_name)) {
-        return `${profileData.first_name} ${profileData.last_name}`.trim();
+      return `${profileData.first_name} ${profileData.last_name}`.trim();
       }
       return profileData.first_name.trim();
     }
@@ -406,7 +406,7 @@ export default function Header() {
     // Priority 2: Use name from user.profile (from AuthContext)
     if (user.profile?.first_name) {
       if (hasValidLastName(user.profile?.last_name)) {
-        return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
       }
       return user.profile.first_name.trim();
     }

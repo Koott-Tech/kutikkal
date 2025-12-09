@@ -241,7 +241,7 @@ export default function AuthModal({
         setShowEmailExistsMessage(true);
         setError(""); // Clear generic error
       } else {
-        setError(msg);
+      setError(msg);
         setShowEmailExistsMessage(false);
       }
     } finally {
