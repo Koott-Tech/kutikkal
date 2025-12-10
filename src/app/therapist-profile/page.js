@@ -626,12 +626,19 @@ const TherapistProfileContent = () => {
       isBookingRemaining
     });
     
-    // Check for missing fields
+    // Check for missing fields FIRST (regardless of authentication)
     const missing = [];
     if (!selectedDate) missing.push('Date');
     if (!selectedTime) missing.push('Time');
     if (!isBookingRemaining && !selectedPackage) missing.push('Package');
     
+    // If ANY fields are missing, show message above button and return (don't show popup)
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      return;
+    }
+    
+    // All fields are selected - now check authentication
     // Check authentication - if pendingBookingAfterAuth is true, also check localStorage
     let isAuthReady = isAuthenticated() && user;
     if (!isAuthReady && pendingBookingAfterAuth) {
@@ -643,43 +650,37 @@ const TherapistProfileContent = () => {
       }
     }
     
-    // If user is not authenticated
+    // If user is not authenticated (but all fields are selected)
     if (!isAuthReady) {
-      if (missing.length > 0) {
-        // Show missing fields message above button
-        setMissingFields(missing);
-        return;
-      } else {
-        // All fields selected, save booking details to localStorage before showing signup
-        const bookingDetails = {
-          date: selectedDate ? {
-            year: selectedDate.getFullYear(),
-            month: selectedDate.getMonth(),
-            day: selectedDate.getDate()
-          } : null,
-          time: selectedTime,
-          package: selectedPackage ? {
-            id: selectedPackage.id,
-            name: selectedPackage.name,
-            price: selectedPackage.price,
-            session_count: selectedPackage.session_count,
-            package_type: selectedPackage.package_type
-          } : null,
-          doctorId: selectedDoctor?.id,
-          isBookingRemaining: isBookingRemaining,
-          timestamp: Date.now()
-        };
-        localStorage.setItem('pendingBookingDetails', JSON.stringify(bookingDetails));
-        
-        // Show signup modal
-        setPendingBookingAfterAuth(true);
+      // All fields selected, save booking details to localStorage before showing signup
+      const bookingDetails = {
+        date: selectedDate ? {
+          year: selectedDate.getFullYear(),
+          month: selectedDate.getMonth(),
+          day: selectedDate.getDate()
+        } : null,
+        time: selectedTime,
+        package: selectedPackage ? {
+          id: selectedPackage.id,
+          name: selectedPackage.name,
+          price: selectedPackage.price,
+          session_count: selectedPackage.session_count,
+          package_type: selectedPackage.package_type
+        } : null,
+        doctorId: selectedDoctor?.id,
+        isBookingRemaining: isBookingRemaining,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('pendingBookingDetails', JSON.stringify(bookingDetails));
+      
+      // Show signup modal
+      setPendingBookingAfterAuth(true);
       setShowAuth(true);
-        setMissingFields([]);
+      setMissingFields([]);
       return;
-      }
     }
 
-    // User is authenticated - proceed with normal flow
+    // User is authenticated and all fields are selected - proceed with normal flow
     setMissingFields([]);
     // Don't set pendingBookingAfterAuth to false yet - we'll do it after booking succeeds
     // This prevents the modal from reopening if there's an error
