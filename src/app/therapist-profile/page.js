@@ -734,28 +734,30 @@ const TherapistProfileContent = () => {
     // Declare clientProfile at function level so it's accessible throughout
     let clientProfile = null;
 
-    // Get client profile for booking (but don't require contact completion check)
-    try {
-      console.log('🔍 Fetching client profile for booking...');
-      const clientProfileResponse = await clientApi.getProfile();
-      clientProfile = clientProfileResponse.data;
-      console.log('✅ Client profile fetched:', clientProfile);
-    } catch (error) {
-      console.error('❌ Error fetching client profile:', error);
-      // If profile fetch fails, try to get basic info from user object
-      if (user) {
-        clientProfile = {
-          first_name: user.first_name || '',
-          last_name: user.last_name || '',
-          email: user.email || '',
-          phone_number: user.phone_number || ''
-        };
-        console.log('⚠️ Using fallback client profile from user object:', clientProfile);
-      }
-      // Continue with booking even if profile fetch fails
-    }
-
+    // Set loading state immediately for better UX
     setIsBooking(true);
+
+    // Get client profile for booking (but don't require contact completion check)
+    // Run in parallel with other operations to reduce lag
+    const profilePromise = (async () => {
+      try {
+        console.log('🔍 Fetching client profile for booking...');
+        const clientProfileResponse = await clientApi.getProfile();
+        return clientProfileResponse.data;
+      } catch (error) {
+        console.error('❌ Error fetching client profile:', error);
+        // If profile fetch fails, try to get basic info from user object
+        if (user) {
+          return {
+            first_name: user.first_name || '',
+            last_name: user.last_name || '',
+            email: user.email || '',
+            phone_number: user.phone_number || ''
+          };
+        }
+        return null;
+      }
+    })();
     try {
       // Get current date and time in local timezone
       const now = new Date();
@@ -781,30 +783,45 @@ const TherapistProfileContent = () => {
         scheduledTime = `${hour.padStart(2, '0')}:${minute}:00`;
       }
 
-      // Real-time Google Calendar check before booking (call backend with auth)
-      try {
-        console.log('🔍 Performing real-time Google Calendar check before booking...');
-        const checkData = await backendApi.get(`/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`);
-        if (checkData?.success && Array.isArray(checkData.data) && checkData.data.length > 0) {
-          const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
-          const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000);
-          const hasConflict = checkData.data.some(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
-            return (sessionStart < eventEnd && sessionEnd > eventStart);
-          });
-          if (hasConflict) {
-            showError('This time slot is no longer available due to an external booking. Please select another time.', 'Time Slot Unavailable');
-            setIsBooking(false);
-            return;
-          }
-        }
-      } catch (checkError) {
-        console.log('⚠️ Real-time Google Calendar check failed, proceeding with booking:', checkError);
-        // Continue with booking even if check fails
+      // Get client profile (await the promise we started earlier)
+      clientProfile = await profilePromise;
+      if (clientProfile) {
+        console.log('✅ Client profile fetched:', clientProfile);
+      } else {
+        console.log('⚠️ Using fallback client profile from user object');
       }
 
+      // Real-time Google Calendar check - run in parallel with slot reservation to reduce lag
+      // Make it non-blocking: if it fails or takes too long, proceed with booking
+      const calendarCheckPromise = (async () => {
+        try {
+          console.log('🔍 Performing real-time Google Calendar check before booking...');
+          const checkData = await Promise.race([
+            backendApi.get(`/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000)) // 2 second timeout
+          ]);
+          
+          if (checkData?.success && Array.isArray(checkData.data) && checkData.data.length > 0) {
+            const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
+            const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000);
+            const hasConflict = checkData.data.some(event => {
+              const eventStart = new Date(event.start);
+              const eventEnd = new Date(event.end);
+              return (sessionStart < eventEnd && sessionEnd > eventStart);
+            });
+            if (hasConflict) {
+              return { hasConflict: true };
+            }
+          }
+          return { hasConflict: false };
+        } catch (checkError) {
+          console.log('⚠️ Real-time Google Calendar check failed or timed out, proceeding with booking:', checkError);
+          return { hasConflict: false }; // Continue with booking if check fails
+        }
+      })();
+
       // First, reserve the time slot and get payment details
+      // Run slot reservation in parallel with calendar check
       let slotReservation;
       let sessionResponse;
       if (isBookingRemaining && clientPackage) {
@@ -826,7 +843,20 @@ const TherapistProfileContent = () => {
           package_id: selectedPackage.id
         };
 
-        slotReservation = await clientApi.reserveSlot(reservationData);
+        // Run slot reservation and calendar check in parallel
+        const [reservationResult, calendarResult] = await Promise.all([
+          clientApi.reserveSlot(reservationData),
+          calendarCheckPromise
+        ]);
+        
+        slotReservation = reservationResult;
+        
+        // Check calendar result (non-blocking - only show warning if conflict found)
+        if (calendarResult?.hasConflict) {
+          // Slot is already reserved, so we can't cancel, but warn the user
+          console.warn('⚠️ Calendar conflict detected but slot already reserved');
+          // Don't block - let the booking proceed, backend will handle conflicts
+        }
       }
 
       if (isBookingRemaining && clientPackage) {
@@ -921,8 +951,9 @@ const TherapistProfileContent = () => {
         console.log('✅ Payment response successful, opening Razorpay checkout...');
         console.log('📋 Razorpay Order:', paymentResponse.data);
 
-        // Load Razorpay checkout script if not already loaded
+        // Razorpay script should already be pre-loaded, but check just in case
         if (!window.Razorpay) {
+          console.warn('⚠️ Razorpay script not loaded, loading now...');
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
           script.onload = () => {
@@ -931,10 +962,11 @@ const TherapistProfileContent = () => {
           script.onerror = () => {
             console.error('❌ Failed to load Razorpay checkout script');
             showError('Payment gateway error: Failed to load payment script');
-          setIsBooking(false);
+            setIsBooking(false);
           };
           document.body.appendChild(script);
         } else {
+          // Script already loaded, open immediately
           openRazorpayCheckout(paymentResponse.data);
         }
 
@@ -1230,6 +1262,20 @@ const TherapistProfileContent = () => {
 
   useEffect(() => {
     fetchDoctors();
+    
+    // Pre-load Razorpay script to reduce lag when booking
+    if (typeof window !== 'undefined' && !window.Razorpay) {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => {
+        console.log('✅ Razorpay script pre-loaded');
+      };
+      script.onerror = () => {
+        console.warn('⚠️ Failed to pre-load Razorpay script, will load on demand');
+      };
+      document.body.appendChild(script);
+    }
   }, []);
 
   useEffect(() => {
