@@ -12,11 +12,8 @@ const nextConfig = {
       },
     ],
   },
-  // Generate build ID (use git commit hash in production for better caching)
+  // Force cache busting
   generateBuildId: async () => {
-    if (process.env.VERCEL_GIT_COMMIT_SHA) {
-      return process.env.VERCEL_GIT_COMMIT_SHA.substring(0, 12);
-    }
     return `build-${Date.now()}`;
   },
   // Enable prefetching for better navigation performance

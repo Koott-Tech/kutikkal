@@ -521,21 +521,21 @@ export default function FreeAssessmentPage() {
         localStorage.setItem('freeAssessmentPendingBooking', JSON.stringify(bookingDetails));
         
         // Also keep the old format for compatibility
-        if (typeof window !== 'undefined') {
-          const selectionToStore = {
-            date: selectedDate.toISOString(),
-            time: selectedTime,
-            currentMonth: currentDate.toISOString()
-          };
-          localStorage.setItem('freeAssessmentPendingSelection', JSON.stringify(selectionToStore));
-        }
+      if (typeof window !== 'undefined') {
+        const selectionToStore = {
+          date: selectedDate.toISOString(),
+          time: selectedTime,
+          currentMonth: currentDate.toISOString()
+        };
+        localStorage.setItem('freeAssessmentPendingSelection', JSON.stringify(selectionToStore));
+      }
         
         // Show signup modal
         setPendingBookingAfterAuth(true);
-        setShowAuth(true);
+      setShowAuth(true);
         setMissingFields([]);
-        return;
-      }
+      return;
+    }
     }
 
     // User is authenticated - proceed with normal flow
@@ -558,7 +558,7 @@ export default function FreeAssessmentPage() {
     
     if (savedBooking && pendingBookingAfterAuth) {
       // Close modal immediately after signup succeeds and prevent it from reopening
-      setShowAuth(false);
+    setShowAuth(false);
       setPendingBookingAfterAuth(false); // Set to false immediately to prevent reopening
       
         // Restore booking details from localStorage
@@ -844,7 +844,7 @@ export default function FreeAssessmentPage() {
       }
     } else {
       setAssessmentStatus(null);
-      fetchFreeAssessmentAvailability(currentDate);
+    fetchFreeAssessmentAvailability(currentDate);
       // Auto-select current date and fetch its timeslots on initial load (for non-authenticated users)
       // Only if not already selected (from initial state or localStorage)
       const today = new Date();
@@ -1185,24 +1185,24 @@ export default function FreeAssessmentPage() {
                       <p className="text-yellow-800 text-xs text-center">
                         Please select: {missingFields.join(', ')}
                       </p>
-                    </div>
-                  )}
+                </div>
+              )}
 
                   {/* Booking Button - At the bottom of time slots div */}
                   <div className="mt-auto pt-6">
-                    <button
-                      onClick={bookAssessment}
+                  <button
+                    onClick={bookAssessment}
                       disabled={loading || !canBookFreeAssessment || !selectedTime}
-                      className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
                       title={!canBookFreeAssessment ? 'You have used all 3 free assessments' : !selectedTime ? 'Please select a time slot' : ''}
-                    >
-                      {loading ? 'Booking...' : 'Book Free Assessment'}
-                    </button>
-                    {!canBookFreeAssessment && (
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        You've used all available free assessments
-                      </p>
-                    )}
+                  >
+                    {loading ? 'Booking...' : 'Book Free Assessment'}
+                  </button>
+                  {!canBookFreeAssessment && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      You've used all available free assessments
+                    </p>
+                  )}
                   </div>
                 </div>
               )}

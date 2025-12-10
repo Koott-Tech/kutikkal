@@ -673,9 +673,9 @@ const TherapistProfileContent = () => {
         
         // Show signup modal
         setPendingBookingAfterAuth(true);
-        setShowAuth(true);
+      setShowAuth(true);
         setMissingFields([]);
-        return;
+      return;
       }
     }
 
@@ -2152,7 +2152,7 @@ const TherapistProfileContent = () => {
             
             if (savedBooking && pendingBookingAfterAuth) {
               // Close modal immediately after signup succeeds
-              setShowAuth(false);
+            setShowAuth(false);
               
               // Restore booking details from localStorage
               try {
@@ -2218,7 +2218,7 @@ const TherapistProfileContent = () => {
                           )
                         });
                         return false;
-                      } catch (e) {
+              } catch (e) {
                         console.error('Error checking auth storage:', e);
                         return false;
                       }
@@ -2283,7 +2283,7 @@ const TherapistProfileContent = () => {
                         // The API calls will work because backendApi reads from localStorage
                         console.log('🚀 Proceeding with booking - auth is in localStorage');
                         handleBookSession();
-                      }, 300);
+            }, 300);
                     } else if (contextAuthReady) {
                       // Context is ready, proceed immediately
                       clearInterval(checkAuth);

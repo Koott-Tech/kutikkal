@@ -157,10 +157,10 @@ export default function AuthModal({
       } else {
         // Normal login flow (from header or other pages) - no pending booking
         console.log('✅ Login successful - normal flow, closing modal');
-        closeAndReset();
-        // Reload the page to refresh auth state
+      closeAndReset();
+      // Reload the page to refresh auth state
         if (!preventReload) {
-          window.location.reload();
+      window.location.reload();
         }
       }
     } catch (err) {
@@ -304,10 +304,10 @@ export default function AuthModal({
       } else {
         // Normal signup flow (from header or other pages) - no pending booking
         console.log('✅ Signup successful - normal flow, closing modal');
-        closeAndReset();
-        // Reload the page to refresh auth state
+      closeAndReset();
+      // Reload the page to refresh auth state
         if (!preventReload) {
-          window.location.reload();
+      window.location.reload();
         }
       }
     } catch (err) {

@@ -597,9 +597,9 @@ const Guide = () => {
     // Debounce availability fetching to prevent duplicate requests
     if (doctors.length > 0) {
       const timeoutId = setTimeout(() => {
-        fetchAllDoctorsAvailability(doctors).catch(err => {
-          console.error('Error fetching doctors availability:', err);
-        });
+      fetchAllDoctorsAvailability(doctors).catch(err => {
+        console.error('Error fetching doctors availability:', err);
+      });
       }, 500); // Debounce delay to prevent duplicate requests
       
       return () => clearTimeout(timeoutId);
