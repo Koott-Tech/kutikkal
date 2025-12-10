@@ -9,6 +9,7 @@ import AuthModal from '@/components/AuthModal';
 import QuickContactModal from '@/components/QuickContactModal';
 import { clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
+import { loadAuthData } from '@/lib/authStorage';
 
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
@@ -137,11 +138,51 @@ export default function FreeAssessmentPage() {
   const [showQuickContact, setShowQuickContact] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [pendingBookingAfterAuth, setPendingBookingAfterAuth] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
 
   // Calendar state (like therapist profile)
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  // Initialize with current date - will be overridden if localStorage has a selection
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('freeAssessmentPendingSelection');
+      if (stored) {
+        try {
+          const selection = JSON.parse(stored);
+          const restoredDate = new Date(selection.date);
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          const restoredDateOnly = new Date(restoredDate);
+          restoredDateOnly.setHours(0, 0, 0, 0);
+          if (restoredDateOnly >= now) {
+            return restoredDate;
+          }
+        } catch (e) {
+          // Invalid stored data, use current date
+        }
+      }
+    }
+    // Default to current date
+    return new Date();
+  });
+  // Initialize with stored time if available
+  const [selectedTime, setSelectedTime] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('freeAssessmentPendingSelection');
+      if (stored) {
+        try {
+          const selection = JSON.parse(stored);
+          if (selection.time) {
+            return selection.time;
+          }
+        } catch (e) {
+          // Invalid stored data
+        }
+      }
+    }
+    return null;
+  });
   const [freeAssessmentAvailability, setFreeAssessmentAvailability] = useState({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [availableTimeslots, setAvailableTimeslots] = useState([]);
@@ -225,7 +266,10 @@ export default function FreeAssessmentPage() {
     // Clear stored selection when user manually changes date
     if (typeof window !== 'undefined') {
       localStorage.removeItem('freeAssessmentPendingSelection');
+      localStorage.removeItem('freeAssessmentPendingBooking');
     }
+    // Clear missing fields message when user selects date
+    setMissingFields(prev => prev.filter(f => f !== 'Date'));
     fetchAvailableTimeslots(newSelectedDate);
   };
 
@@ -234,7 +278,10 @@ export default function FreeAssessmentPage() {
     // Clear stored selection when user manually changes time
     if (typeof window !== 'undefined') {
       localStorage.removeItem('freeAssessmentPendingSelection');
+      localStorage.removeItem('freeAssessmentPendingBooking');
     }
+    // Clear missing fields message when user selects time
+    setMissingFields(prev => prev.filter(f => f !== 'Time'));
   };
 
   // Fetch free assessment availability for current month
@@ -331,7 +378,19 @@ export default function FreeAssessmentPage() {
 
   const performBooking = async (dateObj, time) => {
     if (!dateObj || !time) return;
-    if (!token) {
+    
+    // Check token from context first, then from localStorage (for cases where context hasn't updated yet)
+    let authToken = token;
+    if (!authToken && typeof window !== 'undefined') {
+      try {
+        const authData = loadAuthData();
+        authToken = authData?.token;
+      } catch (e) {
+        console.error('Error loading auth data:', e);
+      }
+    }
+    
+    if (!authToken) {
       setShowAuth(true);
       return;
     }
@@ -352,11 +411,12 @@ export default function FreeAssessmentPage() {
       const day = String(dateObj.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
 
+      // Use authToken (from context or localStorage)
       const response = await fetch('/api/free-assessments/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           scheduledDate: dateStr,
@@ -379,7 +439,9 @@ export default function FreeAssessmentPage() {
         }
         
         // Refresh data
-        if (user && token) {
+        // Check both context and localStorage for auth
+        const hasAuth = (user && token) || (typeof window !== 'undefined' && loadAuthData()?.token);
+        if (hasAuth) {
           fetchAssessmentStatus();
         }
         fetchFreeAssessmentAvailability(currentDate);
@@ -404,19 +466,24 @@ export default function FreeAssessmentPage() {
   };
 
   const ensureContactAndBook = async (dateObj, time) => {
-    if (!user || !token) return;
+    if (!user || !token) {
+      console.error('User not authenticated');
+      return;
+    }
 
+    // Contact details are now collected during signup, so we can proceed directly
+    // Still check contact but don't block if it's incomplete (signup form collects it)
     try {
       const profileResponse = await clientApi.getProfile();
       const profile = profileResponse?.data;
       if (!isClientContactComplete(profile)) {
-        setShowQuickContact(true);
-        return;
+        // Contact might be incomplete, but signup form should have collected it
+        // Proceed with booking anyway - backend will handle validation
+        console.log('⚠️ Contact info may be incomplete, but proceeding with booking');
       }
     } catch (err) {
       console.error('Error verifying contact information:', err);
-      setShowQuickContact(true);
-      return;
+      // Proceed anyway - backend will handle validation
     }
 
     await performBooking(dateObj, time);
@@ -424,6 +491,57 @@ export default function FreeAssessmentPage() {
 
   // Book free assessment
   const bookAssessment = async () => {
+    // Check for missing fields
+    const missing = [];
+    if (!selectedDate) missing.push('Date');
+    if (!selectedTime) missing.push('Time');
+    
+    // If user is not authenticated
+    if (!user || !token) {
+      if (missing.length > 0) {
+        // Show missing fields message
+        setMissingFields(missing);
+        return;
+      } else {
+        // All fields selected, save booking details to localStorage before showing signup
+        const bookingDetails = {
+          date: selectedDate ? {
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth(),
+            day: selectedDate.getDate()
+          } : null,
+          time: selectedTime,
+          currentMonth: currentDate ? {
+            year: currentDate.getFullYear(),
+            month: currentDate.getMonth(),
+            day: currentDate.getDate()
+          } : null,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('freeAssessmentPendingBooking', JSON.stringify(bookingDetails));
+        
+        // Also keep the old format for compatibility
+        if (typeof window !== 'undefined') {
+          const selectionToStore = {
+            date: selectedDate.toISOString(),
+            time: selectedTime,
+            currentMonth: currentDate.toISOString()
+          };
+          localStorage.setItem('freeAssessmentPendingSelection', JSON.stringify(selectionToStore));
+        }
+        
+        // Show signup modal
+        setPendingBookingAfterAuth(true);
+        setShowAuth(true);
+        setMissingFields([]);
+        return;
+      }
+    }
+
+    // User is authenticated - proceed with normal flow
+    setMissingFields([]);
+    setPendingBookingAfterAuth(false);
+    
     if (!selectedDate || !selectedTime) {
       setError('Please select both date and time');
       return;
@@ -431,28 +549,116 @@ export default function FreeAssessmentPage() {
 
     const bookingDetails = { date: selectedDate, time: selectedTime };
     setPendingBooking(bookingDetails);
-
-    if (!user || !token) {
-      // Save selected date and time to localStorage before showing auth modal
-      if (typeof window !== 'undefined') {
-        const selectionToStore = {
-          date: selectedDate.toISOString(),
-          time: selectedTime,
-          currentMonth: currentDate.toISOString()
-        };
-        localStorage.setItem('freeAssessmentPendingSelection', JSON.stringify(selectionToStore));
-      }
-      setShowAuth(true);
-      return;
-    }
-
     await ensureContactAndBook(bookingDetails.date, bookingDetails.time);
   };
 
   const handleAuthSuccess = async () => {
-    setShowAuth(false);
-    // Note: AuthModal will reload the page, so we rely on sessionStorage
-    // and useEffect to check contact info after reload
+    // After successful signup/login, check if there are pending booking details
+    const savedBooking = localStorage.getItem('freeAssessmentPendingBooking');
+    
+    if (savedBooking && pendingBookingAfterAuth) {
+      // Close modal immediately after signup succeeds and prevent it from reopening
+      setShowAuth(false);
+      setPendingBookingAfterAuth(false); // Set to false immediately to prevent reopening
+      
+        // Restore booking details from localStorage
+        try {
+          const bookingDetails = JSON.parse(savedBooking);
+          // Restore date and time - store in variables to use directly
+          let restoredDate = null;
+          let restoredTime = null;
+          
+          if (bookingDetails.date) {
+            restoredDate = new Date(
+              bookingDetails.date.year,
+              bookingDetails.date.month,
+              bookingDetails.date.day
+            );
+            setSelectedDate(restoredDate);
+          }
+          // Restore time
+          if (bookingDetails.time) {
+            restoredTime = bookingDetails.time;
+            setSelectedTime(restoredTime);
+          }
+          // Restore current month if available
+          if (bookingDetails.currentMonth) {
+            const restoredMonth = new Date(
+              bookingDetails.currentMonth.year,
+              bookingDetails.currentMonth.month,
+              bookingDetails.currentMonth.day
+            );
+            setCurrentDate(restoredMonth);
+          }
+          
+          // Clear saved booking details
+          localStorage.removeItem('freeAssessmentPendingBooking');
+          localStorage.removeItem('freeAssessmentPendingSelection');
+          
+          // Wait for auth state to update, then proceed with booking
+          let attempts = 0;
+          const maxAttempts = 100; // 10 seconds max
+          
+          const checkAuth = setInterval(() => {
+            attempts++;
+            const storedAuthReady = (() => {
+              try {
+                const authData = loadAuthData();
+                return authData && authData.token && authData.user;
+              } catch {
+                return false;
+              }
+            })();
+            
+            const contextAuthReady = user && token;
+            
+            console.log(`🔍 Free Assessment - Checking auth state (attempt ${attempts}/${maxAttempts}):`, {
+              storedAuthReady,
+              contextAuthReady,
+              hasUser: !!user,
+              hasToken: !!token
+            });
+            
+            if ((storedAuthReady || contextAuthReady) && attempts >= 3) {
+              clearInterval(checkAuth);
+              console.log('✅ Free Assessment - Auth ready, proceeding with booking...');
+              // Keep pendingBookingAfterAuth false to prevent modal from reopening
+              setPendingBookingAfterAuth(false);
+              
+              // Proceed directly with booking (no payment needed for free assessment)
+              // Use restored values directly instead of state (which might not be updated yet)
+              setTimeout(async () => {
+                const dateToUse = restoredDate || selectedDate;
+                const timeToUse = restoredTime || selectedTime;
+                
+                if (dateToUse && timeToUse) {
+                  const bookingDetails = { date: dateToUse, time: timeToUse };
+                  setPendingBooking(bookingDetails);
+                  // Free assessment: Directly book without payment or contact check
+                  // Contact details are collected during signup, so proceed directly to booking
+                  await performBooking(dateToUse, timeToUse);
+                } else {
+                  console.error('❌ Missing booking data after auth');
+                  setError('Booking data was lost. Please select date and time again.');
+                  setPendingBookingAfterAuth(false);
+                }
+              }, 300);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(checkAuth);
+              console.error('❌ Free Assessment - Auth state did not update in time');
+              setError('Authentication failed. Please refresh the page and try booking again.');
+              setPendingBookingAfterAuth(false);
+            }
+          }, 100);
+      } catch (error) {
+        console.error('Error restoring booking details:', error);
+        setPendingBookingAfterAuth(false);
+      }
+    } else {
+      // No pending booking - normal auth flow
+      setPendingBookingAfterAuth(false);
+      setShowAuth(false);
+    }
   };
 
   const handleRequireContactInfo = () => {
@@ -593,6 +799,22 @@ export default function FreeAssessmentPage() {
       // Only fetch availability if we didn't restore from localStorage
       if (!hasRestoredSelection) {
         fetchFreeAssessmentAvailability(currentDate);
+        // Auto-select current date and fetch its timeslots on initial load (if not already selected)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDateOnly = selectedDate ? new Date(selectedDate) : null;
+        if (selectedDateOnly) {
+          selectedDateOnly.setHours(0, 0, 0, 0);
+        }
+        
+        if (!selectedDate || !selectedDateOnly || selectedDateOnly.getTime() !== today.getTime()) {
+          const todayFull = new Date();
+          setSelectedDate(todayFull);
+          fetchAvailableTimeslots(todayFull);
+        } else if (selectedDate) {
+          // Date is already selected (from initial state), just fetch timeslots
+          fetchAvailableTimeslots(selectedDate);
+        }
       }
       
       // Check if we need to show contact form (after signup/login)
@@ -622,7 +844,24 @@ export default function FreeAssessmentPage() {
       }
     } else {
       setAssessmentStatus(null);
-    fetchFreeAssessmentAvailability(currentDate);
+      fetchFreeAssessmentAvailability(currentDate);
+      // Auto-select current date and fetch its timeslots on initial load (for non-authenticated users)
+      // Only if not already selected (from initial state or localStorage)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDateOnly = selectedDate ? new Date(selectedDate) : null;
+      if (selectedDateOnly) {
+        selectedDateOnly.setHours(0, 0, 0, 0);
+      }
+      
+      if (!selectedDate || !selectedDateOnly || selectedDateOnly.getTime() !== today.getTime()) {
+        const todayFull = new Date();
+        setSelectedDate(todayFull);
+        fetchAvailableTimeslots(todayFull);
+      } else if (selectedDate) {
+        // Date is already selected (from initial state), just fetch timeslots
+        fetchAvailableTimeslots(selectedDate);
+      }
     }
   }, [authLoading, token, user]);
 
@@ -871,10 +1110,10 @@ export default function FreeAssessmentPage() {
             </div>
 
             {/* Right Side - Time Selection and Booking */}
-            <div className="bg-white rounded-2xl shadow-2xl p-6">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 flex flex-col">
               {/* Available Time Slots */}
               {selectedDate && (
-                <div className="mb-6">
+                <div className="flex flex-col flex-grow mb-6">
                   <h6 className="font-semibold text-gray-800 mb-3">Time Slots</h6>
                   {loadingTimeslots ? (
                     <div className="flex items-center justify-center py-4 min-h-[200px]">
@@ -939,29 +1178,36 @@ export default function FreeAssessmentPage() {
                     </div>
                     );
                   })()}
-                </div>
-              )}
-
-              {/* Booking Button */}
-              {selectedDate && selectedTime && (
-                <div className="mt-6">
-                  <button
-                    onClick={bookAssessment}
-                    disabled={loading || !canBookFreeAssessment}
-                    className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    title={!canBookFreeAssessment ? 'You have used all 3 free assessments' : ''}
-                  >
-                    {loading ? 'Booking...' : 'Book Free Assessment'}
-                  </button>
-                  {!canBookFreeAssessment && (
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      You've used all available free assessments
-                    </p>
+                  
+                  {/* Missing Fields Message */}
+                  {missingFields.length > 0 && (
+                    <div className="mt-4 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-yellow-800 text-xs text-center">
+                        Please select: {missingFields.join(', ')}
+                      </p>
+                    </div>
                   )}
+
+                  {/* Booking Button - At the bottom of time slots div */}
+                  <div className="mt-auto pt-6">
+                    <button
+                      onClick={bookAssessment}
+                      disabled={loading || !canBookFreeAssessment || !selectedTime}
+                      className="w-full bg-[#3f2e73] text-white py-3 px-6 rounded-lg font-semibold transition-colors hover:bg-[#1d1733] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      title={!canBookFreeAssessment ? 'You have used all 3 free assessments' : !selectedTime ? 'Please select a time slot' : ''}
+                    >
+                      {loading ? 'Booking...' : 'Book Free Assessment'}
+                    </button>
+                    {!canBookFreeAssessment && (
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        You've used all available free assessments
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Instructions */}
+              {/* Instructions - Only show if no date is selected (shouldn't happen since we auto-select current date) */}
               {!selectedDate && (
                 <div className="text-center text-gray-500">
                   <Calendar className="h-12 w-12 mx-auto mb-2 text-gray-300" />
@@ -1001,9 +1247,20 @@ export default function FreeAssessmentPage() {
       {showAuth && (
         <AuthModal
           open={showAuth}
-          onClose={() => setShowAuth(false)}
+          defaultTab="signup"
+          preventReload={pendingBookingAfterAuth} // Prevent page reload when booking is pending
+          signupButtonText={pendingBookingAfterAuth ? "Book a free assessment" : "Create account"} // Change button text when booking is pending
+          loginButtonText={pendingBookingAfterAuth ? "Book a free assessment" : "Sign in"} // Change login button text when booking is pending
           onAuthSuccess={handleAuthSuccess}
           onRequireContactInfo={handleRequireContactInfo}
+          onClose={() => {
+            setShowAuth(false);
+            setPendingBookingAfterAuth(false);
+            setMissingFields([]);
+            // Clear saved booking if user closes modal
+            localStorage.removeItem('freeAssessmentPendingBooking');
+            localStorage.removeItem('freeAssessmentPendingSelection');
+          }}
         />
       )}
       {showQuickContact && (

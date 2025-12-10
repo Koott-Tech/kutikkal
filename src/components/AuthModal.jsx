@@ -10,7 +10,10 @@ export default function AuthModal({
   open,
   onClose,
   defaultTab = "login",
-  onAuthSuccess
+  onAuthSuccess,
+  preventReload = false, // Prevent page reload when true (e.g., for booking flow)
+  signupButtonText = "Create account", // Custom text for signup button (default: "Create account")
+  loginButtonText = "Sign in" // Custom text for login button (default: "Sign in")
   // onRequireContactInfo // Removed - contact details collected during signup
 }) {
   const { login, isRemembered } = useAuth();
@@ -113,12 +116,53 @@ export default function AuthModal({
       const token = data?.data?.token;
 
       login(loggedInUser, token, { remember: rememberMe });
-      try { await onAuthSuccess?.(loggedInUser); } catch (_) {}
-
-      // Contact details are now collected during signup, so no need to prompt here
-      closeAndReset();
-      // Reload the page to refresh auth state
-      window.location.reload();
+      // Call onAuthSuccess first, then check for pending booking
+      try { 
+        await onAuthSuccess?.(loggedInUser); 
+      } catch (err) {
+        console.error('Error in onAuthSuccess callback:', err);
+      }
+      
+      // Check if there are pending booking details (from therapist profile page or free assessment page)
+      const pendingBooking = localStorage.getItem('pendingBookingDetails');
+      const pendingFreeAssessment = localStorage.getItem('freeAssessmentPendingBooking');
+      const hasPendingBooking = (pendingBooking || pendingFreeAssessment) && preventReload;
+      
+      if (hasPendingBooking) {
+        console.log('✅ Login successful with pending booking - parent will handle booking flow');
+        // Reset form state but don't close modal yet (parent will close it)
+        setError("");
+        setSuccessMessage("");
+        setIsLoading(false);
+        setShowForgot(false);
+        setForgotStep(1);
+        setOtp("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setRememberMe(false);
+        // Reset signup form
+        setSignup({ 
+          fullName: "", 
+          childName: "", 
+          countryCode: "+91", 
+          phoneNumber: "", 
+          email: "", 
+          password: "",
+          clientMessage: "",
+          termsAccepted: false,
+          therapyAgreementAccepted: false
+        });
+        setShowEmailExistsMessage(false);
+        // Don't call onClose here - parent (therapist-profile page) will handle closing and booking
+      } else {
+        // Normal login flow (from header or other pages) - no pending booking
+        console.log('✅ Login successful - normal flow, closing modal');
+        closeAndReset();
+        // Reload the page to refresh auth state
+        if (!preventReload) {
+          window.location.reload();
+        }
+      }
     } catch (err) {
       const msg = err?.message || "Login failed. Please try again.";
       // Check if it's a "user not found" type error - suggest signup
@@ -201,12 +245,71 @@ export default function AuthModal({
       };
       
       const data = await authApi.registerClient(registrationData);
+      console.log('✅ Signup successful, calling login()...', {
+        hasUser: !!data.data.user,
+        hasToken: !!data.data.token,
+        userRole: data.data.user?.role
+      });
       login(data.data.user, data.data.token, { remember: rememberMe });
-      try { await onAuthSuccess?.(data.data.user); } catch (_) {}
-      // All contact details are saved during signup, so no additional form needed
-      closeAndReset();
-      // Reload the page to refresh auth state
-      window.location.reload();
+      
+      // Verify auth was stored
+      setTimeout(() => {
+        const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const storedUser = localStorage.getItem('userData') || localStorage.getItem('user');
+        console.log('🔍 Auth storage verification:', {
+          storedToken: !!storedToken,
+          storedUser: !!storedUser,
+          allAuthKeys: Object.keys(localStorage).filter(k => k.toLowerCase().includes('auth') || k.toLowerCase().includes('token') || k.toLowerCase().includes('user'))
+        });
+      }, 100);
+      
+      // Call onAuthSuccess first, then check for pending booking
+      try { 
+        await onAuthSuccess?.(data.data.user); 
+      } catch (err) {
+        console.error('Error in onAuthSuccess callback:', err);
+      }
+      
+      // Check if there are pending booking details (from therapist profile page or free assessment page)
+      const pendingBooking = localStorage.getItem('pendingBookingDetails');
+      const pendingFreeAssessment = localStorage.getItem('freeAssessmentPendingBooking');
+      const hasPendingBooking = (pendingBooking || pendingFreeAssessment) && preventReload;
+      
+      if (hasPendingBooking) {
+        console.log('✅ Signup successful with pending booking - parent will handle booking flow');
+        // Reset form state but don't close modal yet (parent will close it)
+        setError("");
+        setSuccessMessage("");
+        setIsLoading(false);
+        setShowForgot(false);
+        setForgotStep(1);
+        setOtp("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setRememberMe(false);
+        // Reset signup form
+        setSignup({ 
+          fullName: "", 
+          childName: "", 
+          countryCode: "+91", 
+          phoneNumber: "", 
+          email: "", 
+          password: "",
+          clientMessage: "",
+          termsAccepted: false,
+          therapyAgreementAccepted: false
+        });
+        setShowEmailExistsMessage(false);
+        // Don't call onClose here - parent (therapist-profile page) will handle closing and booking
+      } else {
+        // Normal signup flow (from header or other pages) - no pending booking
+        console.log('✅ Signup successful - normal flow, closing modal');
+        closeAndReset();
+        // Reload the page to refresh auth state
+        if (!preventReload) {
+          window.location.reload();
+        }
+      }
     } catch (err) {
       // Extract error message - could be in different formats
       let msg = err?.message || err?.error || err?.toString() || "Registration failed. Please try again.";
@@ -404,7 +507,7 @@ export default function AuthModal({
                     </label>
                     <button type="button" onClick={()=>{ setShowForgot(true); setForgotStep(1); setError(""); }} className="text-[#3f2e73] hover:text-black">Forgot password?</button>
                   </div>
-                  <button type="submit" disabled={isLoading} className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isLoading ? 'Signing in…' : 'Sign in'}</button>
+                  <button type="submit" disabled={isLoading} className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isLoading ? 'Signing in…' : loginButtonText}</button>
                   <div className="text-center mt-3 text-sm text-gray-600">
                     Don&apos;t have an account?{" "}
                     <button
@@ -454,7 +557,7 @@ export default function AuthModal({
                       value={signup.childName} 
                       onChange={(e)=>setSignup(s=>({...s, childName: e.target.value}))} 
                       className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
-                      placeholder="Child Name (Optional)" 
+                      placeholder="Child Name" 
                     />
                   </div>
                   
@@ -614,9 +717,9 @@ export default function AuthModal({
                       !signup.termsAccepted || 
                       !signup.therapyAgreementAccepted
                     } 
-                    className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed mb-3"
                   >
-                    {isLoading ? 'Creating…' : 'Create account'}
+                    {isLoading ? 'Creating…' : signupButtonText}
                   </button>
                 </form>
               )}

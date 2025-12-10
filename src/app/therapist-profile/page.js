@@ -7,6 +7,7 @@ import { clientApi, paymentApi } from '../../lib/backendApi';
 import backendApi from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
+import { loadAuthData } from '../../lib/authStorage';
 // import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation'; // Removed - contact details collected during signup
 // import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
@@ -283,6 +284,8 @@ const TherapistProfileContent = () => {
     setSelectedDate(newSelectedDate);
     // Clear selected time when date changes (keep selected package)
     setSelectedTime(null);
+    // Clear missing fields message when user selects date
+    setMissingFields(prev => prev.filter(f => f !== 'Date'));
     
     // Check if the selected date has availability
     // Use local date formatting to avoid timezone conversion issues
@@ -305,6 +308,8 @@ const TherapistProfileContent = () => {
       setSelectedTime(null);
     } else {
       setSelectedTime(time);
+      // Clear missing fields message when user selects time
+      setMissingFields(prev => prev.filter(f => f !== 'Time'));
     }
     // Keep selected package intact when time changes
   };
@@ -407,6 +412,8 @@ const TherapistProfileContent = () => {
   };
 
   const [showAuth, setShowAuth] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+  const [pendingBookingAfterAuth, setPendingBookingAfterAuth] = useState(false);
   // const [showQuickContact, setShowQuickContact] = useState(false); // Removed - contact details collected during signup
 
   const scrollToCalendar = () => {
@@ -609,19 +616,103 @@ const TherapistProfileContent = () => {
   };
 
   const handleBookSession = async () => {
-    // 1) Auth check first → show login/signup popup if needed
-    if (!isAuthenticated() || !user) {
-      setShowAuth(true);
-      return;
+    console.log('🎯 handleBookSession called', {
+      isAuthenticated: isAuthenticated(),
+      hasRole: hasRole('client'),
+      user: user,
+      selectedDate,
+      selectedTime,
+      selectedPackage,
+      isBookingRemaining
+    });
+    
+    // Check for missing fields
+    const missing = [];
+    if (!selectedDate) missing.push('Date');
+    if (!selectedTime) missing.push('Time');
+    if (!isBookingRemaining && !selectedPackage) missing.push('Package');
+    
+    // Check authentication - if pendingBookingAfterAuth is true, also check localStorage
+    let isAuthReady = isAuthenticated() && user;
+    if (!isAuthReady && pendingBookingAfterAuth) {
+      // Check localStorage directly since React context might not be updated yet
+      const authData = loadAuthData();
+      if (authData && authData.token && authData.user && authData.user.role === 'client') {
+        console.log('✅ Auth found in localStorage, proceeding despite React context not updated');
+        isAuthReady = true;
+      }
     }
+    
+    // If user is not authenticated
+    if (!isAuthReady) {
+      if (missing.length > 0) {
+        // Show missing fields message above button
+        setMissingFields(missing);
+        return;
+      } else {
+        // All fields selected, save booking details to localStorage before showing signup
+        const bookingDetails = {
+          date: selectedDate ? {
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth(),
+            day: selectedDate.getDate()
+          } : null,
+          time: selectedTime,
+          package: selectedPackage ? {
+            id: selectedPackage.id,
+            name: selectedPackage.name,
+            price: selectedPackage.price,
+            session_count: selectedPackage.session_count,
+            package_type: selectedPackage.package_type
+          } : null,
+          doctorId: selectedDoctor?.id,
+          isBookingRemaining: isBookingRemaining,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('pendingBookingDetails', JSON.stringify(bookingDetails));
+        
+        // Show signup modal
+        setPendingBookingAfterAuth(true);
+        setShowAuth(true);
+        setMissingFields([]);
+        return;
+      }
+    }
+
+    // User is authenticated - proceed with normal flow
+    setMissingFields([]);
+    // Don't set pendingBookingAfterAuth to false yet - we'll do it after booking succeeds
+    // This prevents the modal from reopening if there's an error
 
     // 2) Role check (avoid reading user.role directly)
-    if (!hasRole('client')) {
+    // If pendingBookingAfterAuth was true, we might be proceeding before React context updates
+    // In that case, check localStorage for user role
+    let userRole = null;
+    let roleCheckPassed = hasRole('client');
+    
+    if (!roleCheckPassed && pendingBookingAfterAuth) {
+      // Try to get role from localStorage
+      try {
+        const authData = loadAuthData();
+        if (authData && authData.user) {
+          userRole = authData.user?.role;
+          roleCheckPassed = userRole === 'client';
+          if (roleCheckPassed) {
+            console.log('✅ Using role from localStorage:', userRole);
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    
+    if (!roleCheckPassed) {
       showError('Only clients can book sessions.', 'Access Denied');
+      setPendingBookingAfterAuth(false);
       return;
     }
 
-    // 3) Basic selections
+    // 3) Basic selections (double check for authenticated users)
     if (!selectedDate || !selectedTime) {
       showWarning('Please select a date and time', 'Selection Required');
       return;
@@ -644,10 +735,22 @@ const TherapistProfileContent = () => {
 
     // Get client profile for booking (but don't require contact completion check)
     try {
+      console.log('🔍 Fetching client profile for booking...');
       const clientProfileResponse = await clientApi.getProfile();
       clientProfile = clientProfileResponse.data;
+      console.log('✅ Client profile fetched:', clientProfile);
     } catch (error) {
-      console.error('Error fetching client profile:', error);
+      console.error('❌ Error fetching client profile:', error);
+      // If profile fetch fails, try to get basic info from user object
+      if (user) {
+        clientProfile = {
+          first_name: user.first_name || '',
+          last_name: user.last_name || '',
+          email: user.email || '',
+          phone_number: user.phone_number || ''
+        };
+        console.log('⚠️ Using fallback client profile from user object:', clientProfile);
+      }
       // Continue with booking even if profile fetch fails
     }
 
@@ -747,6 +850,7 @@ const TherapistProfileContent = () => {
         setSelectedTime(null);
         setSelectedPackage(null);
         setSelectedPrice(null);
+        setPendingBookingAfterAuth(false); // Clear pending flag after successful booking
 
       // Redirect to sessions page after booking succeeds
       router.push('/profile/sessions');
@@ -805,11 +909,14 @@ const TherapistProfileContent = () => {
         clientPhone: clientProfile?.phone_number
       };
 
+      console.log('🔍 Creating payment order with data:', paymentData);
       const paymentResponse = await paymentApi.createPaymentOrder(paymentData);
 
       console.log('🔍 Payment Response:', paymentResponse);
 
       if (paymentResponse.success) {
+        // Clear pending booking flag since we're proceeding to payment
+        setPendingBookingAfterAuth(false);
         console.log('✅ Payment response successful, opening Razorpay checkout...');
         console.log('📋 Razorpay Order:', paymentResponse.data);
 
@@ -904,8 +1011,15 @@ const TherapistProfileContent = () => {
         showError(`Payment initiation failed: ${paymentResponse.message || 'Unknown error'}`, 'Payment Error');
       }
     } catch (error) {
-      console.error('Booking error:', error);
-      showError('Booking failed. Please try again.', 'Booking Error');
+      console.error('❌ Booking error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        error: error
+      });
+      // Clear pending booking flag on error to prevent modal from reopening
+      setPendingBookingAfterAuth(false);
+      showError(`Booking failed: ${error.message || 'Please try again.'}`, 'Booking Error');
     } finally {
       setIsBooking(false);
     }
@@ -1838,6 +1952,8 @@ const TherapistProfileContent = () => {
                           discount_percentage: 0
                         });
                         setSelectedPrice(selectedDoctor.price);
+                        // Clear missing fields message when user selects package
+                        setMissingFields(prev => prev.filter(f => f !== 'Package'));
                       }}
                       className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                         selectedPackage?.id === 'individual'
@@ -1872,6 +1988,8 @@ const TherapistProfileContent = () => {
                             onClick={() => {
                               setSelectedPackage(pkg);
                               setSelectedPrice(pkg.price);
+                              // Clear missing fields message when user selects package
+                              setMissingFields(prev => prev.filter(f => f !== 'Package'));
                             }}
                             className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                               selectedPackage?.id === pkg.id
@@ -1898,6 +2016,15 @@ const TherapistProfileContent = () => {
                   </>
                 )}
               </div>
+
+              {/* Missing Fields Message */}
+              {missingFields.length > 0 && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-yellow-800 text-xs text-center">
+                    Please select: {missingFields.join(', ')}
+                  </p>
+                </div>
+              )}
 
               {/* Book Button */}
               <button 
@@ -2017,18 +2144,186 @@ const TherapistProfileContent = () => {
       <AuthModal
         open={showAuth}
         defaultTab="signup"
+        preventReload={pendingBookingAfterAuth} // Prevent page reload when booking is pending
+        signupButtonText={pendingBookingAfterAuth ? "Proceed to pay" : "Create account"} // Change button text when booking is pending
         onAuthSuccess={async () => {
-            // After successful signup/login, proceed with booking if selections were made
-            setShowAuth(false);
-            setTimeout(async () => {
-              // Contact details are collected during signup, so proceed directly with booking
-                  if (selectedDate && selectedTime && selectedDoctor && (isBookingRemaining || selectedPackage)) {
-                    handleBookSession();
-              }
-            }, 300);
+            // After successful signup/login, check if there are pending booking details
+            const savedBooking = localStorage.getItem('pendingBookingDetails');
+            
+            if (savedBooking && pendingBookingAfterAuth) {
+              // Close modal immediately after signup succeeds
+              setShowAuth(false);
+              
+              // Restore booking details from localStorage
+              try {
+                const bookingDetails = JSON.parse(savedBooking);
+                  // Restore date
+                  if (bookingDetails.date) {
+                    const restoredDate = new Date(
+                      bookingDetails.date.year,
+                      bookingDetails.date.month,
+                      bookingDetails.date.day
+                    );
+                    setSelectedDate(restoredDate);
+                  }
+                  // Restore time
+                  if (bookingDetails.time) {
+                    setSelectedTime(bookingDetails.time);
+                  }
+                  // Restore package
+                  if (bookingDetails.package) {
+                    setSelectedPackage(bookingDetails.package);
+                    setSelectedPrice(bookingDetails.package.price);
+                  }
+                  // Restore booking remaining flag
+                  if (bookingDetails.isBookingRemaining !== undefined) {
+                    setIsBookingRemaining(bookingDetails.isBookingRemaining);
+                  }
+                  
+                  // Clear saved booking details
+                  localStorage.removeItem('pendingBookingDetails');
+                  
+                  // Wait for auth state to update, then proceed with booking
+                  // The login() function updates the auth context, so we wait a bit for React to re-render
+                  // Check localStorage directly since React context might not update immediately
+                  const checkStoredAuth = () => {
+                    try {
+                      // Use loadAuthData from authStorage to check properly (it checks both localStorage and sessionStorage)
+                      try {
+                        const authData = loadAuthData();
+                        if (authData && authData.token && authData.user) {
+                          const hasRole = authData.user?.role === 'client';
+                          console.log('✅ Found auth in storage:', { 
+                            hasRole, 
+                            role: authData.user?.role, 
+                            email: authData.user?.email,
+                            storage: authData.remember ? 'localStorage' : 'sessionStorage',
+                            hasToken: !!authData.token
+                          });
+                          return hasRole;
+                        }
+                        
+                        console.log('❌ No auth data found in storage');
+                        // Log all storage keys for debugging
+                        console.log('🔍 Storage keys:', {
+                          localStorage: Object.keys(localStorage).filter(k => 
+                            k.toLowerCase().includes('auth') || 
+                            k.toLowerCase().includes('token') || 
+                            k.toLowerCase().includes('user')
+                          ),
+                          sessionStorage: Object.keys(sessionStorage).filter(k => 
+                            k.toLowerCase().includes('auth') || 
+                            k.toLowerCase().includes('token') || 
+                            k.toLowerCase().includes('user')
+                          )
+                        });
+                        return false;
+                      } catch (e) {
+                        console.error('Error checking auth storage:', e);
+                        return false;
+                      }
+                    } catch (e) {
+                      console.error('Error checking stored auth:', e);
+                      return false;
+                    }
+                  };
+                  
+                  // Start checking immediately, then continue checking
+                  let attempts = 0;
+                  const maxAttempts = 100; // 10 seconds max
+                  
+                  const checkAuth = setInterval(() => {
+                    attempts++;
+                    const storedAuthReady = checkStoredAuth();
+                    // Also check context, but prioritize localStorage since it's updated immediately
+                    const contextAuthReady = isAuthenticated() && hasRole('client') && user;
+                    
+                    console.log(`🔍 Checking auth state (attempt ${attempts}/${maxAttempts}):`, {
+                      storedAuthReady,
+                      contextAuthReady,
+                      isAuthenticated: isAuthenticated(),
+                      hasRole: hasRole('client'),
+                      hasUser: !!user,
+                      hasToken: !!token,
+                      localStorageKeys: Object.keys(localStorage).filter(k => k.includes('auth'))
+                    });
+                    
+                    // If we have auth in localStorage, proceed (even if React context hasn't updated)
+                    // API calls use localStorage directly, so they'll work
+                    if (storedAuthReady && attempts >= 3) {
+                      clearInterval(checkAuth);
+                      console.log('✅ Auth found in localStorage, proceeding with booking...');
+                      console.log('⚠️ Note: React context may not be updated yet, but API calls will use localStorage');
+                      setPendingBookingAfterAuth(false);
+                      
+                      // Force a small delay to let React catch up, then proceed
+                      setTimeout(() => {
+                        console.log('🚀 Calling handleBookSession...');
+                        console.log('🔍 Current booking state:', {
+                          selectedDate: selectedDate ? `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}` : null,
+                          selectedTime,
+                          selectedPackage: selectedPackage?.name,
+                          selectedDoctor: selectedDoctor?.id,
+                          isBookingRemaining
+                        });
+                        
+                        // Ensure we have all required data
+                        if (!selectedDate || !selectedTime || (!isBookingRemaining && !selectedPackage)) {
+                          console.error('❌ Missing booking data:', {
+                            selectedDate: !!selectedDate,
+                            selectedTime: !!selectedTime,
+                            selectedPackage: !!selectedPackage,
+                            isBookingRemaining
+                          });
+                          showError('Booking data was lost. Please select date, time, and package again.', 'Booking Error');
+                          return;
+                        }
+                        
+                        // Temporarily bypass auth checks since we know auth is in localStorage
+                        // The API calls will work because backendApi reads from localStorage
+                        console.log('🚀 Proceeding with booking - auth is in localStorage');
+                        handleBookSession();
+                      }, 300);
+                    } else if (contextAuthReady) {
+                      // Context is ready, proceed immediately
+                      clearInterval(checkAuth);
+                      console.log('✅ Auth context ready, proceeding with booking...');
+                      setPendingBookingAfterAuth(false);
+                      
+                      // Modal already closed, proceed with booking
+                      setTimeout(() => {
+                        console.log('🚀 Calling handleBookSession...');
+                        handleBookSession();
+                      }, 200);
+                    } else if (attempts >= maxAttempts) {
+                      clearInterval(checkAuth);
+                      console.error('❌ Auth state did not update in time after signup');
+                      console.error('❌ Final check:', {
+                        storedAuthReady,
+                        contextAuthReady,
+                        localStorage: checkStoredAuth(),
+                        allLocalStorageKeys: Object.keys(localStorage)
+                      });
+                      showError('Authentication failed. Please refresh the page and try booking again.', 'Auth Error');
+                      setPendingBookingAfterAuth(false);
+                    }
+                  }, 100);
+                } catch (error) {
+                  console.error('Error restoring booking details:', error);
+                  setPendingBookingAfterAuth(false);
+                }
+            } else {
+              // No pending booking - normal auth flow (shouldn't happen from therapist page, but handle it)
+              setPendingBookingAfterAuth(false);
+              setShowAuth(false);
+            }
           }}
           onClose={() => {
             setShowAuth(false);
+            setPendingBookingAfterAuth(false);
+            setMissingFields([]);
+            // Clear saved booking if user closes modal
+            localStorage.removeItem('pendingBookingDetails');
           }}
         />
       )}

@@ -92,7 +92,7 @@ const Guide = () => {
   // Cache management functions
   const CACHE_KEY = 'psychologists_list_cache';
   const CACHE_VERSION_KEY = 'psychologists_cache_version';
-  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes in milliseconds
+  const CACHE_TTL = 30 * 60 * 1000; // 30 minutes in milliseconds (increased for egress reduction)
 
   const getCachedDoctors = () => {
     try {
@@ -319,9 +319,20 @@ const Guide = () => {
     }
   };
 
-  // Fetch availability for a doctor (optimized - only 14 days)
+  // Cache for availability data to prevent duplicate requests
+  const availabilityCache = new Map();
+  const AVAILABILITY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for availability
+
+  // Fetch availability for a doctor (optimized - only 14 days, with caching)
   const fetchDoctorAvailability = async (doctorId) => {
     try {
+      // Check cache first
+      const cacheKey = `availability-${doctorId}`;
+      const cached = availabilityCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp) < AVAILABILITY_CACHE_TTL) {
+        return cached.data;
+      }
+
       const today = new Date();
       const startDate = today.toISOString().split('T')[0]; // Today
       const endDate = new Date(today);
@@ -391,11 +402,17 @@ const Guide = () => {
         }
 
         if (collectedSlots.length > 0 && firstDateWithSlots) {
-          return {
+          const result = {
             nextDate: firstDateWithSlots,
             timeSlots: collectedSlots.slice(0, 3), // Ensure max 3 slots
             slotsByDate: collectedSlots // Keep date info for each slot
           };
+          // Cache the result
+          availabilityCache.set(cacheKey, {
+            data: result,
+            timestamp: Date.now()
+          });
+          return result;
         }
       }
       return null;
@@ -491,9 +508,11 @@ const Guide = () => {
     fetchDoctors();
   }, []);
 
-  // Periodic cache version check (every 2 minutes) to detect updates (non-blocking)
+  // Periodic cache version check (every 10 minutes) to detect updates (non-blocking) - REDUCED FREQUENCY FOR EGRESS REDUCTION
   useEffect(() => {
-    const interval = setInterval(async () => {
+    // Only check if page is visible (not in background tab)
+    const checkCache = async () => {
+      if (document.hidden) return; // Skip if tab is hidden
       const cached = getCachedDoctors();
       if (cached && doctors.length > 0) {
         // Check version in background - don't block UI
@@ -507,7 +526,22 @@ const Guide = () => {
           console.error('Error checking cache version:', err);
         });
       }
-    }, 2 * 60 * 1000); // Check every 2 minutes
+    };
+    
+    const interval = setInterval(checkCache, 10 * 60 * 1000); // Check every 10 minutes (reduced from 2)
+    
+    // Check on visibility change
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkCache();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -560,14 +594,15 @@ const Guide = () => {
 
   // Fetch availability when doctors are loaded (fully async - doesn't block page render)
   useEffect(() => {
+    // Debounce availability fetching to prevent duplicate requests
     if (doctors.length > 0) {
-      // Fetch availability asynchronously after a short delay to let page render first
-      // This ensures the page shows immediately while availability loads in background
-      setTimeout(() => {
-      fetchAllDoctorsAvailability(doctors).catch(err => {
-        console.error('Error fetching doctors availability:', err);
-      });
-      }, 100); // Small delay to let page render first
+      const timeoutId = setTimeout(() => {
+        fetchAllDoctorsAvailability(doctors).catch(err => {
+          console.error('Error fetching doctors availability:', err);
+        });
+      }, 500); // Debounce delay to prevent duplicate requests
+      
+      return () => clearTimeout(timeoutId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
@@ -1033,6 +1068,8 @@ const Guide = () => {
                           src={imageSrc}
                           alt={`${doc.name || doc.first_name} profile`}
                           className="doctor-card-image"
+                          loading="lazy"
+                          decoding="async"
                           style={{ 
                             width: "100%", 
                             height: "100%", 
