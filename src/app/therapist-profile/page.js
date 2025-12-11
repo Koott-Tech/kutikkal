@@ -742,9 +742,9 @@ const TherapistProfileContent = () => {
     const profilePromise = (async () => {
       try {
         console.log('🔍 Fetching client profile for booking...');
-        const clientProfileResponse = await clientApi.getProfile();
+      const clientProfileResponse = await clientApi.getProfile();
         return clientProfileResponse.data;
-      } catch (error) {
+    } catch (error) {
         console.error('❌ Error fetching client profile:', error);
         // If profile fetch fails, try to get basic info from user object
         if (user) {
@@ -756,7 +756,7 @@ const TherapistProfileContent = () => {
           };
         }
         return null;
-      }
+    }
     })();
     try {
       // Get current date and time in local timezone
@@ -794,30 +794,30 @@ const TherapistProfileContent = () => {
       // Real-time Google Calendar check - run in parallel with slot reservation to reduce lag
       // Make it non-blocking: if it fails or takes too long, proceed with booking
       const calendarCheckPromise = (async () => {
-        try {
-          console.log('🔍 Performing real-time Google Calendar check before booking...');
+      try {
+        console.log('🔍 Performing real-time Google Calendar check before booking...');
           const checkData = await Promise.race([
             backendApi.get(`/availability-controller/google-calendar-busy-times?psychologist_id=${selectedDoctor.id}&start_date=${scheduledDate}&end_date=${scheduledDate}`),
             new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000)) // 2 second timeout
           ]);
           
-          if (checkData?.success && Array.isArray(checkData.data) && checkData.data.length > 0) {
-            const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
-            const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000);
-            const hasConflict = checkData.data.some(event => {
-              const eventStart = new Date(event.start);
-              const eventEnd = new Date(event.end);
-              return (sessionStart < eventEnd && sessionEnd > eventStart);
-            });
-            if (hasConflict) {
+        if (checkData?.success && Array.isArray(checkData.data) && checkData.data.length > 0) {
+          const sessionStart = new Date(`${scheduledDate}T${scheduledTime}`);
+          const sessionEnd = new Date(sessionStart.getTime() + 60 * 60 * 1000);
+          const hasConflict = checkData.data.some(event => {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+            return (sessionStart < eventEnd && sessionEnd > eventStart);
+          });
+          if (hasConflict) {
               return { hasConflict: true };
-            }
           }
+        }
           return { hasConflict: false };
-        } catch (checkError) {
+      } catch (checkError) {
           console.log('⚠️ Real-time Google Calendar check failed or timed out, proceeding with booking:', checkError);
           return { hasConflict: false }; // Continue with booking if check fails
-        }
+      }
       })();
 
       // First, reserve the time slot and get payment details
@@ -962,7 +962,7 @@ const TherapistProfileContent = () => {
           script.onerror = () => {
             console.error('❌ Failed to load Razorpay checkout script');
             showError('Payment gateway error: Failed to load payment script');
-            setIsBooking(false);
+          setIsBooking(false);
           };
           document.body.appendChild(script);
         } else {
