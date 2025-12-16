@@ -163,7 +163,7 @@ export default function PersonalizedCare() {
             The care your child needs, whenever you need it
           </h2>
           <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto personalized-care-description" style={{ marginTop: '12px', marginBottom: 0, paddingBottom: 0, paddingTop: 0 }}>
-          No matter where your journey begins, Little Care is here to create a safe, supportive, and open space for you and your little ones.
+            Wherever you are, Little Care offers a safe space with trusted child psychologists and gentle child counseling whenever you need it.
           </p>
         </div>
 

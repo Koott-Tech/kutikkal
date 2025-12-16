@@ -7,25 +7,25 @@ export default function SupportFaq() {
     {
       title: "Care that feels safe",
       body:
-        "Every child deserves a space where their feelings matter. We promise to create a gentle, non-judgmental environment where kids can express themselves freely.",
+        "Every child deserves a space where their feelings are seen and understood. Our child specialists create a gentle, non-judgmental environment where kids can open up freely and feel supported.",
       image: "/hero.png",
     },
     {
       title: "Guidance parents can trust",
       body:
-        "We walk alongside parents with practical tools, clear communication, and expert guidance—so you never feel alone in supporting your child's well-being.",
+        "We support parents with clear communication, practical tools, and expert guidance—so you never feel alone in understanding your child’s emotions or navigating their well-being.",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
     },
     {
       title: "Expertise made simple",
       body:
-        "Our child specialists bring evidence-based care to your doorstep, designed to be easy, accessible, and tailored to each child's unique needs.",
+        "Our licensed child psychologists bring evidence-based care right to your home. Sessions are easy to access, child-friendly, and tailored to match your child's unique needs.",
       image: "/hero.png",
     },
     {
       title: "Support at every stage",
       body:
-        "Whether it's early struggles, school challenges, or big transitions, we promise to be there at every step—making the next one easier.",
+        "Whether it's early emotional struggles, learning challenges, behaviour changes, or big life transitions, our child counseling services are here to guide your family—one steady step at a time.",
       image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
     },
   ];

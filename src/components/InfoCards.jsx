@@ -17,7 +17,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
       iconColor: "green",
       title: "Get Expert Guidance to Understand Your Child's Needs & Strengths",
       description:
-        "Understanding your child’s strengths and challenges is the key to giving the right support. Assessments help identify learning, attention, or emotional concerns like ADHD or autism.",
+        "Understanding your child’s strengths and challenges is the key to giving the right support. Child Assessments help identify learning, attention, or emotional concerns like ADHD or autism.",
       cta: "Book an assessment",
     },
     {
@@ -25,7 +25,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
       iconColor: "blue",
       title: "Learn Parenting Counseling Strategies to Support Your Child Better",
       description:
-        "Parenting doesn't come with a manual—but with expert guidance, you can develop effective techniques to manage behavior, communicate better, and support your child's emotions.",
+        "Parenting doesn’t come with a manual—but with supportive parenting counseling, you can learn effective ways to manage behaviour, communicate better, and understand your child’s emotions.",
       cta: "Start parent coaching",
     },
   ];

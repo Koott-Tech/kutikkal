@@ -207,7 +207,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
                             {pathname === '/about'
                                 ? 'Care doesn’t end here.'
-                                : 'Book a free 20 minutes session with our psychologist.'}
+                                : 'Book a free 20 minutes session with our child psychologist.'}
                         </p>
                         <div className="flex items-center justify-center gap-3">
                             <a

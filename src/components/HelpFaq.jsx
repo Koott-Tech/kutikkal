@@ -8,15 +8,15 @@ const DATA = [
     items: [
       {
         q: "How do I know if my child needs counseling?",
-        a: "Look out for changes in behavior, emotions, or daily routines — such as frequent sadness, anxiety, anger, withdrawal, or school difficulties. Counseling can help even if challenges seem small.",
+        a: "Look out for changes in behavior, emotions, or daily routines—like sadness, anxiety, anger, withdrawal, or school struggles. A child psychologist can help you understand what your child is experiencing and whether child counseling may support them.",
       },
       {
         q: "Are your sessions online or in-person?",
-        a: "Our online sessions make it easy for families to access expert support from the comfort of their homes.",
+        a: "Our sessions are fully online, making it easy for your child to get support from a qualified child psychologist right from home.",
       },
       {
         q: "How long is a counseling session?",
-        a: "50-60 minutes.",
+        a: "Each session lasts 50–60 minutes, giving your child enough time to feel safe, open up, and receive meaningful support.",
       },
     ],
   },
@@ -29,11 +29,11 @@ const DATA = [
       },
       {
         q: "Will I be involved in my child's therapy?",
-        a: "Yes! We believe parents play a key role. We'll share progress updates and provide parenting strategies to support your child at home.",
+        a: "Absolutely. Parents play a key role in a child’s progress. We keep you updated, share insights, and offer parenting counseling strategies so you can support your child at home with confidence.",
       },
       {
         q: "Is therapy confidential?",
-        a: "Yes, your child's privacy is very important to us. We share updates with parents only in ways that are helpful and supportive.",
+        a: "Yes. Your child’s privacy is deeply valued. We share updates with parents only in supportive, meaningful ways that respect confidentiality and your child’s comfort.",
       },
     ],
   },
