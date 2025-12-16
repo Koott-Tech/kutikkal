@@ -67,7 +67,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         const category = item.category.toLowerCase();
                         if (!grouped[category]) return;
                         grouped[category].push({
-                            title: item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '',
+                            title: formatDisplayName(item.slug), // Use formatted slug name like header
                             url: `/counselling/${item.slug}`,
                             order: item?.menu_order || 0
                         });
@@ -101,7 +101,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         const cat = item.category.toLowerCase();
                         if (!grouped[cat]) return;
                         grouped[cat].push({
-                            title: item?.seo_title?.replace(' - Little Care', '') || item?.hero_title || item?.title || '',
+                            title: formatDisplayName(item.slug), // Use formatted slug name like header
                             url: `/assessments/${item.slug}`,
                             order: item?.menu_order || 0
                         });
@@ -128,7 +128,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                     const items = pages
                         .filter(p => p.status === 'published')
                         .map(p => ({
-                            title: formatDisplayName(p.slug),
+                            title: formatDisplayName(p.slug), // Already using formatted slug name like header
                             url: `/better-parenting/${p.slug}`,
                             order: p.menu_order || 0
                         }))
@@ -144,6 +144,30 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
     return (
         <footer className={`w-full ${isTherapistProfile ? 'mt-0' : 'mt-14'}`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
+                /* Override h2 main menu items (footer) - h5 text-white */
+                .footer-main-menu-item {
+                    font-size: 22px !important;
+                    font-weight: 400 !important;
+                    line-height: 1.2 !important;
+                    margin: 0 0 1.5rem 0 !important; /* Add bottom margin to increase space below heading */
+                }
+                /* Override h2 submenu items (footer) - text-base font-normal */
+                .footer-submenu-item {
+                    font-size: 16px !important;
+                    font-weight: 400 !important;
+                    line-height: 1.2 !important;
+                    margin: 0 !important;
+                }
+                /* Override h2 individual menu items (footer) - text-sm */
+                .footer-individual-menu-item {
+                    font-size: 14px !important;
+                    font-weight: 400 !important;
+                    line-height: 1.2 !important;
+                    margin: 0 0 0.75rem 0 !important; /* Increased bottom margin for more spacing between items */
+                }
+                .footer-individual-menu-item:last-child {
+                    margin-bottom: 0 !important; /* Remove margin from last item */
+                }
                 @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
                     .footer-heading {
                         font-size: 32px !important;
@@ -253,12 +277,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('counselling')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white text-left">Counseling</h5>
+                                <h2 className="footer-main-menu-item text-white text-left">Counseling</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8 text-left">Counseling</h5>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Counseling</h2>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1 text-left">
@@ -266,14 +290,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('c_emotional')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Emotional & Mental Health</span>
+                                        <h2 className="footer-submenu-item text-left">Emotional & Mental Health</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_emotional ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.emotional.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -283,14 +307,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('c_development')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Child Development & Learning</span>
+                                        <h2 className="footer-submenu-item text-left">Child Development & Learning</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_development ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_development ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.development.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -300,14 +324,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('c_behaviour')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Behaviour & Confidence</span>
+                                        <h2 className="footer-submenu-item text-left">Behaviour & Confidence</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_behaviour ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_behaviour ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.behaviour.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -317,14 +341,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('c_stress')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Stress & Academic Support</span>
+                                        <h2 className="footer-submenu-item text-left">Stress & Academic Support</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_stress ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_stress ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.stress.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -334,14 +358,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('c_trauma')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Trauma & Healing</span>
+                                        <h2 className="footer-submenu-item text-left">Trauma & Healing</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_trauma ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_trauma ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.trauma.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -353,12 +377,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('assessments')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white text-left">Assessments</h5>
+                                <h2 className="footer-main-menu-item text-white text-left">Assessments</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8 text-left">Assessments</h5>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Assessments</h2>
                             <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
                                 {/* ADHD Assessments */}
                                 <div className="space-y-1 text-left">
@@ -366,14 +390,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('a_adhd')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">ADHD</span>
+                                        <h2 className="footer-submenu-item text-left">ADHD</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_adhd ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.adhd.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -383,14 +407,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('a_ebs')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Emotional & Behavioural Scales</span>
+                                        <h2 className="footer-submenu-item text-left">Emotional & Behavioural Scales</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_ebs ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_ebs ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.ebs.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -400,14 +424,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('a_intelligence')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Intelligence</span>
+                                        <h2 className="footer-submenu-item text-left">Intelligence</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.intelligence.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -417,14 +441,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         onClick={() => toggleSection('a_projective')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <span className="text-left">Projective</span>
+                                        <h2 className="footer-submenu-item text-left">Projective</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_projective ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.projective.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-sm text-left block">{item.title}</a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -434,7 +458,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         href="/free-assessment"
                                         className="flex items-center justify-between text-base font-medium text-white hover:text-green-200 transition-colors duration-200 text-left"
                                     >
-                                        <span>Free 20 Min Assessment</span>
+                                        <h2 className="footer-submenu-item">Free 20 Min Assessment</h2>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>
@@ -449,15 +473,15 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('better_parenting')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white text-left">Better Parenting</h5>
+                                <h2 className="footer-main-menu-item text-white text-left">Better Parenting</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.better_parenting ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8 text-left">Better Parenting</h5>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Better Parenting</h2>
                             <ul className={`space-y-3 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
-                                    <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-sm text-left block">{item.title}</a></li>
+                                    <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
                                 ))}
                             </ul>
                         </div>
@@ -467,17 +491,17 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h5 className="text-white text-left">About Us</h5>
+                                <h2 className="footer-main-menu-item text-white text-left">About Us</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h5 className="hidden md:block text-white mb-8 text-left">About Us</h5>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">About Us</h2>
                             <ul className={`space-y-1 text-base leading-relaxed text-left ${openSections.about ? 'block' : 'hidden md:block'}`}>
-                                <li className="text-left"><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Company</a></li>
-                                <li className="text-left"><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Career</a></li>
-                                <li className="text-left"><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">FAQ</a></li>
-                                <li className="text-left"><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block">Blog</a></li>
+                                <li className="text-left"><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Company</h2></a></li>
+                                <li className="text-left"><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Career</h2></a></li>
+                                <li className="text-left"><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">FAQ</h2></a></li>
+                                <li className="text-left"><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Blog</h2></a></li>
                             </ul>
                         </div>
                     </div>

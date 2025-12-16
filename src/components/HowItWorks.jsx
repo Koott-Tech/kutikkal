@@ -142,8 +142,11 @@ export default function HowItWorks() {
             max-width: 300px;
           }
           .how-it-works-title {
-            font-size: 20px;
-            margin-bottom: 14px;
+            font-size: 20px !important;
+            margin-bottom: 14px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            margin: 0 0 14px 0 !important;
           }
           .how-it-works-description {
             font-size: 14px;
@@ -153,6 +156,13 @@ export default function HowItWorks() {
             font-size: 32px;
             font-weight: 600;
             line-height: 1.1;
+          }
+          /* Override h3 tag pills to match original span size */
+          .how-it-works-tag-pill {
+            font-size: 12px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
           }
         }
         @media (max-width: 767px) {
@@ -165,8 +175,11 @@ export default function HowItWorks() {
             border-radius: 10px !important;
           }
           .how-it-works-title {
-            font-size: 18px;
-            margin-bottom: 12px;
+            font-size: 18px !important;
+            margin-bottom: 12px !important;
+            font-weight: 600 !important;
+            line-height: 1.2 !important;
+            margin: 0 0 12px 0 !important;
           }
           .how-it-works-description {
             font-size: 13px;
@@ -180,6 +193,27 @@ export default function HowItWorks() {
           .how-it-works-slide-number {
             display: none !important;
           }
+          /* Override h3 tag pills to match original span size */
+          .how-it-works-tag-pill {
+            font-size: 12px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+          }
+        }
+        /* Desktop override for h3 card titles */
+        .how-it-works-title-desktop {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          line-height: 1.2 !important;
+          margin: 0 !important;
+        }
+        /* Override h3 tag pills to match original span size (all breakpoints) */
+        .how-it-works-tag-pill {
+          font-size: 12px !important;
+          line-height: 1 !important;
+          margin: 0 !important;
+          font-weight: 500 !important;
         }
         .card-bg-mobile {
           background-size: cover;
@@ -353,9 +387,9 @@ export default function HowItWorks() {
               {/* Header Section */}
                       <div className="flex-shrink-0">
                         <div className="text-xl font-medium text-gray-900 text-center" style={{ marginBottom: '12px' }}>{card.number}</div>
-                        <h6 className="how-it-works-title text-center font-semibold text-base">
+                        <h3 className="how-it-works-title text-center font-semibold text-base">
                           {card.title}
-                        </h6>
+                        </h3>
                       </div>
 
                       {/* Content Section */}
@@ -370,7 +404,7 @@ export default function HowItWorks() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                   </svg>
                                 </div>
-                                <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>{tag}</span>
+                                <h3 className="how-it-works-tag-pill text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>{tag}</h3>
                               </div>
                             ))}
                           </div>
@@ -498,9 +532,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">01</div>
-            <h6 className="text-center font-semibold">
+            <h3 className="how-it-works-title-desktop text-center font-semibold">
               Tell Us What's Important
-            </h6>
+            </h3>
 
             <div className="flex-1 flex flex-col justify-center">
               <div className="space-y-2 flex flex-col items-center">
@@ -510,7 +544,7 @@ export default function HowItWorks() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Assessment</span>
+                  <h3 className="how-it-works-tag-pill text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Assessment</h3>
                 </div>
                 <div className="bg-white/90 rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 w-fit">
                   <div className="w-5 h-5 rounded-full border border-gray-800 flex items-center justify-center flex-shrink-0">
@@ -518,7 +552,7 @@ export default function HowItWorks() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Child counseling</span>
+                  <h3 className="how-it-works-tag-pill text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Child counseling</h3>
                 </div>
                 <div className="bg-white/90 rounded-full px-3 py-1.5 border border-gray-200 flex items-center gap-2 w-fit">
                   <div className="w-5 h-5 rounded-full border border-gray-800 flex items-center justify-center flex-shrink-0">
@@ -526,7 +560,7 @@ export default function HowItWorks() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-xs font-medium text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Better parenting</span>
+                  <h3 className="how-it-works-tag-pill text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>Better parenting</h3>
                 </div>
               </div>
             </div>
@@ -547,10 +581,10 @@ export default function HowItWorks() {
                 backgroundColor: "#f0f0f0"
               }}
             >
-            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-2">02</div>
-            <h6 className="text-center font-semibold" style={{ marginBottom: '0px' }}>
+            <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">02</div>
+            <h3 className="how-it-works-title-desktop text-center font-semibold" style={{ marginBottom: '8px' }}>
               Explore Your Matches
-            </h6>
+            </h3>
 
             <div className="flex-1 flex items-start justify-center" style={{ paddingBottom: '0px', paddingTop: '0px' }}>
               {/* Inner Image */}
@@ -587,9 +621,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">03</div>
-            <h6 className="text-center font-semibold">
+            <h3 className="how-it-works-title-desktop text-center font-semibold">
               Schedule Your Visit
-            </h6>
+            </h3>
 
             <div className="flex-1 flex flex-col items-center justify-center">
               <div className="mt-2 flex justify-center">
@@ -625,9 +659,9 @@ export default function HowItWorks() {
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">04</div>
-            <h6 className="text-center font-semibold">
+            <h3 className="how-it-works-title-desktop text-center font-semibold">
               Join Online Session
-            </h6>
+            </h3>
 
             {/* Inner Image */}
             <div className="flex flex-col items-center" style={{ padding: 0, margin: '-15px 0 -10px 0' }}>

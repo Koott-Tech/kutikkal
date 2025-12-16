@@ -1338,7 +1338,7 @@ export default function FreeAssessmentPage() {
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                   >
-                    Sessions Page
+                    view Bookings
                   </button>
                 </motion.div>
               </div>

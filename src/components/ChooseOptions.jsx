@@ -171,6 +171,14 @@ export default function ChooseOptions() {
               top: 180px !important;
             }
           }
+          /* Override h3 tag font size to match original span size */
+          .card-tag-pill {
+            font-size: 12px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            font-weight: 300 !important; /* lighter weight to reduce boldness */
+            padding: 2px 8px !important;
+          }
       `}</style>
       <div className="mx-auto max-w-[1400px]">
         {/* Header */}
@@ -201,12 +209,18 @@ export default function ChooseOptions() {
               <div className="card-content p-6 pb-0 mb-0 px-6 md:px-8 relative z-10">
                 {/* Tags */}
                 <div className="flex gap-2 mb-4">
-                  <span className={`px-2 py-0.5 rounded-full font-light ${card.tagColors.primary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
+                  <h3
+                    className={`card-tag-pill rounded-full ${card.tagColors.primary}`}
+                    style={{ fontFamily: 'inherit' }}
+                  >
                     {card.tags[0]}
-                  </span>
-                  <span className={`px-2 py-0.5 rounded-full font-light ${card.tagColors.secondary}`} style={{ fontSize: '12px', lineHeight: '1', fontFamily: 'inherit' }}>
+                  </h3>
+                  <h3
+                    className={`card-tag-pill rounded-full ${card.tagColors.secondary}`}
+                    style={{ fontFamily: 'inherit' }}
+                  >
                     {card.tags[1]}
-                  </span>
+                  </h3>
                 </div>
 
                 {/* Title */}

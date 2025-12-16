@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { publicApi } from '../../lib/backendApi';
 import { clientApi, paymentApi } from '../../lib/backendApi';
 import backendApi from '../../lib/backendApi';
@@ -12,6 +13,160 @@ import { loadAuthData } from '../../lib/authStorage';
 // import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
+
+// Booking Loading Animation Component
+function BookingLoadingAnimation() {
+  const dots = [0, 1, 2];
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        pointerEvents: 'auto'
+      }}
+    >
+      {/* Calendar Icon Animation */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{
+          type: 'spring',
+          stiffness: 200,
+          damping: 15,
+          duration: 0.6
+        }}
+        style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '20px',
+          backgroundColor: '#f5f1ff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 2,
+          boxShadow: '0 8px 24px rgba(63, 46, 115, 0.25)',
+          marginBottom: '32px'
+        }}
+      >
+        {/* Calendar Icon */}
+        <motion.svg
+          width="60"
+          height="60"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <motion.rect
+            x="3"
+            y="4"
+            width="18"
+            height="18"
+            rx="2"
+            stroke="#3f2e73"
+            strokeWidth="2"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+          />
+          <motion.line
+            x1="8"
+            y1="2"
+            x2="8"
+            y2="6"
+            stroke="#3f2e73"
+            strokeWidth="2"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+          />
+          <motion.line
+            x1="16"
+            y1="2"
+            x2="16"
+            y2="6"
+            stroke="#3f2e73"
+            strokeWidth="2"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          />
+          <motion.circle
+            cx="12"
+            cy="14"
+            r="3"
+            stroke="#3f2e73"
+            strokeWidth="2"
+            fill="none"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1] }}
+            transition={{ delay: 0.6, duration: 0.4, repeat: Infinity, repeatType: 'reverse' }}
+          />
+        </motion.svg>
+      </motion.div>
+
+      {/* Loading Text with Animated Dots */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#3f2e73'
+        }}
+      >
+        <span>Booking Session</span>
+        {dots.map((dot, index) => (
+          <motion.span
+            key={dot}
+            animate={{
+              opacity: [0.3, 1, 0.3],
+              y: [0, -8, 0]
+            }}
+            transition={{
+              duration: 1.2,
+              repeat: Infinity,
+              delay: index * 0.2,
+              ease: 'easeInOut'
+            }}
+            style={{
+              fontSize: '24px',
+              lineHeight: 1
+            }}
+          >
+            .
+          </motion.span>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
 
 // Separate component that uses useSearchParams
 const TherapistProfileContent = () => {
@@ -638,6 +793,9 @@ const TherapistProfileContent = () => {
       return;
     }
     
+    // Set loading state immediately after validation passes - gives instant UI feedback
+    setIsBooking(true);
+    
     // All fields are selected - now check authentication
     // Check authentication - if pendingBookingAfterAuth is true, also check localStorage
     let isAuthReady = isAuthenticated() && user;
@@ -652,6 +810,8 @@ const TherapistProfileContent = () => {
     
     // If user is not authenticated (but all fields are selected)
     if (!isAuthReady) {
+      // Reset loading state since we're showing auth modal
+      setIsBooking(false);
       // All fields selected, save booking details to localStorage before showing signup
       const bookingDetails = {
         date: selectedDate ? {
@@ -708,6 +868,7 @@ const TherapistProfileContent = () => {
     }
     
     if (!roleCheckPassed) {
+      setIsBooking(false); // Reset loading state
       showError('Only clients can book sessions.', 'Access Denied');
       setPendingBookingAfterAuth(false);
       return;
@@ -715,17 +876,20 @@ const TherapistProfileContent = () => {
 
     // 3) Basic selections (double check for authenticated users)
     if (!selectedDate || !selectedTime) {
+      setIsBooking(false); // Reset loading state
       showWarning('Please select a date and time', 'Selection Required');
       return;
     }
 
     // If booking from existing package, don't require package selection
     if (!isBookingRemaining && !selectedPackage) {
+      setIsBooking(false); // Reset loading state
       showWarning('Please select a package', 'Selection Required');
       return;
     }
 
     if (!selectedDoctor) {
+      setIsBooking(false); // Reset loading state
       showError('Doctor information not available', 'Booking Error');
       return;
     }
@@ -734,8 +898,7 @@ const TherapistProfileContent = () => {
     // Declare clientProfile at function level so it's accessible throughout
     let clientProfile = null;
 
-    // Set loading state immediately for better UX
-    setIsBooking(true);
+    // Loading state already set above - continue with booking process
 
     // Get client profile for booking (but don't require contact completion check)
     // Run in parallel with other operations to reduce lag
@@ -1433,6 +1596,11 @@ const TherapistProfileContent = () => {
 
   return (
     <div className="min-h-screen bg-white -mt-0" style={{ marginTop: 0, paddingTop: 0, marginBottom: 0, paddingBottom: 0 }}>
+      {/* Booking Loading Animation Overlay */}
+      <AnimatePresence>
+        {isBooking && <BookingLoadingAnimation />}
+      </AnimatePresence>
+      
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .therapist-header-padding {

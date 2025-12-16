@@ -101,6 +101,13 @@ export default function HelpFaq({ cmsData = null }) {
           .faq-section-title {
             text-align: left !important;
           }
+          /* Override h3 FAQ questions to match original span size */
+          .help-faq-question {
+            font-size: 12px !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+            font-weight: 400 !important;
+          }
           /* Force smaller answer text on mobile */
           .faq-answer {
             font-size: 11px !important;
@@ -167,6 +174,22 @@ export default function HelpFaq({ cmsData = null }) {
             align-items: flex-start !important;
             margin-top: 2rem !important;
           }
+          /* Override h3 FAQ questions for tablet */
+          .help-faq-question {
+            font-size: 14px !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+            font-weight: 400 !important;
+          }
+        }
+        /* Override h3 FAQ questions for desktop */
+        @media (min-width: 1024px) {
+          .help-faq-question {
+            font-size: 16px !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+            font-weight: 400 !important;
+          }
         }
       `}} />
       <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-6 lg:gap-8 px-0 xl:grid-cols-[0.9fr_1.1fr]">
@@ -218,9 +241,9 @@ export default function HelpFaq({ cmsData = null }) {
                         onClick={() => setOpenId(open ? "" : id)}
                         className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                       >
-                        <span className="text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
+                        <h3 className="help-faq-question text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
                           {item.q}
-                        </span>
+                        </h3>
                         <Chevron className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
                       <div
