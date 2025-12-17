@@ -44,40 +44,21 @@ export default function HelpFaq({ cmsData = null }) {
   const [openId, setOpenId] = useState("");
 
   // Use CMS data if available, otherwise fall back to hardcoded data
-  const faqData = cmsData && cmsData.faqs && cmsData.faqs.length > 0 ? 
+  // If cmsData is provided, show all FAQs without section headings (for CMS pages)
+  // If no cmsData, show with section headings (for homepage)
+  const isCmsPage = cmsData && cmsData.faqs && cmsData.faqs.length > 0;
+  
+  const faqData = isCmsPage ? 
     (() => {
-      const customSections = [];
-
-      if (cmsData.context !== 'better-parenting') {
-        customSections.push({
-          title: "Getting Started",
-          items: cmsData.faqs.slice(0, 3).map(faq => ({
-            q: faq.question,
-            a: faq.answer
-          }))
-        });
-
-        if (cmsData.faqs.length > 3) {
-          customSections.push({
-          title: "Understanding Therapy",
-          items: cmsData.faqs.slice(3, 6).map(faq => ({
-              q: faq.question,
-              a: faq.answer
-            }))
-          });
-        }
-      } else {
-        customSections.push({
-          title: "Getting Started",
-          items: cmsData.faqs.map(faq => ({
-            q: faq.question,
-            a: faq.answer
-          }))
-        });
-      }
-
-      return customSections.length > 0 ? customSections : DATA;
-    })() : DATA;
+      // For CMS pages: show all FAQs in a single list without section headings
+      return [{
+        title: "", // Empty title to hide section heading
+        items: cmsData.faqs.slice(0, 8).map(faq => ({
+          q: faq.question,
+          a: faq.answer
+        }))
+      }];
+    })() : DATA; // Homepage: use default DATA with section headings
 
   // Get the left image from CMS data or use default
   const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
@@ -226,13 +207,15 @@ export default function HelpFaq({ cmsData = null }) {
             const isLastSection = ci === faqData.length - 1;
             const spacingClasses = isLastSection ? 'mt-16 md:mt-3' : 'mt-3';
             return (
-            <div key={section.title} className={`faq-section mb-6 md:mb-10 ${spacingClasses}`}>
-              <h5 className={`faq-section-title ${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-left md:text-left text-sm md:text-base lg:text-lg font-medium`}>
-                {section.title}
-              </h5>
+            <div key={section.title || ci} className={`faq-section mb-6 md:mb-10 ${spacingClasses}`}>
+              {section.title && (
+                <h5 className={`faq-section-title ${section.title === "Understanding assessments" ? "mb-1" : "mb-1"} text-left md:text-left text-sm md:text-base lg:text-lg font-medium`}>
+                  {section.title}
+                </h5>
+              )}
               <div className="space-y-0">
                 {section.items.map((item, qi) => {
-                  const id = `${ci}-${qi}`;
+                  const id = isCmsPage ? `cms-${qi}` : `${ci}-${qi}`;
                   const open = openId === id;
                   return (
                     <div key={id} className="border-b border-gray-200 last:border-b-0">

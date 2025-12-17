@@ -409,7 +409,8 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
         return (
           <div className="space-y-3 md:space-y-4">
             <h3 className="text-base md:text-lg font-semibold">Edit FAQs</h3>
-            {formData.faqs.map((faq, i) => (
+            <p className="text-xs md:text-sm text-gray-600 mb-3">Add up to 8 FAQs (no section headings will be shown)</p>
+            {formData.faqs.slice(0, 8).map((faq, i) => (
               <div key={i} className="border border-gray-200 rounded-lg p-3 md:p-4 mb-3">
                 <div className="flex justify-between items-start mb-3">
                   <h5 className="text-sm md:text-base font-medium">FAQ {i + 1}</h5>
@@ -427,7 +428,12 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                 </div>
               </div>
             ))}
-            <button onClick={() => handleArrayItemAdd('faqs')} className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600">Add FAQ</button>
+            {formData.faqs.length >= 8 && (
+              <p className="text-xs md:text-sm text-gray-500 mt-2">Maximum 8 FAQs reached</p>
+            )}
+            {formData.faqs.length < 8 && (
+              <button onClick={() => handleArrayItemAdd('faqs')} className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600">Add FAQ</button>
+            )}
           </div>
         );
       case 'videos':

@@ -228,12 +228,18 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
   const headerClass = `text-left md:text-center ${compactSpacing ? 'mb-16 md:mb-20' : 'mb-12 md:mb-16'} mt-8 md:mt-12`;
 
   return (
-    <section className={sectionClass}>
+    <section className={sectionClass} style={{ marginBottom: '120px' }}>
       <style jsx>{`
         @media (max-width: 640px) {
           .benefits-grid-2col {
             gap: 0.5rem !important;
           }
+        }
+        .benefits-title-text {
+          line-height: 1.2 !important;
+        }
+        .benefits-description-text {
+          line-height: 1.2 !important;
         }
       `}</style>
       <div className={containerClass}>
@@ -248,7 +254,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3 lg:gap-3 items-center px-6 md:px-8 lg:px-12">
           {/* Left Section - Image */}
           <div className="hidden lg:flex justify-start -mt-4">
-            <div className="relative w-[500px] h-[500px]">
+            <div className="relative w-[500px] h-[600px]">
               <Image
                 src={benefitsImageUrl}
                 alt="Therapy benefits illustration"
@@ -274,8 +280,18 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm md:text-base text-black mb-1 md:mb-2">{benefit.title}</p>
-                    <p className="text-xs md:text-sm text-black md:font-sans">{benefit.description}</p>
+                    <p 
+                      className="font-semibold text-sm md:text-base text-black mb-1 md:mb-2 leading-tight benefits-title-text"
+                      style={{ lineHeight: '1.2' }}
+                    >
+                      {benefit.title}
+                    </p>
+                    <p 
+                      className="text-xs md:text-sm text-black md:font-sans leading-tight benefits-description-text"
+                      style={{ lineHeight: '1.2' }}
+                    >
+                      {benefit.description}
+                    </p>
                   </div>
                 </div>
               </div>

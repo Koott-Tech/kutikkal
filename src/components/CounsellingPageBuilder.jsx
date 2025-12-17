@@ -625,10 +625,10 @@ export default function CounsellingPageBuilder({
             <div>
               <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Edit FAQs</h3>
               
-              {/* Getting Started Section */}
+              {/* All FAQs (up to 8) - No section headings for CMS pages */}
               <div className="mb-4 md:mb-6">
-                <h4 className="text-sm md:text-base font-medium mb-2 md:mb-3 text-blue-600">Getting Started (First 3 FAQs)</h4>
-                {formData.faqs.slice(0, 3).map((faq, index) => (
+                <p className="text-xs md:text-sm text-gray-600 mb-3">Add up to 8 FAQs (no section headings will be shown)</p>
+                {formData.faqs.slice(0, 8).map((faq, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-3 md:p-4 mb-3">
                     <div className="flex justify-between items-start mb-3">
                       <h5 className="text-sm md:text-base font-medium">FAQ {index + 1}</h5>
@@ -665,56 +665,22 @@ export default function CounsellingPageBuilder({
                     </div>
                   </div>
                 ))}
+                {formData.faqs.length >= 8 && (
+                  <p className="text-xs md:text-sm text-gray-500 mt-2">Maximum 8 FAQs allowed</p>
+                )}
               </div>
 
-              {/* Understanding Therapy Section */}
-              <div className="mb-4 md:mb-6">
-                <h4 className="text-sm md:text-base font-medium mb-2 md:mb-3 text-green-600">Understanding Therapy (Last 3 FAQs)</h4>
-                {formData.faqs.slice(3, 6).map((faq, index) => (
-                  <div key={index + 3} className="border border-gray-200 rounded-lg p-3 md:p-4 mb-3">
-                    <div className="flex justify-between items-start mb-3">
-                      <h5 className="text-sm md:text-base font-medium">FAQ {index + 4}</h5>
-                      <button
-                        onClick={() => handleArrayItemRemove('faqs', index + 3)}
-                        className="text-red-600 hover:text-red-800 text-xs md:text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                          Question
-                        </label>
-                        <input
-                          type="text"
-                          value={faq.question}
-                          onChange={(e) => handleArrayItemUpdate('faqs', index + 3, 'question', e.target.value)}
-                          className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
-                          Answer
-                        </label>
-                        <textarea
-                          value={faq.answer}
-                          onChange={(e) => handleArrayItemUpdate('faqs', index + 3, 'answer', e.target.value)}
-                          rows={3}
-                          className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => handleArrayItemAdd('faqs')}
-                className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600"
-              >
-                Add FAQ
-              </button>
+              {formData.faqs.length < 8 && (
+                <button
+                  onClick={() => handleArrayItemAdd('faqs')}
+                  className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600"
+                >
+                  Add FAQ
+                </button>
+              )}
+              {formData.faqs.length >= 8 && (
+                <p className="text-xs md:text-sm text-gray-500">Maximum 8 FAQs reached</p>
+              )}
             </div>
           </div>
         );

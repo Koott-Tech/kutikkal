@@ -117,7 +117,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
   } : (content[therapyType] || content.individual);
   return (
-    <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0">
+    <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0" style={{ marginBottom: '120px' }}>
       <style jsx>{`
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .therapy-types-section {
