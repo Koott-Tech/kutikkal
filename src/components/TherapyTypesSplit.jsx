@@ -218,7 +218,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
               <div className="absolute inset-0" style={{ borderRadius: 0 }}>
                 <Image
                   src={currentContent.rightImageUrl || "/rightside5th.png"}
-                  alt="Two women sitting on a couch during therapy session"
+                  alt={currentContent.title ? `${currentContent.title} - Therapy types illustration` : "Child counseling therapy types illustration"}
                   fill
                   className="object-cover"
                   sizes="100vw"
@@ -234,7 +234,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             <div className="absolute inset-0">
               <Image
                 src={currentContent.rightImageUrl || "/rightside5th.png"}
-                alt="Two women sitting on a couch during therapy session"
+                alt={currentContent.title ? `${currentContent.title} - Therapy types illustration` : "Child counseling therapy types illustration"}
                 fill
                 className="object-cover"
                 sizes="50vw"

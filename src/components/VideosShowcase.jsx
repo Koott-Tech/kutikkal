@@ -436,7 +436,7 @@ export default function VideosShowcase({ cmsData = null }) {
                             <div className="absolute inset-0 flex items-center justify-center">
                               <img
                                 src={youtubeThumb || thumbnailUrl || '/hero.png'}
-                                alt={displayVideos[i]?.title || 'Video review thumbnail'}
+                                alt={displayVideos[i]?.title ? `${displayVideos[i].title} - Video review thumbnail` : 'Child counseling video review thumbnail'}
                                 className="absolute inset-0 w-full h-full object-cover"
                                 style={{ transform: 'scale(1.22)', transformOrigin: 'center center' }}
                               />
@@ -489,7 +489,7 @@ export default function VideosShowcase({ cmsData = null }) {
                             <div className="absolute inset-0 bg-white flex items-center justify-center">
                               <img
                                 src={thumbnailUrl || '/hero.png'}
-                                alt={displayVideos[i]?.title || 'Video review thumbnail'}
+                                alt={displayVideos[i]?.title ? `${displayVideos[i].title} - Video review thumbnail` : 'Child counseling video review thumbnail'}
                                 className="max-w-full max-h-full object-contain"
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">

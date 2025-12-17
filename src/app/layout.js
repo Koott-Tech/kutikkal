@@ -10,7 +10,45 @@ import ClickBurst from "@/components/ClickBurst";
 
 export const metadata = {
   title: "Little Care - Child Psychotherapy",
-  description: "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+  description:
+    "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+  openGraph: {
+    title: "Little Care - Child Psychotherapy",
+    description:
+      "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+    type: "website",
+    siteName: "Little Care",
+    url: "https://www.little.care",
+    images: [
+      {
+        url: "https://www.little.care/hero.png",
+        width: 1200,
+        height: 630,
+        alt: "Little Care child counseling and parent support hero image",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Little Care - Child Psychotherapy",
+    description:
+      "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+    images: ["https://www.little.care/hero.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://www.little.care",
+  },
 };
 
 export const viewport = {
@@ -47,8 +85,9 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
             /* Critical CSS for immediate mobile styling */
             @media (max-width: 767px) {
               .hero-title, .hero-description {
@@ -58,8 +97,38 @@ export default function RootLayout({ children }) {
                 line-height: 0.95 !important;
               }
             }
-          `
-        }} />
+          `,
+          }}
+        />
+        {/* Organization / MedicalBusiness structured data for Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "MedicalBusiness",
+              name: "Little Care",
+              description:
+                "Online child psychotherapy and counseling services for children and parents.",
+              url: "https://www.little.care",
+              logo: "https://www.little.care/Fav Icon 1.png",
+              image: "https://www.little.care/hero.png",
+              telephone: "+91 95390 07766",
+              email: "hey@little.care",
+              address: {
+                "@type": "PostalAddress",
+                addressCountry: "IN",
+              },
+              medicalSpecialty: [
+                "Child Psychology",
+                "Child Counseling",
+                "Parent Support",
+              ],
+              serviceType: "Online Therapy",
+              areaServed: "Worldwide",
+            }),
+          }}
+        />
       </head>
       <body className="antialiased bg-gray-50">
         <Suspense fallback={null}>

@@ -415,7 +415,7 @@ export default function HowItWorks() {
                             <div className="relative" style={{ width: '200px', height: '200px', padding: 0, margin: 0 }}>
                               <Image
                                 src="/howitworks2inner.png"
-                                alt="Doctor"
+                                alt="Child psychologist profile card used to match families with therapists"
                                 fill
                                 className="object-contain"
                                 sizes="200px"
@@ -458,7 +458,7 @@ export default function HowItWorks() {
                             <div className="relative" style={{ width: '170px', height: '170px', padding: 0, margin: 0 }}>
                               <Image
                                 src="/howitworks4inner.svg"
-                                alt="Session"
+                                alt="Online child counseling session illustration on a laptop"
                                 fill
                                 className="object-contain"
                                 sizes="170px"
@@ -592,7 +592,7 @@ export default function HowItWorks() {
                 <div className="relative" style={{ width: '220px', height: '220px', padding: 0, margin: 0, marginBottom: 0 }}>
                   <Image
                     src="/howitworks2inner.png"
-                    alt="Doctor"
+                    alt="Child psychologist profile card used to match families with therapists"
                     fill
                     className="object-contain"
                     sizes="220px"
@@ -668,7 +668,7 @@ export default function HowItWorks() {
               <div className="relative" style={{ width: '190px', height: '190px', padding: 0, margin: 0, marginBottom: 0 }}>
                 <Image
                   src="/howitworks4inner.svg"
-                  alt="Session"
+                  alt="Online child counseling session illustration on a laptop"
                   fill
                   className="object-contain"
                   sizes="190px"

@@ -274,7 +274,7 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                  {currentContent.image ? (
                    <Image
                      src={currentContent.image}
-                     alt={currentContent.alt}
+                     alt={currentContent.title ? `${currentContent.title} - Hero illustration for child counseling and parent support` : (currentContent.alt || "Child counseling and parent support hero illustration")}
                      fill
                      className="object-cover"
                      loading="lazy"

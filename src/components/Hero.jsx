@@ -141,7 +141,7 @@ export default function Hero() {
               <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"
-                  alt="Hero"
+                  alt="Hero illustration of a child with a parent during online counseling"
                   fill
                   className="hero-mobile-image object-bottom w-full h-full"
                   sizes="100vw"
@@ -157,7 +157,7 @@ export default function Hero() {
               <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
                 <Image
                   src="/hee.webp"
-                  alt="Hero"
+                  alt="Hero illustration showing Little Care’s child counseling and parent support"
                   fill
                   className="object-contain object-bottom"
                   sizes="55vw"

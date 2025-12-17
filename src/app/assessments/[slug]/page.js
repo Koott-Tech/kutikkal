@@ -14,6 +14,76 @@ import VideosShowcase from '@/components/VideosShowcase';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Dynamic metadata for assessment pages
+export async function generateMetadata({ params, searchParams }) {
+  const { slug } = await params;
+  const isPreview =
+    searchParams?.preview === '1' || searchParams?.preview === 'true';
+
+  try {
+    const data = await fetchAssessment(slug, { preview: isPreview });
+    if (data && typeof data === 'object') {
+      const title =
+        data.seo_title ||
+        data.hero_title ||
+        (slug ? `${slug.replace(/[-_]/g, ' ')} - Little Care` : 'Assessment');
+      const description =
+        data.seo_description ||
+        data.hero_subtext ||
+        'Professional assessments to better understand children’s needs and strengths.';
+      const ogImage =
+        data.og_image || data.hero_image_url || '/hero.png';
+
+      return {
+        title,
+        description,
+        openGraph: {
+          title,
+          description,
+          type: 'website',
+          siteName: 'Little Care',
+          url: `https://www.little.care/assessments/${slug}`,
+          images: [
+            {
+              url: ogImage.startsWith('http')
+                ? ogImage
+                : `https://www.little.care${ogImage}`,
+            },
+          ],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description,
+          images: [
+            ogImage.startsWith('http')
+              ? ogImage
+              : `https://www.little.care${ogImage}`,
+          ],
+        },
+        alternates: {
+          canonical: `https://www.little.care/assessments/${slug}`,
+        },
+      };
+    }
+  } catch (e) {
+    console.error('Error generating assessment metadata (non-critical):', e);
+  }
+
+  const fallbackTitle =
+    (slug && `${slug.replace(/[-_]/g, ' ')} - Little Care`) ||
+    'Assessment - Little Care';
+
+  return {
+    title: fallbackTitle,
+    description:
+      'Professional assessments to better understand children’s needs and strengths.',
+    alternates: {
+      canonical: `https://www.little.care/assessments/${slug}`,
+    },
+  };
+}
+
 async function fetchAssessment(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';

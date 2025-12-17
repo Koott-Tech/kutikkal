@@ -20,6 +20,82 @@ const removeAssessmentSpecialist = (docs = []) => {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Dynamic metadata for Better Parenting pages
+export async function generateMetadata({ params, searchParams }) {
+  const { slug } = await params;
+  const isPreview =
+    searchParams?.preview === '1' || searchParams?.preview === 'true';
+
+  try {
+    const data = await fetchBetterParentingPage(slug, { preview: isPreview });
+    if (data && typeof data === 'object') {
+      const title =
+        data.seo_title ||
+        data.hero_title ||
+        (slug
+          ? `${slug.replace(/[-_]/g, ' ')} - Better Parenting | Little Care`
+          : 'Better Parenting - Little Care');
+      const description =
+        data.seo_description ||
+        data.hero_subtext ||
+        'Gentle, practical coaching to help parents support their child’s emotional and behavioural needs.';
+      const ogImage =
+        data.og_image || data.hero_image_url || '/hero.png';
+
+      return {
+        title,
+        description,
+        openGraph: {
+          title,
+          description,
+          type: 'website',
+          siteName: 'Little Care',
+          url: `https://www.little.care/better-parenting/${slug}`,
+          images: [
+            {
+              url: ogImage.startsWith('http')
+                ? ogImage
+                : `https://www.little.care${ogImage}`,
+            },
+          ],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description,
+          images: [
+            ogImage.startsWith('http')
+              ? ogImage
+              : `https://www.little.care${ogImage}`,
+          ],
+        },
+        alternates: {
+          canonical: `https://www.little.care/better-parenting/${slug}`,
+        },
+      };
+    }
+  } catch (e) {
+    console.error('Error generating better-parenting metadata (non-critical):', e);
+  }
+
+  const fallbackTitle =
+    (slug &&
+      `${slug.replace(
+        /[-_]/g,
+        ' ',
+      )} - Better Parenting | Little Care`) ||
+    'Better Parenting - Little Care';
+
+  return {
+    title: fallbackTitle,
+    description:
+      'Gentle, practical coaching to help parents support their child’s emotional and behavioural needs.',
+    alternates: {
+      canonical: `https://www.little.care/better-parenting/${slug}`,
+    },
+  };
+}
+
 async function fetchBetterParentingPage(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';

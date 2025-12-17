@@ -193,7 +193,7 @@ export default function HelpFaq({ cmsData = null }) {
                      <div className="relative mt-4 md:mt-6 max-w-[280px] md:w-[320px] md:mx-0 h-[160px] md:h-[240px] overflow-hidden rounded-2xl help-faq-image-container">
             <Image
               src={leftImageUrl}
-              alt="Smiling people"
+              alt="Happy family and children illustration for FAQ section"
               fill
               className="object-contain"
               sizes="(min-width: 1024px) 40vw, 100vw"

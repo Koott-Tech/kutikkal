@@ -218,16 +218,16 @@ export default function SupportFaq() {
           {/* Left: Image with true crossfade between previous and next */}
             <div className="relative w-full left-side-image-container" style={{ height: '500px' }}>
               {prevSrc && (
-                <img
+              <img
                   src={prevSrc}
-                  alt="Previous"
+                  alt="Previous illustration of Little Care’s child counseling promise"
                   className={`absolute inset-0 w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-0' : 'opacity-100'}`}
                   style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
                 />
               )}
               <img
                 src={currentSrc}
-                alt="Current"
+                alt="Illustration highlighting Little Care’s child counseling promise"
                 className={`relative w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-100' : 'opacity-100'}`}
                 style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
               />
@@ -355,7 +355,7 @@ export default function SupportFaq() {
                               idx === 0 ? '/ourpromise1.webp' :
                               item.image
                             }
-                            alt={item.title}
+                            alt={`${item.title} – illustration supporting our child counseling promise`}
                             fill
                             className="object-cover"
                             sizes="100vw"

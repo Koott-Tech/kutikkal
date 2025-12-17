@@ -1686,7 +1686,7 @@ const TherapistProfileContent = () => {
                              if (name.includes('child') || name.includes('teen')) return '/kids.png';
                              return null;
                            })()}
-                      alt={selectedDoctor.name || selectedDoctor.first_name}
+                      alt={`${selectedDoctor.name || selectedDoctor.first_name} - Child psychologist profile photo`}
                     className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback to initials if image fails to load
@@ -1773,7 +1773,7 @@ const TherapistProfileContent = () => {
                            if (name.includes('child') || name.includes('teen')) return '/kids.png';
                            return null;
                          })()}
-                    alt={selectedDoctor.name || selectedDoctor.first_name}
+                    alt={`${selectedDoctor.name || selectedDoctor.first_name} - Child psychologist profile photo`}
                   className="w-full h-full object-cover"
                     onError={(e) => {
                       // Fallback to initials if image fails to load

@@ -55,9 +55,17 @@ export async function generateMetadata({ params, searchParams }) {
       if (data?.success) {
         const service = data.data || data.message;
         if (service && typeof service === 'object' && !Array.isArray(service)) {
-          const title = service.seo_title || service.hero_title || `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
-          const description = service.hero_subtext || 'Specialized counseling services for children and families.';
-          
+          const title =
+            service.seo_title ||
+            service.hero_title ||
+            `${slug?.replace(/[-_]/g, ' ')} - Little Care`;
+          const description =
+            service.seo_description ||
+            service.hero_subtext ||
+            'Specialized counseling services for children and families.';
+          const ogImage =
+            service.og_image || service.hero_image_url || '/hero.png';
+
           return {
             title,
             description,
@@ -66,11 +74,27 @@ export async function generateMetadata({ params, searchParams }) {
               description,
               type: 'website',
               siteName: 'Little Care',
+              url: `https://www.little.care/counselling/${slug}`,
+              images: [
+                {
+                  url: ogImage.startsWith('http')
+                    ? ogImage
+                    : `https://www.little.care${ogImage}`,
+                },
+              ],
             },
             twitter: {
               card: 'summary_large_image',
               title,
               description,
+              images: [
+                ogImage.startsWith('http')
+                  ? ogImage
+                  : `https://www.little.care${ogImage}`,
+              ],
+            },
+            alternates: {
+              canonical: `https://www.little.care/counselling/${slug}`,
             },
           };
         }

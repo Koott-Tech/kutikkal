@@ -73,7 +73,7 @@ export default function Reviews({ cmsData = null }) {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                       {avatarSrc ? (
-                        <Image src={avatarSrc} alt={displayName} width={40} height={40} className="object-cover" />
+                        <Image src={avatarSrc} alt={`${displayName} - Parent review avatar`} width={40} height={40} className="object-cover" />
                       ) : (
                         <span className="text-gray-500 text-sm">🙂</span>
                       )}

@@ -257,7 +257,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
             <div className="relative w-[500px] h-[600px]">
               <Image
                 src={benefitsImageUrl}
-                alt="Therapy benefits illustration"
+                alt={currentContent.title ? `${currentContent.title} - Benefits illustration` : "Child counseling benefits illustration"}
                 fill
                 className="object-cover rounded-lg"
               />

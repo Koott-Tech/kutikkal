@@ -173,7 +173,7 @@ export default function PersonalizedCare() {
           <div className="w-full max-w-[380px] sm:max-w-[480px] md:max-w-[550px] h-[190px] sm:h-[270px] md:h-[350px] rounded-2xl overflow-hidden mx-auto md:hidden personalized-care-image-container" style={{ marginTop: '70px', marginBottom: '40px', paddingTop: 0, paddingBottom: 0 }}>
             <Image
               src="/Little Hope.webp"
-              alt="Little Hope"
+              alt="Illustration of a child and parent receiving personalized emotional care"
               width={1000}
               height={667}
               className="w-full h-full object-contain"
@@ -185,7 +185,7 @@ export default function PersonalizedCare() {
           <div className="hidden md:block w-full max-w-[550px] lg:max-w-[800px] xl:max-w-[1000px] rounded-2xl overflow-hidden mx-auto personalized-care-image-container" style={{ marginTop: '96px', marginBottom: '96px', paddingTop: 0, paddingBottom: 0 }}>
             <Image
               src="/Little Hope lap.webp"
-              alt="Little Hope"
+              alt="Desktop illustration of Little Care’s child counseling and parent support"
               width={1000}
               height={667}
               className="w-full h-auto object-contain"

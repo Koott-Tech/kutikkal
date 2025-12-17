@@ -235,7 +235,7 @@ export default function LeadershipTeam() {
               <div className="h-80 w-full overflow-hidden rounded-[10px] leadership-image-container" suppressHydrationWarning>
                 <Image
                     src={member.image}
-                    alt={member.name}
+                    alt={`${member.name} - ${member.title} at Little Care`}
                   width={320}
                   height={320}
                   className="w-full h-full object-contain"
@@ -272,7 +272,7 @@ export default function LeadershipTeam() {
               <div className="h-80 w-full overflow-hidden rounded-[10px] leadership-image-container" suppressHydrationWarning>
                 <Image
                                         src={member.image}
-                                        alt={member.name}
+                                        alt={`${member.name} - ${member.title} at Little Care`}
                   width={320}
                   height={320}
                   className="w-full h-full object-contain rounded-[10px]"

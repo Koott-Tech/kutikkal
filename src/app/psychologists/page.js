@@ -1066,7 +1066,7 @@ const Guide = () => {
                         <img
                           key={`img-${doc.id || idx}`}
                           src={imageSrc}
-                          alt={`${doc.name || doc.first_name} profile`}
+                          alt={`${doc.name || doc.first_name} - Child psychologist profile photo`}
                           className="doctor-card-image"
                           loading="lazy"
                           decoding="async"
@@ -1789,7 +1789,7 @@ const Guide = () => {
                 {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? (
                   <img
                     src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url}
-                    alt={`${doctors[selected]?.name || doctors[selected]?.first_name} profile`}
+                    alt={`${doctors[selected]?.name || doctors[selected]?.first_name} - Child psychologist profile photo`}
                     className="doctor-modal-img"
                     style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: "10px", transform: "none" }}
                     onError={(e) => {

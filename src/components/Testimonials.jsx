@@ -695,7 +695,7 @@ export default function Testimonials() {
           {/* First column: full-length image edge-to-edge */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
             <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/testimonial2.PNG" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonial2.PNG" alt="Collage of parents and children sharing their counseling experience" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
           {/* Second column split vertically into two equal halves with padding and gap */}
@@ -736,7 +736,7 @@ export default function Testimonials() {
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
               <img 
                 src="/testimonial3.PNG" 
-                alt="Testimonial" 
+                alt="Mother and child smiling after counseling session" 
                 className="w-full h-full object-cover object-bottom scale-100" 
               />
             </div>
@@ -803,14 +803,14 @@ export default function Testimonials() {
               </div>
             </div>
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '372px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
-              <Image src="/testimonialgirl.png" alt="Testimonial" fill className="object-cover object-bottom scale-100" />
+              <Image src="/testimonialgirl.png" alt="Young girl smiling, representing a positive therapy outcome" fill className="object-cover object-bottom scale-100" />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
             <div className="rounded-[10px] relative overflow-hidden" style={{height: '316px'}}>
-              <Image src="/testimonial5.PNG" alt="Testimonial" fill className="object-cover object-center scale-100" />
+              <Image src="/testimonial5.PNG" alt="Parents and child together after counseling support" fill className="object-cover object-center scale-100" />
             </div>
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
               <div

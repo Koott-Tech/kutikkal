@@ -509,23 +509,23 @@ export default function Header() {
           {/* Left group: Brand + Nav */}
           <div className="flex items-center gap-5 lg:gap-8">
             <div className="flex items-center">
-              <button 
-                onClick={handleHomeClick}
-                className="cursor-pointer"
+              <a 
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleHomeClick();
+                }}
+                className="hover:opacity-80 transition-opacity cursor-pointer"
+                aria-label="Little Care - Go to homepage"
               >
-                <div 
-                  className="hover:opacity-80 transition-opacity cursor-pointer"
-                  style={{ 
-                    width: "120px", 
-                    height: "40px", 
-                    backgroundImage: "url('/mainlogo.webp')", 
-                    backgroundSize: "contain", 
-                    backgroundRepeat: "no-repeat", 
-                    backgroundPosition: "center" 
-                  }}
-                  onClick={handleHomeClick}
+                <img 
+                  src="/mainlogo.webp"
+                  alt="Little Care - Child Psychotherapy Logo"
+                  width={120}
+                  height={40}
+                  className="object-contain"
                 />
-              </button>
+              </a>
             </div>
 
             <nav className="hidden xl:block">
@@ -1201,21 +1201,24 @@ export default function Header() {
             {/* Header with Logo and Close Button */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center">
-                <div 
-                  onClick={() => {
+                <a 
+                  href="/"
+                  onClick={(e) => {
+                    e.preventDefault();
                     handleHomeClick();
                     setIsMobileMenuOpen(false);
                   }}
                   className="hover:opacity-80 transition-opacity cursor-pointer"
-                  style={{ 
-                    width: "100px", 
-                    height: "35px", 
-                    backgroundImage: "url('/mainlogo.webp')", 
-                    backgroundSize: "contain", 
-                    backgroundRepeat: "no-repeat", 
-                    backgroundPosition: "center" 
-                  }}
-                />
+                  aria-label="Little Care - Go to homepage"
+                >
+                  <img 
+                    src="/mainlogo.webp"
+                    alt="Little Care - Child Psychotherapy Logo"
+                    width={100}
+                    height={35}
+                    className="object-contain"
+                  />
+                </a>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}

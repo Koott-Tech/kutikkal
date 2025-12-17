@@ -54,7 +54,7 @@ export default function WhyWereHere() {
               <div className="absolute inset-8 rounded-xl overflow-hidden">
                 <Image
                   src="/About Us Card 1.webp"
-                  alt="Why We're Here"
+                  alt="Little Care team illustration - caring deeper for children's mental health and emotional wellbeing"
                   fill
                   className="object-contain"
                   sizes="(min-width: 768px) 50vw, 100vw"
