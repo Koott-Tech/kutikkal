@@ -270,7 +270,7 @@ export default function BlogTeaser() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-12">
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
-                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl font-semibold">
+                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-lg md:text-xl lg:text-2xl font-medium">
                Parenting Tips & Child Mental Health Guidance for Everyday Life
              </h3>
            </div>
@@ -278,7 +278,7 @@ export default function BlogTeaser() {
             <button
               type="button"
               onClick={handleExploreClick}
-              className="inline-flex items-center rounded-full px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold transition-colors duration-200"
+              className="inline-flex items-center rounded-full px-4 py-2 md:px-5 md:py-3 text-sm md:text-base font-semibold transition-colors duration-200 whitespace-nowrap"
               style={{ 
                 backgroundColor: '#ffffff',
                 color: '#15171A',

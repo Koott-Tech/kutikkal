@@ -113,7 +113,7 @@ export default function SupportFaq() {
             font-size: 15px;
             line-height: 1.5;
           }
-          .faq-mobile-content h3 {
+          .faq-mobile-content h2 {
             font-size: 18px !important;
             font-weight: 500 !important;
             margin: 0 !important;
@@ -147,7 +147,7 @@ export default function SupportFaq() {
             font-size: 14px;
             line-height: 1.4;
           }
-          .faq-mobile-content h3 {
+          .faq-mobile-content h2 {
             font-size: 16px !important;
             font-weight: 500 !important;
             margin: 0 !important;
@@ -279,7 +279,7 @@ export default function SupportFaq() {
                         aria-expanded={open}
                       >
                       <div>
-                        <h3 className="support-faq-title">{item.title}</h3>
+                        <h2 className="support-faq-title" style={{ margin: 0, padding: 0 }}>{item.title}</h2>
                       </div>
                         <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
@@ -333,7 +333,7 @@ export default function SupportFaq() {
                       aria-expanded={open}
                     >
                       <div>
-                        <h3 className="support-faq-title">{item.title}</h3>
+                        <h2 className="support-faq-title" style={{ margin: 0, padding: 0 }}>{item.title}</h2>
                       </div>
                       <ChevronIcon className={`mt-1 h-5 w-5 transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"}`} />
                     </button>
