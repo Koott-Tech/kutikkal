@@ -272,7 +272,9 @@ const TherapistProfileContent = () => {
     }
   };
 
-  // Fetch psychologist availability for a given month (defaults to currentDate) with Google Calendar sync
+  // Fetch psychologist availability for a given month (defaults to currentDate)
+  // When called from therapist profile, we pass withSync=true so backend
+  // runs a Google Calendar sync for this psychologist before computing availability.
   const fetchPsychologistAvailability = async (psychologistId, baseDate = null) => {
     try {
       setLoadingAvailability(true);
@@ -296,10 +298,16 @@ const TherapistProfileContent = () => {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
-      // Get psychologist availability range - this endpoint automatically checks Google Calendar
-      // in real-time and blocks external events before returning availability
-      // No need for separate sync call - the endpoint handles it efficiently
-      const response = await publicApi.getPsychologistAvailabilityRange(psychologistId, startDate, endDate);
+      // Get psychologist availability range.
+      // Pass withSync = true so backend performs an on-demand Google Calendar sync
+      // for this psychologist before returning availability, ensuring external
+      // events are blocked in real-time when the therapist profile is opened.
+      const response = await publicApi.getPsychologistAvailabilityRange(
+        psychologistId,
+        startDate,
+        endDate,
+        true // withSync
+      );
       
       if (response.success) {
 
@@ -1215,7 +1223,27 @@ const TherapistProfileContent = () => {
       });
       // Clear pending booking flag on error to prevent modal from reopening
       setPendingBookingAfterAuth(false);
-      showError(`Booking failed: ${error.message || 'Please try again.'}`, 'Booking Error');
+
+      const message = error?.message || '';
+      const isSlotConflict =
+        message.toLowerCase().includes('time slot is not available') ||
+        message.toLowerCase().includes('time slot is already booked') ||
+        message.toLowerCase().includes('slot is already booked');
+
+      if (isSlotConflict) {
+        // More user-friendly message when someone else just booked this slot
+        showError(
+          "Oops... that time slot was just booked by someone else. Please choose another available time.",
+          'Slot Unavailable'
+        );
+
+        // Refresh availability so the UI reflects newly blocked slots
+        if (selectedDoctor) {
+          fetchPsychologistAvailability(selectedDoctor.id);
+        }
+      } else {
+        showError(`Booking failed: ${message || 'Please try again.'}`, 'Booking Error');
+      }
     } finally {
       setIsBooking(false);
     }

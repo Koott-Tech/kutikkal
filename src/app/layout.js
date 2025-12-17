@@ -10,7 +10,7 @@ import ClickBurst from "@/components/ClickBurst";
 
 export const metadata = {
   title: "Little Care - Child Psychotherapy",
-  description: "Professional child psychotherapy and mental health services",
+  description: "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
 };
 
 export const viewport = {
@@ -34,7 +34,14 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-PBKE518Y0H');
           `
         }} />
+        {/* Favicon for browsers */}
         <link rel="icon" href="/Fav Icon 1.png" type="image/png" />
+        <link rel="shortcut icon" href="/Fav Icon 1.png" type="image/png" />
+        {/* Apple touch icon for iOS */}
+        <link rel="apple-touch-icon" href="/Fav Icon 1.png" />
+        {/* Additional favicon formats for better Google compatibility */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/Fav Icon 1.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/Fav Icon 1.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />

@@ -432,7 +432,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
               <p className="text-xs md:text-sm text-gray-500 mt-2">Maximum 8 FAQs reached</p>
             )}
             {formData.faqs.length < 8 && (
-              <button onClick={() => handleArrayItemAdd('faqs')} className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600">Add FAQ</button>
+            <button onClick={() => handleArrayItemAdd('faqs')} className="bg-blue-500 text-white px-4 py-2 rounded text-xs md:text-sm hover:bg-blue-600">Add FAQ</button>
             )}
           </div>
         );

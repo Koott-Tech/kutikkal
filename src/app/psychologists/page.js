@@ -1846,12 +1846,12 @@ const Guide = () => {
                     Consultant Psychologist
                   </p>
                   {doctors[selected]?.experience_years && (
-                    <p style={{ margin: '0 0 8px 0', color: '#4b5563', fontSize: '14px' }}>
+                  <p style={{ margin: '0 0 8px 0', color: '#4b5563', fontSize: '14px' }}>
                       {doctors[selected].experience_years} {doctors[selected].experience_years === 1 ? 'year' : 'years'} of experience
-                    </p>
+                  </p>
                   )}
                   <p style={{ margin: 0, color: '#4b5563', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>Starting from</span>
+                        <span>Starting from</span>
                     <span style={{ color: "#3f2e73", fontWeight: 600 }}>
                       {doctors[selected]?.price ? `₹${doctors[selected].price}` : (doctors[selected]?.individual_session_price ? `₹${doctors[selected].individual_session_price}` : '₹—')}
                     </span>

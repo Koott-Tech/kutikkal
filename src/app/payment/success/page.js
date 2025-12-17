@@ -329,48 +329,48 @@ function PaymentSuccessContent() {
       setLoadingSessionDetails(true);
       
       // Fetch sessions list directly (receipts are sent via WhatsApp/email, no need to fetch)
-      const sessionsResponse = await clientApi.getSessions({ limit: 10, page: 1 });
-      
-      if (sessionsResponse.success && sessionsResponse.data) {
-        const sessions = sessionsResponse.data.sessions || sessionsResponse.data;
-        const sessionsArray = Array.isArray(sessions) ? sessions : [];
+        const sessionsResponse = await clientApi.getSessions({ limit: 10, page: 1 });
         
-        // Find the most recent session that was just created (within last few minutes)
-        const now = new Date();
-        const recentSessions = sessionsArray.filter(s => {
-          if (!s.created_at) return false;
-          const sessionTime = new Date(s.created_at);
-          const minutesAgo = (now - sessionTime) / (1000 * 60);
-          return minutesAgo < 10; // Sessions created in last 10 minutes
-        });
-        
-        const targetSession = recentSessions.length > 0 ? recentSessions[0] : sessionsArray[0];
-        
-        if (targetSession) {
-          let psychologistName = 'your therapist';
-          if (targetSession.psychologist) {
-            if (targetSession.psychologist.first_name && targetSession.psychologist.last_name) {
-              psychologistName = `${targetSession.psychologist.first_name} ${targetSession.psychologist.last_name}`;
-            }
-          } else if (targetSession.psychologist_name) {
-            psychologistName = targetSession.psychologist_name;
-          } else if (targetSession.psychologist_first_name && targetSession.psychologist_last_name) {
-            psychologistName = `${targetSession.psychologist_first_name} ${targetSession.psychologist_last_name}`;
-          }
+        if (sessionsResponse.success && sessionsResponse.data) {
+          const sessions = sessionsResponse.data.sessions || sessionsResponse.data;
+          const sessionsArray = Array.isArray(sessions) ? sessions : [];
           
-          if (targetSession.scheduled_date && targetSession.scheduled_time) {
-            console.log('Setting session details from sessions list:', { 
-              psychologistName, 
-              date: targetSession.scheduled_date, 
-              time: targetSession.scheduled_time 
-            });
-            setSessionDetails({
-              psychologistName,
-              date: targetSession.scheduled_date,
-              time: targetSession.scheduled_time
-            });
-            setLoadingSessionDetails(false);
-            return;
+        // Find the most recent session that was just created (within last few minutes)
+          const now = new Date();
+          const recentSessions = sessionsArray.filter(s => {
+            if (!s.created_at) return false;
+            const sessionTime = new Date(s.created_at);
+            const minutesAgo = (now - sessionTime) / (1000 * 60);
+            return minutesAgo < 10; // Sessions created in last 10 minutes
+          });
+          
+          const targetSession = recentSessions.length > 0 ? recentSessions[0] : sessionsArray[0];
+          
+          if (targetSession) {
+            let psychologistName = 'your therapist';
+            if (targetSession.psychologist) {
+              if (targetSession.psychologist.first_name && targetSession.psychologist.last_name) {
+                psychologistName = `${targetSession.psychologist.first_name} ${targetSession.psychologist.last_name}`;
+              }
+            } else if (targetSession.psychologist_name) {
+              psychologistName = targetSession.psychologist_name;
+            } else if (targetSession.psychologist_first_name && targetSession.psychologist_last_name) {
+              psychologistName = `${targetSession.psychologist_first_name} ${targetSession.psychologist_last_name}`;
+            }
+            
+            if (targetSession.scheduled_date && targetSession.scheduled_time) {
+              console.log('Setting session details from sessions list:', { 
+                psychologistName, 
+                date: targetSession.scheduled_date, 
+                time: targetSession.scheduled_time 
+              });
+              setSessionDetails({
+                psychologistName,
+                date: targetSession.scheduled_date,
+                time: targetSession.scheduled_time
+              });
+              setLoadingSessionDetails(false);
+              return;
           }
         }
       }

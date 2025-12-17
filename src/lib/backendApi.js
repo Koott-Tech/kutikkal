@@ -1217,8 +1217,13 @@ export const publicApi = {
   },
 
   // Get psychologist availability range (public)
-  async getPsychologistAvailabilityRange(psychologistId, startDate, endDate) {
-    return apiRequest(`/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}`);
+  // If withSync = true, backend will first run a Google Calendar sync
+  // for that psychologist before computing availability (used on therapist profile)
+  async getPsychologistAvailabilityRange(psychologistId, startDate, endDate, withSync = false) {
+    const syncParam = withSync ? '&sync=1' : '';
+    return apiRequest(
+      `/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}${syncParam}`
+    );
   },
 
   // Get psychologist packages (public)
