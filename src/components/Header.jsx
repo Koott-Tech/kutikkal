@@ -459,56 +459,50 @@ export default function Header() {
 
   return (
     <>
-    <style jsx>{`
-      /* Override h2 main menu items (desktop) - header-nav-item */
-      .header-main-menu-item {
+    <style dangerouslySetInnerHTML={{__html: `
+      /* Override global h2 styles for header menu items with maximum specificity */
+      header.w-full.bg-white.fixed h2.header-nav-item {
         font-size: 16px !important;
-        font-weight: 500 !important;
+        line-height: 1.2 !important;
+        letter-spacing: -0.40px !important;
+        margin: 0 !important;
+      }
+      /* Desktop submenu headers */
+      header .counselling-dropdown h2,
+      header .assessments-dropdown h2,
+      header .header-dropdown h2 {
+        font-size: 16px !important;
         line-height: 1.2 !important;
         margin: 0 !important;
       }
-      /* Override h2 submenu items (desktop) - category headers */
-      .header-submenu-item {
-        font-size: 16px !important;
-        font-weight: 500 !important;
-        line-height: 1.2 !important;
-        margin: 0 !important;
-      }
-      /* Override h2 individual menu items (desktop) - service names */
-      .header-individual-menu-item {
+      /* Desktop individual menu items (14px) - target by inline style content */
+      header .counselling-dropdown h2[style*="fontSize: '14px'"],
+      header .assessments-dropdown h2[style*="fontSize: '14px'"] {
         font-size: 14px !important;
-        font-weight: 400 !important;
         line-height: 1.2 !important;
-        margin: 0 0 0.5rem 0 !important; /* Add bottom margin for spacing between items */
+        margin: 0 0 0.5rem 0 !important;
       }
-      .header-individual-menu-item:last-child {
-        margin-bottom: 0 !important; /* Remove margin from last item */
+      /* Mobile main menu items (18px) */
+      @media (max-width: 1279px) {
+        header.w-full.bg-white.fixed h2.header-nav-item {
+          font-size: 18px !important;
+          line-height: 1.2 !important;
+        }
       }
-      /* Override h2 main menu items (mobile) - text-lg font-medium */
-      .header-mobile-main-menu-item {
-        font-size: 18px !important;
-        font-weight: 500 !important;
-        line-height: 1.2 !important;
-        margin: 0 !important;
+      /* Mobile submenu and individual items */
+      @media (max-width: 1279px) {
+        header .xl\\:hidden h2[style*="fontSize: '16px'"] {
+          font-size: 16px !important;
+          line-height: 1.2 !important;
+          margin: 0 !important;
+        }
+        header .xl\\:hidden h2[style*="fontSize: '14px'"] {
+          font-size: 14px !important;
+          line-height: 1.2 !important;
+          margin: 0 0 0.5rem 0 !important;
+        }
       }
-      /* Override h2 submenu items (mobile) - category headers */
-      .header-mobile-submenu-item {
-        font-size: 16px !important;
-        font-weight: 500 !important;
-        line-height: 1.2 !important;
-        margin: 0 !important;
-      }
-      /* Override h2 individual menu items (mobile) - text-sm */
-      .header-mobile-individual-menu-item {
-        font-size: 14px !important;
-        font-weight: 400 !important;
-        line-height: 1.2 !important;
-        margin: 0 0 0.5rem 0 !important; /* Add bottom margin for spacing between items */
-      }
-      .header-mobile-individual-menu-item:last-child {
-        margin-bottom: 0 !important; /* Remove margin from last item */
-      }
-    `}</style>
+    `}} />
     <header className="w-full bg-white fixed top-0 left-0 right-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-[50px]">
         <div className="flex h-16 items-center justify-between">
@@ -552,7 +546,7 @@ export default function Header() {
                       }
                     }}
                   >
-                  <h2 className="header-main-menu-item header-nav-item inline-block">Counseling</h2>
+                  <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Counseling</h2>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
@@ -584,7 +578,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Mental Health</h2>
+                                <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Emotional & Mental Health</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -606,7 +600,7 @@ export default function Header() {
                                     setIsFindCareOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{service.name}</h2>
+                                  <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                               </div>
@@ -634,7 +628,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Child Development & Learning</h2>
+                                <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Child Development & Learning</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -656,7 +650,7 @@ export default function Header() {
                                     setIsFindCareOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{service.name}</h2>
+                                  <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                               </div>
@@ -684,7 +678,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Behaviour & Confidence Building</h2>
+                                <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Behaviour & Confidence Building</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -706,7 +700,7 @@ export default function Header() {
                                     setIsFindCareOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{service.name}</h2>
+                                  <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                               </div>
@@ -734,7 +728,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Stress & Academic Support</h2>
+                                <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Stress & Academic Support</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -756,7 +750,7 @@ export default function Header() {
                                     setIsFindCareOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{service.name}</h2>
+                                  <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                               </div>
@@ -784,7 +778,7 @@ export default function Header() {
                                   setActiveSubmenu(null);
                                 }}
                               >
-                                <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Trauma & Healing</h2>
+                                <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Trauma & Healing</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -806,7 +800,7 @@ export default function Header() {
                                     setIsFindCareOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{service.name}</h2>
+                                  <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                               </div>
@@ -836,7 +830,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-main-menu-item header-nav-item inline-block">Assessments</h2>
+                    <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Assessments</h2>
                     <ChevronUpIcon className={`transition-transform ${isAssessmentsOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
@@ -852,7 +846,7 @@ export default function Header() {
                           >
                             <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                               onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-adhd' ? null : 'assess-adhd'); setActiveSubmenu(null); }}>
-                              <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">ADHD</h2>
+                              <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>ADHD</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
                             {(activeSubmenu === 'assess-adhd' || clickedSubmenu === 'assess-adhd') && (
@@ -861,7 +855,7 @@ export default function Header() {
                                 {assessmentsMenuItems.adhd.map((item, idx) => (
                                   <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                     onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
-                                    <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{item.name}</h2>
+                                    <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                   </div>
                                 ))}
                               </div>
@@ -875,7 +869,7 @@ export default function Header() {
                           >
                             <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                               onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-ebs' ? null : 'assess-ebs'); setActiveSubmenu(null); }}>
-                              <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Emotional & Behavioral Screening</h2>
+                              <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Emotional & Behavioral Screening</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
                             {(activeSubmenu === 'assess-ebs' || clickedSubmenu === 'assess-ebs') && (
@@ -884,7 +878,7 @@ export default function Header() {
                                 {assessmentsMenuItems.ebs.map((item, idx) => (
                                   <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                     onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
-                                    <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{item.name}</h2>
+                                    <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                   </div>
                                 ))}
                               </div>
@@ -898,7 +892,7 @@ export default function Header() {
                           >
                             <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                               onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-intelligence' ? null : 'assess-intelligence'); setActiveSubmenu(null); }}>
-                              <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Intelligence Test</h2>
+                              <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Intelligence Test</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
                             {(activeSubmenu === 'assess-intelligence' || clickedSubmenu === 'assess-intelligence') && (
@@ -907,7 +901,7 @@ export default function Header() {
                                 {assessmentsMenuItems.intelligence.map((item, idx) => (
                                   <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                     onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
-                                    <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{item.name}</h2>
+                                    <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                   </div>
                                 ))}
                               </div>
@@ -921,7 +915,7 @@ export default function Header() {
                           >
                             <div className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200"
                               onClick={() => { setClickedSubmenu(clickedSubmenu === 'assess-projective' ? null : 'assess-projective'); setActiveSubmenu(null); }}>
-                              <h2 className="header-submenu-item text-gray-900 hover:translate-x-1 transition-all duration-200">Projective Tests</h2>
+                              <h2 className="text-gray-900 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Projective Tests</h2>
                               <svg className="w-4 h-4 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
                             {(activeSubmenu === 'assess-projective' || clickedSubmenu === 'assess-projective') && (
@@ -930,7 +924,7 @@ export default function Header() {
                                 {assessmentsMenuItems.projective.map((item, idx) => (
                                   <div key={idx} className="py-2 cursor-pointer hover:bg-gray-50 px-4 transition-all duration-200"
                                     onClick={() => { router.push(item.url); setClickedSubmenu(null); setIsAssessmentsOpen(false); }}>
-                                    <h2 className="header-individual-menu-item text-gray-700 hover:translate-x-1 transition-all duration-200">{item.name}</h2>
+                                    <h2 className="text-gray-700 hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                   </div>
                                 ))}
                               </div>
@@ -973,7 +967,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-main-menu-item header-nav-item inline-block">Better Parenting</h2>
+                    <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Better Parenting</h2>
                     <ChevronUpIcon className={`transition-transform ${isBetterParentingOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
@@ -1017,7 +1011,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-main-menu-item header-nav-item inline-block">About Us</h2>
+                    <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>About Us</h2>
                     <ChevronUpIcon className={`transition-transform ${isAboutOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
@@ -1064,7 +1058,7 @@ export default function Header() {
                       }
                     }}
                   >
-                  <h2 className="header-main-menu-item header-nav-item inline-block">Resources</h2>
+                  <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Resources</h2>
                     <ChevronUpIcon className={`transition-transform ${isResourcesOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
@@ -1321,7 +1315,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-mobile-main-menu-item text-gray-900 header-nav-item">Counselling</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Counselling</h2>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileFindCareOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1337,7 +1331,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('emotional')}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Emotional & Mental Health</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Emotional & Mental Health</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.emotional ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1353,7 +1347,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{service.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1366,7 +1360,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('development')}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Child Development & Learning</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Child Development & Learning</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.development ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1382,7 +1376,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{service.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1395,7 +1389,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('behaviour')}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Behaviour & Confidence Building</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Behaviour & Confidence Building</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.behaviour ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1411,7 +1405,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{service.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1424,7 +1418,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('stress')}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Stress & Academic Support</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Stress & Academic Support</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.stress ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1440,7 +1434,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{service.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1453,7 +1447,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('trauma')}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Trauma & Healing</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Trauma & Healing</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.trauma ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1469,7 +1463,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{service.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1499,7 +1493,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-mobile-main-menu-item text-gray-900 header-nav-item">Assessments</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Assessments</h2>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileAssessmentsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1514,7 +1508,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, adhd: !prev.adhd }))}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">ADHD</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>ADHD</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.adhd ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1523,7 +1517,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.adhd.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{item.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1534,7 +1528,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, ebs: !prev.ebs }))}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Emotional & Behavioral Screening</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Emotional & Behavioral Screening</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.ebs ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1543,7 +1537,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.ebs.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{item.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1554,7 +1548,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, intelligence: !prev.intelligence }))}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Intelligence Test</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Intelligence Test</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.intelligence ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1563,7 +1557,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.intelligence.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{item.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1574,7 +1568,7 @@ export default function Header() {
                             className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, projective: !prev.projective }))}
                           >
-                            <h2 className="header-mobile-submenu-item text-gray-900">Projective Tests</h2>
+                            <h2 className="text-gray-900" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Projective Tests</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.projective ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1583,7 +1577,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.projective.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="header-mobile-individual-menu-item text-gray-700">{item.name}</h2>
+                                  <h2 className="text-gray-700" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.2', margin: '0 0 0.5rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1625,7 +1619,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-mobile-main-menu-item text-gray-900 header-nav-item">Better Parenting</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Better Parenting</h2>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileBetterParentingOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1660,7 +1654,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-mobile-main-menu-item text-gray-900 header-nav-item">About Us</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>About Us</h2>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileAboutOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1711,7 +1705,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="header-mobile-main-menu-item text-gray-900 header-nav-item">Resources</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Resources</h2>
                     <svg className={`w-5 h-5 text-gray-600 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
