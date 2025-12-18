@@ -277,7 +277,8 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                      alt={currentContent.title ? `${currentContent.title} - Hero illustration for child counseling and parent support` : (currentContent.alt || "Child counseling and parent support hero illustration")}
                      fill
                      className="object-cover"
-                     loading="lazy"
+                     priority
+                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
                      style={{ objectPosition: 'center center' }}
                      onError={(e) => {
                        console.error('Image failed to load:', currentContent.image);

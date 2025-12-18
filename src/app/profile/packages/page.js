@@ -90,23 +90,23 @@ export default function PackagesPage() {
                       </p>
                       <p className="text-sm text-gray-600">
                         <span className="font-medium">Remaining:</span> 
-                        <span className={`ml-1 ${pkg.remaining_sessions > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <span className={`ml-1 ${pkg.remaining_sessions > 0 ? 'text-[#3f2e73]' : 'text-red-600'}`}>
                           {pkg.remaining_sessions}
                         </span>
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Total Amount:</span> ${pkg.total_amount}
+                        <span className="font-medium">Total Amount:</span> ₹{pkg.total_amount}
                       </p>
                       <p className="text-sm text-gray-600">
                         <span className="font-medium">Status:</span> 
                         <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
-                          pkg.status === 'active' ? 'bg-green-100 text-green-800' : 
+                          pkg.status === 'active' ? 'text-white' : 
                           pkg.status === 'completed' ? 'text-white' : 
                           'bg-gray-100 text-gray-800'
                         }`}
-                        style={pkg.status === 'completed' ? { backgroundColor: '#3f2e73' } : {}}
+                        style={pkg.status === 'active' || pkg.status === 'completed' ? { backgroundColor: '#3f2e73' } : {}}
                         >
                           {pkg.status}
                         </span>
@@ -139,7 +139,10 @@ export default function PackagesPage() {
                           }
                         }
                       }}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                      className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                      style={{ backgroundColor: '#3f2e73' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                     >
                       <Calendar className="h-4 w-4" />
                       Book Remaining Sessions

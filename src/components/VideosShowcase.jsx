@@ -124,7 +124,7 @@ export default function VideosShowcase({ cmsData = null }) {
             })
             .catch((error) => {
               // Handle play error silently
-              console.log('Video play prevented:', error);
+              // Video play prevented - non-critical error
             });
         } else {
           setPlayingVideo(index);

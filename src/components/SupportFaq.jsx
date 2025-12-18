@@ -358,7 +358,7 @@ export default function SupportFaq() {
                             alt={`${item.title} – illustration supporting our child counseling promise`}
                             fill
                             className="object-cover"
-                            sizes="100vw"
+                            sizes="(max-width: 768px) calc(100vw - 48px), (max-width: 1024px) calc(100vw - 96px), 1200px"
                             priority
                           />
                         </div>

@@ -27,10 +27,8 @@ export default function ReceiptsPage() {
   const fetchReceipts = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Token for receipts:', token ? 'Token exists' : 'No token');
       
       const data = await clientApi.getReceipts();
-      console.log('🔍 Receipts API response:', data);
 
       if (data.success) {
         setReceipts(data.data);
@@ -65,7 +63,6 @@ export default function ReceiptsPage() {
     try {
       // Use receipt.id if available, otherwise fallback to receipt.receipt_id or session_id
       const receiptId = receipt.id || receipt.receipt_id || receipt.session_id;
-      console.log('🔍 Downloading receipt:', receiptId, 'Full receipt:', receipt);
       
       if (!token) {
         showError('No authentication token found. Please login again.', 'Authentication Required');
@@ -74,20 +71,17 @@ export default function ReceiptsPage() {
 
       // If file_url is directly available, use it
       if (receipt.file_url) {
-        console.log('✅ Using direct file URL from receipt');
         window.open(receipt.file_url, '_blank');
         return;
       }
 
       // Otherwise, use the backend API to get the download URL
       const data = await clientApi.downloadReceipt(receiptId);
-      console.log('🔍 Download API response:', data);
 
       const downloadUrl = data?.data?.downloadUrl || data?.downloadUrl;
       if (data?.success && downloadUrl) {
         // Open the download URL in a new tab
         window.open(downloadUrl, '_blank');
-        console.log('✅ Receipt download initiated via redirect');
       } else {
         showError(data?.message || 'Failed to get download link', 'Download Failed');
       }

@@ -43,16 +43,13 @@ export default function TestimonialsAbout() {
         }
     ];
 
-    // Randomly assign colors to testimonials ensuring different patterns for each row
+    // Deterministically assign colors to testimonials to prevent hydration mismatch
+    // First row: #ede1ff, #d6e4e3, #ffe5c7, #ffe8eb
+    // Second row: #d6e4e3, #ffe5c7, #ffe8eb, #ede1ff (shifted by 1)
     const testimonials = useMemo(() => {
-        // Shuffle colors for first row
-        const firstRowColors = [...colors].sort(() => Math.random() - 0.5);
-        // Shuffle colors for second row, ensuring different pattern
-        let secondRowColors = [...colors].sort(() => Math.random() - 0.5);
-        // If patterns are the same, reshuffle second row
-        while (JSON.stringify(firstRowColors) === JSON.stringify(secondRowColors)) {
-            secondRowColors = [...colors].sort(() => Math.random() - 0.5);
-        }
+        // Fixed color patterns for each row to ensure server/client match
+        const firstRowColors = ["#ede1ff", "#d6e4e3", "#ffe5c7", "#ffe8eb"];
+        const secondRowColors = ["#d6e4e3", "#ffe5c7", "#ffe8eb", "#ede1ff"];
         
         return baseTestimonials.map((testimonial, index) => {
             const rowIndex = Math.floor(index / 4);

@@ -134,17 +134,17 @@ export default function ReportsPage() {
                     
                     {/* View Report Button - Right side, vertically centered */}
                     <div className="flex-shrink-0">
-                      <button
-                        onClick={() => handleViewFullReport(session)}
+                    <button
+                      onClick={() => handleViewFullReport(session)}
                         className="text-sm font-medium cursor-pointer transition-colors px-3 py-1.5 rounded-lg border"
                         style={{ color: '#3f2e73', borderColor: '#3f2e73' }}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; e.currentTarget.style.borderColor = '#1d1733'; e.currentTarget.style.backgroundColor = '#f5f3ff'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.backgroundColor = 'transparent'; }}
-                      >
-                        View Complete Report
-                      </button>
+                    >
+                      View Complete Report
+                    </button>
                     </div>
-                  </div>
+                    </div>
                 </div>
               ))}
           </div>
@@ -181,7 +181,7 @@ export default function ReportsPage() {
                       <p className="text-sm text-gray-500">Time</p>
                       <p className="text-gray-900">{formatTime(selectedReport.scheduled_time)}</p>
                     </div>
-                    <div>
+                <div>
                       <p className="text-sm text-gray-500">Psychologist</p>
                       <p className="text-gray-900">
                         {selectedReport.psychologist?.first_name} {selectedReport.psychologist?.last_name}

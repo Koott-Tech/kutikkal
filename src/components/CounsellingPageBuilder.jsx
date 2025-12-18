@@ -85,11 +85,6 @@ export default function CounsellingPageBuilder({
 
   useEffect(() => {
     if (initialData) {
-      console.log('Initializing form data with:', initialData);
-      console.log('Benefits from initialData:', initialData.benefits);
-      console.log('Benefits length:', initialData.benefits?.length);
-      console.log('FAQs from initialData:', initialData.faqs);
-      console.log('FAQs length:', initialData.faqs?.length);
       setFormData({
         slug: initialData.slug || '',
         status: initialData.status || 'draft',
@@ -153,12 +148,6 @@ export default function CounsellingPageBuilder({
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
   };
-
-  // Debug formData.benefits and faqs
-  console.log('PageBuilder - formData.benefits:', formData.benefits);
-  console.log('PageBuilder - formData.benefits.length:', formData.benefits?.length);
-  console.log('PageBuilder - formData.faqs:', formData.faqs);
-  console.log('PageBuilder - formData.faqs.length:', formData.faqs?.length);
 
   const handleArrayItemAdd = (field) => {
     const newItem = field === 'benefits'

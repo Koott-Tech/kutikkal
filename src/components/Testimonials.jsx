@@ -949,7 +949,7 @@ export default function Testimonials() {
                               alt={photo.alt} 
                               fill 
                               className="object-cover" 
-                              sizes="100vw"
+                              sizes="(max-width: 768px) calc(100vw - 96px), (max-width: 1024px) calc(100vw - 144px), 1200px"
                               loading="lazy"
                             />
                           </div>
@@ -1086,7 +1086,7 @@ export default function Testimonials() {
                       alt={photo.alt} 
                       fill 
                       className="object-cover" 
-                          sizes="100vw"
+                          sizes="(max-width: 768px) calc(100vw - 96px), (max-width: 1024px) calc(100vw - 144px), 1200px"
                           loading="lazy"
                     />
                       </div>

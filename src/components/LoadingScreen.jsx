@@ -3,6 +3,7 @@
 export default function LoadingScreen({ message = "" }) {
   return (
     <div
+      data-nextjs-scroll-focus-boundary
       style={{
         position: "fixed",
         inset: 0,

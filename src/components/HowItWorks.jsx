@@ -171,8 +171,11 @@ export default function HowItWorks() {
           }
           .how-it-works-card {
             height: 320px;
-            width: clamp(240px, 80vw, 320px);
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
             border-radius: 10px !important;
+            box-sizing: border-box;
           }
           .how-it-works-title {
             font-size: 18px !important;
@@ -233,12 +236,13 @@ export default function HowItWorks() {
         /* Mobile carousel layout */
         @media (max-width: 767px) {
           .how-it-works-carousel-wrapper {
-            width: 100vw !important;
-            max-width: 100vw !important;
-            margin-left: calc(50% - 50vw) !important;
-            margin-right: calc(50% - 50vw) !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
+            overflow: hidden;
           }
           .how-it-works-carousel {
             scroll-padding-inline: 0;
@@ -248,25 +252,33 @@ export default function HowItWorks() {
             scrollbar-width: none;
             padding-left: 0 !important;
             padding-right: 0 !important;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
           }
           .how-it-works-carousel::-webkit-scrollbar {
             display: none;
           }
           .how-it-works-track {
-            gap: clamp(16px, 5vw, 24px);
+            gap: clamp(12px, 4vw, 20px);
             padding-inline: 0;
+            min-width: 0;
           }
           .how-it-works-slide {
-            flex: 0 0 82%;
+            flex: 0 0 85%;
+            max-width: 85%;
             scroll-snap-align: center;
+            min-width: 0;
+            box-sizing: border-box;
           }
           .how-it-works-track > .how-it-works-slide:first-child {
             margin-left: 0;
-            padding-left: clamp(18px, 7vw, 32px);
+            padding-left: clamp(16px, 4vw, 24px);
           }
           .how-it-works-track > .how-it-works-slide:last-child {
             margin-right: 0;
-            padding-right: clamp(18px, 7vw, 32px);
+            padding-right: clamp(16px, 4vw, 24px);
           }
         }
         /* Tablet carousel layout: behave like mobile, with 50% cards and a tiny gap */
@@ -332,7 +344,7 @@ export default function HowItWorks() {
           }
         }
       `}</style>
-      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6">
+      <div className="mx-auto flex max-w-[1400px] flex-col justify-center px-4 lg:px-6 overflow-hidden">
         <p className="text-center md:text-center mt-2 text-sm md:text-base">
           How it works
         </p>
@@ -354,9 +366,9 @@ export default function HowItWorks() {
           </button>
         </div>
 
-        <div className="mt-10 flex flex-col xl:flex-row justify-center gap-6 max-w-7xl mx-auto px-0">
+        <div className="mt-10 flex flex-col xl:flex-row justify-center gap-6 max-w-7xl mx-auto px-0 overflow-hidden w-full">
           {/* Mobile + Tablet Carousel */}
-          <div className="xl:hidden w-full how-it-works-carousel-wrapper">
+          <div className="xl:hidden w-full how-it-works-carousel-wrapper max-w-full">
             <div className="relative">
               {/* Scrollable Carousel Container */}
               <div 
@@ -381,7 +393,10 @@ export default function HowItWorks() {
                         backgroundRepeat: "no-repeat",
                         backgroundAttachment: "scroll",
                         backgroundColor: card.id === 2 ? "#f0f0f0" : "transparent",
-                        borderRadius: "10px"
+                        borderRadius: "10px",
+                        minWidth: 0,
+                        maxWidth: "100%",
+                        boxSizing: "border-box"
               }}
             >
               {/* Header Section */}
@@ -404,7 +419,7 @@ export default function HowItWorks() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                   </svg>
                                 </div>
-                                <h3 className="how-it-works-tag-pill text-gray-900 whitespace-nowrap text-center tracking-tight" style={{ letterSpacing: '-0.01em' }}>{tag}</h3>
+                                <h3 className="how-it-works-tag-pill text-gray-900 text-center tracking-tight" style={{ letterSpacing: '-0.01em', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{tag}</h3>
                               </div>
                             ))}
                           </div>
@@ -497,7 +512,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Navigation Arrows */}
-            <div className="flex justify-center items-center mt-4 px-4 gap-206">
+            <div className="flex justify-center items-center mt-4 px-4 gap-4">
               <button
                 onClick={prevSlide}
                 className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"

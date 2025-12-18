@@ -71,9 +71,9 @@ export default function Reviews({ cmsData = null }) {
               return (
                 <div key={idx} className="min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center relative">
                       {avatarSrc ? (
-                        <Image src={avatarSrc} alt={`${displayName} - Parent review avatar`} width={40} height={40} className="object-cover" />
+                        <Image src={avatarSrc} alt={`${displayName} - Parent review avatar`} fill className="object-cover" sizes="40px" />
                       ) : (
                         <span className="text-gray-500 text-sm">🙂</span>
                       )}

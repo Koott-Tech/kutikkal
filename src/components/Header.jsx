@@ -165,7 +165,6 @@ export default function Header() {
           // Debug: counselling grouped counts
           try {
             const counts = Object.fromEntries(Object.entries(grouped).map(([k, v]) => [k, v.length]));
-            console.log('[Header] Counselling grouped counts', counts);
           } catch (_) {}
 
           setCounsellingMenuItems(grouped);
@@ -189,13 +188,6 @@ export default function Header() {
         const data = await response.json();
         const assessments = data?.data?.assessments || data?.message?.assessments;
         if (data.success && Array.isArray(assessments)) {
-          try {
-            console.log('[Header] Assessments fetch ok', {
-              baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001',
-              total: (data.message.assessments || []).length,
-              sample: (data.message.assessments || []).slice(0, 3).map(a => ({ slug: a.slug, status: a.status, category: a.category, order: a.menu_order }))
-            });
-          } catch (_) {}
           const grouped = {
             adhd: [],
             ebs: [],
@@ -219,7 +211,6 @@ export default function Header() {
           // Debug: assessments grouped counts
           try {
             const counts = Object.fromEntries(Object.entries(grouped).map(([k, v]) => [k, v.length]));
-            console.log('[Header] Assessments grouped counts', counts);
           } catch (_) {}
           setAssessmentsMenuItems(grouped);
         }
@@ -247,7 +238,6 @@ export default function Header() {
               order: p.menu_order || 0
             }))
             .sort((a, b) => a.order - b.order);
-          try { console.log('[Header] BetterParenting items', items.length); } catch(_) {}
           setBetterParentingMenuItems(items);
         }
       } catch (_) {}

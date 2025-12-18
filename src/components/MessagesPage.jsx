@@ -60,16 +60,11 @@ export default function MessagesPage({ session = null }) {
   useEffect(() => {
     const storedConversationId = sessionStorage.getItem('selectedConversationId');
     if (storedConversationId && conversations.length > 0) {
-      console.log('Checking for stored conversation ID:', storedConversationId);
       const targetConversation = conversations.find(conv => conv.id === storedConversationId);
       if (targetConversation && targetConversation.id !== selectedConversation?.id) {
-        console.log('Auto-selecting stored conversation:', targetConversation);
         setSelectedConversation(targetConversation);
         setShowChatScreen(true); // Auto-open chat when coming from sessions page
         sessionStorage.removeItem('selectedConversationId');
-      } else if (!targetConversation) {
-        console.log('Stored conversation ID not found in conversations, it may need to be reloaded');
-        // Don't clear it yet - might need to reload
       }
     }
   }, [conversations, selectedConversation]);
@@ -95,11 +90,8 @@ export default function MessagesPage({ session = null }) {
   // Auto-select conversation if session is provided
   useEffect(() => {
     if (session && session.conversationId && conversations.length > 0) {
-      console.log('Looking for conversation with ID:', session.conversationId);
-      console.log('Available conversations:', conversations);
       const targetConversation = conversations.find(conv => conv.id === session.conversationId);
       if (targetConversation && targetConversation.id !== selectedConversation?.id) {
-        console.log('Found target conversation:', targetConversation);
         setSelectedConversation(targetConversation);
         // Show chat screen for session-specific conversations
         setShowChatScreen(true);
@@ -130,21 +122,13 @@ export default function MessagesPage({ session = null }) {
   const loadConversations = async (forceReload = false) => {
     // Prevent reloading if conversations are already loaded (unless forced)
     if (conversations.length > 0 && !forceReload && !sessionStorage.getItem('selectedConversationId')) {
-      console.log('Conversations already loaded, skipping reload');
       return;
     }
 
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading conversations...');
       const response = await messagesApi.getConversations();
-      console.log('Raw API response:', response);
-      console.log('Response data:', response.data);
-      console.log('Response message:', response.message);
-      console.log('Response success:', response.success);
-      console.log('Response type:', typeof response);
-      console.log('Response keys:', Object.keys(response));
       
       // Check different possible response structures
       // Backend returns: { success: true, message: '...', data: { conversations: [...] } }
@@ -169,15 +153,6 @@ export default function MessagesPage({ session = null }) {
         conversationsData = response;
       }
       
-      console.log('Response structure check:', {
-        hasData: !!response.data,
-        hasDataConversations: !!(response.data && response.data.conversations),
-        dataType: response.data ? typeof response.data : 'undefined',
-        dataIsArray: Array.isArray(response.data),
-        conversationsDataLength: conversationsData.length
-      });
-      
-      console.log('Parsed conversations array:', conversationsData);
       setConversations(conversationsData);
       
       // Check if we have a stored conversation ID to auto-select
@@ -185,23 +160,17 @@ export default function MessagesPage({ session = null }) {
       if (storedConversationId) {
         const targetConversation = conversationsData.find(conv => conv.id === storedConversationId);
         if (targetConversation) {
-          console.log('Auto-selecting conversation from storage:', targetConversation);
           setSelectedConversation(targetConversation);
           // Auto-open chat screen when navigating from sessions page
           setShowChatScreen(true);
           sessionStorage.removeItem('selectedConversationId');
-        } else {
-          console.log('Stored conversation ID not found in loaded conversations, will check after state update');
         }
       }
       
       // If no conversations loaded but we have a session, create a mock conversation
       if (conversationsData.length === 0 && session) {
-        console.log('No conversations found, creating mock conversation for session:', session);
-        
         // If session has a conversationId, try to load that conversation first
         if (session.conversationId && !session.conversationId.startsWith('mock-')) {
-          console.log('Session has conversation ID, trying to load it:', session.conversationId);
           try {
             const conversationResponse = await messagesApi.getMessages(session.conversationId);
             if (conversationResponse && conversationResponse.data) {
@@ -220,13 +189,12 @@ export default function MessagesPage({ session = null }) {
                 last_message_at: new Date().toISOString(),
                 messages: conversationResponse.data.messages || []
               };
-              console.log('Created real conversation from session ID:', realConversation);
               setConversations([realConversation]);
               setSelectedConversation(realConversation);
               return;
             }
           } catch (err) {
-            console.log('Failed to load conversation with ID:', session.conversationId, err);
+            // Failed to load conversation, will fallback to mock
           }
         }
         
@@ -245,7 +213,6 @@ export default function MessagesPage({ session = null }) {
           last_message_at: new Date().toISOString(),
           messages: []
         };
-        console.log('Created mock conversation:', mockConversation);
         setConversations([mockConversation]);
         setSelectedConversation(mockConversation);
       }
@@ -255,7 +222,6 @@ export default function MessagesPage({ session = null }) {
       
       // Fallback: create mock conversation if API fails
       if (session) {
-        console.log('API failed, creating fallback conversation for session:', session);
         const fallbackConversation = {
           id: session.conversationId || 'fallback-conversation-id',
           psychologist: {
@@ -270,7 +236,6 @@ export default function MessagesPage({ session = null }) {
           last_message_at: new Date().toISOString(),
           messages: []
         };
-        console.log('Created fallback conversation:', fallbackConversation);
         setConversations([fallbackConversation]);
         setSelectedConversation(fallbackConversation);
       }
@@ -282,7 +247,6 @@ export default function MessagesPage({ session = null }) {
   const loadMessages = async (conversationId) => {
     // Prevent loading messages for the same conversation
     if (messages.length > 0 && messages[0]?.conversation_id === conversationId) {
-      console.log('Messages already loaded for conversation:', conversationId);
       return;
     }
 
@@ -292,24 +256,16 @@ export default function MessagesPage({ session = null }) {
       
       // Don't try to load messages for mock/fallback conversations
       if (conversationId.startsWith('mock-') || conversationId.startsWith('fallback-')) {
-        console.log('Skipping message load for mock conversation:', conversationId);
         setMessages([]);
         return;
       }
       
       const response = await messagesApi.getMessages(conversationId);
-      console.log('Messages API response:', response);
-      console.log('Messages data:', response.data?.messages || response.message?.messages);
       
       const messagesData = response.data?.messages || response.message?.messages || [];
-      console.log('Parsed messages:', messagesData);
-      console.log('Messages array type:', Array.isArray(messagesData));
-      console.log('Messages array length:', messagesData.length);
-      console.log('First message:', messagesData[0]);
       
       // Ensure we have valid messages
       const validMessages = messagesData.filter(message => message && message.id);
-      console.log('Valid messages:', validMessages);
       
       setMessages(validMessages);
       
@@ -333,7 +289,6 @@ export default function MessagesPage({ session = null }) {
 
     // Don't send messages to mock conversations
     if (selectedConversation.id.startsWith('mock-') || selectedConversation.id.startsWith('fallback-')) {
-      console.log('Cannot send messages to mock conversation');
       setError('Please wait for the conversation to be properly created. Try refreshing the page.');
       return;
     }
@@ -374,8 +329,6 @@ export default function MessagesPage({ session = null }) {
         content: messageContent,
         messageType: 'text'
       });
-
-      console.log('Send message response:', response);
 
       // Extract real message data from response
       let newMessageData = null;

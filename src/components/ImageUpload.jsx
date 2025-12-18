@@ -50,12 +50,6 @@ export default function ImageUpload({
       // Try both possible token keys
       const token = getStoredToken();
       
-      console.log('📤 Upload - Token check:', {
-        hasToken: !!token,
-        tokenLength: token?.length,
-        tokenPreview: token ? `${token.substring(0, 20)}...` : 'null'
-      });
-      
       if (!token || token === 'null' || token === 'undefined') {
         throw new Error('Not authenticated. Please log in again.');
       }

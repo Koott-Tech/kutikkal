@@ -190,6 +190,7 @@ export default function PersonalizedCare() {
               height={667}
               className="w-full h-auto object-contain"
               sizes="(max-width: 1024px) 550px, (max-width: 1280px) 800px, 1000px"
+              priority
               style={{ margin: 0, padding: 0, display: 'block', height: 'auto' }}
             />
           </div>

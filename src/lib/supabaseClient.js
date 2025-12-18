@@ -9,7 +9,6 @@ export const getSupabaseClient = () => {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
     if (supabaseUrl && supabaseAnonKey) {
-      console.log('🔍 Creating singleton Supabase client');
       supabaseClientInstance = createClient(supabaseUrl, supabaseAnonKey);
     } else {
       console.warn('Supabase environment variables not found');

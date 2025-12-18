@@ -161,7 +161,7 @@ export default function Hero() {
                   fill
                   className="object-contain object-bottom"
                   sizes="55vw"
-                  priority
+                  loading="eager"
                   style={{ border: 'none', outline: 'none', boxShadow: 'none', objectPosition: 'center bottom', transform: 'scale(1.0)', transformOrigin: 'bottom center' }}
                 />
               </div>

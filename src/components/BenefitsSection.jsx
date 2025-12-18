@@ -260,6 +260,7 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
                 alt={currentContent.title ? `${currentContent.title} - Benefits illustration` : "Child counseling benefits illustration"}
                 fill
                 className="object-cover rounded-lg"
+                sizes="500px"
               />
             </div>
           </div>

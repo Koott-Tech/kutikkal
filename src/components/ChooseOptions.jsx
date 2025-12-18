@@ -242,6 +242,7 @@ export default function ChooseOptions() {
                   fill
                   className={`${card.imageClass ? `${card.imageClass.replace('object-[50%_100%]', 'object-center')}` : "object-cover object-center md:object-[50%_100%]"}`}
                   sizes="(max-width: 768px) 100vw, 33vw"
+                  priority={card.image === "/boy1.png"}
                 />
                 
                 {/* Read More Button */}

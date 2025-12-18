@@ -7,16 +7,8 @@ let globalRefreshTokenCallback = null;
 
 // Function to set the refresh token callback
 export const setRefreshTokenCallback = (callback) => {
-  console.log('🔍 Setting refresh token callback:', !!callback);
   globalRefreshTokenCallback = callback;
 };
-
-// Debug logging
-console.log('Environment variables:', {
-  NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
-  BACKEND_BASE_URL: BACKEND_BASE_URL,
-  NODE_ENV: process.env.NODE_ENV
-});
 
 // Helper function to handle API responses
 const handleResponse = async (response, options = {}) => {
@@ -57,11 +49,7 @@ const handleResponse = async (response, options = {}) => {
                               error.message?.includes('expired') ||
                               error.message?.includes('token is expired');
         
-        console.log('🔒 Auth Error Detected:', {
-          status: response.status,
-          isTokenExpired,
-          error: error
-        });
+        // Auth error detected
         
         // Clear auth data
         if (typeof window !== 'undefined') {
@@ -194,26 +182,8 @@ const handleResponse = async (response, options = {}) => {
 async function apiRequest(endpoint, options = {}) {
   const url = `${BACKEND_BASE_URL}${endpoint}`;
   
-  // Debug logging (skip if silent)
-  if (!options.silent) {
-    console.log('API Request:', {
-      endpoint,
-      BACKEND_BASE_URL,
-      fullUrl: url
-    });
-  }
-  
   // Get token from localStorage if available
   let token = typeof window !== 'undefined' ? getStoredToken() : null;
-  
-  if (!options.silent) {
-    console.log('🔍 API Request Debug:', {
-      endpoint,
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-      url
-    });
-  }
   
   const makeRequest = async (authToken) => {
     const config = {
@@ -229,15 +199,9 @@ async function apiRequest(endpoint, options = {}) {
     
     // If we get a 401 and have a refresh callback, try to refresh the token
     if (response.status === 401 && globalRefreshTokenCallback && authToken) {
-      console.log('🔍 Got 401, attempting token refresh...', {
-        hasCallback: !!globalRefreshTokenCallback,
-        hasToken: !!authToken,
-        status: response.status
-      });
       const newToken = await globalRefreshTokenCallback();
       
       if (newToken && newToken !== authToken) {
-        console.log('🔍 Token refreshed, retrying request...');
         // Retry the request with the new token
         const retryConfig = {
           ...config,

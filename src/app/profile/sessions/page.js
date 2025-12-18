@@ -47,9 +47,12 @@ export default function SessionsPage() {
         return 'bg-green-100 text-green-800';
       case 'scheduled':
       case 'booked':
-        return 'text-white';
+        // Background will be applied via inline style
+        return '';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
+      case 'reschedule_requested':
+        return 'bg-yellow-100 text-yellow-800';
       case 'rescheduled':
         return 'bg-yellow-100 text-yellow-800';
       case 'expired':
@@ -61,7 +64,14 @@ export default function SessionsPage() {
 
   const getStatusStyle = (status) => {
     if (status?.toLowerCase() === 'scheduled' || status?.toLowerCase() === 'booked') {
-      return { backgroundColor: '#2563eb', color: 'white' };
+      return { backgroundColor: '#3f2e73', color: 'white' };
+    }
+    if (status?.toLowerCase() === 'reschedule_requested' || status?.toLowerCase() === 'rescheduled') {
+      return {};
+    }
+    // Default fallback for unknown statuses
+    if (!status || status.trim() === '') {
+      return { backgroundColor: '#3f2e73', color: 'white' };
     }
     return {};
   };
@@ -73,6 +83,17 @@ export default function SessionsPage() {
     const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
     
     return sessionDateTime < now;
+  };
+
+  // Check if there are any upcoming/scheduled sessions for the same package
+  const hasUpcomingSessionsForPackage = (packageId) => {
+    if (!packageId) return false;
+    return sessions.some(s => 
+      s.package_id === packageId && 
+      s.status !== 'completed' && 
+      !isSessionExpired(s) &&
+      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status)
+    );
   };
 
   const formatDate = (dateString) => {
@@ -126,7 +147,6 @@ export default function SessionsPage() {
   const handleMessageClick = async (session) => {
     try {
       const response = await messagesApi.createConversation(session.id);
-      console.log('Create conversation response:', response);
       
       // Extract conversation ID from response
       // Backend returns: { success: true, message: '...', data: { conversation: {...} } } or { conversationId: '...' }
@@ -145,12 +165,9 @@ export default function SessionsPage() {
         conversationId = response.conversationId;
       }
       
-      console.log('Extracted conversation ID:', conversationId);
-      
       // Store conversation ID in sessionStorage so messages page can auto-select it
       if (conversationId) {
         sessionStorage.setItem('selectedConversationId', conversationId);
-        console.log('Stored conversation ID for auto-selection:', conversationId);
       }
       
       router.push('/profile/messages');
@@ -261,7 +278,7 @@ export default function SessionsPage() {
         ) : (
           <div className="space-y-8">
             {/* Scheduled Sessions Section */}
-            {sessions.filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
+            {sessions.filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
               <div>
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -275,7 +292,7 @@ export default function SessionsPage() {
                 {/* Mobile Layout - Single Column Cards */}
                 <div className="block lg:hidden space-y-4">
                   {sessions
-                    .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
+                    .filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status))
                     .map((session) => (
                       <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
                         {/* Status Badge */}
@@ -290,11 +307,26 @@ export default function SessionsPage() {
                               Time Expired
                             </span>
                           ) : (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`} style={getStatusStyle(session.status)}>
-                              {session.status === 'booked' ? 'Scheduled' : 
-                               session.status === 'reschedule_requested' ? 'Reschedule Requested' :
-                               session.status === 'rescheduled' ? 'Rescheduled' : 'Scheduled'}
-                            </span>
+                            <>
+                              <span 
+                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`} 
+                                style={getStatusStyle(session.status)}
+                              >
+                                {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
+                                 session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                                 session.status === 'rescheduled' ? 'Rescheduled' : 
+                                 session.status || 'Scheduled'}
+                              </span>
+                              {((session.package && session.package.package_type) || session.package_id) && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                  {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
+                                    <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                  ) : (
+                                    session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                  )}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                         
@@ -335,7 +367,7 @@ export default function SessionsPage() {
                         {/* Action Buttons */}
                         <div className="flex gap-2 mt-6">
                               {/* Action Buttons for booked/rescheduled sessions */}
-                              {['booked', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
+                              {['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
                             <>
                               <button
                                 onClick={() => handleMessageClick(session)}
@@ -361,13 +393,13 @@ export default function SessionsPage() {
                             </>
                           )}
                           
-                          {session.session_type !== 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                          {session.session_type !== 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
                             <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
                               Session time has passed
                             </span>
                           )}
                           
-                          {session.session_type === 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                          {session.session_type === 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
                             <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
                               Assessment time has passed
                             </span>
@@ -378,6 +410,7 @@ export default function SessionsPage() {
                               Reschedule Requested
                             </span>
                           )}
+                          
                         </div>
                       </div>
                     ))}
@@ -386,7 +419,7 @@ export default function SessionsPage() {
                 {/* Desktop Layout - Current Design */}
                 <div className="hidden lg:block space-y-4">
                   {sessions
-                    .filter(s => ['booked', 'reschedule_requested', 'rescheduled'].includes(s.status))
+                    .filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status))
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-blue-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
                         <div className="flex gap-4 items-center">
@@ -416,11 +449,26 @@ export default function SessionsPage() {
                                     Time Expired
                                   </span>
                                 ) : (
-                                  <span className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
-                                    {session.status === 'booked' ? 'Scheduled' : 
-                                     session.status === 'reschedule_requested' ? 'Reschedule Requested' :
-                                     session.status === 'rescheduled' ? 'Rescheduled' : 'Scheduled'}
-                                  </span>
+                                  <>
+                                    <span 
+                                      className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`} 
+                                      style={getStatusStyle(session.status)}
+                                    >
+                                      {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
+                                       session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                                       session.status === 'rescheduled' ? 'Rescheduled' : 
+                                       session.status || 'Scheduled'}
+                                    </span>
+                                    {((session.package && session.package.package_type) || session.package_id) && (
+                                      <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
+                                          <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                        ) : (
+                                          session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                        )}
+                                      </span>
+                                    )}
+                                  </>
                                 )}
                                 <span className="text-xs sm:text-sm text-gray-500">
                                   {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
@@ -462,14 +510,14 @@ export default function SessionsPage() {
                               
                               {Number(session.price) > 0 && (
                                 <p className="text-gray-600 mb-2">
-                                  Price: ${session.price}
+                                  Price: ₹{session.price}
                                 </p>
                               )}
                             </div>
                             
                             <div className="flex flex-wrap gap-2">
                               {/* Action Buttons for booked/rescheduled sessions */}
-                              {['booked', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
+                              {['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
                                 <>
                                   <button
                                     onClick={() => handleMessageClick(session)}
@@ -495,13 +543,13 @@ export default function SessionsPage() {
                                 </>
                               )}
                               
-                              {session.session_type !== 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                              {session.session_type !== 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                   Session time has passed
                                 </span>
                               )}
                               
-                              {session.session_type === 'free_assessment' && session.status === 'booked' && isSessionExpired(session) && (
+                              {session.session_type === 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                   Assessment time has passed
                                 </span>
@@ -597,6 +645,31 @@ export default function SessionsPage() {
                               ✓ Feedback Submitted
                             </span>
                           )}
+                          
+                          {/* Book Next Session Button - Only for package sessions with remaining sessions and no upcoming sessions */}
+                          {session.package_id && 
+                           session.package && 
+                           session.package.remaining_sessions > 0 && 
+                           !hasUpcomingSessionsForPackage(session.package_id) && (
+                            <button
+                              onClick={() => {
+                                const psychologist = session.psychologist;
+                                if (psychologist && session.package_id) {
+                                  const doctorIdentifier = psychologist.id;
+                                  if (doctorIdentifier) {
+                                    router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`);
+                                  }
+                                }
+                              }}
+                              className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                              style={{ backgroundColor: '#3f2e73' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                            >
+                              <Calendar className="h-3 w-3" />
+                              Book Next Session
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -664,7 +737,7 @@ export default function SessionsPage() {
                               
                               {Number(session.price) > 0 && (
                                 <p className="text-gray-600 mb-2">
-                                  Price: ${session.price}
+                                  Price: ₹{session.price}
                                 </p>
                               )}
                             </div>
@@ -688,6 +761,31 @@ export default function SessionsPage() {
                                 <span className="text-green-600 bg-green-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                   ✓ Feedback Submitted
                                 </span>
+                              )}
+                              
+                              {/* Book Next Session Button - Only for package sessions with remaining sessions and no upcoming sessions */}
+                              {session.package_id && 
+                               session.package && 
+                               session.package.remaining_sessions > 0 && 
+                               !hasUpcomingSessionsForPackage(session.package_id) && (
+                                <button
+                                  onClick={() => {
+                                    const psychologist = session.psychologist;
+                                    if (psychologist && session.package_id) {
+                                      const doctorIdentifier = psychologist.id;
+                                      if (doctorIdentifier) {
+                                        router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`);
+                                      }
+                                    }
+                                  }}
+                                  className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                                  style={{ backgroundColor: '#3f2e73' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                >
+                                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  <span>Book Next Session</span>
+                                </button>
                               )}
                             </div>
                           </div>

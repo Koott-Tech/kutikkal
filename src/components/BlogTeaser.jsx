@@ -300,11 +300,13 @@ export default function BlogTeaser() {
 
         <div className="overflow-hidden md:overflow-visible">
           <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
-           {posts.map((post) => {
+           {posts.map((post, index) => {
             const imageSrc = post.featured_image_url || post.src;
             const author = post.author_name || post.author || "Little Care Team";
             const date = post.published_at || post.created_at || post.date || '';
             const altText = post.alt || post.title || "Blog cover image";
+            // Add priority to first blog image (LCP element)
+            const isFirstImage = index === 0;
 
             return (
             <article 
@@ -324,6 +326,7 @@ export default function BlogTeaser() {
                   fill
                     className="object-contain object-left"
                   sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
+                  priority={isFirstImage}
                 />
               </div>
               )}

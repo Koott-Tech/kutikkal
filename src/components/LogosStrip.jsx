@@ -69,6 +69,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                     width={144}
                     height={56}
                     className={`h-14 w-auto object-contain ${logoFilter}`}
+                    style={{ height: 'auto' }}
                   />
                 </div>
               ))}
@@ -85,6 +86,7 @@ export default function LogosStrip({ bgColor = "bg-white", height = "py-8", logo
                           width={144}
                           height={56}
                           className={`h-12 sm:h-14 w-auto object-contain ${logoFilter}`}
+                          style={{ height: 'auto' }}
                         />
                       </div>
                     ))}

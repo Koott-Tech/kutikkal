@@ -221,7 +221,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
                   alt={currentContent.title ? `${currentContent.title} - Therapy types illustration` : "Child counseling therapy types illustration"}
                   fill
                   className="object-cover"
-                  sizes="100vw"
+                  sizes="(max-width: 768px) calc(100vw - 48px), 100vw"
                   priority
                   style={{ objectPosition: 'center', borderRadius: 0 }}
                 />

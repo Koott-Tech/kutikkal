@@ -52,6 +52,7 @@ export default function DoctorModal({
   doctor = null, 
   mode = 'add' 
 }) {
+  const [originalPackages, setOriginalPackages] = useState([]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -189,6 +190,10 @@ export default function DoctorModal({
         
         console.log('📦 Multi-session packages:', multiSessionPackages);
         
+        // Store original packages (only multi-session packages with valid IDs)
+        const originalMultiSessionPackages = multiSessionPackages.filter(pkg => pkg.id && !isNaN(parseInt(pkg.id)) && parseInt(pkg.id) > 0);
+        setOriginalPackages(originalMultiSessionPackages);
+        
         // Update form data with fetched packages
         setFormData(prev => ({
           ...prev,
@@ -201,6 +206,8 @@ export default function DoctorModal({
         }));
       } else {
         console.log('📦 No packages found or error:', response);
+        // Store empty original packages
+        setOriginalPackages([]);
         // Keep only the individual session package
         setFormData(prev => ({
           ...prev,
@@ -211,6 +218,8 @@ export default function DoctorModal({
       }
     } catch (error) {
       console.error('📦 Error fetching packages:', error);
+      // Store empty original packages
+      setOriginalPackages([]);
       // Keep only the individual session package on error
       setFormData(prev => ({
         ...prev,
@@ -222,6 +231,11 @@ export default function DoctorModal({
   };
 
   useEffect(() => {
+    // Reset original packages when opening in add mode
+    if (mode === 'add') {
+      setOriginalPackages([]);
+    }
+    
     if (doctor && mode === 'edit') {
       console.log('🔍 Doctor data for editing:', doctor);
       console.log('🔍 Doctor price field:', doctor.price);
@@ -880,6 +894,25 @@ export default function DoctorModal({
             // Ensure ID is preserved - if it's a temp ID, remove it so backend knows it's new
             id: (pkg.id && !isNaN(parseInt(pkg.id)) && parseInt(pkg.id) > 0) ? parseInt(pkg.id) : undefined
           })),
+        // Check if any packages were removed (only in edit mode)
+        deletePackages: (() => {
+          if (mode !== 'edit' || originalPackages.length === 0) return false;
+          
+          // Get current package IDs (only valid numeric IDs)
+          const currentPackageIds = formData.packages
+            .filter(pkg => pkg.name && pkg.price && pkg.sessions)
+            .map(pkg => pkg.id)
+            .filter(id => id && !isNaN(parseInt(id)) && parseInt(id) > 0)
+            .map(id => parseInt(id));
+          
+          // Get original package IDs
+          const originalPackageIds = originalPackages.map(pkg => parseInt(pkg.id));
+          
+          // Check if any original packages are missing from current packages
+          const hasRemovedPackages = originalPackageIds.some(originalId => !currentPackageIds.includes(originalId));
+          
+          return hasRemovedPackages;
+        })(),
         // Use single field only
         cover_image_url: safeImageUrl,
         faq_question_1: formData.faq_question_1?.trim() || null,
@@ -921,6 +954,8 @@ export default function DoctorModal({
   const handleClose = () => {
     // Reset the modification flag when closing the modal
     setHasUserModifiedAvailability(false);
+    // Reset original packages
+    setOriginalPackages([]);
     onClose();
   };
 

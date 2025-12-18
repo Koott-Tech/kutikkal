@@ -39,47 +39,81 @@ const NotificationPopup = ({
     }, 300); // Wait for animation to complete
   };
 
-  const getIcon = () => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="w-6 h-6 text-green-600" />;
-      case 'error':
-        return <AlertCircle className="w-6 h-6 text-red-600" />;
-      case 'warning':
-        return <AlertTriangle className="w-6 h-6 text-yellow-600" />;
-      case 'info':
-      default:
-        return <Info className="w-6 h-6 text-blue-600" />;
-    }
-  };
-
   const getStyles = () => {
+    // Check if this is a slot booking error - use theme colors for user-friendly display
+    const isSlotBookingError = (type === 'error' || type === 'warning') && (
+      message?.toLowerCase().includes('slot') || 
+      message?.toLowerCase().includes('booked') ||
+      title?.toLowerCase().includes('slot') ||
+      title?.toLowerCase().includes('unavailable')
+    );
+
+    if (isSlotBookingError) {
+      return {
+        container: 'border-2',
+        title: 'text-gray-900',
+        message: 'text-gray-700',
+        iconColor: '#3f2e73',
+        borderColor: '#3f2e73',
+        bgColor: '#f5f3ff'
+      };
+    }
+
     switch (type) {
       case 'success':
         return {
           container: 'bg-green-50 border-green-200',
           title: 'text-green-800',
-          message: 'text-green-700'
+          message: 'text-green-700',
+          iconColor: '#10b981',
+          borderColor: '#10b981',
+          bgColor: '#f0fdf4'
         };
       case 'error':
         return {
           container: 'bg-red-50 border-red-200',
           title: 'text-red-800',
-          message: 'text-red-700'
+          message: 'text-red-700',
+          iconColor: '#ef4444',
+          borderColor: '#ef4444',
+          bgColor: '#fef2f2'
         };
       case 'warning':
         return {
           container: 'bg-yellow-50 border-yellow-200',
           title: 'text-yellow-800',
-          message: 'text-yellow-700'
+          message: 'text-yellow-700',
+          iconColor: '#f59e0b',
+          borderColor: '#f59e0b',
+          bgColor: '#fffbeb'
         };
       case 'info':
       default:
         return {
           container: 'bg-blue-50 border-blue-200',
           title: 'text-blue-800',
-          message: 'text-blue-700'
+          message: 'text-blue-700',
+          iconColor: '#3b82f6',
+          borderColor: '#3b82f6',
+          bgColor: '#eff6ff'
         };
+    }
+  };
+
+  const getIcon = () => {
+    const styles = getStyles();
+    const iconColor = styles.iconColor || (type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6');
+    
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-6 h-6" style={{ color: iconColor }} />;
+      case 'error':
+        return <AlertCircle className="w-6 h-6" style={{ color: iconColor }} />;
+      case 'warning':
+        return <AlertTriangle className="w-6 h-6" style={{ color: iconColor }} />;
+      case 'info':
+      default:
+        return <Info className="w-6 h-6" style={{ color: iconColor }} />;
     }
   };
 
@@ -102,9 +136,13 @@ const NotificationPopup = ({
           transform transition-all duration-300 ease-in-out
           ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}
         `}
+        style={styles.borderColor ? { borderColor: styles.borderColor } : {}}
       >
         {/* Header */}
-        <div className={`p-6 border-b ${styles.container}`}>
+        <div 
+          className={`p-6 border-b ${styles.container}`}
+          style={styles.bgColor ? { backgroundColor: styles.bgColor, borderBottomColor: styles.borderColor || '#e5e7eb' } : {}}
+        >
           <div className="flex items-start">
             <div className="flex-shrink-0 mr-3">
               {getIcon()}

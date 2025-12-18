@@ -1232,8 +1232,9 @@ const TherapistProfileContent = () => {
 
       if (isSlotConflict) {
         // More user-friendly message when someone else just booked this slot
-        showError(
-          "Oops... that time slot was just booked by someone else. Please choose another available time.",
+        // Use showWarning with custom styling for better UX (theme colors applied in NotificationPopup)
+        showWarning(
+          "That time slot was just booked by someone else. Please choose another available time.",
           'Slot Unavailable'
         );
 
