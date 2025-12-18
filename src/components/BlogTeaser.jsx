@@ -149,7 +149,7 @@ export default function BlogTeaser() {
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .blog-teaser-heading {
             font-size: 32px !important;
-            font-weight: 600 !important;
+            font-weight: 500 !important;
             line-height: 1.1 !important;
           }
           .blog-card {
@@ -168,6 +168,9 @@ export default function BlogTeaser() {
           }
         }
         @media (min-width: 1024px) and (max-width: 1440px) {
+          .blog-teaser-heading {
+            font-weight: 500 !important;
+          }
           .blog-card {
             max-width: none !important;
             width: 100% !important;
@@ -183,11 +186,20 @@ export default function BlogTeaser() {
             font-size: 14px !important;
           }
         }
+        /* Desktop default font weight */
+        @media (min-width: 1441px) {
+          .blog-teaser-heading {
+            font-weight: 500 !important;
+          }
+        }
         @media (max-width: 767px) {
           .blog-teaser-heading {
-            font-size: 28px !important;
-            font-weight: 600 !important;
-            line-height: 0.95 !important;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.1 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
           .blog-grid {
             display: flex !important;
@@ -270,7 +282,7 @@ export default function BlogTeaser() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-12">
           <div className="text-center md:text-left">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
-                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-lg md:text-xl lg:text-2xl font-medium">
+                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl">
                Parenting Tips & Child Mental Health Guidance for Everyday Life
              </h3>
            </div>

@@ -70,11 +70,12 @@ export default function HelpFaq({ cmsData = null }) {
           .help-faq-heading {
             font-size: 28px !important;
             font-weight: 600 !important;
-            line-height: 0.95 !important;
+            line-height: 1.1 !important;
             text-align: left !important;
           }
           .help-faq-subheading {
             text-align: left !important;
+            line-height: 1.1 !important;
           }
           .help-faq-description {
             text-align: left !important;
@@ -231,9 +232,10 @@ export default function HelpFaq({ cmsData = null }) {
                         <Chevron className={`h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-gray-800 transition-transform flex-shrink-0 ${open ? "rotate-180" : "rotate-0"}`} />
                       </button>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-out ${
+                        className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
                           open ? "max-h-96 md:max-h-64 opacity-100" : "max-h-0 opacity-0"
                         }`}
+                        style={{ willChange: 'max-height, opacity' }}
                       >
                         <div className="px-2 pb-3 md:px-0 md:pb-4">
                           <p className="faq-answer text-xs md:text-sm leading-relaxed">

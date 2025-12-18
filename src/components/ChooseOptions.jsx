@@ -84,6 +84,9 @@ export default function ChooseOptions() {
             font-size: 24px !important;
             font-weight: 600 !important;
             line-height: 0.95 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
         }
         @media (min-width: 480px) and (max-width: 599px) {
@@ -110,6 +113,9 @@ export default function ChooseOptions() {
             font-size: 26px !important;
             font-weight: 600 !important;
             line-height: 0.95 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
         }
         @media (min-width: 600px) and (max-width: 767px) {
@@ -136,6 +142,9 @@ export default function ChooseOptions() {
             font-size: 28px !important;
             font-weight: 600 !important;
             line-height: 0.95 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
         }
         @media (max-width: 767px) {

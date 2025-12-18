@@ -720,11 +720,11 @@ const Guide = () => {
       
       <div style={{ position: "relative", zIndex: 3 }}></div>
       
-      <section style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
-        <h2 className="text-center max-w-[900px] mb-4 md:mb-9 text-[#1a1a1a] font-semibold mt-4 text-xl md:text-2xl lg:text-3xl px-4">
+      <section className="psychologists-hero-section" style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
+        <h2 className="psychologists-main-heading text-center max-w-[900px] mb-4 md:mb-9 text-[#1a1a1a] font-semibold mt-4 text-xl md:text-2xl lg:text-3xl px-4">
           Psychologists that help you grow
         </h2>
-        <p className="text-sm md:text-base lg:text-lg text-center max-w-[600px] font-medium px-4 mb-6 md:mb-9" style={{ color: "#444" }}>
+        <p className="psychologists-description text-sm md:text-base lg:text-lg text-center max-w-[600px] font-medium px-4 mb-6 md:mb-9" style={{ color: "#444" }}>
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
         </p>
         
@@ -755,6 +755,18 @@ const Guide = () => {
           .find-therapist-btn span {
             position: relative;
             z-index: 1;
+          }
+          /* Mobile-specific styles for psychologists page */
+          @media (max-width: 767px) {
+            .psychologists-hero-section {
+              padding-top: 5.5rem !important; /* Reduced from 8rem to 5.5rem - moderate reduction */
+            }
+            .psychologists-main-heading {
+              margin-top: 0.75rem !important; /* Reduced from mt-4 (1rem) to 0.75rem */
+            }
+            .psychologists-description {
+              line-height: 1.3 !important; /* Reduced line height for mobile */
+            }
           }
         `}</style>
         
@@ -905,18 +917,21 @@ const Guide = () => {
               .guide-cards-container {
                 grid-template-columns: 1fr;
                 gap: 20px !important; /* increased gap between cards */
-                padding: 0 3rem !important; /* more side padding */
-                max-width: 480px;
+                padding: 0 clamp(1.5rem, 4vw, 2rem) !important; /* increased side padding to reduce card width */
+                max-width: 92% !important; /* Constrain container width to make cards narrower */
+                width: 92% !important;
                 margin-left: auto;
                 margin-right: auto;
+                justify-items: stretch !important; /* Make cards stretch to container width */
               }
               .guide-video-card {
-                max-width: 100%;
+                max-width: calc(100% - 0px) !important;
+                min-width: 0 !important; /* Remove min-width constraint */
+                width: 100% !important;
                 height: 460px;
-                width: 100%;
               }
               .guide-video-card:hover {
-                transform: scale(1.02) translateY(-8px);
+                transform: none !important; /* Remove hover effect on mobile */
                 box-shadow: none !important;
               }
               /* Increase doctor name size on mobile */
@@ -929,15 +944,19 @@ const Guide = () => {
             @media (max-width: 480px) {
               .guide-cards-container {
                 gap: 20px !important; /* increased gap between cards */
-                padding: 0 2.5rem !important; /* more side padding */
-                max-width: 420px;
+                padding: 0 clamp(1.25rem, 3.5vw, 1.75rem) !important; /* increased side padding to reduce card width */
+                max-width: 94% !important; /* Constrain container width to make cards narrower */
+                width: 94% !important;
+                justify-items: stretch !important; /* Make cards stretch to container width */
               }
               .guide-video-card {
-                max-width: 100%;
+                max-width: 100% !important;
+                min-width: 0 !important; /* Remove min-width constraint */
+                width: 100% !important;
                 height: 440px;
               }
               .guide-video-card:hover {
-                transform: scale(1.01) translateY(-6px);
+                transform: none !important; /* Remove hover effect on mobile */
                 box-shadow: none !important;
               }
             }
@@ -1605,8 +1624,8 @@ const Guide = () => {
                     bottom: 0; /* stick to bottom */
                     width: 100vw;
                     max-width: 100vw;
-                    height: auto;
-                    max-height: 100dvh; /* allow full viewport height */
+                    height: 100dvh; /* use full viewport height */
+                    max-height: 100dvh;
                     display: flex !important;
                     flex-direction: column !important;
                     grid-template-columns: none !important;
@@ -1616,15 +1635,18 @@ const Guide = () => {
                     margin: 0 !important; /* remove outer margins */
                   }
                   .doctor-modal-image {
-                    flex: none;
+                    flex: 1.63 1 0; /* Take 62% of available space (1.63:1 ratio with content) */
                     width: 100%;
-                    height: 500px;
-                    /* Top same as left (12px); further increased bottom padding on mobile */
-                    padding: 12px clamp(6px, 2.5vw, 12px) clamp(40px, 10vw, 80px) 12px;
-                    min-height: 500px;
+                    min-height: 0; /* Allow flexbox to control height */
+                    /* Reduced padding - no bottom padding to eliminate gap */
+                    padding: 12px 12px 0 12px;
                     overflow: hidden;
                     transform: none !important;
                     zoom: 1 !important;
+                    margin-bottom: 0 !important;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                   }
                   .doctor-modal-image img,
                   .doctor-modal-img {
@@ -1633,19 +1655,23 @@ const Guide = () => {
                     max-width: 100% !important;
                     max-height: 100% !important;
                     object-fit: cover !important;
-                    object-position: center top !important;
+                    object-position: center center !important;
                     transform: none !important;
                     zoom: 1 !important;
                     scale: 1 !important;
                     -webkit-transform: none !important;
                     -moz-transform: none !important;
+                    margin-bottom: 0 !important;
+                    padding-bottom: 0 !important;
                   }
                   .doctor-modal-content {
-                    flex: 1;
-                    padding: 24px 20px;
+                    flex: 1 1 0; /* Take 40% of available space (1:1.5 ratio with image) */
+                    padding: 16px 20px 24px 20px;
                     gap: 12px;
                     overflow-y: auto;
-                    max-height: calc(98vh - 500px - 120px);
+                    min-height: 0; /* Allow flexbox to control height */
+                    margin-top: 0 !important;
+                    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
                   }
                   .doctor-modal-title {
                     font-size: 24px !important;
@@ -1655,9 +1681,11 @@ const Guide = () => {
                     order: 3;
                     width: 100%;
                     padding: 16px 20px;
-                    border-top: none;
-                    margin-top: auto;
+                    border-top: 1px solid rgba(0, 0, 0, 0.1);
+                    margin-top: 0;
+                    flex-shrink: 0; /* Don't shrink buttons container */
                     position: relative;
+                    background: #fff;
                   }
                   /* Blur effect removed */
                   .doctor-modal-buttons-container::before {
@@ -1665,9 +1693,13 @@ const Guide = () => {
                   }
                   .doctor-modal-image {
                     order: 1;
+                    margin-bottom: 0 !important;
+                    padding-bottom: 0 !important;
                   }
                   .doctor-modal-content {
                     order: 2;
+                    margin-top: 0 !important;
+                    padding-top: 16px !important;
                   }
                   .doctor-modal-buttons {
                     flex-direction: row;

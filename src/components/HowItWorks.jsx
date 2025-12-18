@@ -191,7 +191,10 @@ export default function HowItWorks() {
           .how-it-works-heading {
             font-size: 28px;
             font-weight: 600;
-            line-height: 0.95;
+            line-height: 1.1 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
           .how-it-works-slide-number {
             display: none !important;
@@ -352,7 +355,7 @@ export default function HowItWorks() {
         {/* Inline CTA under the heading */}
         <div className="mt-3 mb-8 md:mb-6 text-center md:text-center px-4">
           <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-          Start Your Child's Therapy Journey Towards <br /> a Happier, Calmer Home
+          Start Your Child's Therapy Journey Towards a<br /> Happier, Calmer Home
           </h2>
           <button
             type="button"

@@ -227,26 +227,36 @@ export default function ReportsPage() {
 
       {/* Report Modal */}
       {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50">
-          <div className="bg-white rounded-none sm:rounded-lg max-w-2xl w-full h-full sm:h-auto sm:max-h-[80vh] overflow-y-auto">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+        <div 
+          className="fixed inset-0 bg-transparent sm:bg-black sm:bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowReportModal(false);
+            }
+          }}
+        >
+          <div className="bg-white rounded-t-2xl sm:rounded-lg max-w-2xl w-full h-[90vh] sm:h-auto sm:max-h-[85vh] flex flex-col shadow-xl">
+            {/* Sticky Header */}
+            <div className="px-4 sm:px-6 py-4 sm:py-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <h5 className="text-gray-900 text-base sm:text-lg font-semibold">Complete Session Report</h5>
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="text-gray-400 lg:hover:text-gray-600 p-1"
+                  className="text-gray-400 lg:hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  aria-label="Close modal"
                 >
                   <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
             </div>
             
-            <div className="px-4 sm:px-6 py-4">
+            {/* Scrollable Content */}
+            <div className="px-4 sm:px-6 py-4 sm:py-6 overflow-y-auto flex-1 min-h-0 pb-6 sm:pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="space-y-4 sm:space-y-6">
                 {/* Session Details */}
-                <div className="border-b border-gray-200 pb-3 sm:pb-4">
-                  <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Details</h6>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                <div className="border-b border-gray-200 pb-4 sm:pb-4">
+                  <h6 className="text-gray-900 font-semibold mb-3 text-sm sm:text-base">Session Details</h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3">
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500">Date</p>
                       <p className="text-gray-900 text-sm sm:text-base break-words">{formatDate(selectedReport.scheduled_date)}</p>
@@ -255,32 +265,32 @@ export default function ReportsPage() {
                       <p className="text-xs sm:text-sm text-gray-500">Time</p>
                       <p className="text-gray-900 text-sm sm:text-base">{formatTime(selectedReport.scheduled_time)}</p>
                     </div>
-                <div>
+                    <div>
                       <p className="text-xs sm:text-sm text-gray-500">Psychologist</p>
                       <p className="text-gray-900 text-sm sm:text-base break-words">
                         {selectedReport.psychologist?.first_name} {selectedReport.psychologist?.last_name}
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-500">Status</p>
-                      <p className="text-gray-900 text-sm sm:text-base capitalize">{selectedReport.status}</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* Session Summary */}
                 {getSummary(selectedReport) && (
-                  <div>
-                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Summary</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{getSummary(selectedReport)}</p>
+                  <div className="pb-2">
+                    <h6 className="text-gray-900 font-semibold mb-3 text-sm sm:text-base">Session Summary</h6>
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base break-words leading-relaxed">{getSummary(selectedReport)}</p>
+                    </div>
                   </div>
                 )}
 
                 {/* Session Report */}
                 {getReport(selectedReport) && (
-                  <div>
-                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Report</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{getReport(selectedReport)}</p>
+                  <div className="pb-2">
+                    <h6 className="text-gray-900 font-semibold mb-3 text-sm sm:text-base">Session Report</h6>
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base break-words leading-relaxed">{getReport(selectedReport)}</p>
+                    </div>
                   </div>
                 )}
 
@@ -289,9 +299,11 @@ export default function ReportsPage() {
 
                 {/* Client Feedback */}
                 {selectedReport.feedback && (
-                  <div>
-                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Your Feedback</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{selectedReport.feedback}</p>
+                  <div className="pb-2">
+                    <h6 className="text-gray-900 font-semibold mb-3 text-sm sm:text-base">Your Feedback</h6>
+                    <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base break-words leading-relaxed">{selectedReport.feedback}</p>
+                    </div>
                   </div>
                 )}
               </div>

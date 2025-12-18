@@ -32,6 +32,10 @@ export default function Hero() {
             hyphens: none;
             overflow-wrap: break-word;
           }
+          /* Reduce line height of hero title on mobile */
+          .hero-title {
+            line-height: 1.1 !important;
+          }
         }
         
         /* Tablet: ensure hero section has no bottom padding so image can touch bottom */

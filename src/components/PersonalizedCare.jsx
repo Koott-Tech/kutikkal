@@ -22,6 +22,9 @@ export default function PersonalizedCare() {
             font-size: 28px;
             font-weight: 600;
             line-height: 0.95;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
           .personalized-care-description {
             line-height: 1.2 !important;

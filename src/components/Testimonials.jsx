@@ -494,7 +494,7 @@ export default function Testimonials() {
           }
           .testimonials-heading {
             font-size: 32px;
-            font-weight: 600;
+            font-weight: 500 !important;
             line-height: 1.1;
           }
           /* Portrait tablet: show 2 testimonial cards per carousel viewport */
@@ -526,7 +526,7 @@ export default function Testimonials() {
           }
           .testimonials-heading {
             font-size: 32px;
-            font-weight: 600;
+            font-weight: 500 !important;
             line-height: 1.1;
           }
           .testimonials-infinite-carousel {
@@ -682,12 +682,21 @@ export default function Testimonials() {
           bottom: 0;
           background: linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 100%);
         }
+        /* Mobile line height for testimonials heading and left alignment */
+        @media (max-width: 767px) {
+          .testimonials-heading {
+            line-height: 1.1 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+        }
       `}</style>
       <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
         {/* Heading */}
         <div className="text-center px-4 ">
           <p className="p1">Testimonials</p>
-          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl font-medium">What Families Are Saying About Our Child Counseling Support</h2>
+          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>What Families Are Saying About Our Child Counseling Support</h2>
         </div>
 
         {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}

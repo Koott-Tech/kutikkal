@@ -12,12 +12,44 @@ export const dynamic = 'force-dynamic';
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
   const confettiColors = ['#22c55e', '#3f2e73', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  // Reduce particles on mobile for better performance (20 desktop, 8 mobile)
+  // Optimize particles based on device capability
   const [particleCount, setParticleCount] = useState(20);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLowEnd, setIsLowEnd] = useState(false);
   
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    setParticleCount(isMobile ? 8 : 20);
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      const isMobileDevice = width <= 768;
+      setIsMobile(isMobileDevice);
+      
+      // Detect low-end devices
+      const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+      const deviceMemory = navigator.deviceMemory || 4;
+      const connection = navigator.connection;
+      const isLowEndDevice = 
+        hardwareConcurrency <= 2 ||
+        deviceMemory <= 2 ||
+        (connection && (connection.effectiveType === '2g' || connection.effectiveType === 'slow-2g')) ||
+        width <= 480;
+      
+      setIsLowEnd(isLowEndDevice);
+      
+      // Set particle count based on device capability
+      if (isLowEndDevice) {
+        setParticleCount(4); // Ultra-low-end devices
+      } else if (isMobileDevice) {
+        setParticleCount(6); // Regular mobile
+      } else {
+        setParticleCount(20); // Desktop
+      }
+    };
+    
+    if (typeof window !== 'undefined') {
+      checkDevice();
+      window.addEventListener('resize', checkDevice);
+      return () => window.removeEventListener('resize', checkDevice);
+    }
   }, []);
   
   const particles = Array.from({ length: particleCount }, (_, i) => i);
@@ -28,12 +60,11 @@ function SuccessAnimationContent() {
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 200,
-          damping: 15,
-          duration: 0.6
-        }}
+        transition={
+          isMobile
+            ? { type: 'tween', duration: 0.4, ease: 'easeOut' }
+            : { type: 'spring', stiffness: 200, damping: 15, duration: 0.6 }
+        }
         style={{
           width: '80px',
           height: '80px',
@@ -44,7 +75,8 @@ function SuccessAnimationContent() {
           justifyContent: 'center',
           position: 'relative',
           zIndex: 2,
-          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
+          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)',
+          willChange: 'transform, opacity'
         }}
       >
         <motion.svg
@@ -102,18 +134,18 @@ function SuccessAnimationContent() {
                 y: 0, 
                 scale: 0, 
                 opacity: 1,
-                rotate: 0
+                ...(isLowEnd ? {} : { rotate: 0 }) // Remove rotate on low-end devices
               }}
               animate={{ 
                 x: x, 
                 y: y, 
                 scale: [0, 1, 0.8, 0],
                 opacity: [1, 1, 0.8, 0],
-                rotate: 360
+                ...(isLowEnd ? {} : { rotate: 360 }) // Remove rotate on low-end devices
               }}
               transition={{
-                delay: delay,
-                duration: 0.8,
+                delay: isMobile ? delay * 0.5 : delay, // Reduce delay on mobile
+                duration: isMobile ? 0.6 : 0.8, // Shorter duration on mobile
                 ease: 'easeOut'
               }}
               style={{
@@ -123,7 +155,8 @@ function SuccessAnimationContent() {
                 backgroundColor: color,
                 borderRadius: '50%',
                 zIndex: 1,
-                boxShadow: `0 0 ${size}px ${color}`
+                boxShadow: isLowEnd ? 'none' : `0 0 ${size}px ${color}`, // Remove shadow on low-end
+                willChange: 'transform, opacity'
               }}
             />
           );
@@ -190,41 +223,42 @@ function SlidingSuccessAnimation({ onComplete }) {
         )}
       </AnimatePresence>
 
-      {/* Checkmark Animation */}
+      {/* Checkmark Animation - Using transform instead of top for better performance */}
       <motion.div
         initial={{
           position: 'fixed',
-          top: '50%',
           left: '50%',
+          top: '50%',
           x: '-50%',
           y: '-50%',
           zIndex: 9999
         }}
         animate={isMoving ? {
           position: 'fixed',
-          top: '140px',
           left: '50%',
+          top: '140px', // Fixed position for top
           x: '-50%',
-          y: 0,
+          y: 0, // Reset y transform when at top
           scale: 0.8,
           zIndex: 9999
         } : {
           position: 'fixed',
-          top: '50%',
           left: '50%',
+          top: '50%',
           x: '-50%',
           y: '-50%',
           scale: 1,
           zIndex: 9999
         }}
         transition={{
-          duration: 0.6,
+          duration: isMobile ? 0.4 : 0.6, // Faster on mobile
           ease: [0.4, 0, 0.2, 1] // Custom easing for smooth slide
         }}
         style={{
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          willChange: 'transform'
         }}
       >
         <SuccessAnimationContent />
@@ -258,6 +292,16 @@ function PaymentSuccessContent() {
   const [error, setError] = useState(null);
   const [showCenteredAnimation, setShowCenteredAnimation] = useState(false);
   const [loadingScreenComplete, setLoadingScreenComplete] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Wait for default loading screen to complete before showing success animation
   useEffect(() => {
@@ -615,14 +659,18 @@ function PaymentSuccessContent() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
+              transition={{ 
+                delay: isMobile ? 0.1 : 0.2, 
+                duration: isMobile ? 0.3 : 0.4 
+              }}
               style={{ 
                 color: '#22c55e', 
                 fontSize: '24px',
                 fontWeight: '600',
                 marginBottom: '12px',
                 marginTop: '20px',
-                lineHeight: '1.4'
+                lineHeight: '1.4',
+                willChange: 'transform, opacity'
               }}
             >
               Payment Successful!
@@ -630,8 +678,16 @@ function PaymentSuccessContent() {
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-              style={{ fontSize: '16px', color: '#6b7280', marginBottom: '30px' }}
+              transition={{ 
+                delay: isMobile ? 0.2 : 0.4, 
+                duration: isMobile ? 0.3 : 0.4 
+              }}
+              style={{ 
+                fontSize: '16px', 
+                color: '#6b7280', 
+                marginBottom: '30px',
+                willChange: 'transform, opacity'
+              }}
             >
               Your session has been successfully scheduled.
             </motion.p>
@@ -644,8 +700,14 @@ function PaymentSuccessContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          style={{ marginTop: '80px' }}
+          transition={{ 
+            delay: isMobile ? 0.3 : 0.6, 
+            duration: isMobile ? 0.4 : 0.5 
+          }}
+          style={{ 
+            marginTop: '80px',
+            willChange: 'transform, opacity'
+          }}
         >
         <div className="details-container">
         {/* Transaction Details - Left Column */}
@@ -794,14 +856,18 @@ function PaymentSuccessContent() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75, duration: 0.5 }}
+          transition={{ 
+            delay: isMobile ? 0.35 : 0.75, 
+            duration: isMobile ? 0.4 : 0.5 
+          }}
           style={{
             fontSize: '14px',
             color: '#6b7280',
             lineHeight: '1.5',
             textAlign: 'center',
             marginTop: '40px',
-            marginBottom: '8px'
+            marginBottom: '8px',
+            willChange: 'transform, opacity'
           }}
         >
           The session details and receipt have been sent to your registered email and WhatsApp number.
@@ -813,13 +879,17 @@ function PaymentSuccessContent() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
+        transition={{ 
+          delay: isMobile ? 0.4 : 0.8, 
+          duration: isMobile ? 0.4 : 0.5 
+        }}
         style={{ 
           display: 'flex', 
           gap: '12px',
           flexWrap: 'wrap',
           justifyContent: 'center',
-          marginTop: '20px'
+          marginTop: '20px',
+          willChange: 'transform, opacity'
         }}
       >
         <button

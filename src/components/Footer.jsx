@@ -181,8 +181,11 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 @media (max-width: 767px) {
                     .footer-heading {
                         font-size: 28px !important;
-                        line-height: 0.95 !important;
+                        line-height: 1.1 !important;
                         font-weight: 600 !important;
+                        text-align: left !important;
+                        padding-left: 1rem !important;
+                        padding-right: 1rem !important;
                     }
                     .footer-description {
                         line-height: 1.2 !important;

@@ -57,12 +57,11 @@ function BookingLoadingAnimation() {
       <motion.div
         initial={{ scale: 0, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{
-          type: 'spring',
-          stiffness: 200,
-          damping: 15,
-          duration: 0.6
-        }}
+        transition={
+          isMobile
+            ? { type: 'tween', duration: 0.4, ease: 'easeOut' }
+            : { type: 'spring', stiffness: 200, damping: 15, duration: 0.6 }
+        }
         style={{
           width: '100px',
           height: '100px',
@@ -74,7 +73,8 @@ function BookingLoadingAnimation() {
           position: 'relative',
           zIndex: 2,
           boxShadow: '0 8px 24px rgba(63, 46, 115, 0.25)',
-          marginBottom: '32px'
+          marginBottom: '32px',
+          willChange: 'transform, opacity'
         }}
       >
         {/* Calendar Icon */}
@@ -143,14 +143,18 @@ function BookingLoadingAnimation() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
+        transition={{ 
+          delay: isMobile ? 0.15 : 0.3, 
+          duration: isMobile ? 0.3 : 0.4 
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
           fontSize: '20px',
           fontWeight: '600',
-          color: '#3f2e73'
+          color: '#3f2e73',
+          willChange: 'transform, opacity'
         }}
       >
         <span>Booking Session</span>
@@ -162,14 +166,15 @@ function BookingLoadingAnimation() {
               y: [0, -8, 0]
             }}
             transition={{
-              duration: 1.2,
+              duration: isMobile ? 0.9 : 1.2, // Faster on mobile
               repeat: Infinity,
-              delay: index * 0.2,
+              delay: index * (isMobile ? 0.15 : 0.2), // Shorter delay on mobile
               ease: 'easeInOut'
             }}
             style={{
               fontSize: '24px',
-              lineHeight: 1
+              lineHeight: 1,
+              willChange: 'transform, opacity'
             }}
           >
             .

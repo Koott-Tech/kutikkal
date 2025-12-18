@@ -14,12 +14,44 @@ import { loadAuthData } from '@/lib/authStorage';
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
   const confettiColors = ['#22c55e', '#3f2e73', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  // Reduce particles on mobile for better performance (20 desktop, 8 mobile)
+  // Optimize particles based on device capability
   const [particleCount, setParticleCount] = useState(20);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLowEnd, setIsLowEnd] = useState(false);
   
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    setParticleCount(isMobile ? 8 : 20);
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      const isMobileDevice = width <= 768;
+      setIsMobile(isMobileDevice);
+      
+      // Detect low-end devices
+      const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+      const deviceMemory = navigator.deviceMemory || 4;
+      const connection = navigator.connection;
+      const isLowEndDevice = 
+        hardwareConcurrency <= 2 ||
+        deviceMemory <= 2 ||
+        (connection && (connection.effectiveType === '2g' || connection.effectiveType === 'slow-2g')) ||
+        width <= 480;
+      
+      setIsLowEnd(isLowEndDevice);
+      
+      // Set particle count based on device capability
+      if (isLowEndDevice) {
+        setParticleCount(4); // Ultra-low-end devices
+      } else if (isMobileDevice) {
+        setParticleCount(6); // Regular mobile
+      } else {
+        setParticleCount(20); // Desktop
+      }
+    };
+    
+    if (typeof window !== 'undefined') {
+      checkDevice();
+      window.addEventListener('resize', checkDevice);
+      return () => window.removeEventListener('resize', checkDevice);
+    }
   }, []);
   
   const particles = Array.from({ length: particleCount }, (_, i) => i);
@@ -30,12 +62,11 @@ function SuccessAnimationContent() {
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 200,
-          damping: 15,
-          duration: 0.6
-        }}
+        transition={
+          isMobile
+            ? { type: 'tween', duration: 0.4, ease: 'easeOut' }
+            : { type: 'spring', stiffness: 200, damping: 15, duration: 0.6 }
+        }
         style={{
           width: '80px',
           height: '80px',
@@ -46,7 +77,8 @@ function SuccessAnimationContent() {
           justifyContent: 'center',
           position: 'relative',
           zIndex: 2,
-          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
+          boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)',
+          willChange: 'transform, opacity'
         }}
       >
         <motion.svg
@@ -104,18 +136,18 @@ function SuccessAnimationContent() {
                 y: 0, 
                 scale: 0, 
                 opacity: 1,
-                rotate: 0
+                ...(isLowEnd ? {} : { rotate: 0 }) // Remove rotate on low-end devices
               }}
               animate={{ 
                 x: x, 
                 y: y, 
                 scale: [0, 1, 0.8, 0],
                 opacity: [1, 1, 0.8, 0],
-                rotate: 360
+                ...(isLowEnd ? {} : { rotate: 360 }) // Remove rotate on low-end devices
               }}
               transition={{
-                delay: delay,
-                duration: 0.8,
+                delay: isMobile ? delay * 0.5 : delay, // Reduce delay on mobile
+                duration: isMobile ? 0.6 : 0.8, // Shorter duration on mobile
                 ease: 'easeOut'
               }}
               style={{
@@ -125,7 +157,8 @@ function SuccessAnimationContent() {
                 backgroundColor: color,
                 borderRadius: '50%',
                 zIndex: 1,
-                boxShadow: `0 0 ${size}px ${color}`
+                boxShadow: isLowEnd ? 'none' : `0 0 ${size}px ${color}`, // Remove shadow on low-end
+                willChange: 'transform, opacity'
               }}
             />
           );

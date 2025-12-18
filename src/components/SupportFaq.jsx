@@ -160,6 +160,10 @@ export default function SupportFaq() {
           .our-promise-title {
             font-size: 28px;
             font-weight: 600;
+            line-height: 1.1 !important;
+            text-align: left !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
           }
         }
         /* Override h3 FAQ titles for desktop to match original h6 size */
@@ -210,7 +214,7 @@ export default function SupportFaq() {
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
         <h2 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-        Supporting You and Your Little One <br /> With Compassionate Child Counseling
+        Supporting You and Your Little One With Compassionate Child Counseling
         </h2>
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
@@ -286,10 +290,13 @@ export default function SupportFaq() {
 
                       {/* Smoothly expanding answer with subtle fade-up */}
                       <div
-                        className={`overflow-hidden transition-all ${open ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
-                        style={{ transitionDuration: '600ms' }}
+                        className={`overflow-hidden transition-[max-height,opacity,margin-top] ${open ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                        style={{ 
+                          transitionDuration: '600ms',
+                          willChange: 'max-height, opacity'
+                        }}
                       >
-                        <p className={`text-sm text-gray-800 mb-4 transition-transform duration-500 ease-out ${open ? 'translate-y-0' : 'translate-y-2'}`}>{item.body}</p>
+                        <p className={`text-sm text-gray-800 mb-4 transition-transform duration-500 ease-out ${open ? 'translate-y-0' : 'translate-y-2'}`} style={{ willChange: 'transform' }}>{item.body}</p>
                         {open && (
                           <button className="inline-flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-gray-900 cursor-pointer group relative">
                             <span className="relative">
@@ -340,7 +347,8 @@ export default function SupportFaq() {
 
                     {/* Smoothly expanding answer with image below */}
                     <div
-                      className={`overflow-hidden transition-all duration-500 ${open ? "max-h-[400px] md:max-h-[500px] opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                      className={`overflow-hidden transition-[max-height,opacity,margin-top] duration-500 ${open ? "max-h-[400px] md:max-h-[500px] opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"}`}
+                      style={{ willChange: 'max-height, opacity' }}
                     >
                       <div className="space-y-4">
                         <p className="text-sm text-gray-800">{item.body}</p>
