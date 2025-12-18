@@ -11,6 +11,28 @@ import {
   ArrowLeft
 } from "lucide-react";
 
+// Hook to handle viewport height changes (for mobile keyboard)
+const useViewportHeight = () => {
+  const [viewportHeight, setViewportHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+  
+  useEffect(() => {
+    const updateHeight = () => {
+      setViewportHeight(window.innerHeight);
+    };
+    
+    window.addEventListener('resize', updateHeight);
+    // Handle mobile keyboard
+    window.addEventListener('visualViewport', updateHeight);
+    
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('visualViewport', updateHeight);
+    };
+  }, []);
+  
+  return viewportHeight;
+};
+
 export default function MessagesPage({ session = null }) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
@@ -23,6 +45,7 @@ export default function MessagesPage({ session = null }) {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const hasLoadedRef = useRef(false);
+  const viewportHeight = useViewportHeight();
 
   useEffect(() => {
     // Only load once when component first mounts
@@ -31,6 +54,25 @@ export default function MessagesPage({ session = null }) {
       hasLoadedRef.current = true;
     }
   }, []);
+
+  // Check for conversation ID from sessionStorage after conversations are loaded
+  // This is for when navigating from sessions page - auto-open the chat
+  useEffect(() => {
+    const storedConversationId = sessionStorage.getItem('selectedConversationId');
+    if (storedConversationId && conversations.length > 0) {
+      console.log('Checking for stored conversation ID:', storedConversationId);
+      const targetConversation = conversations.find(conv => conv.id === storedConversationId);
+      if (targetConversation && targetConversation.id !== selectedConversation?.id) {
+        console.log('Auto-selecting stored conversation:', targetConversation);
+        setSelectedConversation(targetConversation);
+        setShowChatScreen(true); // Auto-open chat when coming from sessions page
+        sessionStorage.removeItem('selectedConversationId');
+      } else if (!targetConversation) {
+        console.log('Stored conversation ID not found in conversations, it may need to be reloaded');
+        // Don't clear it yet - might need to reload
+      }
+    }
+  }, [conversations, selectedConversation]);
 
   // Don't auto-select conversations - let user click to select
   useEffect(() => {
@@ -85,9 +127,9 @@ export default function MessagesPage({ session = null }) {
     }
   };
 
-  const loadConversations = async () => {
-    // Prevent reloading if conversations are already loaded
-    if (conversations.length > 0) {
+  const loadConversations = async (forceReload = false) => {
+    // Prevent reloading if conversations are already loaded (unless forced)
+    if (conversations.length > 0 && !forceReload && !sessionStorage.getItem('selectedConversationId')) {
       console.log('Conversations already loaded, skipping reload');
       return;
     }
@@ -105,13 +147,18 @@ export default function MessagesPage({ session = null }) {
       console.log('Response keys:', Object.keys(response));
       
       // Check different possible response structures
+      // Backend returns: { success: true, message: '...', data: { conversations: [...] } }
       let conversationsData = [];
-      if (response.success && response.message && response.message.conversations) {
-        conversationsData = response.message.conversations;
+      if (response.data && response.data.conversations && Array.isArray(response.data.conversations)) {
+        conversationsData = response.data.conversations;
+      } else if (response.success && response.data && Array.isArray(response.data)) {
+        conversationsData = response.data;
       } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
         conversationsData = response.data.data;
       } else if (response.data && response.data.data && response.data.data.conversations) {
         conversationsData = response.data.data.conversations;
+      } else if (response.success && response.message && response.message.conversations) {
+        conversationsData = response.message.conversations;
       } else if (response.data && Array.isArray(response.data)) {
         conversationsData = response.data;
       } else if (response.data && response.data.conversations) {
@@ -122,8 +169,31 @@ export default function MessagesPage({ session = null }) {
         conversationsData = response;
       }
       
+      console.log('Response structure check:', {
+        hasData: !!response.data,
+        hasDataConversations: !!(response.data && response.data.conversations),
+        dataType: response.data ? typeof response.data : 'undefined',
+        dataIsArray: Array.isArray(response.data),
+        conversationsDataLength: conversationsData.length
+      });
+      
       console.log('Parsed conversations array:', conversationsData);
       setConversations(conversationsData);
+      
+      // Check if we have a stored conversation ID to auto-select
+      const storedConversationId = sessionStorage.getItem('selectedConversationId');
+      if (storedConversationId) {
+        const targetConversation = conversationsData.find(conv => conv.id === storedConversationId);
+        if (targetConversation) {
+          console.log('Auto-selecting conversation from storage:', targetConversation);
+          setSelectedConversation(targetConversation);
+          // Auto-open chat screen when navigating from sessions page
+          setShowChatScreen(true);
+          sessionStorage.removeItem('selectedConversationId');
+        } else {
+          console.log('Stored conversation ID not found in loaded conversations, will check after state update');
+        }
+      }
       
       // If no conversations loaded but we have a session, create a mock conversation
       if (conversationsData.length === 0 && session) {
@@ -243,10 +313,11 @@ export default function MessagesPage({ session = null }) {
       
       setMessages(validMessages);
       
-      // Mark messages as read (non-blocking)
-      messagesApi.markAsRead(conversationId).catch(err => 
-        console.error('Failed to mark messages as read:', err)
-      );
+      // Mark messages as read (non-blocking, don't let errors cause logout)
+      messagesApi.markAsRead(conversationId).catch(err => {
+        console.error('Failed to mark messages as read (non-critical):', err);
+        // Don't throw or set error - this is a non-critical operation
+      });
     } catch (err) {
       console.error('Error loading messages:', err);
       setError(err.message);
@@ -398,23 +469,23 @@ export default function MessagesPage({ session = null }) {
   };
 
   return (
-    <div className="bg-white h-screen flex flex-col relative">
+    <div className="bg-white shadow rounded-lg p-6">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-white z-10">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <MessageSquare className="h-6 w-6 text-blue-600" />
-          <h6>Messages</h6>
+          <MessageSquare className="h-6 w-6" style={{ color: '#3f2e73' }} />
+          <h5 className="text-gray-900">Messages</h5>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-col gap-4">
         {/* Conversations List */}
-        <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50 overflow-y-auto`}>
+        <div className={`${showChatScreen ? 'hidden' : 'block'} w-full bg-gray-50 rounded-lg overflow-y-auto`} style={{ maxHeight: 'calc(100vh - 250px)' }}>
           <div className="p-4">
             <h6 className="text-gray-900 mb-3">Conversations</h6>
             {isLoading ? (
               <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 mx-auto" style={{ borderBottomColor: '#3f2e73' }}></div>
               </div>
             ) : conversations.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -423,7 +494,10 @@ export default function MessagesPage({ session = null }) {
                 <p className="text-gray-600 mb-4">Start a conversation with your booked psychologist</p>
                 <button
                   onClick={() => window.location.href = '/profile/sessions'}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ backgroundColor: '#3f2e73' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                 >
                   View Sessions
                 </button>
@@ -436,13 +510,14 @@ export default function MessagesPage({ session = null }) {
                     onClick={() => handleConversationSelect(conversation)}
                     className={`p-5 rounded-lg cursor-pointer transition-colors ${
                       selectedConversation?.id === conversation.id
-                        ? 'bg-blue-100 border-blue-300'
+                        ? 'border'
                         : 'bg-white hover:bg-gray-100'
                     }`}
+                    style={selectedConversation?.id === conversation.id ? { backgroundColor: '#f5f3ff', borderColor: '#3f2e73' } : {}}
                   >
                     <div className="flex items-center justify-between space-x-6">
                       <div className="flex items-center space-x-6 flex-1 min-w-0">
-                        <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
                           {conversation.psychologist?.cover_image_url ? (
                             <img 
                               src={conversation.psychologist.cover_image_url}
@@ -450,7 +525,7 @@ export default function MessagesPage({ session = null }) {
                               className="w-14 h-14 rounded-full object-cover"
                             />
                           ) : (
-                            <User className="h-6 w-6 text-blue-600" />
+                            <User className="h-6 w-6" style={{ color: '#3f2e73' }} />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -465,22 +540,14 @@ export default function MessagesPage({ session = null }) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          const psychologist = conversation.psychologist;
-                          if (psychologist) {
-                            // Use ID if available, otherwise create slug from name
-                            const doctorIdentifier = psychologist.id || (psychologist.name || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`)
-                              .toLowerCase()
-                              .trim()
-                              .replace(/[^a-z0-9]+/g, '-')
-                              .replace(/^-+|-+$/g, '');
-                            if (doctorIdentifier) {
-                              window.location.href = `/therapist-profile?doctor=${doctorIdentifier}`;
-                            }
-                          }
+                          handleConversationSelect(conversation);
                         }}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
+                        className="text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0"
+                        style={{ backgroundColor: '#3f2e73' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                       >
-                        Book Session
+                        Message
                       </button>
                     </div>
                   </div>
@@ -491,11 +558,21 @@ export default function MessagesPage({ session = null }) {
         </div>
 
         {/* Messages Area */}
-        <div className={`${showChatScreen ? 'block' : 'hidden'} w-full flex flex-col flex-1`}>
+        <div 
+          className={`${showChatScreen ? 'flex' : 'hidden'} w-full flex-col bg-white border border-gray-200 rounded-lg overflow-hidden`} 
+          style={{ 
+            height: typeof window !== 'undefined' && window.innerWidth >= 1024 
+              ? 'calc(100vh - 250px)' 
+              : `${viewportHeight - 200}px`,
+            maxHeight: typeof window !== 'undefined' && window.innerWidth >= 1024 
+              ? 'calc(100vh - 250px)' 
+              : `${viewportHeight - 200}px`
+          }}
+        >
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
-              <div className="p-4 border-b bg-white flex-shrink-0">
+              <div className="p-4 border-b bg-white flex-shrink-0 z-10">
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={handleBackToConversations}
@@ -503,7 +580,7 @@ export default function MessagesPage({ session = null }) {
                   >
                     <ArrowLeft className="h-5 w-5 text-gray-600" />
                   </button>
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
                     {selectedConversation.psychologist?.cover_image_url ? (
                       <img 
                         src={selectedConversation.psychologist.cover_image_url}
@@ -511,7 +588,7 @@ export default function MessagesPage({ session = null }) {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <User className="h-5 w-5 text-blue-600" />
+                      <User className="h-5 w-5" style={{ color: '#3f2e73' }} />
                     )}
                   </div>
                   <div>
@@ -534,10 +611,10 @@ export default function MessagesPage({ session = null }) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ flex: '1 1 auto', overflowY: 'auto', minHeight: 0 }}>
                 {isLoading ? (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 mx-auto" style={{ borderBottomColor: '#3f2e73' }}></div>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
@@ -558,9 +635,10 @@ export default function MessagesPage({ session = null }) {
                         <div
                           className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                             (message?.sender_type || '') === user?.role
-                              ? 'bg-blue-600 text-white'
+                              ? 'text-white'
                               : 'bg-gray-200 text-gray-900'
                           } ${message?.isOptimistic ? 'opacity-70' : ''}`}
+                          style={(message?.sender_type || '') === user?.role ? { backgroundColor: '#3f2e73' } : {}}
                         >
                           <p className="text-sm">{message?.content || 'Message content unavailable'}</p>
                           <div className="flex items-center justify-between mt-1">
@@ -569,7 +647,7 @@ export default function MessagesPage({ session = null }) {
                             </p>
                             {message?.isOptimistic && (
                               <div className="flex items-center space-x-1">
-                                <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
+                                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#3f2e73' }}></div>
                                 <span className="text-xs opacity-70">Sending...</span>
                               </div>
                             )}
@@ -582,19 +660,34 @@ export default function MessagesPage({ session = null }) {
               </div>
 
               {/* Message Input - Fixed at bottom */}
-              <div className="p-4 border-t bg-white flex-shrink-0 mt-auto">
+              <div className="p-4 border-t bg-white flex-shrink-0 z-10" style={{ marginTop: 'auto' }}>
                 <form onSubmit={handleSendMessage} className="flex space-x-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={handleInputChange}
                     placeholder={`Type a message to ${getConversationName(selectedConversation)}...`}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': '#3f2e73' }}
+                    onFocus={(e) => { 
+                      e.currentTarget.style.borderColor = '#3f2e73'; 
+                      e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)';
+                      // On mobile, scroll input into view when keyboard opens
+                      if (window.innerWidth < 1024) {
+                        setTimeout(() => {
+                          e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        }, 300);
+                      }
+                    }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
                   />
                   <button
                     type="submit"
                     disabled={!newMessage.trim() || isSending}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    style={{ backgroundColor: '#3f2e73' }}
+                    onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#1d1733')}
+                    onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = '#3f2e73')}
                   >
                     {isSending ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

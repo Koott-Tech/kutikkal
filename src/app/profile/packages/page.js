@@ -49,7 +49,7 @@ export default function PackagesPage() {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading packages...</p>
         </div>
       </div>
@@ -66,7 +66,10 @@ export default function PackagesPage() {
           <p className="text-gray-600">You can browse therapists and purchase packages from the guide page.</p>
           <button
             onClick={() => router.push('/psychologists')}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+            className="mt-4 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+            style={{ backgroundColor: '#3f2e73' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
           >
             Browse Therapists
           </button>
@@ -100,9 +103,11 @@ export default function PackagesPage() {
                         <span className="font-medium">Status:</span> 
                         <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
                           pkg.status === 'active' ? 'bg-green-100 text-green-800' : 
-                          pkg.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                          pkg.status === 'completed' ? 'text-white' : 
                           'bg-gray-100 text-gray-800'
-                        }`}>
+                        }`}
+                        style={pkg.status === 'completed' ? { backgroundColor: '#3f2e73' } : {}}
+                        >
                           {pkg.status}
                         </span>
                       </p>

@@ -77,7 +77,7 @@ export default function ReportsPage() {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading reports...</p>
         </div>
       </div>
@@ -100,44 +100,51 @@ export default function ReportsPage() {
             {sessions
               .filter(s => s.status === 'completed')
               .map((session) => (
-                <div key={session.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h5 className="text-gray-900">
+                <div 
+                  key={session.id} 
+                  className="border border-gray-200 rounded-lg p-4 sm:p-5 transition-colors"
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Psychologist Avatar - Left side */}
+                    <div className="flex-shrink-0">
+                      {session.psychologist?.cover_image_url ? (
+                        <img 
+                          src={session.psychologist.cover_image_url}
+                          alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                          {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Session Details - Middle */}
+                    <div className="flex-1 min-w-0">
+                      <h5 className="text-gray-900 mb-1 font-semibold">
                         Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
                       </h5>
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 text-sm">
                         {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleViewFullReport(session)}
-                      className="text-blue-600 hover:text-blue-900 text-sm font-medium cursor-pointer"
-                    >
-                      View Complete Report
-                    </button>
+                    
+                    {/* View Report Button - Right side, vertically centered */}
+                    <div className="flex-shrink-0">
+                      <button
+                        onClick={() => handleViewFullReport(session)}
+                        className="text-sm font-medium cursor-pointer transition-colors px-3 py-1.5 rounded-lg border"
+                        style={{ color: '#3f2e73', borderColor: '#3f2e73' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; e.currentTarget.style.borderColor = '#1d1733'; e.currentTarget.style.backgroundColor = '#f5f3ff'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
+                        View Complete Report
+                      </button>
+                    </div>
                   </div>
-                  
-                  {getSummary(session) && (
-                    <div className="mb-3">
-                      <h6 className="text-gray-700 mb-1">Summary</h6>
-                      <p className="text-gray-600">{getSummary(session)}</p>
-                    </div>
-                  )}
-                  
-                  {getReport(session) && (
-                    <div className="mb-3">
-                      <h6 className="text-gray-700 mb-1">Report</h6>
-                      <p className="text-gray-600">{getReport(session)}</p>
-                    </div>
-                  )}
-
-                  {getSummaryNotes(session) && (
-                    <div className="mb-3">
-                      <h6 className="text-gray-700 mb-1">Additional Notes</h6>
-                      <p className="text-gray-600">{getSummaryNotes(session)}</p>
-                    </div>
-                  )}
                 </div>
               ))}
           </div>
@@ -161,39 +168,56 @@ export default function ReportsPage() {
             </div>
             
             <div className="px-6 py-4">
-              <div className="space-y-4">
-                <div>
-                  <h6 className="text-gray-900">Session Details</h6>
-                  <p className="text-gray-600">
-                    {formatDate(selectedReport.scheduled_date)} at {formatTime(selectedReport.scheduled_time)}
-                  </p>
+              <div className="space-y-6">
+                {/* Session Details */}
+                <div className="border-b border-gray-200 pb-4">
+                  <h6 className="text-gray-900 font-semibold mb-2">Session Details</h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-sm text-gray-500">Date</p>
+                      <p className="text-gray-900">{formatDate(selectedReport.scheduled_date)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Time</p>
+                      <p className="text-gray-900">{formatTime(selectedReport.scheduled_time)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Psychologist</p>
+                      <p className="text-gray-900">
+                        {selectedReport.psychologist?.first_name} {selectedReport.psychologist?.last_name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Status</p>
+                      <p className="text-gray-900 capitalize">{selectedReport.status}</p>
+                    </div>
+                  </div>
                 </div>
                 
+                {/* Session Summary */}
                 {getSummary(selectedReport) && (
                   <div>
-                    <h6 className="text-gray-900">Session Summary</h6>
-                    <p className="text-gray-600">{getSummary(selectedReport)}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2">Session Summary</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap">{getSummary(selectedReport)}</p>
                   </div>
                 )}
 
+                {/* Session Report */}
                 {getReport(selectedReport) && (
                   <div>
-                    <h6 className="text-gray-900">Session Report</h6>
-                    <p className="text-gray-600">{getReport(selectedReport)}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2">Session Report</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap">{getReport(selectedReport)}</p>
                   </div>
                 )}
 
-                {getSummaryNotes(selectedReport) && (
-                  <div>
-                    <h6 className="text-gray-900">Additional Notes</h6>
-                    <p className="text-gray-600">{getSummaryNotes(selectedReport)}</p>
-                  </div>
-                )}
+                {/* Additional Notes - NOT VISIBLE TO CLIENT (Psychologist only) */}
+                {/* Removed from client view - these are private notes for psychologists only */}
 
+                {/* Client Feedback */}
                 {selectedReport.feedback && (
                   <div>
-                    <h6 className="text-gray-900">Feedback</h6>
-                    <p className="text-gray-600">{selectedReport.feedback}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2">Your Feedback</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap">{selectedReport.feedback}</p>
                   </div>
                 )}
               </div>

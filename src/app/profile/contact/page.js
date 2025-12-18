@@ -38,13 +38,23 @@ export default function ContactPage() {
           phoneNumberOnly = phoneNumber.substring(2);
         }
         
+        // Filter out default/placeholder values when loading form
+        const invalidValues = ['Pending', 'pending', 'Update', 'update'];
+        const childName = profile.child_name && !invalidValues.includes(profile.child_name) 
+          ? profile.child_name 
+          : '';
+        // Filter out default age value (1) - treat it as empty/cleared
+        const childAge = profile.child_age && profile.child_age !== 1 && profile.child_age !== null
+          ? String(profile.child_age) 
+          : '';
+        
         setProfileForm({
           first_name: profile.first_name || '',
           last_name: profile.last_name || '',
           phone_number: phoneNumberOnly,
           country_code: countryCode,
-          child_name: profile.child_name || '',
-          child_age: profile.child_age || ''
+          child_name: childName,
+          child_age: childAge
         });
         setIsDataLoaded(true);
         return;
@@ -69,13 +79,23 @@ export default function ContactPage() {
             phoneNumberOnly = phoneNumber.substring(2);
           }
           
+          // Filter out default/placeholder values when loading form
+          const invalidValues = ['Pending', 'pending', 'Update', 'update'];
+          const childName = profileData.child_name && !invalidValues.includes(profileData.child_name) 
+            ? profileData.child_name 
+            : '';
+          // Filter out default age value (1) - treat it as empty/cleared
+          const childAge = profileData.child_age && profileData.child_age !== 1 && profileData.child_age !== null
+            ? String(profileData.child_age) 
+            : '';
+          
           setProfileForm({
             first_name: profileData.first_name || '',
             last_name: profileData.last_name || '',
             phone_number: phoneNumberOnly,
             country_code: countryCode,
-            child_name: profileData.child_name || '',
-            child_age: profileData.child_age || ''
+            child_name: childName,
+            child_age: childAge
           });
         }
       } catch (error) {
@@ -99,21 +119,45 @@ export default function ContactPage() {
     try {
       setIsSavingProfile(true);
       
-      if (!profileForm.first_name || !profileForm.last_name || !profileForm.phone_number) {
-        setProfileSaveMsg('Please fill in all required fields: First Name, Last Name, and Phone Number.');
+      if (!profileForm.first_name || !profileForm.phone_number) {
+        setProfileSaveMsg('Please fill in all required fields: First Name and Phone Number.');
         return;
       }
 
       // Combine country code and phone number for storage
       const fullPhoneNumber = profileForm.country_code + profileForm.phone_number;
 
-      await clientApi.updateProfile({
+      // Build update payload
+      const updatePayload = {
         first_name: profileForm.first_name,
-        last_name: profileForm.last_name,
-        phone_number: fullPhoneNumber,
-        child_name: profileForm.child_name || null,
-        child_age: profileForm.child_age ? Number(profileForm.child_age) : null
-      });
+        phone_number: fullPhoneNumber
+      };
+      
+      // Handle last_name - allow clearing by sending empty string
+      // If field is empty/cleared, send empty string to clear it
+      if (profileForm.last_name !== undefined && profileForm.last_name !== null) {
+        updatePayload.last_name = profileForm.last_name.trim() || '';
+      }
+      
+      // Handle child_name - allow clearing by sending empty string or default
+      // If field is empty/cleared, send empty string to clear it (backend will handle default if needed)
+      if (profileForm.child_name !== undefined && profileForm.child_name !== null) {
+        updatePayload.child_name = profileForm.child_name.trim() || '';
+      }
+      
+      // Handle child_age - allow clearing by sending null
+      // If field is empty/cleared, send null to clear it
+      if (profileForm.child_age !== undefined && profileForm.child_age !== null && profileForm.child_age !== '' && profileForm.child_age !== '0') {
+        const ageValue = Number(profileForm.child_age);
+        if (!isNaN(ageValue) && ageValue > 0) {
+          updatePayload.child_age = ageValue;
+        }
+      } else if (profileForm.child_age === '' || profileForm.child_age === null || profileForm.child_age === '0') {
+        // Explicitly clear child_age by sending null
+        updatePayload.child_age = null;
+      }
+
+      await clientApi.updateProfile(updatePayload);
 
       const refreshed = await authApi.getProfile();
       if (refreshed?.data?.user) {
@@ -134,13 +178,23 @@ export default function ContactPage() {
           phoneNumberOnly = phoneNumber.substring(2);
         }
         
+        // Filter out default/placeholder values when loading form
+        const invalidValues = ['Pending', 'pending', 'Update', 'update'];
+        const childName = refreshedProfile.child_name && !invalidValues.includes(refreshedProfile.child_name) 
+          ? refreshedProfile.child_name 
+          : '';
+        // Filter out default age value (1) - treat it as empty/cleared
+        const childAge = refreshedProfile.child_age && refreshedProfile.child_age !== 1 && refreshedProfile.child_age !== null
+          ? String(refreshedProfile.child_age) 
+          : '';
+        
         setProfileForm({
           first_name: refreshedProfile.first_name || '',
           last_name: refreshedProfile.last_name || '',
           phone_number: phoneNumberOnly,
           country_code: countryCode,
-          child_name: refreshedProfile.child_name || '',
-          child_age: refreshedProfile.child_age || ''
+          child_name: childName,
+          child_age: childAge
         });
       }
       setProfileSaveMsg('Contact information saved successfully.');
@@ -156,7 +210,7 @@ export default function ContactPage() {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading contact information...</p>
         </div>
       </div>
@@ -179,9 +233,12 @@ export default function ContactPage() {
               name="first_name"
               value={profileForm.first_name}
               onChange={handleProfileInputChange}
-              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
                 !profileForm.first_name ? 'border-red-300' : 'border-gray-300'
               }`}
+              style={{ '--tw-ring-color': '#3f2e73' }}
+              onFocus={(e) => { if (profileForm.first_name) { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; } }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
               placeholder="Enter your first name"
               required
             />
@@ -195,7 +252,10 @@ export default function ContactPage() {
               name="last_name"
               value={profileForm.last_name}
               onChange={handleProfileInputChange}
-              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
+              className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 border-gray-300"
+              style={{ '--tw-ring-color': '#3f2e73' }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
               placeholder="Enter your last name"
             />
           </div>
@@ -210,7 +270,10 @@ export default function ContactPage() {
               name="country_code"
               value={profileForm.country_code}
               onChange={handleProfileInputChange}
-              className="border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2"
+              style={{ '--tw-ring-color': '#3f2e73' }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
             >
               <option value="+91">🇮🇳 +91</option>
               <option value="+1">🇺🇸 +1</option>
@@ -228,9 +291,12 @@ export default function ContactPage() {
               name="phone_number"
               value={profileForm.phone_number}
               onChange={handleProfileInputChange}
-              className={`flex-1 border border-l-0 rounded-r-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`flex-1 border border-l-0 rounded-r-md px-3 py-2 focus:outline-none focus:ring-2 ${
                 !profileForm.phone_number ? 'border-red-300' : 'border-gray-300'
               }`}
+              style={{ '--tw-ring-color': '#3f2e73' }}
+              onFocus={(e) => { if (profileForm.phone_number) { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; } }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
               placeholder="Enter your phone number"
               required
             />
@@ -253,8 +319,10 @@ export default function ContactPage() {
                   name="child_name"
                   value={profileForm.child_name}
                   onChange={handleProfileInputChange}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
-                  placeholder="Your child's name"
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 border-gray-300"
+                  style={{ '--tw-ring-color': '#3f2e73' }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
                 />
               </div>
               <div>
@@ -268,8 +336,10 @@ export default function ContactPage() {
                   max="18"
                   value={profileForm.child_age}
                   onChange={handleProfileInputChange}
-                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300"
-                  placeholder="Age"
+                  className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 border-gray-300"
+                  style={{ '--tw-ring-color': '#3f2e73' }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.boxShadow = '0 0 0 2px rgba(63, 46, 115, 0.2)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = ''; }}
                 />
               </div>
             </div>
@@ -286,7 +356,10 @@ export default function ContactPage() {
           <button
             type="submit"
             disabled={isSavingProfile}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+            className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200 disabled:opacity-60"
+            style={{ backgroundColor: '#3f2e73' }}
+            onMouseEnter={(e) => !isSavingProfile && (e.currentTarget.style.backgroundColor = '#1d1733')}
+            onMouseLeave={(e) => !isSavingProfile && (e.currentTarget.style.backgroundColor = '#3f2e73')}
           >
             {isSavingProfile ? 'Saving...' : 'Save Contact'}
           </button>

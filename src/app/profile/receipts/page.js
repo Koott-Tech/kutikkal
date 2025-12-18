@@ -61,16 +61,25 @@ export default function ReceiptsPage() {
     });
   };
 
-  const downloadReceipt = async (receiptId) => {
+  const downloadReceipt = async (receipt) => {
     try {
-      console.log('🔍 Downloading receipt:', receiptId);
+      // Use receipt.id if available, otherwise fallback to receipt.receipt_id or session_id
+      const receiptId = receipt.id || receipt.receipt_id || receipt.session_id;
+      console.log('🔍 Downloading receipt:', receiptId, 'Full receipt:', receipt);
       
       if (!token) {
         showError('No authentication token found. Please login again.', 'Authentication Required');
         return;
       }
 
-      // Use the backend API to get the download URL
+      // If file_url is directly available, use it
+      if (receipt.file_url) {
+        console.log('✅ Using direct file URL from receipt');
+        window.open(receipt.file_url, '_blank');
+        return;
+      }
+
+      // Otherwise, use the backend API to get the download URL
       const data = await clientApi.downloadReceipt(receiptId);
       console.log('🔍 Download API response:', data);
 
@@ -92,7 +101,7 @@ export default function ReceiptsPage() {
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading receipts...</p>
         </div>
       </div>
@@ -108,7 +117,10 @@ export default function ReceiptsPage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={fetchReceipts}
-            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            className="text-white py-2 px-4 rounded-lg transition-colors"
+            style={{ backgroundColor: '#3f2e73' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
           >
             Try Again
           </button>
@@ -126,7 +138,7 @@ export default function ReceiptsPage() {
             View and download receipts for your completed sessions
           </p>
         </div>
-        <Receipt className="h-8 w-8 text-blue-600" />
+        <Receipt className="h-8 w-8" style={{ color: '#3f2e73' }} />
       </div>
       {receipts.length === 0 ? (
         <div className="text-center py-12">
@@ -207,8 +219,11 @@ export default function ReceiptsPage() {
                       <p><strong>Payment Date:</strong> {formatDate(receipt.payment_date)}</p>
                     </div>
                     <button
-                      onClick={() => downloadReceipt(receipt.id)}
-                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full sm:w-auto justify-center"
+                      onClick={() => downloadReceipt(receipt)}
+                      className="flex items-center gap-2 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium w-full sm:w-auto justify-center"
+                      style={{ backgroundColor: '#3f2e73' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                     >
                       <Download className="h-4 w-4" />
                       Download Receipt

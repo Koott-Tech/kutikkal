@@ -15,14 +15,23 @@ import {
   Menu,
   Home,
   Users,
-  Mail
+  Mail,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 
 export default function ProfileLayout({ children }) {
   const { user, logout, hasRole, login, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Load sidebar state from localStorage, default to true (open)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('profileSidebarOpen');
+      return saved !== null ? saved === 'true' : true; // Default to true if not set
+    }
+    return true;
+  });
   const [profileData, setProfileData] = useState(null);
 
   const navigation = [
@@ -75,7 +84,19 @@ export default function ProfileLayout({ children }) {
 
   const handleNavigationClick = (item) => {
     router.push(item.href);
-    setSidebarOpen(false);
+    // Don't close sidebar on navigation - preserve user's preference
+  };
+
+  // Save sidebar state to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('profileSidebarOpen', sidebarOpen.toString());
+    }
+  }, [sidebarOpen]);
+
+  // Toggle sidebar function
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => !prev);
   };
 
   const isActive = (href) => {
@@ -103,7 +124,7 @@ export default function ProfileLayout({ children }) {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
       </div>
     );
   }
@@ -149,9 +170,10 @@ export default function ProfileLayout({ children }) {
                   onClick={() => handleNavigationClick(item)}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors w-full text-left cursor-pointer ${
                     active 
-                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500' 
+                      ? 'text-gray-900 border-l-4' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
+                  style={active ? { borderLeftColor: '#3f2e73' } : {}}
                 >
                   <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                   {item.name}
@@ -173,10 +195,27 @@ export default function ProfileLayout({ children }) {
         </div>
       </div>
 
+      {/* Desktop sidebar toggle button - outside when closed */}
+      {!sidebarOpen && (
+        <div className="hidden lg:block fixed top-20 left-4 z-50">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-md bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            aria-label="Toggle sidebar"
+          >
+            <PanelLeftOpen className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
+      )}
+
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:top-16 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <nav className="flex-1 space-y-4 px-2 py-4 pt-6">
+      <div className={`hidden lg:fixed lg:top-16 lg:bottom-0 lg:left-0 lg:flex lg:w-64 lg:flex-col z-30 transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col flex-grow bg-white border-r border-gray-200 relative group">
+          <nav className={`flex-1 space-y-4 px-2 py-4 transition-all duration-300 ${
+            sidebarOpen ? 'pt-6' : 'pt-6'
+          }`}>
             {navigation.filter(item => item.show !== false).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
@@ -187,9 +226,10 @@ export default function ProfileLayout({ children }) {
                   onClick={() => handleNavigationClick(item)}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors w-full text-left cursor-pointer ${
                     active 
-                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500' 
+                      ? 'text-gray-900 border-l-4' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
+                  style={active ? { borderLeftColor: '#3f2e73' } : {}}
                 >
                   <Icon className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
                   {item.name}
@@ -197,6 +237,21 @@ export default function ProfileLayout({ children }) {
               );
             })}
           </nav>
+          
+          {/* Toggle button - inside sidebar, above logout */}
+          <div className="p-4 pb-2 flex justify-end">
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              {sidebarOpen ? (
+                <PanelLeftClose className="h-5 w-5" />
+              ) : (
+                <PanelLeftOpen className="h-5 w-5" />
+              )}
+            </button>
+          </div>
           
           <div className="border-t border-gray-200 p-4">
             <button
@@ -211,15 +266,25 @@ export default function ProfileLayout({ children }) {
       </div>
 
       {/* Desktop header */}
-      <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white w-full">
-        <div className="flex h-16 items-center justify-end px-4">
+      <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white w-full border-b border-gray-200">
+        <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center">
+            <img 
+              src="/mainlogo.webp" 
+              alt="Little Care Logo" 
+              className="h-8 w-auto hover:opacity-80 transition-opacity"
+            />
+          </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
               {displayName || 'User'}
             </span>
             <button
               onClick={handleLogout}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              style={{ backgroundColor: '#3f2e73' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
             >
               Get started
             </button>
@@ -228,7 +293,7 @@ export default function ProfileLayout({ children }) {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={`lg:transition-all lg:duration-300 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
         {/* Mobile header */}
         <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
           <div className="flex items-center">
@@ -239,7 +304,7 @@ export default function ProfileLayout({ children }) {
             />
           </div>
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
             className="text-gray-500 hover:text-gray-600"
           >
             <Menu className="h-6 w-6" />

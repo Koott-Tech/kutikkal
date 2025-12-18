@@ -22,7 +22,7 @@ function ProfileRedirect() {
   // Show minimal loading while redirecting
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
     </div>
   );
 }
@@ -31,7 +31,7 @@ export default function ProfilePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
       </div>
     }>
       <ProfileRedirect />
