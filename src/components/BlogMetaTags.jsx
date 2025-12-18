@@ -2,7 +2,7 @@
 
 import Head from 'next/head';
 
-const BlogMetaTags = ({ blog, siteUrl = 'https://kuttikal.com' }) => {
+const BlogMetaTags = ({ blog, siteUrl = 'https://littlecare.com' }) => {
   if (!blog) return null;
 
   const {
@@ -40,11 +40,11 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://kuttikal.com' }) => {
     "image": featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/images/blog-default.jpg`,
     "author": {
       "@type": "Person",
-      "name": author_name || "Kuttikal Team"
+      "name": author_name || "Little Care Team"
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Kuttikal",
+      "name": "Little Care",
       "logo": {
         "@type": "ImageObject",
         "url": `${siteUrl}/logo.png`
@@ -68,7 +68,7 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://kuttikal.com' }) => {
       <meta name="title" content={metaTitle} />
       <meta name="description" content={metaDescription} />
       <meta name="keywords" content={keywords} />
-      <meta name="author" content={author_name || "Kuttikal Team"} />
+      <meta name="author" content={author_name || "Little Care Team"} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="article" />
@@ -76,9 +76,9 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://kuttikal.com' }) => {
       <meta property="og:title" content={metaTitle} />
       <meta property="og:description" content={metaDescription} />
       <meta property="og:image" content={featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/images/blog-default.jpg`} />
-      <meta property="og:site_name" content="Kuttikal" />
+      <meta property="og:site_name" content="Little Care" />
       <meta property="og:locale" content="en_US" />
-      <meta property="article:author" content={author_name || "Kuttikal Team"} />
+      <meta property="article:author" content={author_name || "Little Care Team"} />
       <meta property="article:published_time" content={published_at} />
       <meta property="article:modified_time" content={published_at} />
       {categories?.map((category, index) => (

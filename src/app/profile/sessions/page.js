@@ -32,7 +32,35 @@ export default function SessionsPage() {
     try {
       setIsLoading(true);
       const sessionsData = await clientApi.getSessions();
-      setSessions(sessionsData.data?.sessions || []);
+      const sessionsList = sessionsData.data?.sessions || [];
+      
+      // Sort sessions: upcoming sessions by nearest time first, then completed by most recent
+      const now = new Date();
+      const sortedSessions = sessionsList.sort((a, b) => {
+        // Completed sessions go to the end
+        if (a.status === 'completed' && b.status !== 'completed') return 1;
+        if (a.status !== 'completed' && b.status === 'completed') return -1;
+        
+        // Both completed - sort by most recent first
+        if (a.status === 'completed' && b.status === 'completed') {
+          const dateA = new Date(`${a.scheduled_date}T${a.scheduled_time || '00:00:00'}+05:30`);
+          const dateB = new Date(`${b.scheduled_date}T${b.scheduled_time || '00:00:00'}+05:30`);
+          return dateB - dateA;
+        }
+        
+        // Both upcoming - sort by nearest time first
+        const timeA = a.scheduled_time || '00:00:00';
+        const timeOnlyA = timeA.split(' ')[0];
+        const dateA = new Date(`${a.scheduled_date}T${timeOnlyA}+05:30`);
+        
+        const timeB = b.scheduled_time || '00:00:00';
+        const timeOnlyB = timeB.split(' ')[0];
+        const dateB = new Date(`${b.scheduled_date}T${timeOnlyB}+05:30`);
+        
+        return dateA - dateB; // Nearest first
+      });
+      
+      setSessions(sortedSessions);
     } catch (err) {
       console.error('Error loading sessions:', err);
       setError(err.message);
@@ -80,7 +108,11 @@ export default function SessionsPage() {
     if (!session.scheduled_date || !session.scheduled_time) return false;
     
     const now = new Date();
-    const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+    // Create date in IST timezone (time is already in IST format)
+    // Format: "2025-12-31T18:00:00+05:30" to ensure IST timezone
+    const timeStr = session.scheduled_time || '00:00:00';
+    const timeOnly = timeStr.split(' ')[0]; // Remove any timezone suffix if present
+    const sessionDateTime = new Date(`${session.scheduled_date}T${timeOnly}+05:30`);
     
     return sessionDateTime < now;
   };
@@ -118,24 +150,33 @@ export default function SessionsPage() {
   const formatTime = (timeString) => {
     if (!timeString) return 'N/A';
     try {
-      const [hours, minutes] = timeString.split(':');
-      const hour = parseInt(hours, 10);
-      const minute = minutes || '00';
-      
-      let hour12 = hour;
-      let ampm = 'AM';
-      
-      if (hour === 0) {
-        hour12 = 12;
-      } else if (hour === 12) {
-        ampm = 'PM';
-      } else if (hour > 12) {
-        hour12 = hour - 12;
-        ampm = 'PM';
+      // Handle formats: "18:00:00" or "18:00" or "6:00 PM" (shouldn't happen but handle it)
+      // First, check if it's already in 12-hour format
+      if (typeof timeString === 'string' && (timeString.includes('AM') || timeString.includes('PM'))) {
+        // Already formatted, return as is
+        return timeString;
       }
       
-      return `${hour12}:${minute} ${ampm}`;
+      // Extract time parts (handle HH:MM:SS or HH:MM)
+      const timeOnly = timeString.split(' ')[0]; // Remove any timezone or other text
+      const timeParts = timeOnly.split(':');
+      const hours = parseInt(timeParts[0], 10);
+      const minutes = timeParts[1] || '00';
+      
+      // Validate hours
+      if (isNaN(hours) || hours < 0 || hours > 23) {
+        console.error('Invalid time format:', timeString);
+        return timeString;
+      }
+      
+      // Convert to 12-hour format
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+      const displayMinutes = minutes.padStart(2, '0');
+      
+      return `${displayHour}:${displayMinutes} ${ampm}`;
     } catch (error) {
+      console.error('Error formatting time:', timeString, error);
       return timeString;
     }
   };
@@ -277,22 +318,34 @@ export default function SessionsPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Scheduled Sessions Section */}
-            {sessions.filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status)).length > 0 && (
+            {/* Upcoming Sessions Section (not expired) */}
+            {sessions.filter(s => 
+              ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+              !isSessionExpired(s)
+            ).length > 0 && (
               <div>
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                    <h5 className="text-gray-900">Scheduled Sessions</h5>
+                    <h5 className="text-gray-900">Upcoming Sessions</h5>
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
-                    Total: {sessions.length} sessions
+                    {sessions.filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      !isSessionExpired(s)
+                    ).length} upcoming session{sessions.filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      !isSessionExpired(s)
+                    ).length !== 1 ? 's' : ''}
                   </div>
                 </div>
                 {/* Mobile Layout - Single Column Cards */}
                 <div className="block lg:hidden space-y-4">
                   {sessions
-                    .filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status))
+                    .filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      !isSessionExpired(s)
+                    )
                     .map((session) => (
                       <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
                         {/* Status Badge */}
@@ -313,7 +366,7 @@ export default function SessionsPage() {
                                 style={getStatusStyle(session.status)}
                               >
                                 {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
-                                 session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                               session.status === 'reschedule_requested' ? 'Reschedule Requested' :
                                  session.status === 'rescheduled' ? 'Rescheduled' : 
                                  session.status || 'Scheduled'}
                               </span>
@@ -324,7 +377,7 @@ export default function SessionsPage() {
                                   ) : (
                                     session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
                                   )}
-                                </span>
+                            </span>
                               )}
                             </>
                           )}
@@ -419,7 +472,10 @@ export default function SessionsPage() {
                 {/* Desktop Layout - Current Design */}
                 <div className="hidden lg:block space-y-4">
                   {sessions
-                    .filter(s => ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status))
+                    .filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      !isSessionExpired(s)
+                    )
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-blue-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
                         <div className="flex gap-4 items-center">
@@ -455,7 +511,7 @@ export default function SessionsPage() {
                                       style={getStatusStyle(session.status)}
                                     >
                                       {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
-                                       session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                                     session.status === 'reschedule_requested' ? 'Reschedule Requested' :
                                        session.status === 'rescheduled' ? 'Rescheduled' : 
                                        session.status || 'Scheduled'}
                                     </span>
@@ -466,7 +522,7 @@ export default function SessionsPage() {
                                         ) : (
                                           session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
                                         )}
-                                      </span>
+                                  </span>
                                     )}
                                   </>
                                 )}
@@ -561,6 +617,169 @@ export default function SessionsPage() {
                                 </span>
                               )}
                               
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Time Passed Sessions Section */}
+            {sessions.filter(s => 
+              ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+              isSessionExpired(s)
+            ).length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="h-5 w-5 sm:h-6 sm:w-6 bg-orange-100 rounded-full flex items-center justify-center">
+                    <div className="h-2 w-2 sm:h-3 sm:w-3 bg-orange-600 rounded-full"></div>
+                  </div>
+                  <h5 className="text-gray-900">Time Passed Sessions</h5>
+                </div>
+                {/* Mobile Layout - Single Column Cards */}
+                <div className="block lg:hidden space-y-4">
+                  {sessions
+                    .filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      isSessionExpired(s)
+                    )
+                    .map((session) => (
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                        {/* Status Badge */}
+                        <div className="flex justify-end mb-3 gap-2">
+                          {(session.session_type === 'assessment' || session.type === 'assessment') && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              Assessment
+                            </span>
+                          )}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
+                            Time Expired
+                          </span>
+                          {((session.package && session.package.package_type) || session.package_id) && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
+                                <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                              ) : (
+                                session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                              )}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="flex gap-5 items-start">
+                          {/* Avatar - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
+                            <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Session Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-500 mb-1">
+                              {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                            </p>
+                            <h6 className="text-gray-900 font-bold mb-2">
+                              {session.session_type === 'assessment' || session.type === 'assessment'
+                                ? `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
+                                : session.session_type === 'free_assessment'
+                                ? 'Free Assessment'
+                                : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
+                            </h6>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 mt-6">
+                          {session.session_type !== 'free_assessment' && (
+                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
+                              Session time has passed
+                            </span>
+                          )}
+                          {session.session_type === 'free_assessment' && (
+                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
+                              Assessment time has passed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Desktop Layout */}
+                <div className="hidden lg:block space-y-4">
+                  {sessions
+                    .filter(s => 
+                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
+                      isSessionExpired(s)
+                    )
+                    .map((session) => (
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-orange-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                        <div className="flex gap-4 items-center">
+                          {/* Avatar / Placeholder - Only for regular sessions */}
+                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
+                            <div className="flex-shrink-0">
+                              {session.psychologist?.cover_image_url ? (
+                                <img 
+                                  src={session.psychologist.cover_image_url}
+                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xl">
+                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Session Details */}
+                          <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
+                                <span className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
+                                  Time Expired
+                                </span>
+                                <span className="text-xs sm:text-sm text-gray-500">
+                                  {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                                </span>
+                                {((session.package && session.package.package_type) || session.package_id) && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
+                                      <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                    ) : (
+                                      session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <h5 className="text-gray-900 font-semibold mb-3">
+                                {session.session_type === 'free_assessment' ? (
+                                  <span className="flex items-center gap-2">
+                                    <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
+                                      Free Assessment
+                                    </span>
+                                  </span>
+                                ) : session.session_type === 'assessment' || session.type === 'assessment' ? (
+                                  `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
+                                ) : (
+                                  `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
+                                )}
+                              </h5>
                             </div>
                           </div>
                         </div>

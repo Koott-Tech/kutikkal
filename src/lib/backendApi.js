@@ -464,7 +464,9 @@ export const clientApi = {
 
   // Get receipt by Razorpay order ID
   async getReceiptByOrderId(orderId) {
-    return apiRequest(`/clients/receipts/order/${orderId}`);
+    // Add cache-busting timestamp to prevent stale data
+    const timestamp = Date.now();
+    return apiRequest(`/clients/receipts/order/${orderId}?_t=${timestamp}`);
   },
 };
 
@@ -1185,8 +1187,10 @@ export const publicApi = {
   // for that psychologist before computing availability (used on therapist profile)
   async getPsychologistAvailabilityRange(psychologistId, startDate, endDate, withSync = false) {
     const syncParam = withSync ? '&sync=1' : '';
+    // Add timestamp to prevent browser/API caching
+    const timestamp = Date.now();
     return apiRequest(
-      `/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}${syncParam}`
+      `/availability/psychologist/${psychologistId}/range?startDate=${startDate}&endDate=${endDate}${syncParam}&_t=${timestamp}`
     );
   },
 

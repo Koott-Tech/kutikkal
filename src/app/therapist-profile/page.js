@@ -302,12 +302,27 @@ const TherapistProfileContent = () => {
       // Pass withSync = true so backend performs an on-demand Google Calendar sync
       // for this psychologist before returning availability, ensuring external
       // events are blocked in real-time when the therapist profile is opened.
+      // Add timestamp to prevent caching stale data
       const response = await publicApi.getPsychologistAvailabilityRange(
         psychologistId,
         startDate,
         endDate,
         true // withSync
       );
+      
+      // Log for debugging
+      console.log('📅 Fetched availability for', psychologistId, 'from', startDate, 'to', endDate);
+      if (response.success && response.data?.data) {
+        const dec25 = response.data.data.find(d => d.date === '2025-12-25');
+        if (dec25) {
+          console.log('📅 Dec 25 availability:', {
+            totalSlots: dec25.totalSlots,
+            availableSlots: dec25.availableSlots,
+            blockedSlots: dec25.blockedSlots,
+            timeSlots: dec25.timeSlots?.map(s => `${s.time} (${s.available ? 'available' : s.reason})`)
+          });
+        }
+      }
       
       if (response.success) {
 

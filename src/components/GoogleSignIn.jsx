@@ -120,7 +120,7 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
 
         popupWindow = window.open(
           '',
-          'kuttikal-google-auth',
+          'littlecare-google-auth',
           `${popupFeatures},left=${left},top=${top}`
         );
       }

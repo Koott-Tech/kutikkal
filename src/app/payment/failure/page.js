@@ -82,7 +82,7 @@ export default function PaymentFailure() {
 
   const handleContactSupport = () => {
     // You can implement contact support functionality
-    showInfo('Please contact support at support@kuttikal.com', 'Contact Support');
+    showInfo('Please contact support at support@littlecare.com', 'Contact Support');
   };
 
   if (loading) {

@@ -299,7 +299,7 @@ export default function ProfileLayout({ children }) {
           <div className="flex items-center">
             <img 
               src="/mainlogo.webp" 
-              alt="Kuttikal Logo" 
+              alt="Little Care Logo" 
               className="h-8 w-auto hover:opacity-80 transition-opacity"
             />
           </div>

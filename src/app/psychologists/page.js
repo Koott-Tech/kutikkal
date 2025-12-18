@@ -321,15 +321,17 @@ const Guide = () => {
 
   // Cache for availability data to prevent duplicate requests
   const availabilityCache = new Map();
-  const AVAILABILITY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for availability
+  const AVAILABILITY_CACHE_TTL = 1 * 60 * 1000; // 1 minute cache (reduced from 5 minutes for fresher data)
 
   // Fetch availability for a doctor (optimized - only 14 days, with caching)
   const fetchDoctorAvailability = async (doctorId) => {
     try {
-      // Check cache first
+      // Check cache first (but allow bypass for fresh data)
       const cacheKey = `availability-${doctorId}`;
       const cached = availabilityCache.get(cacheKey);
+      // Reduced cache time to 1 minute for fresher availability data
       if (cached && (Date.now() - cached.timestamp) < AVAILABILITY_CACHE_TTL) {
+        console.log('📦 Using cached availability data');
         return cached.data;
       }
 

@@ -325,67 +325,164 @@ function PaymentSuccessContent() {
 
   const fetchSessionDetails = async (orderId, attempt = 0) => {
     try {
-      console.log('Fetching session details, attempt:', attempt);
+      console.log('Fetching session details for order:', orderId, 'attempt:', attempt);
       setLoadingSessionDetails(true);
       
-      // Fetch sessions list directly (receipts are sent via WhatsApp/email, no need to fetch)
-        const sessionsResponse = await clientApi.getSessions({ limit: 10, page: 1 });
+      // Add a small delay on first attempt to give backend time to create the session
+      // The backend creates the session synchronously, but there might be a brief delay
+      if (attempt === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      
+      // Fetch session details using the payment order ID
+      // This endpoint gets the payment by order ID and returns the associated session
+      // Cache-busting is handled in the API call itself
+      const receiptResponse = await clientApi.getReceiptByOrderId(orderId);
+      
+      console.log('Receipt response:', {
+        success: receiptResponse.success,
+        hasData: !!receiptResponse.data,
+        hasSession: !!receiptResponse.data?.session,
+        sessionDate: receiptResponse.data?.session?.scheduled_date,
+        sessionTime: receiptResponse.data?.session?.scheduled_time
+      });
+      
+      if (receiptResponse.success && receiptResponse.data) {
+        const sessionData = receiptResponse.data.session;
         
-        if (sessionsResponse.success && sessionsResponse.data) {
-          const sessions = sessionsResponse.data.sessions || sessionsResponse.data;
-          const sessionsArray = Array.isArray(sessions) ? sessions : [];
+        if (sessionData && sessionData.scheduled_date && sessionData.scheduled_time) {
+          // Extract psychologist name
+          let psychologistName = 'your therapist';
+          if (sessionData.psychologist) {
+            if (sessionData.psychologist.first_name && sessionData.psychologist.last_name) {
+              psychologistName = `${sessionData.psychologist.first_name} ${sessionData.psychologist.last_name}`;
+            } else if (sessionData.psychologist.first_name) {
+              psychologistName = sessionData.psychologist.first_name;
+            }
+          }
           
-        // Find the most recent session that was just created (within last few minutes)
-          const now = new Date();
-          const recentSessions = sessionsArray.filter(s => {
+          // Extract just the time part (handle formats like "18:00:00" or "18:00")
+          const timeValue = sessionData.scheduled_time;
+          const timeOnly = typeof timeValue === 'string' 
+            ? timeValue.split(' ')[0] // Remove any date part if present
+            : timeValue;
+          
+          console.log('Setting session details from payment order:', { 
+            psychologistName, 
+            date: sessionData.scheduled_date, 
+            time: timeOnly,
+            originalTime: sessionData.scheduled_time
+          });
+          
+          setSessionDetails({
+            psychologistName,
+            date: sessionData.scheduled_date,
+            time: timeOnly
+          });
+          setLoadingSessionDetails(false);
+          return;
+        }
+      }
+      
+      // Fallback: If receipt endpoint doesn't have session yet, try fetching from sessions list
+      // This handles the case where payment is verified but session is still being created
+      console.log('Session not found in receipt, trying sessions list as fallback...');
+      
+      // Add cache-busting parameter to prevent stale data
+      const cacheBuster = Date.now();
+      const sessionsResponse = await clientApi.getSessions({ limit: 20, page: 1, _t: cacheBuster });
+      
+      if (sessionsResponse.success && sessionsResponse.data) {
+        const sessions = sessionsResponse.data.sessions || sessionsResponse.data;
+        const sessionsArray = Array.isArray(sessions) ? sessions : [];
+        
+        // Find the most recent session that was just created (within last 5 minutes)
+        // Use a shorter time window to avoid picking old sessions
+        const now = new Date();
+        const recentSessions = sessionsArray
+          .filter(s => {
             if (!s.created_at) return false;
             const sessionTime = new Date(s.created_at);
             const minutesAgo = (now - sessionTime) / (1000 * 60);
-            return minutesAgo < 10; // Sessions created in last 10 minutes
-          });
-          
-          const targetSession = recentSessions.length > 0 ? recentSessions[0] : sessionsArray[0];
-          
-          if (targetSession) {
-            let psychologistName = 'your therapist';
-            if (targetSession.psychologist) {
-              if (targetSession.psychologist.first_name && targetSession.psychologist.last_name) {
-                psychologistName = `${targetSession.psychologist.first_name} ${targetSession.psychologist.last_name}`;
-              }
-            } else if (targetSession.psychologist_name) {
-              psychologistName = targetSession.psychologist_name;
-            } else if (targetSession.psychologist_first_name && targetSession.psychologist_last_name) {
-              psychologistName = `${targetSession.psychologist_first_name} ${targetSession.psychologist_last_name}`;
+            // Only consider sessions created in the last 5 minutes (more strict)
+            return minutesAgo < 5 && minutesAgo >= 0;
+          })
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Most recent first
+        
+        console.log('Recent sessions found:', recentSessions.length, recentSessions.map(s => ({
+          id: s.id,
+          created_at: s.created_at,
+          scheduled_date: s.scheduled_date,
+          scheduled_time: s.scheduled_time
+        })));
+        
+        const targetSession = recentSessions.length > 0 ? recentSessions[0] : null;
+        
+        // Only use fallback if we found a very recent session
+        if (!targetSession) {
+          console.log('No recent sessions found in fallback, will retry...');
+          // Don't set session details, let it retry
+          const maxRetries = 5;
+          if (attempt < maxRetries) {
+            const delay = 2000 + (attempt * 1000);
+            console.log(`Session details not found, retrying in ${delay}ms...`);
+            setTimeout(() => {
+              fetchSessionDetails(orderId, attempt + 1);
+            }, delay);
+            return;
+          } else {
+            setLoadingSessionDetails(false);
+            return;
+          }
+        }
+        
+        if (targetSession) {
+          let psychologistName = 'your therapist';
+          if (targetSession.psychologist) {
+            if (targetSession.psychologist.first_name && targetSession.psychologist.last_name) {
+              psychologistName = `${targetSession.psychologist.first_name} ${targetSession.psychologist.last_name}`;
             }
+          } else if (targetSession.psychologist_name) {
+            psychologistName = targetSession.psychologist_name;
+          } else if (targetSession.psychologist_first_name && targetSession.psychologist_last_name) {
+            psychologistName = `${targetSession.psychologist_first_name} ${targetSession.psychologist_last_name}`;
+          }
+          
+          if (targetSession.scheduled_date && targetSession.scheduled_time) {
+            const timeValue = targetSession.scheduled_time;
+            const timeOnly = typeof timeValue === 'string' 
+              ? timeValue.split(' ')[0]
+              : timeValue;
             
-            if (targetSession.scheduled_date && targetSession.scheduled_time) {
-              console.log('Setting session details from sessions list:', { 
-                psychologistName, 
-                date: targetSession.scheduled_date, 
-                time: targetSession.scheduled_time 
-              });
-              setSessionDetails({
-                psychologistName,
-                date: targetSession.scheduled_date,
-                time: targetSession.scheduled_time
-              });
-              setLoadingSessionDetails(false);
-              return;
+            console.log('Setting session details from sessions list (fallback):', { 
+              psychologistName, 
+              date: targetSession.scheduled_date, 
+              time: timeOnly
+            });
+            
+            setSessionDetails({
+              psychologistName,
+              date: targetSession.scheduled_date,
+              time: timeOnly
+            });
+            setLoadingSessionDetails(false);
+            return;
           }
         }
       }
       
       // If not found and haven't exceeded max retries, retry after delay
-      const maxRetries = 5;
+      const maxRetries = 8; // Increased retries to handle slower backend processing
       if (attempt < maxRetries) {
         const delay = 2000 + (attempt * 1000);
-        console.log(`Session details not found, retrying in ${delay}ms...`);
+        console.log(`Session details not found, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         setTimeout(() => {
           fetchSessionDetails(orderId, attempt + 1);
         }, delay);
       } else {
-        console.log('Max retries reached for session details');
+        console.log('Max retries reached for session details - session may still be processing');
         setLoadingSessionDetails(false);
+        // Don't show error, just show generic message
       }
     } catch (error) {
       console.log('Could not fetch session details:', error.message, error);
@@ -417,12 +514,24 @@ function PaymentSuccessContent() {
 
   const formatTime = (timeString) => {
     if (!timeString) return 'N/A';
-    // Assuming time is in HH:MM format
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    
+    // Handle different time formats: HH:MM:SS or HH:MM
+    let timeParts = timeString.split(':');
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = timeParts[1] || '00';
+    
+    // Validate hours
+    if (isNaN(hours) || hours < 0 || hours > 23) {
+      console.error('Invalid time format:', timeString);
+      return timeString; // Return original if invalid
+    }
+    
+    // Convert to 12-hour format
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = hours % 12 || 12;
+    const displayMinutes = minutes.padStart(2, '0');
+    
+    return `${displayHour}:${displayMinutes} ${ampm}`;
   };
 
   if (loading) {

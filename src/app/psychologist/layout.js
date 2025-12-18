@@ -80,7 +80,7 @@ export default function PsychologistLayout({ children }) {
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
             <Image
               src="/mainlogo.webp"
-              alt="Kuttikal Logo"
+              alt="Little Care Logo"
               width={120}
               height={40}
               className="object-contain"
