@@ -1,10 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ClickBurst() {
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     if (typeof window === "undefined" || !document) return;
+
+    // Check if mobile device (disable click burst on mobile)
+    const checkMobile = () => {
+      const isMobileDevice = window.innerWidth <= 768 || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+      return isMobileDevice;
+    };
+
+    const mobile = checkMobile();
+    
+    // Disable click burst completely on mobile devices
+    if (mobile) {
+      return; // Don't set up event listeners on mobile
+    }
 
     const spawnBurst = (x, y) => {
       const burstContainer = document.createElement("span");
@@ -58,10 +75,23 @@ export default function ClickBurst() {
 
     window.addEventListener("click", handleClick);
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    
+    // Handle window resize to re-check mobile status
+    const handleResize = () => {
+      const mobile = checkMobile();
+      if (mobile) {
+        // Remove listeners if switched to mobile
+        window.removeEventListener("click", handleClick);
+        window.removeEventListener("touchstart", handleTouchStart);
+      }
+    };
+    
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("click", handleClick);
       window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 

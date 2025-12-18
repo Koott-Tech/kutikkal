@@ -21,6 +21,17 @@ export default function SessionsPage() {
   const [sessionToReschedule, setSessionToReschedule] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
+
+  // Helper function to conditionally apply hover handlers only on desktop
+  const getHoverHandlers = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return {}; // No handlers on mobile
+    }
+    return {
+      onMouseEnter: (e) => e.currentTarget.style.borderColor = '#3f2e73',
+      onMouseLeave: (e) => e.currentTarget.style.borderColor = '#e5e7eb'
+    };
+  };
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -280,9 +291,9 @@ export default function SessionsPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div className="absolute inset-0 w-full flex items-center justify-center z-10" style={{ minHeight: 'calc(100vh - 8rem)' }}>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading sessions...</p>
         </div>
       </div>
@@ -291,7 +302,7 @@ export default function SessionsPage() {
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white p-6">
         <div className="text-center py-12">
           <p className="text-red-600">{error}</p>
         </div>
@@ -301,7 +312,7 @@ export default function SessionsPage() {
 
   return (
     <>
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white p-6">
         {sessions.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
@@ -309,7 +320,7 @@ export default function SessionsPage() {
             <p className="text-gray-600 mb-4 sm:mb-6">You haven&apos;t booked any sessions yet.</p>
             <button
               onClick={() => router.push('/psychologists')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
+              className="bg-blue-600 lg:hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
             >
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">View Therapists</span>
@@ -326,7 +337,7 @@ export default function SessionsPage() {
               <div>
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#3f2e73' }} />
                     <h5 className="text-gray-900">Upcoming Sessions</h5>
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
@@ -347,7 +358,7 @@ export default function SessionsPage() {
                       !isSessionExpired(s)
                     )
                     .map((session) => (
-                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
                         {/* Status Badge */}
                         <div className="flex justify-end mb-3 gap-2">
                           {(session.session_type === 'assessment' || session.type === 'assessment') && (
@@ -424,21 +435,21 @@ export default function SessionsPage() {
                             <>
                               <button
                                 onClick={() => handleMessageClick(session)}
-                                className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors flex items-center justify-center gap-1"
+                                className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-green-50 transition-colors flex items-center justify-center gap-1"
                               >
                                 <MessageSquare className="h-3 w-3" />
                                 Message
                               </button>
                               <button
                                 onClick={() => handleRescheduleClick(session)}
-                                className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 hover:bg-blue-50"
+                                className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 lg:hover:bg-blue-50"
                               >
                                 Reschedule
                               </button>
                                   {getMeetLink(session) && (
                               <button
                                       onClick={() => handleJoinMeet(session)}
-                                      className="flex-1 text-green-700 border border-green-300 px-2 py-1 rounded text-xs font-medium hover:bg-green-50 transition-colors"
+                                      className="flex-1 text-green-700 border border-green-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-green-50 transition-colors"
                               >
                                       Join Meet
                               </button>
@@ -477,7 +488,7 @@ export default function SessionsPage() {
                       !isSessionExpired(s)
                     )
                     .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-blue-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
                           {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
@@ -577,21 +588,21 @@ export default function SessionsPage() {
                                 <>
                                   <button
                                     onClick={() => handleMessageClick(session)}
-                                    className="text-green-600 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors flex items-center gap-1 cursor-pointer"
+                                    className="text-green-600 lg:hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md lg:hover:bg-green-50 transition-colors flex items-center gap-1 cursor-pointer"
                                   >
                                     <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                                     <span>Message</span>
                                   </button>
                                   <button
                                     onClick={() => handleRescheduleClick(session)}
-                                    className="text-blue-600 border border-blue-300 hover:bg-blue-50 hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
+                                    className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
                                   >
                                     {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
                                   </button>
                                   {getMeetLink(session) && (
                                   <button
                                       onClick={() => handleJoinMeet(session)}
-                                      className="text-green-700 hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md hover:bg-green-50 transition-colors cursor-pointer"
+                                      className="text-green-700 lg:hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md lg:hover:bg-green-50 transition-colors cursor-pointer"
                                   >
                                       Join Meet
                                   </button>
@@ -646,7 +657,7 @@ export default function SessionsPage() {
                       isSessionExpired(s)
                     )
                     .map((session) => (
-                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
                         {/* Status Badge */}
                         <div className="flex justify-end mb-3 gap-2">
                           {(session.session_type === 'assessment' || session.type === 'assessment') && (
@@ -727,7 +738,7 @@ export default function SessionsPage() {
                       isSessionExpired(s)
                     )
                     .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-orange-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-orange-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
                           {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
@@ -803,7 +814,7 @@ export default function SessionsPage() {
                   {sessions
                     .filter(s => s.status === 'completed')
                     .map((session) => (
-                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
                         {/* Status Badge */}
                         <div className="flex justify-end mb-3">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -854,7 +865,7 @@ export default function SessionsPage() {
                           {!session.feedback && (
                             <button
                               onClick={() => openFeedbackModal(session)}
-                              className="flex-1 text-purple-600 border border-purple-300 px-2 py-1 rounded text-xs font-medium hover:bg-purple-50 transition-colors"
+                              className="flex-1 text-purple-600 border border-purple-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-purple-50 transition-colors"
                             >
                               Give Feedback
                             </button>
@@ -882,8 +893,10 @@ export default function SessionsPage() {
                               }}
                               className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
                               style={{ backgroundColor: '#3f2e73' }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                              {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
+                                onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
+                                onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
+                              } : {})}
                             >
                               <Calendar className="h-3 w-3" />
                               Book Next Session
@@ -899,7 +912,7 @@ export default function SessionsPage() {
                   {sessions
                     .filter(s => s.status === 'completed')
                     .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 hover:shadow-md transition-all bg-green-50/30" onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'} onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}>
+                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-green-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
                           {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
@@ -964,14 +977,14 @@ export default function SessionsPage() {
                             <div className="flex flex-wrap gap-2">
                               <button
                                 onClick={() => handleViewFullReport(session)}
-                                className="text-blue-600 border border-blue-300 hover:bg-blue-50 hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
+                                className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
                               >
                                 View Complete Report
                               </button>
                               {!session.feedback && (
                                 <button
                                   onClick={() => openFeedbackModal(session)}
-                                  className="text-purple-600 hover:text-purple-900 text-xs sm:text-sm font-medium border border-purple-300 px-2 py-1 rounded-md hover:bg-purple-50 transition-colors cursor-pointer"
+                                  className="text-purple-600 lg:hover:text-purple-900 text-xs sm:text-sm font-medium border border-purple-300 px-2 py-1 rounded-md lg:hover:bg-purple-50 transition-colors cursor-pointer"
                                 >
                                   Give Feedback
                                 </button>
@@ -999,8 +1012,10 @@ export default function SessionsPage() {
                                   }}
                                   className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
                                   style={{ backgroundColor: '#3f2e73' }}
-                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
-                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                  {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
+                                    onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
+                                    onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
+                                  } : {})}
                                 >
                                   <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                                   <span>Book Next Session</span>
@@ -1050,7 +1065,7 @@ export default function SessionsPage() {
                 <h5 className="text-gray-900">Complete Session Report</h5>
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 lg:hover:text-gray-600"
                 >
                   <X className="h-6 w-6" />
                 </button>

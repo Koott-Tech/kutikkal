@@ -17,6 +17,16 @@ import AuthModal from '@/components/AuthModal';
 // Booking Loading Animation Component
 function BookingLoadingAnimation() {
   const dots = [0, 1, 2];
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   return (
     <motion.div
@@ -32,7 +42,9 @@ function BookingLoadingAnimation() {
         width: '100vw',
         height: '100vh',
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(4px)',
+        // Remove backdrop-filter on mobile for better performance
+        backdropFilter: !isMobile ? 'blur(4px)' : 'none',
+        WebkitBackdropFilter: !isMobile ? 'blur(4px)' : 'none',
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',

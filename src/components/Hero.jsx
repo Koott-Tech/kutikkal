@@ -21,6 +21,19 @@ export default function Hero() {
   return (
     <div className="w-full overflow-hidden mt-12">
       <style jsx>{`
+        /* Mobile: Make description wrap into 3 lines */
+        @media (max-width: 767px) {
+          .hero-description {
+            max-width: 300px;
+            line-height: 1.3;
+            margin-left: auto;
+            margin-right: auto;
+            word-break: normal;
+            hyphens: none;
+            overflow-wrap: break-word;
+          }
+        }
+        
         /* Tablet: ensure hero section has no bottom padding so image can touch bottom */
         /* Also force center alignment for landscape tablets (1180x810) */
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {

@@ -24,13 +24,18 @@ export default function ProfileLayout({ children }) {
   const { user, logout, hasRole, login, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  // Load sidebar state from localStorage, default to true (open)
+  // Load sidebar state from localStorage, default based on screen size
+  // Desktop (>= 1024px): open by default, Mobile: closed by default
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('profileSidebarOpen');
-      return saved !== null ? saved === 'true' : true; // Default to true if not set
+      if (saved !== null) {
+        return saved === 'true';
+      }
+      // First visit: open on desktop, closed on mobile
+      return window.innerWidth >= 1024;
     }
-    return true;
+    return true; // SSR default
   });
   const [profileData, setProfileData] = useState(null);
 
@@ -83,8 +88,11 @@ export default function ProfileLayout({ children }) {
       : null;
 
   const handleNavigationClick = (item) => {
+    // Close mobile sidebar on navigation (desktop sidebar stays open)
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
     router.push(item.href);
-    // Don't close sidebar on navigation - preserve user's preference
   };
 
   // Save sidebar state to localStorage whenever it changes
@@ -123,8 +131,8 @@ export default function ProfileLayout({ children }) {
   // Show loading while auth is loading (prevents premature redirect)
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
+      <div className="fixed inset-0 w-screen h-screen flex items-center justify-center z-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
       </div>
     );
   }
@@ -137,19 +145,38 @@ export default function ProfileLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Mobile sidebar (slide from right) */}
-      <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 right-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
-            <div className="flex items-center">
-              <img 
-                src="/mainlogo.webp" 
-                alt="Little Care Logo" 
-                className="h-8 w-auto hover:opacity-80 transition-opacity"
-              />
-            </div>
+      <div 
+        className={`fixed inset-0 z-50 lg:hidden transition-all duration-500 ease-in-out ${
+          sidebarOpen 
+            ? 'opacity-100 visible' 
+            : 'opacity-0 invisible pointer-events-none'
+        }`}
+      >
+        {/* Backdrop Overlay */}
+        <div 
+          className={`fixed inset-0 bg-white/30 backdrop-blur-[1px] transition-opacity duration-500 ease-in-out ${
+            sidebarOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setSidebarOpen(false)}
+          style={{ willChange: 'opacity' }}
+        />
+        
+        {/* Sidebar Panel */}
+        <div 
+          className={`fixed inset-y-0 right-0 w-64 flex flex-col bg-white border-l border-[#3f2e73]/20 shadow-xl will-change-transform ${
+            sidebarOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          style={{ 
+            transform: sidebarOpen ? 'translate3d(0, 0, 0)' : 'translate3d(100%, 0, 0)',
+            transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+            contain: 'layout style paint',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden'
+          }}
+        >
+          <div className="flex h-16 items-center justify-end px-4">
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -295,7 +322,10 @@ export default function ProfileLayout({ children }) {
       {/* Main content */}
       <div className={`lg:transition-all lg:duration-300 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
         {/* Mobile header */}
-        <div className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40">
+        <div 
+          className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40"
+          style={!sidebarOpen ? { boxShadow: '0 2px 8px rgba(63, 46, 115, 0.15)' } : {}}
+        >
           <div className="flex items-center">
             <img 
               src="/mainlogo.webp" 
@@ -312,8 +342,8 @@ export default function ProfileLayout({ children }) {
         </div>
 
         {/* Page content */}
-        <main className="lg:py-6 lg:pt-24">
-          <div className="lg:px-4 lg:sm:px-6 lg:px-8">
+        <main className="lg:pt-24 relative min-h-[calc(100vh-6rem)]">
+          <div className="relative min-h-full">
             {children}
           </div>
         </main>

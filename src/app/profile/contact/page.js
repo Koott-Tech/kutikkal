@@ -208,7 +208,7 @@ export default function ContactPage() {
 
   if (authLoading || !isDataLoaded) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white p-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading contact information...</p>

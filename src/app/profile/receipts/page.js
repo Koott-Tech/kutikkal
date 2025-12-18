@@ -93,9 +93,9 @@ export default function ReceiptsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
+      <div className="absolute inset-0 w-full flex items-center justify-center z-10" style={{ minHeight: 'calc(100vh - 8rem)' }}>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading receipts...</p>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function ReceiptsPage() {
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white p-6">
         <div className="text-center py-12">
           <div className="w-16 h-16 text-red-500 mx-auto text-4xl mb-4">❌</div>
           <h6 className="text-gray-900 mb-4">Error</h6>

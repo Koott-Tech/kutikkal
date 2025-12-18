@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi } from "../../../lib/backendApi";
-import { FileText, X } from "lucide-react";
+import { FileText, X, BarChart3 } from "lucide-react";
 
 export default function ReportsPage() {
   const { user } = useAuth();
@@ -12,6 +12,36 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
+
+  // Helper function to conditionally apply hover handlers only on desktop
+  const getHoverHandlers = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return {}; // No handlers on mobile
+    }
+    return {
+      onMouseEnter: (e) => e.currentTarget.style.borderColor = '#3f2e73',
+      onMouseLeave: (e) => e.currentTarget.style.borderColor = '#e5e7eb'
+    };
+  };
+
+  // Helper function for button hover handlers
+  const getButtonHoverHandlers = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return {}; // No handlers on mobile
+    }
+    return {
+      onMouseEnter: (e) => {
+        e.currentTarget.style.color = '#1d1733';
+        e.currentTarget.style.borderColor = '#1d1733';
+        e.currentTarget.style.backgroundColor = '#f5f3ff';
+      },
+      onMouseLeave: (e) => {
+        e.currentTarget.style.color = '#3f2e73';
+        e.currentTarget.style.borderColor = '#3f2e73';
+        e.currentTarget.style.backgroundColor = 'transparent';
+      }
+    };
+  };
 
   useEffect(() => {
     loadSessions();
@@ -75,9 +105,9 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
+      <div className="absolute inset-0 w-full flex items-center justify-center z-10" style={{ minHeight: 'calc(100vh - 8rem)' }}>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
           <p className="text-gray-600">Loading reports...</p>
         </div>
       </div>
@@ -86,37 +116,82 @@ export default function ReportsPage() {
 
   return (
     <>
-      <div className="bg-white shadow rounded-lg p-6">
-        <h4 className="text-gray-900 mb-6">Session Reports</h4>
+      <div className="bg-white p-4 sm:p-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#3f2e73' }} />
+          <h4 className="text-gray-900 text-lg sm:text-xl">Session Reports</h4>
+        </div>
         
         {sessions.filter(s => s.status === 'completed').length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h5 className="text-gray-900 mb-2">No reports available</h5>
-            <p className="text-gray-600">Session reports will appear here after sessions are completed.</p>
+          <div className="text-center py-8 sm:py-12">
+            <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+            <h5 className="text-gray-900 mb-2 text-base sm:text-lg">No reports available</h5>
+            <p className="text-gray-600 text-sm sm:text-base px-4">Session reports will appear here after sessions are completed.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {sessions
               .filter(s => s.status === 'completed')
               .map((session) => (
                 <div 
                   key={session.id} 
-                  className="border border-gray-200 rounded-lg p-4 sm:p-5 transition-colors"
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3f2e73'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e5e7eb'}
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 transition-colors"
+                  {...getHoverHandlers()}
                 >
-                  <div className="flex items-center gap-4">
+                  {/* Mobile Layout - Image left, details right */}
+                  <div className="lg:hidden">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {/* Psychologist Avatar - Left side on mobile */}
+                      <div className="flex-shrink-0">
+                        {session.psychologist?.cover_image_url ? (
+                          <img 
+                            src={session.psychologist.cover_image_url}
+                            alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
+                            className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                            {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Session Details - Right side on mobile */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 mb-1">
+                          {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
+                        </p>
+                        <h6 className="text-gray-900 font-bold mb-2 text-sm break-words">
+                          Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
+                        </h6>
+                      </div>
+                    </div>
+                    
+                    {/* View Report Button - Full width below on mobile */}
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleViewFullReport(session)}
+                        className="w-full text-xs font-medium cursor-pointer transition-colors px-3 py-2 rounded-lg border text-center"
+                        style={{ color: '#3f2e73', borderColor: '#3f2e73' }}
+                        {...getButtonHoverHandlers()}
+                      >
+                        View Complete Report
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Desktop Layout - Horizontal layout */}
+                  <div className="hidden lg:flex items-center gap-4">
                     {/* Psychologist Avatar - Left side */}
                     <div className="flex-shrink-0">
                       {session.psychologist?.cover_image_url ? (
                         <img 
                           src={session.psychologist.cover_image_url}
                           alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-gray-200"
+                          className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                         />
                       ) : (
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                        <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
                           {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                         </div>
                       )}
@@ -124,7 +199,7 @@ export default function ReportsPage() {
                     
                     {/* Session Details - Middle */}
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-gray-900 mb-1 font-semibold">
+                      <h5 className="text-gray-900 mb-1 font-semibold text-base break-words">
                         Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
                       </h5>
                       <p className="text-gray-600 text-sm">
@@ -132,19 +207,18 @@ export default function ReportsPage() {
                       </p>
                     </div>
                     
-                    {/* View Report Button - Right side, vertically centered */}
+                    {/* View Report Button - Right side */}
                     <div className="flex-shrink-0">
-                    <button
-                      onClick={() => handleViewFullReport(session)}
+                      <button
+                        onClick={() => handleViewFullReport(session)}
                         className="text-sm font-medium cursor-pointer transition-colors px-3 py-1.5 rounded-lg border"
                         style={{ color: '#3f2e73', borderColor: '#3f2e73' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#1d1733'; e.currentTarget.style.borderColor = '#1d1733'; e.currentTarget.style.backgroundColor = '#f5f3ff'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = '#3f2e73'; e.currentTarget.style.borderColor = '#3f2e73'; e.currentTarget.style.backgroundColor = 'transparent'; }}
-                    >
-                      View Complete Report
-                    </button>
+                        {...getButtonHoverHandlers()}
+                      >
+                        View Complete Report
+                      </button>
                     </div>
-                    </div>
+                  </div>
                 </div>
               ))}
           </div>
@@ -153,43 +227,43 @@ export default function ReportsPage() {
 
       {/* Report Modal */}
       {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50">
+          <div className="bg-white rounded-none sm:rounded-lg max-w-2xl w-full h-full sm:h-auto sm:max-h-[80vh] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
               <div className="flex justify-between items-center">
-                <h5 className="text-gray-900">Complete Session Report</h5>
+                <h5 className="text-gray-900 text-base sm:text-lg font-semibold">Complete Session Report</h5>
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 lg:hover:text-gray-600 p-1"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
             </div>
             
-            <div className="px-6 py-4">
-              <div className="space-y-6">
+            <div className="px-4 sm:px-6 py-4">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Session Details */}
-                <div className="border-b border-gray-200 pb-4">
-                  <h6 className="text-gray-900 font-semibold mb-2">Session Details</h6>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="border-b border-gray-200 pb-3 sm:pb-4">
+                  <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Details</h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     <div>
-                      <p className="text-sm text-gray-500">Date</p>
-                      <p className="text-gray-900">{formatDate(selectedReport.scheduled_date)}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Date</p>
+                      <p className="text-gray-900 text-sm sm:text-base break-words">{formatDate(selectedReport.scheduled_date)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Time</p>
-                      <p className="text-gray-900">{formatTime(selectedReport.scheduled_time)}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Time</p>
+                      <p className="text-gray-900 text-sm sm:text-base">{formatTime(selectedReport.scheduled_time)}</p>
                     </div>
                 <div>
-                      <p className="text-sm text-gray-500">Psychologist</p>
-                      <p className="text-gray-900">
+                      <p className="text-xs sm:text-sm text-gray-500">Psychologist</p>
+                      <p className="text-gray-900 text-sm sm:text-base break-words">
                         {selectedReport.psychologist?.first_name} {selectedReport.psychologist?.last_name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Status</p>
-                      <p className="text-gray-900 capitalize">{selectedReport.status}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Status</p>
+                      <p className="text-gray-900 text-sm sm:text-base capitalize">{selectedReport.status}</p>
                     </div>
                   </div>
                 </div>
@@ -197,16 +271,16 @@ export default function ReportsPage() {
                 {/* Session Summary */}
                 {getSummary(selectedReport) && (
                   <div>
-                    <h6 className="text-gray-900 font-semibold mb-2">Session Summary</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap">{getSummary(selectedReport)}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Summary</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{getSummary(selectedReport)}</p>
                   </div>
                 )}
 
                 {/* Session Report */}
                 {getReport(selectedReport) && (
                   <div>
-                    <h6 className="text-gray-900 font-semibold mb-2">Session Report</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap">{getReport(selectedReport)}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Session Report</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{getReport(selectedReport)}</p>
                   </div>
                 )}
 
@@ -216,8 +290,8 @@ export default function ReportsPage() {
                 {/* Client Feedback */}
                 {selectedReport.feedback && (
                   <div>
-                    <h6 className="text-gray-900 font-semibold mb-2">Your Feedback</h6>
-                    <p className="text-gray-600 whitespace-pre-wrap">{selectedReport.feedback}</p>
+                    <h6 className="text-gray-900 font-semibold mb-2 text-sm sm:text-base">Your Feedback</h6>
+                    <p className="text-gray-600 whitespace-pre-wrap text-sm sm:text-base break-words">{selectedReport.feedback}</p>
                   </div>
                 )}
               </div>

@@ -14,7 +14,15 @@ import { loadAuthData } from '@/lib/authStorage';
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
   const confettiColors = ['#22c55e', '#3f2e73', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  const particles = Array.from({ length: 20 }, (_, i) => i);
+  // Reduce particles on mobile for better performance (20 desktop, 8 mobile)
+  const [particleCount, setParticleCount] = useState(20);
+  
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    setParticleCount(isMobile ? 8 : 20);
+  }, []);
+  
+  const particles = Array.from({ length: particleCount }, (_, i) => i);
 
   return (
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

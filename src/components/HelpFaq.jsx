@@ -126,10 +126,11 @@ export default function HelpFaq({ cmsData = null }) {
             .help-faq-left-column .help-faq-image-container {
               margin-left: -16px !important; /* Pull back to match text alignment (ml-2 + px-2 = 16px) */
             }
-            /* Align FAQ section titles with image left alignment */
-            /* Right column has ml-1 (4px) + px-2 (8px) = 12px, so move -12px to align with image at 0px */
+            /* Align FAQ section titles with FAQ questions */
+            /* Right column has ml-1 (4px) + px-2 (8px) = 12px, FAQ button has px-2 (8px) = 20px total */
+            /* Section title is at 12px, needs to match FAQ questions at 20px, so add 8px */
             .faq-section-title {
-              margin-left: -12px !important;
+              margin-left: 8px !important;
               padding-left: 0 !important;
             }
           }
