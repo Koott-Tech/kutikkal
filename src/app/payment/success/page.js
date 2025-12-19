@@ -526,18 +526,28 @@ function PaymentSuccessContent() {
   };
 
   // Direct fetch by session ID (much more efficient!)
-  const fetchSessionById = async (sessionId) => {
-    // Prevent duplicate fetches
-    if (isFetchingSessionRef.current) {
-      return;
+  const fetchSessionById = async (sessionId, retryAttempt = 0) => {
+    // Prevent duplicate fetches on first attempt
+    if (retryAttempt === 0) {
+      if (isFetchingSessionRef.current) {
+        return;
+      }
+      // Mark as fetching immediately
+      isFetchingSessionRef.current = true;
+      fetchAbortControllerRef.current = new AbortController();
     }
     
-    // Mark as fetching immediately
-    isFetchingSessionRef.current = true;
-    fetchAbortControllerRef.current = new AbortController();
-    
     try {
-      setLoadingSessionDetails(true);
+      if (retryAttempt === 0) {
+        setLoadingSessionDetails(true);
+      }
+      
+      // On mobile, add a small delay on first attempt to ensure session is ready
+      // On desktop, try immediately
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      if (retryAttempt === 0 && isMobile) {
+        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay on mobile
+      }
       
       const sessionResponse = await clientApi.getSession(sessionId);
       
@@ -576,17 +586,34 @@ function PaymentSuccessContent() {
         }
       }
       
+      // If session not found and we haven't retried, try once more after a short delay
+      // This handles race conditions where session might not be ready yet
+      if (retryAttempt === 0) {
+        setTimeout(() => {
+          fetchSessionById(sessionId, 1);
+        }, 1000); // Retry after 1 second
+        return;
+      }
+      
       setLoadingSessionDetails(false);
       // Reset fetching flag
       isFetchingSessionRef.current = false;
       fetchAbortControllerRef.current = null;
       
-      // Fallback to polling if direct fetch fails
+      // Fallback to polling if direct fetch fails after retry
       const orderId = searchParams.get('razorpay_order_id');
       if (orderId) {
         fetchSessionDetails(orderId);
       }
     } catch (error) {
+      // If 404 error and first attempt, retry once (session might not be ready yet)
+      if (retryAttempt === 0 && error.message?.includes('not found')) {
+        setTimeout(() => {
+          fetchSessionById(sessionId, 1);
+        }, 1000); // Retry after 1 second
+        return;
+      }
+      
       console.error('❌ Error fetching session by ID:', error);
       setLoadingSessionDetails(false);
       // Reset fetching flag on error
@@ -618,12 +645,14 @@ function PaymentSuccessContent() {
       setLoadingSessionDetails(true);
       
       // Add delay based on attempt number
-      // First attempt: wait longer to give backend time to verify payment and create session
+      // First attempt: wait shorter on mobile for better UX, longer on desktop
       // Payment verification can take 2-5 seconds (signature verification, session creation)
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       if (attempt === 0) {
-        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 seconds
+        // Mobile: 1 second, Desktop: 2 seconds (reduced from 3 seconds)
+        await new Promise(resolve => setTimeout(resolve, isMobile ? 1000 : 2000));
       } else if (attempt === 1) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds for second attempt
+        await new Promise(resolve => setTimeout(resolve, isMobile ? 1000 : 1500));
       }
       
       // Fetch sessions list to find the newly created session

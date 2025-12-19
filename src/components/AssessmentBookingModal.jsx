@@ -441,50 +441,25 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
                 console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
               }
               
-              // Send payment verification to backend
-              try {
-                const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
-                console.log('📤 Sending payment verification to:', backendUrl);
-                
-                const verifyResponse = await fetch(backendUrl, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature
-                  }),
-                  signal: AbortSignal.timeout(30000) // 30 second timeout
-                });
-                
-                console.log('📥 Payment verification response status:', verifyResponse.status);
-                
-                if (!verifyResponse.ok) {
-                  const errorText = await verifyResponse.text();
-                  console.error('❌ Payment verification failed:', verifyResponse.status, errorText);
-                  throw new Error(`Payment verification failed: ${verifyResponse.status}`);
-                }
-
-                const verifyData = await verifyResponse.json();
-                console.log('✅ Payment verification response:', verifyData);
-                
-                if (verifyData.success) {
-                  // Don't show success notification - booking is asynchronous
-                  // Redirect to success page
-                  window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
-                } else {
-                  showError(verifyData.message || 'Payment verification failed. Please contact support.', 'Verification Error');
-                }
-              } catch (error) {
-                console.error('❌ Payment verification error:', error);
-                // Redirect to success page even if verification fails (will retry there)
-                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&verification_error=true`;
-              } finally {
-                setIsBooking(false);
-              }
+              // Send payment verification to backend in background (non-blocking)
+              // Don't wait for it - redirect immediately for better UX
+              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                })
+              }).catch(err => {
+                // Silently fail - success page will retry if needed
+              });
+              
+              // Redirect IMMEDIATELY - no delay for better mobile UX
+              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+              setIsBooking(false);
             },
             modal: {
               ondismiss: function() {

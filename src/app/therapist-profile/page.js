@@ -1205,9 +1205,9 @@ const TherapistProfileContent = () => {
                 console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
               }
               
-              // Send payment verification to backend FIRST (before redirect)
-              // This ensures backend starts processing immediately
-              const verificationPromise = fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+              // Send payment verification to backend in background (non-blocking)
+              // Don't wait for it - redirect immediately for better UX
+              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1217,24 +1217,12 @@ const TherapistProfileContent = () => {
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature
                 })
-              }).then(res => {
-                if (!res.ok) {
-                  console.warn('⚠️ Payment verification response not OK:', res.status);
-                  return null;
-                }
-                return res.json();
-              }).then(data => {
-                console.log('✅ Payment verification response:', data);
               }).catch(err => {
-                console.error('❌ Background payment processing error (non-blocking):', err);
-                // Error is logged but doesn't block redirect - backend will retry if needed
+                // Silently fail - success page will retry if needed
               });
               
-              // Redirect after a short delay to allow verification request to start
-              // Don't wait for completion - let it process in background
-              setTimeout(() => {
-                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
-              }, 200); // Small delay to ensure request is sent
+              // Redirect IMMEDIATELY - no delay for better mobile UX
+              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
             },
             modal: {
               ondismiss: function() {
