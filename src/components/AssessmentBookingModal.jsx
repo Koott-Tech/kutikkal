@@ -424,32 +424,91 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
             theme: paymentData.theme || { color: '#3b82f6' },
             handler: async function (response) {
               console.log('✅ Razorpay payment successful:', response);
+              console.log('📱 Device info:', {
+                userAgent: navigator.userAgent,
+                isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent)
+              });
+              
+              // Store payment details in sessionStorage as backup (for iPhone)
+              try {
+                sessionStorage.setItem('razorpay_payment', JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  timestamp: Date.now()
+                }));
+              } catch (storageErr) {
+                console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
+              }
               
               // Send payment verification to backend
               try {
-                const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+                const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
+                console.log('📤 Sending payment verification to:', backendUrl);
+                
+                const verifyResponse = await fetch(backendUrl, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                   },
                   body: JSON.stringify({
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_signature: response.razorpay_signature
-                  })
+                  }),
+                  signal: AbortSignal.timeout(30000) // 30 second timeout
                 });
+                
+                console.log('📥 Payment verification response status:', verifyResponse.status);
+                
+                if (!verifyResponse.ok) {
+                  const errorText = await verifyResponse.text();
+                  console.error('❌ Payment verification failed:', verifyResponse.status, errorText);
+                  throw new Error(`Payment verification failed: ${verifyResponse.status}`);
+                }
 
                 const verifyData = await verifyResponse.json();
+                console.log('✅ Payment verification response:', verifyData);
                 
                 if (verifyData.success) {
-                  // Don't show success notification - booking is asynchronous
-                  // Redirect to success page
-                  window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+                  // Build success URL with session_id if available
+                  const params = new URLSearchParams({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id
+                  });
+                  
+                  // Add session_id to URL if backend returned it (much more efficient!)
+                  if (verifyData?.data?.sessionId) {
+                    params.set('session_id', verifyData.data.sessionId);
+                    console.log('✅ Session ID received, adding to URL:', verifyData.data.sessionId);
+                  } else if (verifyData?.data?.assessmentSessionId) {
+                    // For assessment sessions, use assessmentSessionId
+                    params.set('session_id', verifyData.data.assessmentSessionId);
+                    console.log('✅ Assessment Session ID received, adding to URL:', verifyData.data.assessmentSessionId);
+                  }
+                  
+                  // Redirect to success page with session_id for direct fetching
+                  console.log('🔄 Redirecting to success page:', params.toString());
+                  window.location.href = `/payment/success?${params.toString()}`;
                 } else {
                   showError(verifyData.message || 'Payment verification failed. Please contact support.', 'Verification Error');
                 }
               } catch (error) {
                 console.error('❌ Payment verification error:', error);
+                console.error('   Error name:', error.name);
+                console.error('   Error message:', error.message);
+                
+                // For iPhone: Even if verification fails, redirect to success page
+                // The success page will handle retrying the verification
+                const params = new URLSearchParams({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  verification_error: 'true'
+                });
+                
+                console.log('🔄 Redirecting to success page (with error flag):', params.toString());
+                window.location.href = `/payment/success?${params.toString()}`;
                 showError('Payment verification failed. Please contact support.', 'Verification Error');
               } finally {
                 setIsBooking(false);

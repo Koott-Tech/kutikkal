@@ -1186,36 +1186,90 @@ const TherapistProfileContent = () => {
             theme: paymentData.theme || { color: '#3b82f6' },
             handler: async function (response) {
               console.log('✅ Razorpay payment successful:', response);
-              
-              // Send payment verification to backend FIRST (before redirect)
-              // This ensures backend starts processing immediately
-              const verificationPromise = fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature
-                })
-              }).then(res => {
-                if (!res.ok) {
-                  console.warn('⚠️ Payment verification response not OK:', res.status);
-                }
-                return res.json();
-              }).then(data => {
-                console.log('✅ Payment verification response:', data);
-              }).catch(err => {
-                console.error('❌ Background payment processing error (non-blocking):', err);
-                // Error is logged but doesn't block redirect - backend will retry if needed
+              console.log('📱 Device info:', {
+                userAgent: navigator.userAgent,
+                isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
+                isSafari: /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent)
               });
               
-              // Redirect after a short delay to allow verification request to start
-              // Don't wait for completion - let it process in background
-              setTimeout(() => {
-                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
-              }, 200); // Small delay to ensure request is sent
+              // Store payment details in sessionStorage as backup (for iPhone)
+              try {
+                sessionStorage.setItem('razorpay_payment', JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  timestamp: Date.now()
+                }));
+                console.log('✅ Payment details stored in sessionStorage as backup');
+              } catch (storageErr) {
+                console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
+              }
+              
+              // Send payment verification to backend FIRST (before redirect)
+              // This ensures backend starts processing immediately and we get session_id
+              // Use try-catch with explicit error handling for iPhone
+              try {
+                const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
+                console.log('📤 Sending payment verification to:', backendUrl);
+                
+                const verificationResponse = await fetch(backendUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature
+                  }),
+                  // Add timeout for iPhone
+                  signal: AbortSignal.timeout(30000) // 30 second timeout
+                });
+                
+                console.log('📥 Payment verification response status:', verificationResponse.status);
+                
+                if (!verificationResponse.ok) {
+                  const errorText = await verificationResponse.text();
+                  console.error('❌ Payment verification failed:', verificationResponse.status, errorText);
+                  throw new Error(`Payment verification failed: ${verificationResponse.status} - ${errorText}`);
+                }
+                
+                const data = await verificationResponse.json();
+                console.log('✅ Payment verification response:', data);
+                
+                // Build success URL with session_id if available
+                const params = new URLSearchParams({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id
+                });
+                
+                // Add session_id to URL if backend returned it (much more efficient!)
+                if (data?.success && data?.data?.sessionId) {
+                  params.set('session_id', data.data.sessionId);
+                  console.log('✅ Session ID received, adding to URL:', data.data.sessionId);
+                }
+                
+                // Redirect with session_id in URL for direct fetching
+                console.log('🔄 Redirecting to success page with params:', params.toString());
+                window.location.href = `/payment/success?${params.toString()}`;
+              } catch (err) {
+                console.error('❌ Payment verification error:', err);
+                console.error('   Error name:', err.name);
+                console.error('   Error message:', err.message);
+                console.error('   Error stack:', err.stack);
+                
+                // For iPhone: Even if verification fails, redirect to success page
+                // The success page will handle retrying the verification
+                const params = new URLSearchParams({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  verification_error: 'true' // Flag to indicate verification failed
+                });
+                
+                console.log('🔄 Redirecting to success page (with error flag):', params.toString());
+                window.location.href = `/payment/success?${params.toString()}`;
+              }
             },
             modal: {
               ondismiss: function() {
