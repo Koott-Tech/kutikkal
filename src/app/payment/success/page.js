@@ -306,6 +306,7 @@ function PaymentSuccessContent() {
   // Refs to prevent duplicate fetches
   const isFetchingSessionRef = useRef(false);
   const fetchAbortControllerRef = useRef(null);
+  const hasCalledPaymentSuccessRef = useRef(false); // Track if we've already called /payment/success (only for retries)
   
   useEffect(() => {
     const checkMobile = () => {
@@ -384,28 +385,13 @@ function PaymentSuccessContent() {
     // Determine if we should retry verification or fetch directly
     let willRetryVerification = false;
     
-    // If verification failed in handler, retry it now (for iPhone)
-    if (verification_error === 'true' && razorpay_order_id && razorpay_payment_id && razorpay_signature) {
+    // ONLY retry if verification explicitly failed (verification_error flag)
+    // The Razorpay handler already calls /payment/success, so we don't need to call it again
+    // Only retry in exceptional cases where the handler failed (e.g., iPhone issues)
+    if (verification_error === 'true' && razorpay_order_id && razorpay_payment_id && razorpay_signature && !hasCalledPaymentSuccessRef.current) {
       willRetryVerification = true;
+      hasCalledPaymentSuccessRef.current = true; // Mark as called to prevent duplicates
       retryPaymentVerification(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-    } else if (razorpay_order_id && razorpay_payment_id) {
-      // Try to get signature from sessionStorage and retry if available
-      try {
-        const storedPayment = sessionStorage.getItem('razorpay_payment');
-        if (storedPayment) {
-          const paymentData = JSON.parse(storedPayment);
-          if (paymentData.razorpay_signature && paymentData.razorpay_order_id === razorpay_order_id) {
-            willRetryVerification = true;
-            retryPaymentVerification(
-              paymentData.razorpay_order_id,
-              paymentData.razorpay_payment_id,
-              paymentData.razorpay_signature
-            );
-          }
-        }
-      } catch (storageErr) {
-        console.warn('⚠️ Could not read payment from sessionStorage for retry:', storageErr);
-      }
     }
     
     // Start fetching session details ONLY if we're NOT retrying verification
@@ -450,6 +436,8 @@ function PaymentSuccessContent() {
         fetchAbortControllerRef.current = null;
       }
       isFetchingSessionRef.current = false;
+      // Note: Don't reset hasCalledPaymentSuccessRef on unmount
+      // It should persist for the component lifecycle to prevent duplicate calls
     };
   }, [searchParams, isAuthenticated]);
 
@@ -458,10 +446,13 @@ function PaymentSuccessContent() {
 
   // Retry payment verification (for iPhone when handler fails)
   const retryPaymentVerification = async (orderId, paymentId, signature) => {
-    // Check if already fetching to prevent duplicate calls
-    if (isFetchingSessionRef.current) {
+    // Check if already called to prevent duplicate calls
+    if (hasCalledPaymentSuccessRef.current && isFetchingSessionRef.current) {
       return;
     }
+    
+    // Mark as called immediately to prevent race conditions
+    hasCalledPaymentSuccessRef.current = true;
     
     try {
       if (!signature) {

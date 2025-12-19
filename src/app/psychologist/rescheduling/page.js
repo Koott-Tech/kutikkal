@@ -21,15 +21,10 @@ export default function PsychologistReschedulingPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await psychologistApi.getNotifications({ limit: 100 });
+      // Use the new endpoint that gets reschedule requests for psychologist's sessions
+      const response = await psychologistApi.getRescheduleRequests();
       if (response.success) {
-        // Filter for reschedule requests
-        const rescheduleNotifs = response.data.notifications.filter(
-          notif => (notif.type === 'warning' || notif.type === 'info') && 
-          (notif.message?.includes('reschedule') || notif.title?.includes('Reschedule')) &&
-          notif.related_type === 'session'
-        );
-        setRescheduleRequests(rescheduleNotifs);
+        setRescheduleRequests(response.data || []);
       } else {
         setError('Failed to fetch reschedule requests');
       }

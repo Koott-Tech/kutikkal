@@ -557,6 +557,12 @@ export const psychologistApi = {
     });
   },
 
+  // Get reschedule requests for psychologist's sessions
+  async getRescheduleRequests(status) {
+    const query = status ? `?status=${status}` : '';
+    return apiRequest(`/sessions/reschedule-requests${query}`);
+  },
+
   // Get availability
   async getAvailability(params = {}) {
     const queryParams = new URLSearchParams();

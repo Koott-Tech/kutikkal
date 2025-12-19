@@ -24,7 +24,7 @@ import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
 import SessionNotesModal from "../../../components/SessionNotesModal";
 import ScheduleAssessmentSessionModal from "../../../components/ScheduleAssessmentSessionModal";
-import RescheduleRequestPopup from "../../../components/RescheduleRequestPopup";
+// Removed RescheduleRequestPopup import - reschedule requests are handled on rescheduling page
 import { useNotification } from "../../../contexts/NotificationContext";
 
 export default function PsychologistSessions() {
@@ -37,8 +37,7 @@ export default function PsychologistSessions() {
   const [completingSessions, setCompletingSessions] = useState(new Set());
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  // Old showRescheduleModal removed - now using showReschedulePopup with notifications
-  // Old selectedRescheduleSession removed - now using notification-based popup
+  // Reschedule requests are now handled on the rescheduling page
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -46,27 +45,13 @@ export default function PsychologistSessions() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
   const [feedbackToView, setFeedbackToView] = useState(null);
-  const [rescheduleNotifications, setRescheduleNotifications] = useState([]);
-  const [currentRescheduleNotification, setCurrentRescheduleNotification] = useState(null);
-  const [showReschedulePopup, setShowReschedulePopup] = useState(false);
+  // Removed reschedule notification state - notifications are only handled on rescheduling page
 
 
   useEffect(() => {
     if (user) {
       loadSessions();
-      loadRescheduleNotifications();
     }
-  }, [user]);
-
-  // Check for reschedule notifications periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user) {
-        loadRescheduleNotifications();
-      }
-    }, 60000); // Check every minute
-
-    return () => clearInterval(interval);
   }, [user]);
 
   const loadSessions = async () => {
@@ -84,29 +69,7 @@ export default function PsychologistSessions() {
     }
   };
 
-  const loadRescheduleNotifications = async () => {
-    try {
-      const response = await psychologistApi.getNotifications({ unread_only: true });
-      if (response.success) {
-        // Filter for reschedule notifications that require psychologist action
-        // Exclude "admin approval required" notifications - those are informational only
-        const rescheduleNotifs = response.data.notifications.filter(
-          notif => (notif.type === 'warning' || notif.type === 'info') && 
-          (notif.message?.includes('reschedule') || notif.title?.includes('Reschedule')) &&
-          !notif.message?.includes('admin approval') // Exclude admin-approval-only notifications
-        );
-        setRescheduleNotifications(rescheduleNotifs);
-        
-        // Auto-show popup for first unread reschedule notification that psychologist can act on
-        if (rescheduleNotifs.length > 0 && !showReschedulePopup) {
-          setCurrentRescheduleNotification(rescheduleNotifs[0]);
-          setShowReschedulePopup(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading reschedule notifications:', error);
-    }
-  };
+  // Removed loadRescheduleNotifications - notifications are only fetched on rescheduling page
 
   const handleUpdateSession = async (sessionId, updateData) => {
     try {
@@ -207,69 +170,7 @@ export default function PsychologistSessions() {
 
 
 
-  // Old handleApproveReschedule and handleRejectReschedule removed
-  // Now using RescheduleRequestPopup component which handles approval/rejection
-  // via notifications - no need to ask for new date/time as it's already in the notification message
-
-  const handleReschedulePopupAction = async (action, data) => {
-    try {
-      // Mark notification as read
-      if (currentRescheduleNotification?.id) {
-        await psychologistApi.markNotificationAsRead(currentRescheduleNotification.id);
-      }
-
-      // Reload sessions and notifications
-      await loadSessions();
-      await loadRescheduleNotifications();
-
-      // Show success message
-      if (action === 'approve') {
-        setSuccessMessage('Reschedule request approved successfully!');
-      } else {
-        setSuccessMessage('Reschedule request rejected successfully!');
-      }
-      setTimeout(() => setSuccessMessage(null), 3000);
-
-      // Move to next notification or close popup
-      const remainingNotifs = rescheduleNotifications.filter(
-        n => n.id !== currentRescheduleNotification?.id
-      );
-      
-      if (remainingNotifs.length > 0) {
-        setCurrentRescheduleNotification(remainingNotifs[0]);
-      } else {
-        setShowReschedulePopup(false);
-        setCurrentRescheduleNotification(null);
-      }
-    } catch (error) {
-      console.error('Error handling reschedule action:', error);
-      showError('Failed to process reschedule request', 'Error');
-    }
-  };
-
-  const handleCloseReschedulePopup = async () => {
-    // Mark current notification as read when closing
-    if (currentRescheduleNotification?.id) {
-      try {
-        await psychologistApi.markNotificationAsRead(currentRescheduleNotification.id);
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
-      }
-    }
-
-    // Move to next notification or close
-    const remainingNotifs = rescheduleNotifications.filter(
-      n => n.id !== currentRescheduleNotification?.id
-    );
-    
-    if (remainingNotifs.length > 0) {
-      setCurrentRescheduleNotification(remainingNotifs[0]);
-    } else {
-      setShowReschedulePopup(false);
-      setCurrentRescheduleNotification(null);
-      await loadRescheduleNotifications(); // Reload to check for new ones
-    }
-  };
+  // Removed reschedule popup handlers - reschedule requests are now handled on the rescheduling page
 
   const handleViewDetails = (session) => {
     console.log('Session data for details:', session);
@@ -370,21 +271,7 @@ export default function PsychologistSessions() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {rescheduleNotifications.length > 0 && (
-            <button
-              onClick={() => {
-                if (rescheduleNotifications.length > 0) {
-                  setCurrentRescheduleNotification(rescheduleNotifications[0]);
-                  setShowReschedulePopup(true);
-                }
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 animate-pulse"
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Reschedule Requests ({rescheduleNotifications.length})
-            </button>
-          )}
-          {/* Old "View All Reschedule Requests" button removed - now using notification-based popup */}
+          {/* Reschedule notifications are now only shown on the rescheduling page */}
           {/* If there are unread reschedule notifications, they will show in the popup automatically */}
         </div>
       </div>
@@ -939,11 +826,6 @@ export default function PsychologistSessions() {
         </div>
       )}
 
-      {/* Old Reschedule Request Modal removed - now using RescheduleRequestPopup component */}
-      {/* The new popup automatically shows for unread reschedule notifications */}
-
-
-
       {/* Session Details Modal */}
       <SessionDetailsModal
         session={selectedSession}
@@ -955,14 +837,7 @@ export default function PsychologistSessions() {
         isPsychologist={true}
       />
 
-      {/* Reschedule Request Popup - Auto-shows for unread notifications */}
-      {showReschedulePopup && currentRescheduleNotification && (
-        <RescheduleRequestPopup
-          notification={currentRescheduleNotification}
-          onClose={handleCloseReschedulePopup}
-          onAction={handleReschedulePopupAction}
-        />
-      )}
+      {/* Reschedule requests are now handled on the rescheduling page */}
     </div>
   );
 }
