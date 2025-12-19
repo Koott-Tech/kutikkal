@@ -365,10 +365,9 @@ function PaymentSuccessContent() {
     const razorpay_order_id = searchParams.get('razorpay_order_id');
     const razorpay_payment_id = searchParams.get('razorpay_payment_id');
     const razorpay_signature = searchParams.get('razorpay_signature');
-    const session_id = searchParams.get('session_id'); // NEW: Direct session ID from backend
     const verification_error = searchParams.get('verification_error'); // Flag if verification failed
 
-    console.log('Payment parameters:', { razorpay_order_id, razorpay_payment_id, session_id, verification_error });
+    console.log('Payment parameters:', { razorpay_order_id, razorpay_payment_id, verification_error });
     console.log('📱 Device info:', {
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
       isIOS: typeof navigator !== 'undefined' ? /iPhone|iPad|iPod/i.test(navigator.userAgent) : false
@@ -387,37 +386,45 @@ function PaymentSuccessContent() {
     if (verification_error === 'true' && razorpay_order_id && razorpay_payment_id && razorpay_signature) {
       console.log('🔄 Retrying payment verification (verification failed in handler)...');
       retryPaymentVerification(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+    } else if (razorpay_order_id && razorpay_payment_id) {
+      // Try to get signature from sessionStorage and retry if available
+      try {
+        const storedPayment = sessionStorage.getItem('razorpay_payment');
+        if (storedPayment) {
+          const paymentData = JSON.parse(storedPayment);
+          if (paymentData.razorpay_signature && paymentData.razorpay_order_id === razorpay_order_id) {
+            console.log('🔄 Found payment signature in sessionStorage, retrying verification...');
+            retryPaymentVerification(
+              paymentData.razorpay_order_id,
+              paymentData.razorpay_payment_id,
+              paymentData.razorpay_signature
+            );
+          }
+        }
+      } catch (storageErr) {
+        console.warn('⚠️ Could not read payment from sessionStorage for retry:', storageErr);
+      }
     }
     
     // Start fetching session details IMMEDIATELY in the background (while animation plays)
     // This ensures data is ready when animation completes
-    if (isAuthenticated()) {
-      if (session_id) {
-        // NEW: Direct fetch by session ID (much more efficient!)
-        console.log('✅ Using direct session ID fetch:', session_id);
-        fetchSessionById(session_id);
-      } else if (razorpay_order_id && razorpay_order_id !== 'N/A') {
-        // Fallback: Use old polling method if session_id not available
-        console.log('⚠️ No session_id in URL, using polling method');
-        fetchSessionDetails(razorpay_order_id);
-      } else {
-        // Try to get payment details from sessionStorage (iPhone backup)
-        try {
-          const storedPayment = sessionStorage.getItem('razorpay_payment');
-          if (storedPayment) {
-            const paymentData = JSON.parse(storedPayment);
-            console.log('📦 Found payment data in sessionStorage, retrying verification...');
-            if (paymentData.razorpay_order_id && paymentData.razorpay_payment_id && paymentData.razorpay_signature) {
-              retryPaymentVerification(
-                paymentData.razorpay_order_id,
-                paymentData.razorpay_payment_id,
-                paymentData.razorpay_signature
-              );
-            }
+    if (isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A') {
+      // Use polling method to find the newly created session
+      console.log('🔄 Using polling method to fetch session details...');
+      fetchSessionDetails(razorpay_order_id);
+    } else if (isAuthenticated() && !razorpay_order_id) {
+      // Try to get payment details from sessionStorage (iPhone backup)
+      try {
+        const storedPayment = sessionStorage.getItem('razorpay_payment');
+        if (storedPayment) {
+          const paymentData = JSON.parse(storedPayment);
+          console.log('📦 Found payment data in sessionStorage, using polling method...');
+          if (paymentData.razorpay_order_id) {
+            fetchSessionDetails(paymentData.razorpay_order_id);
           }
-        } catch (storageErr) {
-          console.warn('⚠️ Could not read payment from sessionStorage:', storageErr);
         }
+      } catch (storageErr) {
+        console.warn('⚠️ Could not read payment from sessionStorage:', storageErr);
       }
     }
 
@@ -443,8 +450,23 @@ function PaymentSuccessContent() {
   // Retry payment verification (for iPhone when handler fails)
   const retryPaymentVerification = async (orderId, paymentId, signature) => {
     try {
-      console.log('🔄 Retrying payment verification...', { orderId, paymentId });
+      console.log('🔄 Retrying payment verification...', { orderId, paymentId, hasSignature: !!signature });
+      console.log('📱 Device info:', {
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
+        isIOS: typeof navigator !== 'undefined' ? /iPhone|iPad|iPod/i.test(navigator.userAgent) : false
+      });
+      
+      if (!signature) {
+        console.warn('⚠️ No signature available for retry, cannot verify payment');
+        // Still try to fetch session using polling (payment might have been processed)
+        if (orderId) {
+          fetchSessionDetails(orderId);
+        }
+        return;
+      }
+      
       const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
+      console.log('📤 Sending retry request to:', backendUrl);
       
       const response = await fetch(backendUrl, {
         method: 'POST',
@@ -456,98 +478,43 @@ function PaymentSuccessContent() {
           razorpay_order_id: orderId,
           razorpay_payment_id: paymentId,
           razorpay_signature: signature
-        })
+        }),
+        signal: AbortSignal.timeout(30000) // 30 second timeout
       });
+      
+      console.log('📥 Payment verification retry response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Payment verification retry successful:', data);
         
-        // If we got session_id, update URL and fetch session
-        if (data?.success && data?.data?.sessionId) {
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.set('session_id', data.data.sessionId);
-          newUrl.searchParams.delete('verification_error');
-          window.history.replaceState({}, '', newUrl.toString());
-          
-          console.log('✅ Session ID received, fetching session...');
-          fetchSessionById(data.data.sessionId);
-        } else if (orderId) {
-          // Fallback to polling
+        // Use polling method to fetch session (no session_id in URL)
+        if (orderId) {
+          console.log('🔄 Using polling method to fetch session...');
           fetchSessionDetails(orderId);
         }
       } else {
-        console.error('❌ Payment verification retry failed:', response.status);
-        // Still try to fetch session using polling
+        const errorText = await response.text();
+        console.error('❌ Payment verification retry failed:', response.status, errorText);
+        // Still try to fetch session using polling (payment might have been processed by webhook)
         if (orderId) {
+          console.log('🔄 Falling back to polling method...');
           fetchSessionDetails(orderId);
         }
       }
     } catch (err) {
       console.error('❌ Payment verification retry error:', err);
-      // Still try to fetch session using polling
+      console.error('   Error name:', err.name);
+      console.error('   Error message:', err.message);
+      // Still try to fetch session using polling (payment might have been processed)
       if (orderId) {
+        console.log('🔄 Falling back to polling method after error...');
         fetchSessionDetails(orderId);
       }
     }
   };
 
-  // NEW: Direct fetch by session ID (much more efficient!)
-  const fetchSessionById = async (sessionId) => {
-    try {
-      console.log('🔍 Fetching session directly by ID:', sessionId);
-      setLoadingSessionDetails(true);
-      
-      const sessionResponse = await clientApi.getSession(sessionId);
-      
-      if (sessionResponse.success && sessionResponse.data) {
-        const session = sessionResponse.data.session || sessionResponse.data;
-        
-        if (session && session.scheduled_date && session.scheduled_time) {
-          let psychologistName = 'your therapist';
-          if (session.psychologist) {
-            if (session.psychologist.first_name && session.psychologist.last_name) {
-              psychologistName = `${session.psychologist.first_name} ${session.psychologist.last_name}`;
-            } else if (session.psychologist.first_name) {
-              psychologistName = session.psychologist.first_name;
-            }
-          } else if (session.psychologist_name) {
-            psychologistName = session.psychologist_name;
-          } else if (session.psychologist_first_name && session.psychologist_last_name) {
-            psychologistName = `${session.psychologist_first_name} ${session.psychologist_last_name}`;
-          }
-          
-          const timeValue = session.scheduled_time;
-          const timeOnly = typeof timeValue === 'string' 
-            ? timeValue.split(' ')[0]
-            : timeValue;
-          
-          console.log('✅ Session details fetched directly:', { 
-            psychologistName, 
-            date: session.scheduled_date, 
-            time: timeOnly
-          });
-          
-          setSessionDetails({
-            psychologistName,
-            date: session.scheduled_date,
-            time: timeOnly
-          });
-          setLoadingSessionDetails(false);
-          return;
-        }
-      }
-      
-      console.warn('⚠️ Session not found or incomplete, falling back to polling method');
-      setLoadingSessionDetails(false);
-    } catch (error) {
-      console.error('❌ Error fetching session by ID:', error);
-      setLoadingSessionDetails(false);
-      // Don't retry - if direct fetch fails, user can see generic message
-    }
-  };
-
-  // OLD: Polling method (fallback if session_id not in URL)
+  // Polling method to fetch session details
   const fetchSessionDetails = async (orderId, attempt = 0) => {
     try {
       console.log('Fetching session details for order:', orderId, 'attempt:', attempt);
