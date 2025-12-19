@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clientApi } from '../../../lib/backendApi';
@@ -303,6 +303,10 @@ function PaymentSuccessContent() {
   const [loadingScreenComplete, setLoadingScreenComplete] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
+  // Refs to prevent duplicate fetches
+  const isFetchingSessionRef = useRef(false);
+  const fetchAbortControllerRef = useRef(null);
+  
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -367,11 +371,6 @@ function PaymentSuccessContent() {
     const razorpay_signature = searchParams.get('razorpay_signature');
     const verification_error = searchParams.get('verification_error'); // Flag if verification failed
 
-    console.log('Payment parameters:', { razorpay_order_id, razorpay_payment_id, verification_error });
-    console.log('📱 Device info:', {
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
-      isIOS: typeof navigator !== 'undefined' ? /iPhone|iPad|iPod/i.test(navigator.userAgent) : false
-    });
 
     // Set payment data from URL parameters
     const payload = {
@@ -382,9 +381,12 @@ function PaymentSuccessContent() {
 
     setPaymentData(payload);
     
+    // Determine if we should retry verification or fetch directly
+    let willRetryVerification = false;
+    
     // If verification failed in handler, retry it now (for iPhone)
     if (verification_error === 'true' && razorpay_order_id && razorpay_payment_id && razorpay_signature) {
-      console.log('🔄 Retrying payment verification (verification failed in handler)...');
+      willRetryVerification = true;
       retryPaymentVerification(razorpay_order_id, razorpay_payment_id, razorpay_signature);
     } else if (razorpay_order_id && razorpay_payment_id) {
       // Try to get signature from sessionStorage and retry if available
@@ -393,7 +395,7 @@ function PaymentSuccessContent() {
         if (storedPayment) {
           const paymentData = JSON.parse(storedPayment);
           if (paymentData.razorpay_signature && paymentData.razorpay_order_id === razorpay_order_id) {
-            console.log('🔄 Found payment signature in sessionStorage, retrying verification...');
+            willRetryVerification = true;
             retryPaymentVerification(
               paymentData.razorpay_order_id,
               paymentData.razorpay_payment_id,
@@ -406,19 +408,18 @@ function PaymentSuccessContent() {
       }
     }
     
-    // Start fetching session details IMMEDIATELY in the background (while animation plays)
-    // This ensures data is ready when animation completes
-    if (isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A') {
+    // Start fetching session details ONLY if we're NOT retrying verification
+    // (retryPaymentVerification will handle fetching after verification)
+    // This prevents duplicate fetches
+    if (!willRetryVerification && isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A' && !isFetchingSessionRef.current) {
       // Use polling method to find the newly created session
-      console.log('🔄 Using polling method to fetch session details...');
       fetchSessionDetails(razorpay_order_id);
-    } else if (isAuthenticated() && !razorpay_order_id) {
+    } else if (!willRetryVerification && isAuthenticated() && !razorpay_order_id && !isFetchingSessionRef.current) {
       // Try to get payment details from sessionStorage (iPhone backup)
       try {
         const storedPayment = sessionStorage.getItem('razorpay_payment');
         if (storedPayment) {
           const paymentData = JSON.parse(storedPayment);
-          console.log('📦 Found payment data in sessionStorage, using polling method...');
           if (paymentData.razorpay_order_id) {
             fetchSessionDetails(paymentData.razorpay_order_id);
           }
@@ -442,6 +443,14 @@ function PaymentSuccessContent() {
 
     setLoading(false);
 
+    // Cleanup function to reset fetching state on unmount
+    return () => {
+      if (fetchAbortControllerRef.current) {
+        fetchAbortControllerRef.current.abort();
+        fetchAbortControllerRef.current = null;
+      }
+      isFetchingSessionRef.current = false;
+    };
   }, [searchParams, isAuthenticated]);
 
   // Session details fetching only - no receipt fetching
@@ -449,16 +458,16 @@ function PaymentSuccessContent() {
 
   // Retry payment verification (for iPhone when handler fails)
   const retryPaymentVerification = async (orderId, paymentId, signature) => {
+    // Check if already fetching to prevent duplicate calls
+    if (isFetchingSessionRef.current) {
+      return;
+    }
+    
     try {
-      console.log('🔄 Retrying payment verification...', { orderId, paymentId, hasSignature: !!signature });
-      console.log('📱 Device info:', {
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A',
-        isIOS: typeof navigator !== 'undefined' ? /iPhone|iPad|iPod/i.test(navigator.userAgent) : false
-      });
-      
       if (!signature) {
         console.warn('⚠️ No signature available for retry, cannot verify payment');
         // Still try to fetch session using polling (payment might have been processed)
+        // fetchSessionDetails will check and set the flag to prevent duplicates
         if (orderId) {
           fetchSessionDetails(orderId);
         }
@@ -466,7 +475,6 @@ function PaymentSuccessContent() {
       }
       
       const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
-      console.log('📤 Sending retry request to:', backendUrl);
       
       const response = await fetch(backendUrl, {
         method: 'POST',
@@ -482,23 +490,26 @@ function PaymentSuccessContent() {
         signal: AbortSignal.timeout(30000) // 30 second timeout
       });
       
-      console.log('📥 Payment verification retry response status:', response.status);
-      
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Payment verification retry successful:', data);
         
-        // Use polling method to fetch session (no session_id in URL)
-        if (orderId) {
-          console.log('🔄 Using polling method to fetch session...');
+        // If we got sessionId from the response, fetch directly by ID (much faster!)
+        // Backend returns sessionId in two formats:
+        // 1. { success: true, sessionId: '...' } (when already processed)
+        // 2. { success: true, data: { sessionId: '...' } } (when newly processed)
+        const sessionId = data?.sessionId || data?.data?.sessionId;
+        if (sessionId) {
+          fetchSessionById(sessionId);
+        } else if (orderId) {
+          // Fallback to polling method if no sessionId
           fetchSessionDetails(orderId);
         }
       } else {
         const errorText = await response.text();
         console.error('❌ Payment verification retry failed:', response.status, errorText);
         // Still try to fetch session using polling (payment might have been processed by webhook)
+        // fetchSessionDetails will check and set the flag to prevent duplicates
         if (orderId) {
-          console.log('🔄 Falling back to polling method...');
           fetchSessionDetails(orderId);
         }
       }
@@ -507,8 +518,84 @@ function PaymentSuccessContent() {
       console.error('   Error name:', err.name);
       console.error('   Error message:', err.message);
       // Still try to fetch session using polling (payment might have been processed)
+      // fetchSessionDetails will check and set the flag to prevent duplicates
       if (orderId) {
-        console.log('🔄 Falling back to polling method after error...');
+        fetchSessionDetails(orderId);
+      }
+    }
+  };
+
+  // Direct fetch by session ID (much more efficient!)
+  const fetchSessionById = async (sessionId) => {
+    // Prevent duplicate fetches
+    if (isFetchingSessionRef.current) {
+      return;
+    }
+    
+    // Mark as fetching immediately
+    isFetchingSessionRef.current = true;
+    fetchAbortControllerRef.current = new AbortController();
+    
+    try {
+      setLoadingSessionDetails(true);
+      
+      const sessionResponse = await clientApi.getSession(sessionId);
+      
+      if (sessionResponse.success && sessionResponse.data) {
+        const session = sessionResponse.data.session || sessionResponse.data;
+        
+        if (session && session.scheduled_date && session.scheduled_time) {
+          let psychologistName = 'your therapist';
+          if (session.psychologist) {
+            if (session.psychologist.first_name && session.psychologist.last_name) {
+              psychologistName = `${session.psychologist.first_name} ${session.psychologist.last_name}`;
+            } else if (session.psychologist.first_name) {
+              psychologistName = session.psychologist.first_name;
+            }
+          } else if (session.psychologist_name) {
+            psychologistName = session.psychologist_name;
+          } else if (session.psychologist_first_name && session.psychologist_last_name) {
+            psychologistName = `${session.psychologist_first_name} ${session.psychologist_last_name}`;
+          }
+          
+          const timeValue = session.scheduled_time;
+          const timeOnly = typeof timeValue === 'string' 
+            ? timeValue.split(' ')[0]
+            : timeValue;
+          
+          setSessionDetails({
+            psychologistName,
+            date: session.scheduled_date,
+            time: timeOnly
+          });
+          setLoadingSessionDetails(false);
+          // Reset fetching flag on success
+          isFetchingSessionRef.current = false;
+          fetchAbortControllerRef.current = null;
+          return;
+        }
+      }
+      
+      setLoadingSessionDetails(false);
+      // Reset fetching flag
+      isFetchingSessionRef.current = false;
+      fetchAbortControllerRef.current = null;
+      
+      // Fallback to polling if direct fetch fails
+      const orderId = searchParams.get('razorpay_order_id');
+      if (orderId) {
+        fetchSessionDetails(orderId);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching session by ID:', error);
+      setLoadingSessionDetails(false);
+      // Reset fetching flag on error
+      isFetchingSessionRef.current = false;
+      fetchAbortControllerRef.current = null;
+      
+      // Fallback to polling if direct fetch fails
+      const orderId = searchParams.get('razorpay_order_id');
+      if (orderId) {
         fetchSessionDetails(orderId);
       }
     }
@@ -516,8 +603,18 @@ function PaymentSuccessContent() {
 
   // Polling method to fetch session details
   const fetchSessionDetails = async (orderId, attempt = 0) => {
+    // Prevent duplicate fetches - check and set atomically
+    if (attempt === 0) {
+      if (isFetchingSessionRef.current) {
+        return;
+      }
+      // Mark as fetching immediately to prevent race conditions
+      isFetchingSessionRef.current = true;
+      // Create abort controller for this fetch
+      fetchAbortControllerRef.current = new AbortController();
+    }
+    
     try {
-      console.log('Fetching session details for order:', orderId, 'attempt:', attempt);
       setLoadingSessionDetails(true);
       
       // Add delay based on attempt number
@@ -551,13 +648,6 @@ function PaymentSuccessContent() {
           })
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Most recent first
         
-        console.log('Recent sessions found:', recentSessions.length, recentSessions.map(s => ({
-          id: s.id,
-          created_at: s.created_at,
-          scheduled_date: s.scheduled_date,
-          scheduled_time: s.scheduled_time
-        })));
-        
         const targetSession = recentSessions.length > 0 ? recentSessions[0] : null;
         
         if (targetSession && targetSession.scheduled_date && targetSession.scheduled_time) {
@@ -579,18 +669,15 @@ function PaymentSuccessContent() {
             ? timeValue.split(' ')[0]
             : timeValue;
           
-          console.log('Setting session details from sessions list:', { 
-            psychologistName, 
-            date: targetSession.scheduled_date, 
-            time: timeOnly
-          });
-          
           setSessionDetails({
             psychologistName,
             date: targetSession.scheduled_date,
             time: timeOnly
           });
           setLoadingSessionDetails(false);
+          // Reset fetching flag on success
+          isFetchingSessionRef.current = false;
+          fetchAbortControllerRef.current = null;
           return;
         }
       }
@@ -601,29 +688,34 @@ function PaymentSuccessContent() {
       if (attempt < maxRetries) {
         // Progressive delay: 3s, 4s, 5s, 6s, etc.
         const delay = 3000 + (attempt * 1000);
-        console.log(`Session details not found, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         setTimeout(() => {
           fetchSessionDetails(orderId, attempt + 1);
         }, delay);
       } else {
-        console.log('Max retries reached for session details - session may still be processing');
         setLoadingSessionDetails(false);
+        // Reset fetching flag on max retries
+        isFetchingSessionRef.current = false;
+        fetchAbortControllerRef.current = null;
         // Don't show error, just show generic message
       }
     } catch (error) {
-      console.log('Could not fetch session details:', error.message, error);
+      // Don't log abort errors as they're intentional
+      if (error.name !== 'AbortError') {
+        console.error('Could not fetch session details:', error.message, error);
+      }
       // Retry if we haven't exceeded max attempts
       const maxRetries = 10;
-      if (attempt < maxRetries) {
+      if (attempt < maxRetries && error.name !== 'AbortError') {
         // Progressive delay: 3s, 4s, 5s, 6s, etc.
         const delay = 3000 + (attempt * 1000);
-        console.log(`Error fetching session details, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         setTimeout(() => {
           fetchSessionDetails(orderId, attempt + 1);
         }, delay);
       } else {
-        console.log('Max retries reached after errors - session may still be processing');
         setLoadingSessionDetails(false);
+        // Reset fetching flag on error completion
+        isFetchingSessionRef.current = false;
+        fetchAbortControllerRef.current = null;
       }
     }
   };
