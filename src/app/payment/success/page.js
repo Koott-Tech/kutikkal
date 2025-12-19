@@ -400,74 +400,25 @@ function PaymentSuccessContent() {
 
   }, [searchParams, isAuthenticated]);
 
-  // Receipt fetching removed from success page - receipts are sent via WhatsApp and email only
+  // Session details fetching only - no receipt fetching
+  // Receipts are generated on sessions page and sent via WhatsApp/email only
 
   const fetchSessionDetails = async (orderId, attempt = 0) => {
     try {
       console.log('Fetching session details for order:', orderId, 'attempt:', attempt);
       setLoadingSessionDetails(true);
       
-      // Add a small delay on first attempt to give backend time to create the session
-      // The backend creates the session synchronously, but there might be a brief delay
+      // Add delay based on attempt number
+      // First attempt: wait longer to give backend time to verify payment and create session
+      // Payment verification can take 2-5 seconds (signature verification, session creation)
       if (attempt === 0) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 seconds
+      } else if (attempt === 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds for second attempt
       }
       
-      // Fetch session details using the payment order ID
-      // This endpoint gets the payment by order ID and returns the associated session
-      // Cache-busting is handled in the API call itself
-      const receiptResponse = await clientApi.getReceiptByOrderId(orderId);
-      
-      console.log('Receipt response:', {
-        success: receiptResponse.success,
-        hasData: !!receiptResponse.data,
-        hasSession: !!receiptResponse.data?.session,
-        sessionDate: receiptResponse.data?.session?.scheduled_date,
-        sessionTime: receiptResponse.data?.session?.scheduled_time
-      });
-      
-      if (receiptResponse.success && receiptResponse.data) {
-        const sessionData = receiptResponse.data.session;
-        
-        if (sessionData && sessionData.scheduled_date && sessionData.scheduled_time) {
-          // Extract psychologist name
-          let psychologistName = 'your therapist';
-          if (sessionData.psychologist) {
-            if (sessionData.psychologist.first_name && sessionData.psychologist.last_name) {
-              psychologistName = `${sessionData.psychologist.first_name} ${sessionData.psychologist.last_name}`;
-            } else if (sessionData.psychologist.first_name) {
-              psychologistName = sessionData.psychologist.first_name;
-            }
-          }
-          
-          // Extract just the time part (handle formats like "18:00:00" or "18:00")
-          const timeValue = sessionData.scheduled_time;
-          const timeOnly = typeof timeValue === 'string' 
-            ? timeValue.split(' ')[0] // Remove any date part if present
-            : timeValue;
-          
-          console.log('Setting session details from payment order:', { 
-            psychologistName, 
-            date: sessionData.scheduled_date, 
-            time: timeOnly,
-            originalTime: sessionData.scheduled_time
-          });
-          
-          setSessionDetails({
-            psychologistName,
-            date: sessionData.scheduled_date,
-            time: timeOnly
-          });
-          setLoadingSessionDetails(false);
-          return;
-        }
-      }
-      
-      // Fallback: If receipt endpoint doesn't have session yet, try fetching from sessions list
-      // This handles the case where payment is verified but session is still being created
-      console.log('Session not found in receipt, trying sessions list as fallback...');
-      
-      // Add cache-busting parameter to prevent stale data
+      // Fetch sessions list to find the newly created session
+      // This is the only way to get session details - no receipt endpoint used
       const cacheBuster = Date.now();
       const sessionsResponse = await clientApi.getSessions({ limit: 20, page: 1, _t: cacheBuster });
       
@@ -497,29 +448,13 @@ function PaymentSuccessContent() {
         
         const targetSession = recentSessions.length > 0 ? recentSessions[0] : null;
         
-        // Only use fallback if we found a very recent session
-        if (!targetSession) {
-          console.log('No recent sessions found in fallback, will retry...');
-          // Don't set session details, let it retry
-          const maxRetries = 5;
-          if (attempt < maxRetries) {
-            const delay = 2000 + (attempt * 1000);
-            console.log(`Session details not found, retrying in ${delay}ms...`);
-            setTimeout(() => {
-              fetchSessionDetails(orderId, attempt + 1);
-            }, delay);
-            return;
-          } else {
-            setLoadingSessionDetails(false);
-            return;
-          }
-        }
-        
-        if (targetSession) {
+        if (targetSession && targetSession.scheduled_date && targetSession.scheduled_time) {
           let psychologistName = 'your therapist';
           if (targetSession.psychologist) {
             if (targetSession.psychologist.first_name && targetSession.psychologist.last_name) {
               psychologistName = `${targetSession.psychologist.first_name} ${targetSession.psychologist.last_name}`;
+            } else if (targetSession.psychologist.first_name) {
+              psychologistName = targetSession.psychologist.first_name;
             }
           } else if (targetSession.psychologist_name) {
             psychologistName = targetSession.psychologist_name;
@@ -527,33 +462,33 @@ function PaymentSuccessContent() {
             psychologistName = `${targetSession.psychologist_first_name} ${targetSession.psychologist_last_name}`;
           }
           
-          if (targetSession.scheduled_date && targetSession.scheduled_time) {
-            const timeValue = targetSession.scheduled_time;
-            const timeOnly = typeof timeValue === 'string' 
-              ? timeValue.split(' ')[0]
-              : timeValue;
-            
-            console.log('Setting session details from sessions list (fallback):', { 
-              psychologistName, 
-              date: targetSession.scheduled_date, 
-              time: timeOnly
-            });
-            
-            setSessionDetails({
-              psychologistName,
-              date: targetSession.scheduled_date,
-              time: timeOnly
-            });
-            setLoadingSessionDetails(false);
-            return;
-          }
+          const timeValue = targetSession.scheduled_time;
+          const timeOnly = typeof timeValue === 'string' 
+            ? timeValue.split(' ')[0]
+            : timeValue;
+          
+          console.log('Setting session details from sessions list:', { 
+            psychologistName, 
+            date: targetSession.scheduled_date, 
+            time: timeOnly
+          });
+          
+          setSessionDetails({
+            psychologistName,
+            date: targetSession.scheduled_date,
+            time: timeOnly
+          });
+          setLoadingSessionDetails(false);
+          return;
         }
       }
       
       // If not found and haven't exceeded max retries, retry after delay
-      const maxRetries = 8; // Increased retries to handle slower backend processing
+      // Increase delay progressively to give backend more time
+      const maxRetries = 10; // Increased retries to handle slower backend processing
       if (attempt < maxRetries) {
-        const delay = 2000 + (attempt * 1000);
+        // Progressive delay: 3s, 4s, 5s, 6s, etc.
+        const delay = 3000 + (attempt * 1000);
         console.log(`Session details not found, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         setTimeout(() => {
           fetchSessionDetails(orderId, attempt + 1);
@@ -566,13 +501,16 @@ function PaymentSuccessContent() {
     } catch (error) {
       console.log('Could not fetch session details:', error.message, error);
       // Retry if we haven't exceeded max attempts
-      const maxRetries = 5;
+      const maxRetries = 10;
       if (attempt < maxRetries) {
-        const delay = 2000 + (attempt * 1000);
+        // Progressive delay: 3s, 4s, 5s, 6s, etc.
+        const delay = 3000 + (attempt * 1000);
+        console.log(`Error fetching session details, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         setTimeout(() => {
           fetchSessionDetails(orderId, attempt + 1);
         }, delay);
       } else {
+        console.log('Max retries reached after errors - session may still be processing');
         setLoadingSessionDetails(false);
       }
     }

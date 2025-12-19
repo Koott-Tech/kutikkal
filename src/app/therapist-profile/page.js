@@ -1187,16 +1187,9 @@ const TherapistProfileContent = () => {
             handler: async function (response) {
               console.log('✅ Razorpay payment successful:', response);
               
-              // Redirect immediately - don't wait for backend processing
-              // Backend will process payment asynchronously (gmeet creation, emails, receipt, etc.)
-              // Payment success page will handle receipt loading with retry logic
-              setTimeout(() => {
-                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
-              }, 100);
-              
-              // Send payment verification to backend asynchronously (fire and forget)
-              // This allows backend to process booking, gmeet creation, emails, receipt generation in background
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
+              // Send payment verification to backend FIRST (before redirect)
+              // This ensures backend starts processing immediately
+              const verificationPromise = fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1206,10 +1199,23 @@ const TherapistProfileContent = () => {
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature
                 })
+              }).then(res => {
+                if (!res.ok) {
+                  console.warn('⚠️ Payment verification response not OK:', res.status);
+                }
+                return res.json();
+              }).then(data => {
+                console.log('✅ Payment verification response:', data);
               }).catch(err => {
                 console.error('❌ Background payment processing error (non-blocking):', err);
                 // Error is logged but doesn't block redirect - backend will retry if needed
               });
+              
+              // Redirect after a short delay to allow verification request to start
+              // Don't wait for completion - let it process in background
+              setTimeout(() => {
+                window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+              }, 200); // Small delay to ensure request is sent
             },
             modal: {
               ondismiss: function() {
