@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   MessageSquare,
-  Package
+  Package,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -51,6 +52,7 @@ export default function PsychologistLayout({ children }) {
     { name: 'Dashboard', href: '/psychologist', icon: BarChart3 },
     { name: 'Sessions', href: '/psychologist/sessions', icon: Calendar },
     { name: 'Assessments', href: '/psychologist/assessments', icon: Package },
+    { name: 'Rescheduling', href: '/psychologist/rescheduling', icon: RefreshCw },
     { name: 'Availability', href: '/psychologist/availability', icon: Clock },
     { name: 'Packages', href: '/psychologist/packages', icon: FileText },
     { name: 'Messages', href: '/psychologist/messages', icon: MessageSquare },

@@ -19,7 +19,8 @@ import {
   Package,
   ChevronDown,
   ChevronRight,
-  Layers
+  Layers,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import SecurityNotificationCenter from '@/components/SecurityNotificationCenter';
@@ -74,6 +75,7 @@ export default function AdminLayout({ children }) {
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
     { name: 'Assessment Sessions', href: '/admin/assessment-sessions', icon: Package },
+    { name: 'Rescheduling', href: '/admin/rescheduling', icon: RefreshCw },
     { 
       name: 'CMS', 
       icon: Layers, 

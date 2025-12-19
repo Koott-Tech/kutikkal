@@ -818,6 +818,14 @@ export const adminApi = {
     return apiRequest(`/admin/reschedule-requests${query}`);
   },
 
+  // Handle reschedule request (approve/reject) - admin
+  async handleRescheduleRequest(notificationId, action, reason = '') {
+    return apiRequest(`/admin/reschedule-requests/${notificationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, reason }),
+    });
+  },
+
   // Approve assessment reschedule request
   async approveAssessmentRescheduleRequest(notificationId, data) {
     return apiRequest(`/admin/reschedule-requests/assessment/${notificationId}/approve`, {

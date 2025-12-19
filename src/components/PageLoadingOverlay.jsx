@@ -26,17 +26,12 @@ export default function PageLoadingOverlay() {
       isInitialMount.current = false;
       setIsVisible(true);
       setShouldRender(true);
-      
-      // Mark body as not loaded initially to hide content
-      document.body.classList.remove('loaded');
-      
+
       // Wait for page to load, then fade out
       const handleLoad = () => {
         // Small delay to ensure images are loading
         setTimeout(() => {
           setIsVisible(false);
-          // Show content after loading screen starts fading
-          document.body.classList.add('loaded');
           // Remove from DOM after fade out completes
           setTimeout(() => {
             setShouldRender(false);

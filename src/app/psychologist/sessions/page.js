@@ -24,6 +24,7 @@ import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
 import SessionNotesModal from "../../../components/SessionNotesModal";
 import ScheduleAssessmentSessionModal from "../../../components/ScheduleAssessmentSessionModal";
+import RescheduleRequestPopup from "../../../components/RescheduleRequestPopup";
 import { useNotification } from "../../../contexts/NotificationContext";
 
 export default function PsychologistSessions() {
@@ -36,8 +37,8 @@ export default function PsychologistSessions() {
   const [completingSessions, setCompletingSessions] = useState(new Set());
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [selectedRescheduleSession, setSelectedRescheduleSession] = useState(null);
+  // Old showRescheduleModal removed - now using showReschedulePopup with notifications
+  // Old selectedRescheduleSession removed - now using notification-based popup
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
   const [showNotesModal, setShowNotesModal] = useState(false);
@@ -45,12 +46,27 @@ export default function PsychologistSessions() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
   const [feedbackToView, setFeedbackToView] = useState(null);
+  const [rescheduleNotifications, setRescheduleNotifications] = useState([]);
+  const [currentRescheduleNotification, setCurrentRescheduleNotification] = useState(null);
+  const [showReschedulePopup, setShowReschedulePopup] = useState(false);
 
 
   useEffect(() => {
     if (user) {
       loadSessions();
+      loadRescheduleNotifications();
     }
+  }, [user]);
+
+  // Check for reschedule notifications periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user) {
+        loadRescheduleNotifications();
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(interval);
   }, [user]);
 
   const loadSessions = async () => {
@@ -65,6 +81,30 @@ export default function PsychologistSessions() {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadRescheduleNotifications = async () => {
+    try {
+      const response = await psychologistApi.getNotifications({ unread_only: true });
+      if (response.success) {
+        // Filter for reschedule notifications that require psychologist action
+        // Exclude "admin approval required" notifications - those are informational only
+        const rescheduleNotifs = response.data.notifications.filter(
+          notif => (notif.type === 'warning' || notif.type === 'info') && 
+          (notif.message?.includes('reschedule') || notif.title?.includes('Reschedule')) &&
+          !notif.message?.includes('admin approval') // Exclude admin-approval-only notifications
+        );
+        setRescheduleNotifications(rescheduleNotifs);
+        
+        // Auto-show popup for first unread reschedule notification that psychologist can act on
+        if (rescheduleNotifs.length > 0 && !showReschedulePopup) {
+          setCurrentRescheduleNotification(rescheduleNotifs[0]);
+          setShowReschedulePopup(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading reschedule notifications:', error);
     }
   };
 
@@ -167,53 +207,67 @@ export default function PsychologistSessions() {
 
 
 
-  const handleApproveReschedule = async (session) => {
-    const newDate = prompt('Enter new date (YYYY-MM-DD):', session.scheduled_date);
-    const newTime = prompt('Enter new time (HH:MM):', session.scheduled_time);
-    
-    if (!newDate || !newTime) {
-      setError('Date and time are required');
-      return;
-    }
+  // Old handleApproveReschedule and handleRejectReschedule removed
+  // Now using RescheduleRequestPopup component which handles approval/rejection
+  // via notifications - no need to ask for new date/time as it's already in the notification message
 
+  const handleReschedulePopupAction = async (action, data) => {
     try {
-      setError(null);
-      await psychologistApi.respondToRescheduleRequest(session.id, {
-        action: 'approve',
-        newDate,
-        newTime,
-        reason: 'Reschedule approved'
-      });
-      
-      setSuccessMessage('Reschedule request approved successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      
+      // Mark notification as read
+      if (currentRescheduleNotification?.id) {
+        await psychologistApi.markNotificationAsRead(currentRescheduleNotification.id);
+      }
+
+      // Reload sessions and notifications
       await loadSessions();
-      setShowRescheduleModal(false);
-    } catch (err) {
-      console.error('Error approving reschedule:', err);
-      setError(`Failed to approve reschedule: ${err.message}`);
+      await loadRescheduleNotifications();
+
+      // Show success message
+      if (action === 'approve') {
+        setSuccessMessage('Reschedule request approved successfully!');
+      } else {
+        setSuccessMessage('Reschedule request rejected successfully!');
+      }
+      setTimeout(() => setSuccessMessage(null), 3000);
+
+      // Move to next notification or close popup
+      const remainingNotifs = rescheduleNotifications.filter(
+        n => n.id !== currentRescheduleNotification?.id
+      );
+      
+      if (remainingNotifs.length > 0) {
+        setCurrentRescheduleNotification(remainingNotifs[0]);
+      } else {
+        setShowReschedulePopup(false);
+        setCurrentRescheduleNotification(null);
+      }
+    } catch (error) {
+      console.error('Error handling reschedule action:', error);
+      showError('Failed to process reschedule request', 'Error');
     }
   };
 
-  const handleRejectReschedule = async (session) => {
-    const reason = prompt('Enter rejection reason (optional):') || 'Reschedule rejected';
+  const handleCloseReschedulePopup = async () => {
+    // Mark current notification as read when closing
+    if (currentRescheduleNotification?.id) {
+      try {
+        await psychologistApi.markNotificationAsRead(currentRescheduleNotification.id);
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
+
+    // Move to next notification or close
+    const remainingNotifs = rescheduleNotifications.filter(
+      n => n.id !== currentRescheduleNotification?.id
+    );
     
-    try {
-      setError(null);
-      await psychologistApi.respondToRescheduleRequest(session.id, {
-        action: 'reject',
-        reason
-      });
-      
-      setSuccessMessage('Reschedule request rejected successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      
-      await loadSessions();
-      setShowRescheduleModal(false);
-    } catch (err) {
-      console.error('Error rejecting reschedule:', err);
-      setError(`Failed to reject reschedule: ${err.message}`);
+    if (remainingNotifs.length > 0) {
+      setCurrentRescheduleNotification(remainingNotifs[0]);
+    } else {
+      setShowReschedulePopup(false);
+      setCurrentRescheduleNotification(null);
+      await loadRescheduleNotifications(); // Reload to check for new ones
     }
   };
 
@@ -316,15 +370,22 @@ export default function PsychologistSessions() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {sessions.some(s => s.status === 'reschedule_requested') && (
+          {rescheduleNotifications.length > 0 && (
             <button
-              onClick={() => setShowRescheduleModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              onClick={() => {
+                if (rescheduleNotifications.length > 0) {
+                  setCurrentRescheduleNotification(rescheduleNotifications[0]);
+                  setShowReschedulePopup(true);
+                }
+              }}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 animate-pulse"
             >
               <AlertCircle className="h-4 w-4 mr-2" />
-              Reschedule Requests ({sessions.filter(s => s.status === 'reschedule_requested').length})
+              Reschedule Requests ({rescheduleNotifications.length})
             </button>
           )}
+          {/* Old "View All Reschedule Requests" button removed - now using notification-based popup */}
+          {/* If there are unread reschedule notifications, they will show in the popup automatically */}
         </div>
       </div>
 
@@ -878,72 +939,8 @@ export default function PsychologistSessions() {
         </div>
       )}
 
-      {/* Reschedule Request Modal */}
-      {showRescheduleModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <p className="font-medium text-gray-900">Reschedule Requests</p>
-              <button
-                onClick={() => setShowRescheduleModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              {sessions
-                .filter(s => s.status === 'reschedule_requested')
-                .map((session) => (
-                  <div key={session.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-medium text-gray-900">
-                          {session.client?.first_name} {session.client?.last_name}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Current: {new Date(session.scheduled_date).toLocaleDateString()} at {formatTime(session.scheduled_time)}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Client requested reschedule
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        Pending
-                      </span>
-                    </div>
-                    
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleApproveReschedule(session)}
-                        className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleRejectReschedule(session)}
-                        className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              
-              {sessions.filter(s => s.status === 'reschedule_requested').length === 0 && (
-                <div className="text-center py-8">
-                  <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm font-medium text-gray-900">No pending reschedule requests</p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    All reschedule requests have been processed.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Old Reschedule Request Modal removed - now using RescheduleRequestPopup component */}
+      {/* The new popup automatically shows for unread reschedule notifications */}
 
 
 
@@ -957,6 +954,15 @@ export default function PsychologistSessions() {
         }}
         isPsychologist={true}
       />
+
+      {/* Reschedule Request Popup - Auto-shows for unread notifications */}
+      {showReschedulePopup && currentRescheduleNotification && (
+        <RescheduleRequestPopup
+          notification={currentRescheduleNotification}
+          onClose={handleCloseReschedulePopup}
+          onAction={handleReschedulePopupAction}
+        />
+      )}
     </div>
   );
 }

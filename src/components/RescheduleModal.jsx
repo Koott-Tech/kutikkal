@@ -20,14 +20,24 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [error, setError] = useState(null);
 
-  // Helper function to convert 24-hour time to 12-hour format with AM/PM
-  const formatTime12Hour = (time24) => {
-    if (!time24) return '';
-    const [hours, minutes] = time24.split(':');
+  // Helper function to display time in 12-hour format with AM/PM
+  const formatTime12Hour = (timeValue) => {
+    if (!timeValue) return '';
+    const raw = String(timeValue).trim();
+
+    // If already in 12-hour format with AM/PM (e.g. "5:00 PM"), just normalise spacing/case
+    if (/am|pm/i.test(raw)) {
+      const [timePart, period] = raw.split(/\s+/);
+      return `${timePart} ${period.toUpperCase()}`;
+    }
+
+    // Otherwise assume 24-hour "HH:MM" or "HH:MM:SS" and convert
+    const [hours, minutes] = raw.split(':');
     const hour = parseInt(hours, 10);
+    const mins = minutes || '00';
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12; // Convert 0 to 12, 13-23 to 1-11
-    return `${hour12}:${minutes} ${ampm}`;
+    return `${hour12}:${mins} ${ampm}`;
   };
 
   // EXACT same helper functions as therapist profile
@@ -226,10 +236,12 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
       console.log('Date range:', startDate, 'to', endDate);
       
       // Use the exact same API call as therapist profile
+      // Pass withSync = true to get latest blocked slots (same as therapist profile)
       const response = await publicApi.getPsychologistAvailabilityRange(
         session.psychologist_id, 
         startDate, 
-        endDate
+        endDate,
+        true // withSync - ensures blocked slots are included
       );
       
       if (response.success) {
@@ -311,7 +323,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4">
       <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-4xl max-h-[100vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b">
@@ -331,11 +343,9 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl p-3 sm:p-6 w-full sm:max-w-md">
                 {/* Calendar Header */}
                 <div className="text-center mb-3 sm:mb-4">
-                  <h6 className="text-xs sm:text-sm font-semibold text-gray-800 mb-1">Reschedule Session</h6>
-                  <p className="text-gray-600 text-[10px] sm:text-xs">Select a new date and time</p>
                   {loadingAvailability && (
-                    <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                    <div className="mt-2 flex items-center justify-center text-xs" style={{ color: '#3f2e73' }}>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 mr-2" style={{ borderBottomColor: '#3f2e73' }}></div>
                       Loading availability...
                     </div>
                   )}
@@ -443,16 +453,18 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                                           : 'text-gray-300 cursor-not-allowed'
                               )
                               : (
-                                // Regular session styling
-                            isSelected 
-                              ? 'bg-green-600 text-white font-bold shadow-lg cursor-pointer' 
-                              : isToday
-                                ? 'bg-blue-100 text-blue-700 font-semibold cursor-pointer'
-                                : isPsychologistAvailable
-                                      ? 'bg-green-500 text-white font-semibold shadow-md cursor-pointer border-2 border-green-600 hover:bg-green-600 hover:scale-105 transform'
-                                : isAvailable
-                                      ? 'hover:bg-gray-100 text-gray-500 cursor-pointer'
-                                      : 'text-gray-300 cursor-not-allowed'
+                                // Regular session styling - match therapist profile calendar theme
+                                isSelected
+                                  ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
+                                  : (isToday && isActuallyAvailable)
+                                    ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
+                                    : isToday
+                                      ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
+                                      : isActuallyAvailable
+                                        ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
+                                        : isAvailable
+                                          ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
+                                          : 'text-gray-300 cursor-not-allowed'
                               )
                           }`}
                           title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
@@ -519,7 +531,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                       return (
                         <div className="flex items-center justify-center py-4 min-h-[200px]">
                           <div className="flex flex-col items-center justify-center">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mb-3"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 mb-3" style={{ borderBottomColor: '#3f2e73' }}></div>
                             <span className="text-gray-600 text-sm">Creating a safe place for you</span>
                           </div>
                         </div>
@@ -587,6 +599,26 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   }
                   
                   // Regular session structure: { timeSlots: [{ available, displayTime, ... }] }
+                  // Get availability for the selected date
+                  const year = selectedDate.getFullYear();
+                  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                  const day = String(selectedDate.getDate()).padStart(2, '0');
+                  const dateStr = `${year}-${month}-${day}`;
+                  const dateAvailability = psychologistAvailability[dateStr];
+                  
+                  if (!dateAvailability) {
+                    return (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 text-sm">
+                          <svg className="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p>Loading availability for this date...</p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
                   const allTimeSlots = dateAvailability.timeSlots || [];
                   const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
                   
@@ -611,8 +643,8 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                                 onClick={() => handleTimeSelect(time)}
                                 className={`p-1 sm:p-2 rounded-lg border text-xs transition-all duration-200 w-full h-8 sm:h-10 flex items-center justify-center ${
                                   selectedTime === time
-                              ? 'border-green-500 bg-green-50 text-green-700 font-semibold' 
-                                    : 'border-green-300 bg-green-50 hover:border-green-400 text-green-700'
+                                    ? 'border-[#3f2e73] bg-[#3f2e73] text-white font-bold shadow-lg'
+                                    : 'border-gray-300 bg-white hover:border-[#3f2e73] text-gray-700'
                                 }`}
                               >
                                 {time}

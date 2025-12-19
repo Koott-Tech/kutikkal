@@ -87,17 +87,7 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <style
           dangerouslySetInnerHTML={{
-            __html: `
-            /* Prevent content flash on initial load - hide body until loading screen is ready */
-            body:not(.loaded) > :not(.loading-screen-overlay) {
-              opacity: 0;
-              visibility: hidden;
-            }
-            body.loaded > :not(.loading-screen-overlay) {
-              opacity: 1;
-              visibility: visible;
-              transition: opacity 300ms ease-in-out;
-            }
+          __html: `
             /* Critical CSS for immediate mobile styling */
             @media (max-width: 767px) {
               .hero-title, .hero-description {
