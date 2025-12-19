@@ -88,6 +88,16 @@ export default function RootLayout({ children }) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
+            /* Prevent content flash on initial load - hide body until loading screen is ready */
+            body:not(.loaded) > :not(.loading-screen-overlay) {
+              opacity: 0;
+              visibility: hidden;
+            }
+            body.loaded > :not(.loading-screen-overlay) {
+              opacity: 1;
+              visibility: visible;
+              transition: opacity 300ms ease-in-out;
+            }
             /* Critical CSS for immediate mobile styling */
             @media (max-width: 767px) {
               .hero-title, .hero-description {

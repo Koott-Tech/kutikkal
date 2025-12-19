@@ -1,9 +1,10 @@
 "use client";
 
-export default function LoadingScreen({ message = "" }) {
+export default function LoadingScreen({ message = "", isVisible = true }) {
   return (
     <div
       data-nextjs-scroll-focus-boundary
+      className="loading-screen-overlay"
       style={{
         position: "fixed",
         inset: 0,
@@ -18,6 +19,9 @@ export default function LoadingScreen({ message = "" }) {
         overflow: "hidden",
         margin: 0,
         padding: 0,
+        opacity: isVisible ? 1 : 0,
+        transition: "opacity 300ms ease-in-out",
+        pointerEvents: isVisible ? "auto" : "none",
       }}
     >
       <div
@@ -58,6 +62,11 @@ export default function LoadingScreen({ message = "" }) {
             0% { transform: scale(1); opacity: 0.9; }
             50% { transform: scale(1.05); opacity: 1; }
             100% { transform: scale(1); opacity: 0.9; }
+          }
+          .loading-screen-overlay {
+            will-change: opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
           }
           @media (max-width: 767px) {
             .loading-logo {

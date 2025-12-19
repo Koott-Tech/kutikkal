@@ -149,6 +149,56 @@ export default function PsychologistLayout({ children }) {
         </div>
       </div>
 
+      {/* Desktop sidebar (always visible on lg and above) */}
+      <div className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-[#3f2e73]/20 z-40">
+        <div className="flex flex-col h-full w-full">
+          {/* Logo/Brand */}
+          <div className="p-6 border-b border-gray-200">
+            <a 
+              href="/psychologist"
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="Little Care - Go to psychologist dashboard"
+            >
+              <img 
+                src="/mainlogo.webp"
+                alt="Little Care - Child Psychotherapy Logo"
+                width={120}
+                height={40}
+                className="object-contain"
+              />
+            </a>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  <Icon className="h-5 w-5 mr-3" />
+                  {item.name}
+                </a>
+              );
+            })}
+          </nav>
+
+          {/* Logout */}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main content (push right for desktop left sidebar) */}
       <div className="lg:ml-64">
         {/* Page content */}

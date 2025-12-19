@@ -265,7 +265,7 @@ export default function ReportsPage() {
                       <p className="text-xs sm:text-sm text-gray-500">Time</p>
                       <p className="text-gray-900 text-sm sm:text-base">{formatTime(selectedReport.scheduled_time)}</p>
                     </div>
-                    <div>
+                <div>
                       <p className="text-xs sm:text-sm text-gray-500">Psychologist</p>
                       <p className="text-gray-900 text-sm sm:text-base break-words">
                         {selectedReport.psychologist?.first_name} {selectedReport.psychologist?.last_name}

@@ -182,6 +182,11 @@ function SlidingSuccessAnimation({ onComplete }) {
   }, []);
 
   useEffect(() => {
+    // Ensure page stays at top during animation
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
     // After 1.2 seconds (checkmark animation completes), start moving to top
     const timer = setTimeout(() => {
       setIsMoving(true);
@@ -189,6 +194,10 @@ function SlidingSuccessAnimation({ onComplete }) {
       setShowBackground(false);
       // After slide completes, notify parent
       setTimeout(() => {
+        // Ensure scroll is at top when animation completes
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
         onComplete();
       }, 600); // Duration of slide animation
     }, 1200);
@@ -303,47 +312,51 @@ function PaymentSuccessContent() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Wait for default loading screen to complete before showing success animation
+  // Show success animation immediately and start fetching data in parallel
   useEffect(() => {
-    // The default loading screen shows for HIDE_DELAY (600ms) as defined in PageLoadingOverlay
-    // Wait for it to complete, then start the success animation
-    const timer = setTimeout(() => {
-      setLoadingScreenComplete(true);
-      setShowCenteredAnimation(true);
-    }, 600); // Match HIDE_DELAY from PageLoadingOverlay
-
-    return () => {
-      clearTimeout(timer);
-    };
+    // Ensure page is at top before showing anything
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Show animation immediately - don't wait for loading screen
+    // Data fetching will happen in parallel (already started in the other useEffect)
+    setShowCenteredAnimation(true);
+    setLoadingScreenComplete(true);
   }, []);
 
   // Scroll to top on page load and prevent unwanted scrolling
   useEffect(() => {
-    // Scroll to top immediately
-    window.scrollTo(0, 0);
+    // Scroll to top immediately and lock it
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     // Prevent scroll restoration
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
     
-    // Keep scroll position at top during initial load
+    // Lock scroll position at top during initial load and animation
     const preventScroll = () => {
-      if (window.scrollY > 0) {
-        window.scrollTo(0, 0);
+      if (window.scrollY > 0 || document.documentElement.scrollTop > 0 || document.body.scrollTop > 0) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
       }
     };
     
-    // Check scroll position periodically during initial load
-    const scrollCheck = setInterval(preventScroll, 100);
+    // Check scroll position frequently during animation phase
+    const scrollCheck = setInterval(preventScroll, 50);
     
-    // Clear interval after content is loaded
-    setTimeout(() => {
+    // Keep locked until animation completes (about 2-3 seconds)
+    const unlockTimer = setTimeout(() => {
       clearInterval(scrollCheck);
-    }, 2000);
+    }, 3000);
     
     return () => {
       clearInterval(scrollCheck);
+      clearTimeout(unlockTimer);
     };
   }, []);
 
@@ -364,8 +377,10 @@ function PaymentSuccessContent() {
 
     setPaymentData(payload);
     
-    // Fetch session details if authenticated and order ID is available
+    // Start fetching session details IMMEDIATELY in the background (while animation plays)
+    // This ensures data is ready when animation completes
     if (isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A') {
+      // Don't await - let it fetch in background while animation plays
       fetchSessionDetails(razorpay_order_id);
     }
 
@@ -642,9 +657,16 @@ function PaymentSuccessContent() {
       maxWidth: '1200px',
       margin: '0 auto',
       fontFamily: 'Arial, sans-serif',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      // Hide content during animation to prevent footer flash
+      opacity: showCenteredAnimation ? 0 : 1,
+      visibility: showCenteredAnimation ? 'hidden' : 'visible',
+      transition: 'opacity 0.3s ease-in-out, visibility 0.3s ease-in-out',
+      // Ensure page stays at top during animation
+      position: 'relative',
+      overflow: showCenteredAnimation ? 'hidden' : 'visible'
     }}>
-      {/* Centered Animation Overlay */}
+      {/* Centered Animation Overlay - Shows immediately */}
       <AnimatePresence>
         {showCenteredAnimation && (
           <SlidingSuccessAnimation onComplete={() => setShowCenteredAnimation(false)} />
