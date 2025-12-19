@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { clientApi } from '../../../lib/backendApi';
+import { clientApi, paymentApi } from '../../../lib/backendApi';
 import { useAuth } from '../../../contexts/AuthContext';
 
 // Force dynamic rendering to bypass cache
@@ -382,32 +382,22 @@ function PaymentSuccessContent() {
 
     setPaymentData(payload);
     
-    // Determine if we should retry verification or fetch directly
-    let willRetryVerification = false;
-    
-    // ONLY retry if verification explicitly failed (verification_error flag)
-    // The Razorpay handler already calls /payment/success, so we don't need to call it again
-    // Only retry in exceptional cases where the handler failed (e.g., iPhone issues)
-    if (verification_error === 'true' && razorpay_order_id && razorpay_payment_id && razorpay_signature && !hasCalledPaymentSuccessRef.current) {
-      willRetryVerification = true;
-      hasCalledPaymentSuccessRef.current = true; // Mark as called to prevent duplicates
-      retryPaymentVerification(razorpay_order_id, razorpay_payment_id, razorpay_signature);
-    }
-    
-    // Start fetching session details ONLY if we're NOT retrying verification
-    // (retryPaymentVerification will handle fetching after verification)
-    // This prevents duplicate fetches
-    if (!willRetryVerification && isAuthenticated() && razorpay_order_id && razorpay_order_id !== 'N/A' && !isFetchingSessionRef.current) {
-      // Use polling method to find the newly created session
-      fetchSessionDetails(razorpay_order_id);
-    } else if (!willRetryVerification && isAuthenticated() && !razorpay_order_id && !isFetchingSessionRef.current) {
-      // Try to get payment details from sessionStorage (iPhone backup)
+    // NEW SYSTEM: Poll booking status (sessions created by webhook, not frontend)
+    // Webhook is the source of truth - frontend only polls for status
+    if (razorpay_order_id && razorpay_order_id !== 'N/A' && !hasCalledPaymentSuccessRef.current) {
+      hasCalledPaymentSuccessRef.current = true;
+      console.log('🔍 Starting booking status polling...', { orderId: razorpay_order_id?.substring(0, 10) + '...' });
+      pollBookingStatus(razorpay_order_id);
+    } else if (!razorpay_order_id && !hasCalledPaymentSuccessRef.current) {
+      // Try to get order ID from sessionStorage (iPhone backup)
       try {
         const storedPayment = sessionStorage.getItem('razorpay_payment');
         if (storedPayment) {
           const paymentData = JSON.parse(storedPayment);
           if (paymentData.razorpay_order_id) {
-            fetchSessionDetails(paymentData.razorpay_order_id);
+            hasCalledPaymentSuccessRef.current = true;
+            console.log('🔍 Found order ID in sessionStorage, starting polling...');
+            pollBookingStatus(paymentData.razorpay_order_id);
           }
         }
       } catch (storageErr) {
@@ -444,74 +434,144 @@ function PaymentSuccessContent() {
   // Session details fetching only - no receipt fetching
   // Receipts are generated on sessions page and sent via WhatsApp/email only
 
-  // Retry payment verification (for iPhone when handler fails)
-  const retryPaymentVerification = async (orderId, paymentId, signature) => {
-    // Check if already called to prevent duplicate calls
-    if (hasCalledPaymentSuccessRef.current && isFetchingSessionRef.current) {
-      return;
-    }
-    
-    // Mark as called immediately to prevent race conditions
-    hasCalledPaymentSuccessRef.current = true;
-    
-    try {
-      if (!signature) {
-        console.warn('⚠️ No signature available for retry, cannot verify payment');
-        // Still try to fetch session using polling (payment might have been processed)
-        // fetchSessionDetails will check and set the flag to prevent duplicates
-        if (orderId) {
-          fetchSessionDetails(orderId);
-        }
+  // Poll booking status (NEW: Uses webhook-based system)
+  // This function polls the booking status endpoint which returns current state
+  // Sessions are created by webhook, not by frontend
+  const pollBookingStatus = async (orderId, attempt = 0) => {
+    // Prevent duplicate fetches
+    if (attempt === 0) {
+      if (isFetchingSessionRef.current) {
         return;
       }
+      isFetchingSessionRef.current = true;
+      fetchAbortControllerRef.current = new AbortController();
+      setLoadingSessionDetails(true);
+    }
+
+    try {
+      // Progressive delay: 1s, 2s, 3s, 4s, 5s (max 5 attempts = ~15 seconds total)
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+
+      console.log(`🔍 Polling booking status (attempt ${attempt + 1})...`, { orderId: orderId?.substring(0, 10) + '...' });
       
-      const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
-      
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          razorpay_order_id: orderId,
-          razorpay_payment_id: paymentId,
-          razorpay_signature: signature
-        }),
-        signal: AbortSignal.timeout(30000) // 30 second timeout
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // If we got sessionId from the response, fetch directly by ID (much faster!)
-        // Backend returns sessionId in two formats:
-        // 1. { success: true, sessionId: '...' } (when already processed)
-        // 2. { success: true, data: { sessionId: '...' } } (when newly processed)
-        const sessionId = data?.sessionId || data?.data?.sessionId;
-        if (sessionId) {
-          fetchSessionById(sessionId);
-        } else if (orderId) {
-          // Fallback to polling method if no sessionId
-          fetchSessionDetails(orderId);
+      const statusResponse = await paymentApi.getBookingStatusByOrderId(orderId);
+
+      if (statusResponse.success && statusResponse.data) {
+        const { status, session, message } = statusResponse.data;
+
+        console.log('📊 Booking status:', { status, hasSession: !!session, message });
+
+        if (status === 'COMPLETED' && session) {
+          // Session created! Fetch full session details
+          console.log('✅ Session created, fetching details...', { sessionId: session.id, hasSessionId: !!session.id });
+          
+          // If we have a session ID, fetch full details
+          if (session.id) {
+            try {
+              const sessionResponse = await clientApi.getSession(session.id);
+              if (sessionResponse.success && sessionResponse.data) {
+                const fullSession = sessionResponse.data.session || sessionResponse.data;
+                
+                let psychologistName = 'your therapist';
+                if (fullSession.psychologist) {
+                  if (fullSession.psychologist.first_name && fullSession.psychologist.last_name) {
+                    psychologistName = `${fullSession.psychologist.first_name} ${fullSession.psychologist.last_name}`;
+                  } else if (fullSession.psychologist.first_name) {
+                    psychologistName = fullSession.psychologist.first_name;
+                  }
+                }
+                
+                const timeValue = fullSession.scheduled_time;
+                const timeOnly = typeof timeValue === 'string' 
+                  ? timeValue.split(' ')[0]
+                  : timeValue;
+                
+                setSessionDetails({
+                  psychologistName,
+                  date: fullSession.scheduled_date,
+                  time: timeOnly
+                });
+                setLoadingSessionDetails(false);
+                isFetchingSessionRef.current = false;
+                fetchAbortControllerRef.current = null;
+                return;
+              }
+            } catch (sessionError) {
+              console.error('❌ Error fetching session details:', sessionError);
+              // Fall through to use basic info from status response
+            }
+          }
+          
+          // Use basic info from status response (fallback if session.id is null or fetch failed)
+          console.log('📋 Using session details from status response:', {
+            scheduledDate: session.scheduledDate,
+            scheduledTime: session.scheduledTime
+          });
+          setSessionDetails({
+            psychologistName: 'your therapist',
+            date: session.scheduledDate || statusResponse.data.slotDetails?.scheduledDate,
+            time: session.scheduledTime || statusResponse.data.slotDetails?.scheduledTime
+          });
+          setLoadingSessionDetails(false);
+          isFetchingSessionRef.current = false;
+          fetchAbortControllerRef.current = null;
+          return;
+        } else if (status === 'FAILED' || status === 'EXPIRED') {
+          // Booking failed
+          setLoadingSessionDetails(false);
+          setError(message || 'Booking failed. Please contact support.');
+          isFetchingSessionRef.current = false;
+          fetchAbortControllerRef.current = null;
+          return;
+        } else {
+          // Still processing - continue polling
+          const maxAttempts = 20; // Poll for up to ~20 seconds
+          if (attempt < maxAttempts) {
+            setTimeout(() => {
+              pollBookingStatus(orderId, attempt + 1);
+            }, 1000); // Poll every 1 second
+          } else {
+            // Timeout - show message but don't error (webhook might still process it)
+            setLoadingSessionDetails(false);
+            setError('Booking is taking longer than expected. Please check your sessions page in a few minutes.');
+            isFetchingSessionRef.current = false;
+            fetchAbortControllerRef.current = null;
+          }
         }
       } else {
-        const errorText = await response.text();
-        console.error('❌ Payment verification retry failed:', response.status, errorText);
-        // Still try to fetch session using polling (payment might have been processed by webhook)
-        // fetchSessionDetails will check and set the flag to prevent duplicates
-        if (orderId) {
-          fetchSessionDetails(orderId);
+        // Error or not found
+        const maxAttempts = 10;
+        if (attempt < maxAttempts) {
+          setTimeout(() => {
+            pollBookingStatus(orderId, attempt + 1);
+          }, 2000); // Retry after 2 seconds on error
+        } else {
+          setLoadingSessionDetails(false);
+          setError('Could not verify booking status. Please contact support.');
+          isFetchingSessionRef.current = false;
+          fetchAbortControllerRef.current = null;
         }
       }
-    } catch (err) {
-      console.error('❌ Payment verification retry error:', err);
-      console.error('   Error name:', err.name);
-      console.error('   Error message:', err.message);
-      // Still try to fetch session using polling (payment might have been processed)
-      // fetchSessionDetails will check and set the flag to prevent duplicates
-      if (orderId) {
-        fetchSessionDetails(orderId);
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        // Intentional abort, ignore
+        return;
+      }
+
+      console.error('❌ Error polling booking status:', error);
+      
+      const maxAttempts = 10;
+      if (attempt < maxAttempts) {
+        setTimeout(() => {
+          pollBookingStatus(orderId, attempt + 1);
+        }, 2000);
+      } else {
+        setLoadingSessionDetails(false);
+        setError('Error checking booking status. Please contact support.');
+        isFetchingSessionRef.current = false;
+        fetchAbortControllerRef.current = null;
       }
     }
   };
@@ -1214,3 +1274,4 @@ export default function PaymentSuccess() {
     </Suspense>
   );
 }
+

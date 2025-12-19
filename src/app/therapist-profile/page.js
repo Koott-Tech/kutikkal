@@ -1205,8 +1205,21 @@ const TherapistProfileContent = () => {
                 console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
               }
               
+              // Store payment details in sessionStorage as backup (for iPhone and other edge cases)
+              try {
+                sessionStorage.setItem('razorpay_payment', JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  timestamp: Date.now()
+                }));
+              } catch (storageErr) {
+                console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
+              }
+              
               // Send payment verification to backend in background (non-blocking)
               // Don't wait for it - redirect immediately for better UX
+              // The success page will also call this endpoint to ensure session is created
               fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
                 method: 'POST',
                 headers: {
@@ -1218,11 +1231,13 @@ const TherapistProfileContent = () => {
                   razorpay_signature: response.razorpay_signature
                 })
               }).catch(err => {
-                // Silently fail - success page will retry if needed
+                // Silently fail - success page will handle it
+                console.warn('⚠️ Background payment verification failed (success page will retry):', err);
               });
               
               // Redirect IMMEDIATELY - no delay for better mobile UX
-              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
+              // Success page will ensure backend is called and session is created
+              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${encodeURIComponent(response.razorpay_signature)}`;
             },
             modal: {
               ondismiss: function() {

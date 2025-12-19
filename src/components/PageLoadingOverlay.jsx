@@ -26,7 +26,7 @@ export default function PageLoadingOverlay() {
       isInitialMount.current = false;
       setIsVisible(true);
       setShouldRender(true);
-
+      
       // Wait for page to load, then fade out
       const handleLoad = () => {
         // Small delay to ensure images are loading

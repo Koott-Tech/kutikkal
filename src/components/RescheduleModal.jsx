@@ -454,17 +454,17 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                               )
                               : (
                                 // Regular session styling - match therapist profile calendar theme
-                                isSelected
+                            isSelected 
                                   ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
                                   : (isToday && isActuallyAvailable)
                                     ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
-                                    : isToday
+                              : isToday
                                       ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
                                       : isActuallyAvailable
                                         ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
-                                        : isAvailable
+                                : isAvailable
                                           ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
-                                          : 'text-gray-300 cursor-not-allowed'
+                                      : 'text-gray-300 cursor-not-allowed'
                               )
                           }`}
                           title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}

@@ -186,16 +186,33 @@ async function apiRequest(endpoint, options = {}) {
   let token = typeof window !== 'undefined' ? getStoredToken() : null;
   
   const makeRequest = async (authToken) => {
+    // Create AbortController for timeout (30 seconds for payment endpoints, 10 seconds for others)
+    const isPaymentEndpoint = endpoint.includes('/payment/');
+    const timeoutMs = isPaymentEndpoint ? 30000 : 10000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
         ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
         ...options.headers,
       },
+      signal: controller.signal,
       ...options,
     };
 
-    const response = await fetch(url, config);
+    try {
+      const response = await fetch(url, config);
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error(`Request timeout after ${timeoutMs}ms`);
+      }
+      throw error;
+    }
     
     // If we get a 401 and have a refresh callback, try to refresh the token
     if (response.status === 401 && globalRefreshTokenCallback && authToken) {
@@ -1276,6 +1293,19 @@ export const paymentApi = {
   // Get payment status
   async getPaymentStatus(transactionId) {
     return apiRequest(`/payment/status/${transactionId}`);
+  },
+
+  // Get booking status by order ID (for success page polling)
+  async getBookingStatusByOrderId(orderId) {
+    return apiRequest(`/payment/booking-status/${orderId}`);
+  },
+
+  // Verify payment signature (optional, doesn't create session)
+  async verifyPaymentSignature(paymentData) {
+    return apiRequest('/payment/verify-signature', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
   },
 };
 

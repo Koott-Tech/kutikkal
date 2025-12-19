@@ -11,10 +11,8 @@ export default function PsychologistReschedulingPage() {
   const [processingId, setProcessingId] = useState(null);
 
   useEffect(() => {
+    // Only fetch when page is visited, no automatic polling
     loadRescheduleRequests();
-    // Refresh every 30 seconds
-    const interval = setInterval(loadRescheduleRequests, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const loadRescheduleRequests = async () => {
@@ -126,9 +124,30 @@ export default function PsychologistReschedulingPage() {
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Rescheduling Requests</h1>
-          <p className="text-gray-600 mt-1">Manage and respond to reschedule requests from clients</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Rescheduling Requests</h1>
+            <p className="text-gray-600 mt-1">Manage and respond to reschedule requests from clients</p>
+          </div>
+          <button
+            onClick={loadRescheduleRequests}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Loading...
+              </>
+            ) : (
+              <>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </>
+            )}
+          </button>
         </div>
 
         {error && (

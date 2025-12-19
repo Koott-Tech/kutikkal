@@ -443,23 +443,26 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
               
               // Send payment verification to backend in background (non-blocking)
               // Don't wait for it - redirect immediately for better UX
+              // The success page will also call this endpoint to ensure session is created
               fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature
-                })
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
               }).catch(err => {
-                // Silently fail - success page will retry if needed
+                // Silently fail - success page will handle it
+                console.warn('⚠️ Background payment verification failed (success page will retry):', err);
               });
               
               // Redirect IMMEDIATELY - no delay for better mobile UX
-              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}`;
-              setIsBooking(false);
+              // Success page will ensure backend is called and session is created
+              window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${encodeURIComponent(response.razorpay_signature)}`;
+                setIsBooking(false);
             },
             modal: {
               ondismiss: function() {
