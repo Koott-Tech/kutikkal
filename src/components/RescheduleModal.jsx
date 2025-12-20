@@ -19,6 +19,9 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
   // Reschedule state
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [error, setError] = useState(null);
+  const [showApprovalPopup, setShowApprovalPopup] = useState(false);
+  const [rescheduleReason, setRescheduleReason] = useState('');
+  const [approvalReason, setApprovalReason] = useState('');
 
   // Helper function to display time in 12-hour format with AM/PM
   const formatTime12Hour = (timeValue) => {
@@ -271,12 +274,68 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
     }
   }, [isOpen, session, currentDate]);
 
-  const handleReschedule = async () => {
+  // Check if reschedule requires approval
+  const checkIfRequiresApproval = () => {
+    if (!session || !selectedDate || !selectedTime) return false;
+    
+    const rescheduleCount = session.reschedule_count || 0;
+    
+    // Check if within 24 hours
+    if (session.scheduled_date && session.scheduled_time) {
+      const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+      const now = new Date();
+      const hoursUntilSession = (sessionDateTime - now) / (1000 * 60 * 60);
+      
+      // Requires approval if within 24 hours OR 2nd+ reschedule
+      return hoursUntilSession <= 24 || rescheduleCount >= 1;
+    }
+    
+    // If 2nd+ reschedule, requires approval
+    return rescheduleCount >= 1;
+  };
+
+  const getApprovalReasonText = () => {
+    if (!session) return '';
+    
+    const rescheduleCount = session.reschedule_count || 0;
+    
+    if (session.scheduled_date && session.scheduled_time) {
+      const sessionDateTime = new Date(`${session.scheduled_date}T${session.scheduled_time}`);
+      const now = new Date();
+      const hoursUntilSession = (sessionDateTime - now) / (1000 * 60 * 60);
+      
+      if (hoursUntilSession <= 24 && rescheduleCount >= 1) {
+        return 'This reschedule requires admin approval because the session is within 24 hours AND this is your 2nd or more reschedule.';
+      } else if (hoursUntilSession <= 24) {
+        return 'This reschedule requires admin approval because the session is within 24 hours.';
+      } else if (rescheduleCount >= 1) {
+        return 'This reschedule requires admin approval because this is your 2nd or more reschedule.';
+      }
+    } else if (rescheduleCount >= 1) {
+      return 'This reschedule requires admin approval because this is your 2nd or more reschedule.';
+    }
+    
+    return '';
+  };
+
+  const handleRescheduleClick = () => {
     if (!selectedDate || !selectedTime) {
       setError('Please select a date and time');
       return;
     }
 
+    // Check if approval is needed
+    if (checkIfRequiresApproval()) {
+      setApprovalReason(getApprovalReasonText());
+      setShowApprovalPopup(true);
+      return;
+    }
+
+    // Direct reschedule - proceed immediately
+    proceedWithReschedule();
+  };
+
+  const proceedWithReschedule = async () => {
     setIsRescheduling(true);
     setError(null);
 
@@ -284,7 +343,8 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
       const rescheduleData = {
         new_date: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`,
         new_time: selectedTime,
-        psychologist_id: session.psychologist_id
+        psychologist_id: session.psychologist_id,
+        reason: rescheduleReason || undefined
       };
 
       const response = await clientApi.rescheduleSession(session.id, rescheduleData);
@@ -292,8 +352,8 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
       if (response.success) {
         // Check if this was a direct reschedule or a request
         if (response.message && response.message.includes('request sent')) {
-          // This was a reschedule request
-          setError('Reschedule request sent to psychologist for approval');
+          // This was a reschedule request - show success message in theme color
+          setError('Reschedule request sent to admin for approval');
           setTimeout(() => {
             onClose();
             // Call success callback to refresh the page
@@ -317,7 +377,15 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
       setError('Failed to reschedule session');
     } finally {
       setIsRescheduling(false);
+      setShowApprovalPopup(false);
+      setRescheduleReason('');
     }
+  };
+
+  const handleCancelApproval = () => {
+    setShowApprovalPopup(false);
+    setRescheduleReason('');
+    setApprovalReason('');
   };
 
   if (!isOpen) return null;
@@ -655,16 +723,24 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                 })()}
               </div>
 
-              {/* Error Display */}
+              {/* Error/Success Display */}
               {error && (
-                <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 text-xs sm:text-sm">{error}</p>
+                <div className={`p-2 sm:p-3 rounded-lg ${
+                  error.includes('request sent') || error.includes('success')
+                    ? 'bg-[#f0edff] border border-[#3f2e73]'
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <p className={`text-xs sm:text-sm ${
+                    error.includes('request sent') || error.includes('success')
+                      ? 'text-[#3f2e73]'
+                      : 'text-red-700'
+                  }`}>{error}</p>
                 </div>
               )}
 
               {/* Reschedule Button */}
               <button
-                onClick={handleReschedule}
+                onClick={handleRescheduleClick}
                 disabled={!selectedDate || !selectedTime || isRescheduling}
                 className={`w-full py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 text-sm sm:text-base text-white shadow-sm ${
                   selectedDate && selectedTime && !isRescheduling
@@ -710,6 +786,72 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
           </div>
         </div>
       </div>
+
+      {/* Approval Required Popup */}
+      {showApprovalPopup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-lg sm:max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Reschedule Request Approval Required</h3>
+            
+            <div className="mb-3 sm:mb-4">
+              <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3">
+                <strong>Reason for approval:</strong>
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 bg-yellow-50 border border-yellow-200 rounded p-2 sm:p-3">
+                {approvalReason}
+              </p>
+              
+              <p className="text-xs sm:text-sm text-gray-700 mb-1.5 sm:mb-2">
+                Your reschedule request will be sent to the admin for review and approval.
+              </p>
+              <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-4">
+                You will be notified of the admin's response through:
+              </p>
+              <ul className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 list-disc list-inside space-y-0.5 sm:space-y-1">
+                <li>Email notification</li>
+                <li>WhatsApp message</li>
+                <li>In-app notification</li>
+              </ul>
+            </div>
+
+            <div className="mb-3 sm:mb-4">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                Reason for reschedule request (optional):
+              </label>
+              <textarea
+                value={rescheduleReason}
+                onChange={(e) => setRescheduleReason(e.target.value)}
+                placeholder="Please provide a reason for rescheduling (optional)..."
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button
+                onClick={handleCancelApproval}
+                className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={proceedWithReschedule}
+                disabled={isRescheduling}
+                className="flex-1 px-3 sm:px-4 py-2 text-xs sm:text-sm bg-[#3f2e73] text-white rounded-lg font-medium hover:bg-[#2d1f52] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRescheduling ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white inline-block mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  'Request Reschedule'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -186,9 +186,10 @@ async function apiRequest(endpoint, options = {}) {
   let token = typeof window !== 'undefined' ? getStoredToken() : null;
   
   const makeRequest = async (authToken) => {
-    // Create AbortController for timeout (30 seconds for payment endpoints, 10 seconds for others)
+    // Create AbortController for timeout (30 seconds for payment/reschedule endpoints, 10 seconds for others)
     const isPaymentEndpoint = endpoint.includes('/payment/');
-    const timeoutMs = isPaymentEndpoint ? 30000 : 10000;
+    const isRescheduleEndpoint = endpoint.includes('/reschedule') || endpoint.includes('/reschedule-request');
+    const timeoutMs = isPaymentEndpoint || isRescheduleEndpoint ? 30000 : 10000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     

@@ -8,7 +8,8 @@ import SessionFeedbackModal from "../../../components/SessionFeedbackModal";
 import { 
   Calendar, 
   MessageSquare,
-  X
+  X,
+  Info
 } from "lucide-react";
 
 export default function SessionsPage() {
@@ -21,6 +22,7 @@ export default function SessionsPage() {
   const [sessionToReschedule, setSessionToReschedule] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(null); // Track which tooltip is open
 
   // Helper function to conditionally apply hover handlers only on desktop
   const getHoverHandlers = () => {
@@ -38,6 +40,22 @@ export default function SessionsPage() {
   useEffect(() => {
     loadSessions();
   }, []);
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showTooltip && !event.target.closest('.tooltip-container')) {
+        setShowTooltip(null);
+      }
+    };
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showTooltip]);
 
   const loadSessions = async () => {
     try {
@@ -91,7 +109,7 @@ export default function SessionsPage() {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'reschedule_requested':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-[#f0edff] text-[#3f2e73]'; // Theme color instead of yellow
       case 'rescheduled':
         return 'bg-yellow-100 text-yellow-800';
       case 'expired':
@@ -440,12 +458,14 @@ export default function SessionsPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 Message
                               </button>
-                              <button
-                                onClick={() => handleRescheduleClick(session)}
-                                className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 lg:hover:bg-blue-50"
-                              >
-                                Reschedule
-                              </button>
+                              {session.status !== 'reschedule_requested' && (
+                                <button
+                                  onClick={() => handleRescheduleClick(session)}
+                                  className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 lg:hover:bg-blue-50"
+                                >
+                                  Reschedule
+                                </button>
+                              )}
                                   {getMeetLink(session) && (
                               <button
                                       onClick={() => handleJoinMeet(session)}
@@ -469,11 +489,6 @@ export default function SessionsPage() {
                             </span>
                           )}
                           
-                          {session.status === 'reschedule_requested' && (
-                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                              Reschedule Requested
-                            </span>
-                          )}
                           
                         </div>
                       </div>
@@ -518,11 +533,48 @@ export default function SessionsPage() {
                                 ) : (
                                   <>
                                     <span 
-                                      className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`} 
+                                      className={`inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)} group`} 
                                       style={getStatusStyle(session.status)}
                                     >
                                       {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
-                                     session.status === 'reschedule_requested' ? 'Reschedule Requested' :
+                                     session.status === 'reschedule_requested' ? (
+                                       <>
+                                         Reschedule Requested
+                                         <div className="relative tooltip-container">
+                                           <Info 
+                                             className="h-3.5 w-3.5 text-current cursor-help" 
+                                             onClick={(e) => {
+                                               e.stopPropagation();
+                                               setShowTooltip(showTooltip === session.id ? null : session.id);
+                                             }}
+                                             onMouseEnter={() => {
+                                               if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                                                 setShowTooltip(session.id);
+                                               }
+                                             }}
+                                             onMouseLeave={() => {
+                                               if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                                                 setShowTooltip(null);
+                                               }
+                                             }}
+                                           />
+                                           {showTooltip === session.id && (
+                                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-white border-2 border-[#3f2e73] text-gray-900 text-xs rounded-lg shadow-lg z-50 tooltip-container">
+                                               <div className="space-y-1.5">
+                                                 <p className="font-semibold mb-2 text-[#3f2e73]">Reschedule Request Rules:</p>
+                                                 <p>• If reschedule is within 24 hours of session OR</p>
+                                                 <p>• If this is your 2nd or more reschedule</p>
+                                                 <p className="mt-2 font-semibold">→ Admin approval is required</p>
+                                                 <p className="mt-2">If approved by admin, your session will be rescheduled.</p>
+                                                 <p className="mt-2 text-[#3f2e73]">If you don't receive a response, please contact us via WhatsApp.</p>
+                                               </div>
+                                               {/* Tooltip arrow */}
+                                               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#3f2e73]"></div>
+                                             </div>
+                                           )}
+                                         </div>
+                                       </>
+                                     ) :
                                        session.status === 'rescheduled' ? 'Rescheduled' : 
                                        session.status || 'Scheduled'}
                                     </span>
@@ -593,12 +645,14 @@ export default function SessionsPage() {
                                     <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                                     <span>Message</span>
                                   </button>
-                                  <button
-                                    onClick={() => handleRescheduleClick(session)}
-                                    className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
-                                  >
-                                    {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
-                                  </button>
+                                  {session.status !== 'reschedule_requested' && (
+                                    <button
+                                      onClick={() => handleRescheduleClick(session)}
+                                      className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
+                                    >
+                                      {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
+                                    </button>
+                                  )}
                                   {getMeetLink(session) && (
                                   <button
                                       onClick={() => handleJoinMeet(session)}
@@ -622,11 +676,6 @@ export default function SessionsPage() {
                                 </span>
                               )}
                               
-                              {session.status === 'reschedule_requested' && (
-                                <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-sm">
-                                  Reschedule Requested
-                                </span>
-                              )}
                               
                             </div>
                           </div>
