@@ -71,9 +71,9 @@ export const withCache = (apiCall, cacheKey, duration = CACHE_DURATION) => {
     // If not in cache, make API call with timeout
     console.log(`🌐 Cache miss for ${cacheKey}, making API call`);
     try {
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging (increased for international users)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 15000)
+        setTimeout(() => reject(new Error('Request timeout')), 25000) // Increased from 15000 to 25000
       );
       
       const result = await Promise.race([

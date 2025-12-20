@@ -10,6 +10,41 @@ export const setRefreshTokenCallback = (callback) => {
   globalRefreshTokenCallback = callback;
 };
 
+// Request deduplication - prevent duplicate simultaneous requests
+const pendingRequests = new Map();
+
+// Regional detection for timeout adjustment
+const detectRegion = () => {
+  if (typeof window === 'undefined') return 'default';
+  
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Middle East and high-latency regions
+    const highLatencyRegions = [
+      'Asia/Dubai', 'Asia/Qatar', 'Asia/Kuwait', 'Asia/Bahrain', 
+      'Asia/Riyadh', 'Asia/Muscat', 'Asia/Abu_Dhabi', 'Asia/Doha'
+    ];
+    return highLatencyRegions.some(tz => timezone === tz) ? 'high-latency' : 'default';
+  } catch (error) {
+    return 'default';
+  }
+};
+
+// Get timeout based on region and endpoint type
+const getTimeoutForRequest = (endpoint) => {
+  const isPaymentEndpoint = endpoint.includes('/payment/');
+  const isRescheduleEndpoint = endpoint.includes('/reschedule') || endpoint.includes('/reschedule-request');
+  const region = detectRegion();
+  
+  // Payment and reschedule endpoints always get 30s
+  if (isPaymentEndpoint || isRescheduleEndpoint) {
+    return 30000;
+  }
+  
+  // High-latency regions get 25s, others get 15s
+  return region === 'high-latency' ? 25000 : 15000;
+};
+
 // Helper function to handle API responses
 const handleResponse = async (response, options = {}) => {
   if (!response.ok) {
@@ -178,18 +213,21 @@ const handleResponse = async (response, options = {}) => {
   }
 };
 
-// Helper function to make API requests with token refresh support
+// Helper function to make API requests with token refresh support, retry logic, and deduplication
 async function apiRequest(endpoint, options = {}) {
   const url = `${BACKEND_BASE_URL}${endpoint}`;
+  
+  // Request deduplication - prevent duplicate simultaneous requests
+  const requestKey = `${endpoint}-${JSON.stringify(options)}`;
+  if (pendingRequests.has(requestKey)) {
+    return pendingRequests.get(requestKey);
+  }
   
   // Get token from localStorage if available
   let token = typeof window !== 'undefined' ? getStoredToken() : null;
   
-  const makeRequest = async (authToken) => {
-    // Create AbortController for timeout (30 seconds for payment/reschedule endpoints, 10 seconds for others)
-    const isPaymentEndpoint = endpoint.includes('/payment/');
-    const isRescheduleEndpoint = endpoint.includes('/reschedule') || endpoint.includes('/reschedule-request');
-    const timeoutMs = isPaymentEndpoint || isRescheduleEndpoint ? 30000 : 10000;
+  const makeRequest = async (authToken, retryCount = 0) => {
+    const timeoutMs = getTimeoutForRequest(endpoint);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
@@ -206,38 +244,97 @@ async function apiRequest(endpoint, options = {}) {
     try {
       const response = await fetch(url, config);
       clearTimeout(timeoutId);
+      
+      // If we get a 401 and have a refresh callback, try to refresh the token
+      if (response.status === 401 && globalRefreshTokenCallback && authToken) {
+        const newToken = await globalRefreshTokenCallback();
+        
+        if (newToken && newToken !== authToken) {
+          // Retry the request with the new token
+          const retryConfig = {
+            ...config,
+            headers: {
+              ...config.headers,
+              'Authorization': `Bearer ${newToken}`,
+            },
+          };
+          clearTimeout(timeoutId);
+          return await fetch(url, retryConfig);
+        }
+      }
+      
       return response;
     } catch (error) {
       clearTimeout(timeoutId);
+      
+      // Better error messages
       if (error.name === 'AbortError') {
-        throw new Error(`Request timeout after ${timeoutMs}ms`);
+        const isNetworkError = typeof navigator !== 'undefined' && !navigator.onLine;
+        throw new Error(
+          isNetworkError 
+            ? 'No internet connection. Please check your network and try again.'
+            : `Request timeout after ${timeoutMs}ms. The server may be slow or unreachable. Please try again.`
+        );
       }
+      
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      }
+      
       throw error;
     }
-    
-    // If we get a 401 and have a refresh callback, try to refresh the token
-    if (response.status === 401 && globalRefreshTokenCallback && authToken) {
-      const newToken = await globalRefreshTokenCallback();
-      
-      if (newToken && newToken !== authToken) {
-        // Retry the request with the new token
-        const retryConfig = {
-          ...config,
-          headers: {
-            ...config.headers,
-            'Authorization': `Bearer ${newToken}`,
-          },
-        };
-        return await fetch(url, retryConfig);
-      }
-    }
-    
-    return response;
   };
 
+  // Retry logic with exponential backoff
+  const makeRequestWithRetry = async (authToken, maxRetries = 2) => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await makeRequest(authToken, attempt);
+        
+        // Success or client error (4xx) - don't retry
+        if (response.ok || response.status < 500) {
+          return response;
+        }
+        
+        // Server error (5xx) - retry
+        if (attempt < maxRetries && response.status >= 500) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5s
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        return response;
+      } catch (error) {
+        // Network/timeout errors - retry
+        if (attempt < maxRetries && (
+          error.message.includes('timeout') || 
+          error.message.includes('network') ||
+          error.message.includes('Failed to fetch')
+        )) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        throw error;
+      }
+    }
+  };
+
+  const requestPromise = (async () => {
+    try {
+      const response = await makeRequestWithRetry(token);
+      return await handleResponse(response, { silent: options.silent, endpoint: endpoint });
+    } finally {
+      // Clean up pending request
+      pendingRequests.delete(requestKey);
+    }
+  })();
+  
+  // Store pending request
+  pendingRequests.set(requestKey, requestPromise);
+  
   try {
-    const response = await makeRequest(token);
-    return await handleResponse(response, { silent: options.silent, endpoint: endpoint });
+    return await requestPromise;
   } catch (error) {
     // Only log errors if not silenced
     if (!options.silent) {
@@ -526,6 +623,14 @@ export const psychologistApi = {
     return apiRequest(`/sessions/${sessionId}/complete`, {
       method: 'PUT',
       body: JSON.stringify(sessionData),
+    });
+  },
+
+  // Mark session as no-show
+  async markSessionAsNoShow(sessionId, reason = '') {
+    return apiRequest(`/sessions/${sessionId}/no-show`, {
+      method: 'PUT',
+      body: JSON.stringify({ reason }),
     });
   },
 
@@ -1198,6 +1303,14 @@ export const sessionsApi = {
   async deleteSession(sessionId) {
     return apiRequest(`/sessions/${sessionId}`, {
       method: 'DELETE',
+    });
+  },
+
+  // Mark session as no-show (admin or psychologist)
+  async markSessionAsNoShow(sessionId, reason = '') {
+    return apiRequest(`/sessions/${sessionId}/no-show`, {
+      method: 'PUT',
+      body: JSON.stringify({ reason }),
     });
   },
 };

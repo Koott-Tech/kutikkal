@@ -114,6 +114,13 @@ export default function SessionsPage() {
         return 'bg-yellow-100 text-yellow-800';
       case 'expired':
         return 'bg-orange-100 text-orange-800';
+      case 'ongoing':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending_completion':
+        return 'bg-orange-100 text-orange-800';
+      case 'no_show':
+      case 'noshow':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -133,6 +140,34 @@ export default function SessionsPage() {
     return {};
   };
 
+  // Helper to add minutes to time string (HH:MM:SS format)
+  const addMinutesToTime = (timeStr, minutes) => {
+    if (!timeStr) return null;
+    const [hours, mins, secs] = timeStr.split(':').map(Number);
+    const totalMinutes = (hours * 60) + mins + minutes;
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMins = totalMinutes % 60;
+    return `${String(newHours).padStart(2, '0')}:${String(newMins).padStart(2, '0')}:${secs || '00'}`;
+  };
+
+  // Check if session is currently ongoing (between start and end time)
+  const isSessionOngoing = (session) => {
+    if (!session.scheduled_date || !session.scheduled_time) return false;
+    if (session.status === 'completed' || session.status === 'no_show' || session.status === 'noshow') return false;
+    
+    const now = new Date();
+    const timeStr = session.scheduled_time || '00:00:00';
+    const timeOnly = timeStr.split(' ')[0];
+    const sessionStartDateTime = new Date(`${session.scheduled_date}T${timeOnly}+05:30`);
+    
+    // Session duration is 50 minutes
+    const endTime = addMinutesToTime(timeOnly, 50);
+    const sessionEndDateTime = new Date(`${session.scheduled_date}T${endTime}+05:30`);
+    
+    return sessionStartDateTime <= now && now < sessionEndDateTime;
+  };
+
+  // Check if session time has passed (after end time)
   const isSessionExpired = (session) => {
     if (!session.scheduled_date || !session.scheduled_time) return false;
     
@@ -141,20 +176,49 @@ export default function SessionsPage() {
     // Format: "2025-12-31T18:00:00+05:30" to ensure IST timezone
     const timeStr = session.scheduled_time || '00:00:00';
     const timeOnly = timeStr.split(' ')[0]; // Remove any timezone suffix if present
-    const sessionDateTime = new Date(`${session.scheduled_date}T${timeOnly}+05:30`);
+    const sessionStartDateTime = new Date(`${session.scheduled_date}T${timeOnly}+05:30`);
     
-    return sessionDateTime < now;
+    // Session duration is 50 minutes - check if end time has passed
+    const endTime = addMinutesToTime(timeOnly, 50);
+    const sessionEndDateTime = new Date(`${session.scheduled_date}T${endTime}+05:30`);
+    
+    return sessionEndDateTime < now;
+  };
+
+  // Get display status for session
+  const getSessionDisplayStatus = (session) => {
+    // If already marked as completed or no_show, use that
+    if (session.status === 'completed') return { status: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800' };
+    if (session.status === 'no_show' || session.status === 'noshow') return { status: 'no_show', label: 'No Show', color: 'bg-red-100 text-red-800' };
+    
+    // Check if session is ongoing
+    if (isSessionOngoing(session)) {
+      return { status: 'ongoing', label: 'Ongoing', color: 'bg-blue-100 text-blue-800' };
+    }
+    
+    // Check if session time has passed but not marked
+    if (isSessionExpired(session)) {
+      const allowedStatuses = ['booked', 'scheduled', 'rescheduled', 'reschedule_requested'];
+      if (allowedStatuses.includes(session.status)) {
+        return { status: 'pending_completion', label: 'Pending Completion', color: 'bg-orange-100 text-orange-800' };
+      }
+    }
+    
+    // Default: return original status
+    return { status: session.status, label: session.status || 'Scheduled', color: getStatusColor(session.status) };
   };
 
   // Check if there are any upcoming/scheduled sessions for the same package
   const hasUpcomingSessionsForPackage = (packageId) => {
     if (!packageId) return false;
-    return sessions.some(s => 
-      s.package_id === packageId && 
+    return sessions.some(s => {
+      const displayStatus = getSessionDisplayStatus(s);
+      return s.package_id === packageId && 
       s.status !== 'completed' && 
-      !isSessionExpired(s) &&
-      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status)
-    );
+        s.status !== 'no_show' && s.status !== 'noshow' &&
+        (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+        displayStatus.status === 'ongoing';
+    });
   };
 
   const formatDate = (dateString) => {
@@ -347,11 +411,12 @@ export default function SessionsPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Upcoming Sessions Section (not expired) */}
-            {sessions.filter(s => 
-              ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-              !isSessionExpired(s)
-            ).length > 0 && (
+            {/* Upcoming Sessions Section (not expired, including ongoing) */}
+            {sessions.filter(s => {
+              const displayStatus = getSessionDisplayStatus(s);
+              return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+                     displayStatus.status === 'ongoing';
+            }).length > 0 && (
               <div>
                 <div className="flex flex-col gap-4 mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -359,22 +424,25 @@ export default function SessionsPage() {
                     <h5 className="text-gray-900">Upcoming Sessions</h5>
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600">
-                    {sessions.filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      !isSessionExpired(s)
-                    ).length} upcoming session{sessions.filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      !isSessionExpired(s)
-                    ).length !== 1 ? 's' : ''}
+                    {sessions.filter(s => {
+                      const displayStatus = getSessionDisplayStatus(s);
+                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+                             displayStatus.status === 'ongoing';
+                    }).length} upcoming session{sessions.filter(s => {
+                      const displayStatus = getSessionDisplayStatus(s);
+                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+                             displayStatus.status === 'ongoing';
+                    }).length !== 1 ? 's' : ''}
                   </div>
                 </div>
                 {/* Mobile Layout - Single Column Cards */}
                 <div className="block lg:hidden space-y-4">
                   {sessions
-                    .filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      !isSessionExpired(s)
-                    )
+                    .filter(s => {
+                      const displayStatus = getSessionDisplayStatus(s);
+                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+                             displayStatus.status === 'ongoing';
+                    })
                     .map((session) => (
                       <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
                         {/* Status Badge */}
@@ -384,31 +452,25 @@ export default function SessionsPage() {
                               Assessment
                             </span>
                           )}
-                          {isSessionExpired(session) ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
-                              Time Expired
-                            </span>
-                          ) : (
-                            <>
+                          {(() => {
+                            const displayStatus = getSessionDisplayStatus(session);
+                            return (
                               <span 
-                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(session.status)}`} 
-                                style={getStatusStyle(session.status)}
+                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}
+                                style={displayStatus.status === 'booked' || displayStatus.status === 'scheduled' ? getStatusStyle(session.status) : {}}
                               >
-                                {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
-                               session.status === 'reschedule_requested' ? 'Reschedule Requested' :
-                                 session.status === 'rescheduled' ? 'Rescheduled' : 
-                                 session.status || 'Scheduled'}
+                                {displayStatus.label}
                               </span>
+                            );
+                          })()}
                               {((session.package && session.package.package_type) || session.package_id) && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                   {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                    <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                                   ) : (
-                                    session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
+                                session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                   )}
                             </span>
-                              )}
-                            </>
                           )}
                         </div>
                         
@@ -448,8 +510,15 @@ export default function SessionsPage() {
                         
                         {/* Action Buttons */}
                         <div className="flex gap-2 mt-6">
-                              {/* Action Buttons for booked/rescheduled sessions */}
-                              {['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
+                              {/* Action Buttons for booked/rescheduled/ongoing sessions */}
+                              {(() => {
+                                const displayStatus = getSessionDisplayStatus(session);
+                                const isOngoing = displayStatus.status === 'ongoing';
+                                const canShowActions = (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session)) || isOngoing;
+                                
+                                if (!canShowActions) return null;
+                                
+                                return (
                             <>
                               <button
                                 onClick={() => handleMessageClick(session)}
@@ -458,14 +527,14 @@ export default function SessionsPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 Message
                               </button>
-                              {session.status !== 'reschedule_requested' && (
-                                <button
-                                  onClick={() => handleRescheduleClick(session)}
-                                  className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 lg:hover:bg-blue-50"
-                                >
-                                  Reschedule
-                                </button>
-                              )}
+                                    {session.status !== 'reschedule_requested' && !isOngoing && (
+                              <button
+                                onClick={() => handleRescheduleClick(session)}
+                                className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 lg:hover:bg-blue-50"
+                              >
+                                Reschedule
+                              </button>
+                                    )}
                                   {getMeetLink(session) && (
                               <button
                                       onClick={() => handleJoinMeet(session)}
@@ -475,19 +544,34 @@ export default function SessionsPage() {
                               </button>
                           )}
                             </>
-                          )}
+                                );
+                              })()}
                           
-                          {session.session_type !== 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
-                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                              Session time has passed
+                          {(() => {
+                            const displayStatus = getSessionDisplayStatus(session);
+                            if (displayStatus.status === 'ongoing') {
+                              return (
+                                <span className="flex-1 text-blue-600 bg-blue-100 px-2 py-1 rounded text-xs text-center">
+                                  Session Ongoing
                             </span>
-                          )}
-                          
-                          {session.session_type === 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
+                              );
+                            }
+                            if (displayStatus.status === 'pending_completion') {
+                              return (
                             <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                              Assessment time has passed
+                                  Pending Completion
                             </span>
-                          )}
+                              );
+                            }
+                            if (displayStatus.status === 'no_show') {
+                              return (
+                                <span className="flex-1 text-red-600 bg-red-100 px-2 py-1 rounded text-xs text-center">
+                                  No Show
+                            </span>
+                              );
+                            }
+                            return null;
+                          })()}
                           
                           
                         </div>
@@ -498,10 +582,11 @@ export default function SessionsPage() {
                 {/* Desktop Layout - Current Design */}
                 <div className="hidden lg:block space-y-4">
                   {sessions
-                    .filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      !isSessionExpired(s)
-                    )
+                    .filter(s => {
+                      const displayStatus = getSessionDisplayStatus(s);
+                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
+                             displayStatus.status === 'ongoing';
+                    })
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
@@ -526,68 +611,68 @@ export default function SessionsPage() {
                           <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                             <div className="flex-1">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
-                                {isSessionExpired(session) ? (
-                                  <span className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
-                                    Time Expired
-                                  </span>
-                                ) : (
-                                  <>
+                                {(() => {
+                                  const displayStatus = getSessionDisplayStatus(session);
+                                  if (displayStatus.status === 'reschedule_requested') {
+                                    return (
                                     <span 
-                                      className={`inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)} group`} 
+                                        className={`inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${displayStatus.color} group`} 
                                       style={getStatusStyle(session.status)}
                                     >
-                                      {session.status === 'booked' || session.status === 'scheduled' ? 'Scheduled' : 
-                                     session.status === 'reschedule_requested' ? (
-                                       <>
-                                         Reschedule Requested
-                                         <div className="relative tooltip-container">
-                                           <Info 
-                                             className="h-3.5 w-3.5 text-current cursor-help" 
-                                             onClick={(e) => {
-                                               e.stopPropagation();
-                                               setShowTooltip(showTooltip === session.id ? null : session.id);
-                                             }}
-                                             onMouseEnter={() => {
-                                               if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-                                                 setShowTooltip(session.id);
-                                               }
-                                             }}
-                                             onMouseLeave={() => {
-                                               if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-                                                 setShowTooltip(null);
-                                               }
-                                             }}
-                                           />
-                                           {showTooltip === session.id && (
-                                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-white border-2 border-[#3f2e73] text-gray-900 text-xs rounded-lg shadow-lg z-50 tooltip-container">
-                                               <div className="space-y-1.5">
-                                                 <p className="font-semibold mb-2 text-[#3f2e73]">Reschedule Request Rules:</p>
-                                                 <p>• If reschedule is within 24 hours of session OR</p>
-                                                 <p>• If this is your 2nd or more reschedule</p>
-                                                 <p className="mt-2 font-semibold">→ Admin approval is required</p>
-                                                 <p className="mt-2">If approved by admin, your session will be rescheduled.</p>
-                                                 <p className="mt-2 text-[#3f2e73]">If you don't receive a response, please contact us via WhatsApp.</p>
-                                               </div>
-                                               {/* Tooltip arrow */}
-                                               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#3f2e73]"></div>
-                                             </div>
-                                           )}
-                                         </div>
-                                       </>
-                                     ) :
-                                       session.status === 'rescheduled' ? 'Rescheduled' : 
-                                       session.status || 'Scheduled'}
+                                        Reschedule Requested
+                                        <div className="relative tooltip-container">
+                                          <Info 
+                                            className="h-3.5 w-3.5 text-current cursor-help" 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setShowTooltip(showTooltip === session.id ? null : session.id);
+                                            }}
+                                            onMouseEnter={() => {
+                                              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                                                setShowTooltip(session.id);
+                                              }
+                                            }}
+                                            onMouseLeave={() => {
+                                              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                                                setShowTooltip(null);
+                                              }
+                                            }}
+                                          />
+                                          {showTooltip === session.id && (
+                                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-white border-2 border-[#3f2e73] text-gray-900 text-xs rounded-lg shadow-lg z-50 tooltip-container">
+                                              <div className="space-y-1.5">
+                                                <p className="font-semibold mb-2 text-[#3f2e73]">Reschedule Request Rules:</p>
+                                                <p>• If reschedule is within 24 hours of session OR</p>
+                                                <p>• If this is your 2nd or more reschedule</p>
+                                                <p className="mt-2 font-semibold">→ Admin approval is required</p>
+                                                <p className="mt-2">If approved by admin, your session will be rescheduled.</p>
+                                                <p className="mt-2 text-[#3f2e73]">If you don't receive a response, please contact us via WhatsApp.</p>
+                                              </div>
+                                              {/* Tooltip arrow */}
+                                              <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#3f2e73]"></div>
+                                            </div>
+                                          )}
+                                        </div>
                                     </span>
+                                    );
+                                  }
+                                  return (
+                                    <span 
+                                      className={`inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${displayStatus.color}`} 
+                                      style={displayStatus.status === 'booked' || displayStatus.status === 'scheduled' ? getStatusStyle(session.status) : {}}
+                                    >
+                                      {displayStatus.label}
+                                    </span>
+                                  );
+                                })()}
                                     {((session.package && session.package.package_type) || session.package_id) && (
                                       <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                         {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                          <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                      <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                                         ) : (
-                                          session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
+                                      session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                         )}
                                   </span>
-                                    )}
-                                  </>
                                 )}
                                 <span className="text-xs sm:text-sm text-gray-500">
                                   {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
@@ -635,8 +720,15 @@ export default function SessionsPage() {
                             </div>
                             
                             <div className="flex flex-wrap gap-2">
-                              {/* Action Buttons for booked/rescheduled sessions */}
-                              {['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session) && (
+                              {/* Action Buttons for booked/rescheduled/ongoing sessions */}
+                              {(() => {
+                                const displayStatus = getSessionDisplayStatus(session);
+                                const isOngoing = displayStatus.status === 'ongoing';
+                                const canShowActions = (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(session.status) && !isSessionExpired(session)) || isOngoing;
+                                
+                                if (!canShowActions) return null;
+                                
+                                return (
                                 <>
                                   <button
                                     onClick={() => handleMessageClick(session)}
@@ -645,14 +737,14 @@ export default function SessionsPage() {
                                     <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                                     <span>Message</span>
                                   </button>
-                                  {session.status !== 'reschedule_requested' && (
-                                    <button
-                                      onClick={() => handleRescheduleClick(session)}
-                                      className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
-                                    >
-                                      {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
-                                    </button>
-                                  )}
+                                    {session.status !== 'reschedule_requested' && !isOngoing && (
+                                  <button
+                                    onClick={() => handleRescheduleClick(session)}
+                                    className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
+                                  >
+                                    {session.reschedule_count > 0 ? 'Request Reschedule' : 'Reschedule'}
+                                  </button>
+                                    )}
                                   {getMeetLink(session) && (
                                   <button
                                       onClick={() => handleJoinMeet(session)}
@@ -662,19 +754,34 @@ export default function SessionsPage() {
                                   </button>
                               )}
                                 </>
-                              )}
+                                );
+                              })()}
                               
-                              {session.session_type !== 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
-                                <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
-                                  Session time has passed
+                              {(() => {
+                                const displayStatus = getSessionDisplayStatus(session);
+                                if (displayStatus.status === 'ongoing') {
+                                  return (
+                                    <span className="text-blue-600 bg-blue-100 px-2 py-1 rounded-md text-xs sm:text-sm">
+                                      Session Ongoing
                                 </span>
-                              )}
-                              
-                              {session.session_type === 'free_assessment' && (session.status === 'booked' || session.status === 'scheduled') && isSessionExpired(session) && (
+                                  );
+                                }
+                                if (displayStatus.status === 'pending_completion') {
+                                  return (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
-                                  Assessment time has passed
+                                      Pending Completion
                                 </span>
-                              )}
+                                  );
+                                }
+                                if (displayStatus.status === 'no_show') {
+                                  return (
+                                    <span className="text-red-600 bg-red-100 px-2 py-1 rounded-md text-xs sm:text-sm">
+                                      No Show
+                                </span>
+                                  );
+                                }
+                                return null;
+                              })()}
                               
                               
                             </div>
@@ -764,16 +871,31 @@ export default function SessionsPage() {
                         
                         {/* Action Buttons */}
                         <div className="flex gap-2 mt-6">
-                          {session.session_type !== 'free_assessment' && (
-                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                              Session time has passed
+                          {(() => {
+                            const displayStatus = getSessionDisplayStatus(session);
+                            if (displayStatus.status === 'ongoing') {
+                              return (
+                                <span className="flex-1 text-blue-600 bg-blue-100 px-2 py-1 rounded text-xs text-center">
+                                  Session Ongoing
                             </span>
-                          )}
-                          {session.session_type === 'free_assessment' && (
+                              );
+                            }
+                            if (displayStatus.status === 'pending_completion') {
+                              return (
                             <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                              Assessment time has passed
+                                  Pending Completion
                             </span>
-                          )}
+                              );
+                            }
+                            if (displayStatus.status === 'no_show') {
+                              return (
+                                <span className="flex-1 text-red-600 bg-red-100 px-2 py-1 rounded text-xs text-center">
+                                  No Show
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       </div>
                     ))}

@@ -146,6 +146,34 @@ export default function BookingsPage() {
     }
   };
 
+  const handleMarkAsNoShow = async (session, reason = '') => {
+    if (!confirm('Are you sure you want to mark this session as no-show? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await sessionsApi.markSessionAsNoShow(session.id, reason);
+      
+      // Update the booking in the list
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === session.id ? { ...booking, status: 'no_show' } : booking
+        )
+      );
+      
+      showSuccess('Session marked as no-show successfully!', 'No-Show Success');
+      
+      // Close details modal if it's open for this session
+      if (selectedSession && selectedSession.id === session.id) {
+        setIsSessionDetailsOpen(false);
+        setSelectedSession(null);
+      }
+    } catch (error) {
+      console.error('Error marking session as no-show:', error);
+      showError(`Failed to mark session as no-show: ${error.message}`, 'No-Show Error');
+    }
+  };
+
   const handleRescheduleSuccess = (updatedSession) => {
     // Update the booking in the list
     setBookings(prevBookings => 
@@ -533,6 +561,16 @@ export default function BookingsPage() {
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           View Feedback
+                        </button>
+                      )}
+                      {booking.status !== 'completed' && booking.status !== 'no_show' && booking.status !== 'noshow' && (
+                        <button
+                          onClick={() => handleMarkAsNoShow(booking)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                          title="Mark session as no-show"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          No Show
                         </button>
                       )}
                       {booking.status !== 'completed' && (

@@ -35,6 +35,7 @@ export default function PsychologistSessions() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [completingSessions, setCompletingSessions] = useState(new Set());
+  const [markingNoShowSessions, setMarkingNoShowSessions] = useState(new Set());
   const [selectedSession, setSelectedSession] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   // Reschedule requests are now handled on the rescheduling page
@@ -144,6 +145,36 @@ export default function PsychologistSessions() {
     
     setSelectedCompleteSession(session);
     setShowCompleteModal(true);
+  };
+
+  const handleMarkAsNoShow = async (sessionId, reason = '') => {
+    if (!confirm('Are you sure you want to mark this session as no-show? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setError(null);
+      setMarkingNoShowSessions(prev => new Set(prev).add(sessionId));
+      
+      await psychologistApi.markSessionAsNoShow(sessionId, reason);
+      
+      showSuccess('Session marked as no-show successfully');
+      setSuccessMessage('Session marked as no-show');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      
+      // Reload sessions to update the UI
+      await loadSessions();
+    } catch (err) {
+      console.error('Error marking session as no-show:', err);
+      setError(`Failed to mark session as no-show: ${err.message}`);
+      showError(`Failed to mark session as no-show: ${err.message}`, 'No-Show Error');
+    } finally {
+      setMarkingNoShowSessions(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(sessionId);
+        return newSet;
+      });
+    }
   };
 
   const openSessionNotesModal = (session) => {
@@ -446,28 +477,51 @@ export default function PsychologistSessions() {
                         </button>
                       )}
                       {/* Only show Finish button for non-completed sessions */}
-                      {session.status !== 'completed' && (
-                        <button
-                          onClick={() => openCompleteSessionModal(session)}
-                          disabled={completingSessions.has(session.id)}
-                          className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                            completingSessions.has(session.id)
-                              ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                              : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-                          }`}
-                          title="Open modal to add summary, notes, and report"
-                        >
-                          {completingSessions.has(session.id) ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                              Finishing...
-                            </>
-                          ) : (
-                            <>
-                              Finish
-                            </>
-                          )}
-                        </button>
+                      {session.status !== 'completed' && session.status !== 'no_show' && session.status !== 'noshow' && (
+                        <>
+                          <button
+                            onClick={() => openCompleteSessionModal(session)}
+                            disabled={completingSessions.has(session.id)}
+                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
+                              completingSessions.has(session.id)
+                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                                : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                            }`}
+                            title="Open modal to add summary, notes, and report"
+                          >
+                            {completingSessions.has(session.id) ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                                Finishing...
+                              </>
+                            ) : (
+                              <>
+                                Finish
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleMarkAsNoShow(session.id)}
+                            disabled={markingNoShowSessions.has(session.id)}
+                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
+                              markingNoShowSessions.has(session.id)
+                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                                : 'text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                            }`}
+                            title="Mark session as no-show"
+                          >
+                            {markingNoShowSessions.has(session.id) ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                                Marking...
+                              </>
+                            ) : (
+                              <>
+                                Mark as No Show
+                              </>
+                            )}
+                          </button>
+                        </>
                       )}
                       
                       {/* Completed session actions */}
@@ -564,28 +618,51 @@ export default function PsychologistSessions() {
                         View Details
                       </button>
                       {/* Only show Finish button for non-completed sessions */}
-                      {session.status !== 'completed' && (
-                        <button
-                          onClick={() => handleCompleteSession(session.id, {})}
-                          disabled={completingSessions.has(session.id)}
-                          className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                            completingSessions.has(session.id)
-                              ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                              : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-                          }`}
-                          title="Mark session as completed"
-                        >
-                          {completingSessions.has(session.id) ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                              Finishing...
-                            </>
-                          ) : (
-                            <>
-                              Finish
-                            </>
-                          )}
-                        </button>
+                      {session.status !== 'completed' && session.status !== 'no_show' && session.status !== 'noshow' && (
+                        <>
+                          <button
+                            onClick={() => handleCompleteSession(session.id, {})}
+                            disabled={completingSessions.has(session.id)}
+                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
+                              completingSessions.has(session.id)
+                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                                : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+                            }`}
+                            title="Mark session as completed"
+                          >
+                            {completingSessions.has(session.id) ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                                Finishing...
+                              </>
+                            ) : (
+                              <>
+                                Finish
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleMarkAsNoShow(session.id)}
+                            disabled={markingNoShowSessions.has(session.id)}
+                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
+                              markingNoShowSessions.has(session.id)
+                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
+                                : 'text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                            }`}
+                            title="Mark session as no-show"
+                          >
+                            {markingNoShowSessions.has(session.id) ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
+                                Marking...
+                              </>
+                            ) : (
+                              <>
+                                Mark as No Show
+                              </>
+                            )}
+                          </button>
+                        </>
                       )}
                       
                       {/* Completed session actions */}

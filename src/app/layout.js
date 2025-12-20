@@ -7,6 +7,7 @@ import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidget from "@/components/WhatsAppWidget";
 import PageLoadingOverlay from "@/components/PageLoadingOverlay";
 import ClickBurst from "@/components/ClickBurst";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata = {
   title: "Little Care - Child Psychotherapy",
@@ -62,6 +63,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* DNS Prefetch and Preconnect for faster API connections (especially for international users) */}
+        {process.env.NEXT_PUBLIC_BACKEND_URL && (
+          <>
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_BACKEND_URL.replace('/api', '')} />
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL.replace('/api', '')} crossOrigin="anonymous" />
+          </>
+        )}
         {/* Google tag (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-PBKE518Y0H"></script>
         <script dangerouslySetInnerHTML={{
@@ -135,14 +143,16 @@ export default function RootLayout({ children }) {
           <PageLoadingOverlay />
         </Suspense>
         <ClickBurst />
-        <ConditionalProviders>
-          <HeaderWrapper />
-          <ConditionalPadding>
-            {children}
-          </ConditionalPadding>
-          <FooterWrapper />
-          <WhatsAppWidget />
-        </ConditionalProviders>
+        <ErrorBoundary>
+          <ConditionalProviders>
+            <HeaderWrapper />
+            <ConditionalPadding>
+              {children}
+            </ConditionalPadding>
+            <FooterWrapper />
+            <WhatsAppWidget />
+          </ConditionalProviders>
+        </ErrorBoundary>
       </body>
     </html>
   );
