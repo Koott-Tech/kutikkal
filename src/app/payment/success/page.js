@@ -465,14 +465,30 @@ function PaymentSuccessContent() {
 
         if (status === 'COMPLETED' && session) {
           // Session created! Fetch full session details
-          console.log('✅ Session created, fetching details...', { sessionId: session.id, hasSessionId: !!session.id });
+          console.log('✅ Session created, fetching details...', { sessionId: session.id, hasSessionId: !!session.id, sessionType: session.session_type, packageId: session.package_id });
           
-          // If we have a session ID, fetch full details
+          // If we have a session ID, fetch full session details
           if (session.id) {
             try {
               const sessionResponse = await clientApi.getSession(session.id);
+              console.log('📥 Full session response from API:', {
+                success: sessionResponse.success,
+                hasData: !!sessionResponse.data,
+                data: sessionResponse.data,
+                session: sessionResponse.data?.session,
+                directData: sessionResponse.data
+              });
+              
               if (sessionResponse.success && sessionResponse.data) {
                 const fullSession = sessionResponse.data.session || sessionResponse.data;
+                
+                console.log('📋 Parsed fullSession:', {
+                  id: fullSession.id,
+                  package_id: fullSession.package_id,
+                  hasPackage: !!fullSession.package,
+                  package: fullSession.package,
+                  session_type: fullSession.session_type
+                });
                 
                 let psychologistName = 'your therapist';
                 if (fullSession.psychologist) {
@@ -488,10 +504,145 @@ function PaymentSuccessContent() {
                   ? timeValue.split(' ')[0]
                   : timeValue;
                 
+                // Debug: Log full session to see what we have
+                console.log('📋 Full session data:', {
+                  hasPackage: !!fullSession.package,
+                  package: fullSession.package,
+                  package_id: fullSession.package_id,
+                  session_type: fullSession.session_type,
+                  fullSessionKeys: Object.keys(fullSession)
+                });
+                
+                // Extract package info if available
+                let packageInfo = null;
+                if (fullSession.package) {
+                  console.log('📦 Package data from API:', {
+                    package: fullSession.package,
+                    completed_sessions: fullSession.package.completed_sessions,
+                    total_sessions: fullSession.package.total_sessions,
+                    session_count: fullSession.package.session_count,
+                    packageKeys: Object.keys(fullSession.package)
+                  });
+                  
+                  // Try multiple ways to get totalSessions
+                  let totalSessions = fullSession.package.total_sessions;
+                  if (totalSessions === undefined || totalSessions === null) {
+                    totalSessions = fullSession.package.session_count;
+                  }
+                  // If still undefined, try to get from the package object directly
+                  if (totalSessions === undefined || totalSessions === null) {
+                    totalSessions = fullSession.package.totalSessions;
+                  }
+                  
+                  const completedSessions = fullSession.package.completed_sessions || fullSession.package.completedSessions || 0;
+                  
+                  console.log('🔍 Extracted values:', {
+                    total_sessions: fullSession.package.total_sessions,
+                    session_count: fullSession.package.session_count,
+                    totalSessions: fullSession.package.totalSessions,
+                    finalTotalSessions: totalSessions,
+                    completedSessions: completedSessions,
+                    totalSessionsType: typeof totalSessions,
+                    totalSessionsValue: totalSessions,
+                    packageObject: fullSession.package
+                  });
+                  
+                  // Create packageInfo if we have package data
+                  // Accept 0 as valid (though it shouldn't happen for real packages)
+                  if (totalSessions !== undefined && totalSessions !== null) {
+                    packageInfo = {
+                      completedSessions: completedSessions,
+                      totalSessions: totalSessions,
+                      remainingSessions: Math.max(totalSessions - completedSessions, 0),
+                      packageType: fullSession.package.package_type || 'Package'
+                    };
+                    
+                    console.log('✅ Extracted package info:', packageInfo);
+                  } else {
+                    console.warn('⚠️ Package object exists but totalSessions is invalid:', {
+                      total_sessions: fullSession.package.total_sessions,
+                      session_count: fullSession.package.session_count,
+                      totalSessions: fullSession.package.totalSessions,
+                      finalTotalSessions: totalSessions,
+                      packageKeys: Object.keys(fullSession.package)
+                    });
+                    // Still mark as package even if count is missing
+                    if (fullSession.package_id) {
+                      packageInfo = {
+                        hasPackage: true
+                      };
+                    }
+                  }
+                } else if (fullSession.package_id) {
+                  // If package_id exists but package object is not populated, fetch it
+                  console.log('⚠️ Package ID exists but package object not populated. Fetching package details...', fullSession.package_id);
+                  try {
+                    // Try to fetch package details from API
+                    const packageResponse = await clientApi.getClientPackages();
+                    if (packageResponse.success && packageResponse.data?.clientPackages) {
+                      const matchingPackage = packageResponse.data.clientPackages.find(
+                        pkg => pkg.package?.id === fullSession.package_id || pkg.id === fullSession.package_id
+                      );
+                      if (matchingPackage) {
+                        const totalSessions = matchingPackage.total_sessions || matchingPackage.package?.session_count || 0;
+                        if (totalSessions > 0) {
+                          packageInfo = {
+                            completedSessions: matchingPackage.completed_sessions || 0,
+                            totalSessions: totalSessions,
+                            remainingSessions: matchingPackage.remaining_sessions || 0,
+                            packageType: matchingPackage.package?.package_type || 'Package'
+                          };
+                          console.log('✅ Fetched package info from client packages:', packageInfo);
+                        }
+                      }
+                    }
+                  } catch (packageError) {
+                    console.error('❌ Error fetching package details:', packageError);
+                  }
+                  
+                  // If still no package info, mark as package
+                  if (!packageInfo) {
+                    packageInfo = {
+                      hasPackage: true
+                    };
+                  }
+                }
+                
+                // Determine session type - check package_id first, then format session_type
+                let sessionType = 'Individual Session';
+                // If it has a package_id, it's definitely a package session
+                if (fullSession.package_id || packageInfo || session.package_id) {
+                  sessionType = 'Package Session';
+                } else if (fullSession.session_type) {
+                  // Format session_type for display
+                  if (fullSession.session_type === 'therapy_session' || fullSession.session_type === 'individual_session') {
+                    sessionType = 'Individual Session';
+                  } else if (fullSession.session_type === 'package_session' || fullSession.session_type.includes('package')) {
+                    sessionType = 'Package Session';
+                  } else {
+                    // Capitalize and format other session types
+                    sessionType = fullSession.session_type.split('_').map(word => 
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                  }
+                } else if (session.session_type) {
+                  if (session.session_type === 'therapy_session' || session.session_type === 'individual_session') {
+                    sessionType = 'Individual Session';
+                  } else if (session.session_type === 'package_session' || session.session_type.includes('package')) {
+                    sessionType = 'Package Session';
+                  } else {
+                    sessionType = session.session_type.split('_').map(word => 
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                  }
+                }
+                
                 setSessionDetails({
                   psychologistName,
                   date: fullSession.scheduled_date,
-                  time: timeOnly
+                  time: timeOnly,
+                  packageInfo: packageInfo,
+                  sessionType: sessionType
                 });
                 setLoadingSessionDetails(false);
                 isFetchingSessionRef.current = false;
@@ -507,12 +658,87 @@ function PaymentSuccessContent() {
           // Use basic info from status response (fallback if session.id is null or fetch failed)
           console.log('📋 Using session details from status response:', {
             scheduledDate: session.scheduledDate,
-            scheduledTime: session.scheduledTime
+            scheduledTime: session.scheduledTime,
+            sessionType: session.session_type,
+            packageId: session.package_id,
+            fullSession: session,
+            statusResponseSession: statusResponse.data?.session
           });
+          
+          // Try to extract package info from status response or fetch it
+          let packageInfo = null;
+          const packageId = session?.package_id || statusResponse.data?.session?.package_id;
+          
+          if (packageId) {
+            console.log('📦 Package ID found in status response, fetching package details...', packageId);
+            // Try to fetch package details
+            try {
+              // Fetch session again to get full details including package
+              if (session?.id) {
+                const retrySessionResponse = await clientApi.getSession(session.id);
+                if (retrySessionResponse.success && retrySessionResponse.data) {
+                  const retrySession = retrySessionResponse.data.session || retrySessionResponse.data;
+                  if (retrySession.package) {
+                    const totalSessions = retrySession.package.total_sessions || retrySession.package.session_count;
+                    if (totalSessions && totalSessions > 0) {
+                      packageInfo = {
+                        completedSessions: retrySession.package.completed_sessions || 0,
+                        totalSessions: totalSessions,
+                        remainingSessions: retrySession.package.remaining_sessions || 0,
+                        packageType: retrySession.package.package_type || 'Package'
+                      };
+                      console.log('✅ Fetched package info from retry:', packageInfo);
+                    }
+                  }
+                }
+              }
+            } catch (packageError) {
+              console.error('❌ Error fetching package in fallback:', packageError);
+            }
+            
+            // If still no package info, mark as package
+            if (!packageInfo) {
+              packageInfo = {
+                hasPackage: true
+              };
+            }
+          }
+          
+          // Determine session type from status response - check package_id first
+          let sessionType = 'Individual Session';
+          // If it has a package_id, it's definitely a package session
+          if (packageId || packageInfo) {
+            sessionType = 'Package Session';
+          } else if (session?.session_type) {
+            // Format session_type for display
+            if (session.session_type === 'therapy_session' || session.session_type === 'individual_session') {
+              sessionType = 'Individual Session';
+            } else if (session.session_type === 'package_session' || session.session_type.includes('package')) {
+              sessionType = 'Package Session';
+            } else {
+              sessionType = session.session_type.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+            }
+          } else if (statusResponse.data?.session?.session_type) {
+            const rawType = statusResponse.data.session.session_type;
+            if (rawType === 'therapy_session' || rawType === 'individual_session') {
+              sessionType = 'Individual Session';
+            } else if (rawType === 'package_session' || rawType.includes('package')) {
+              sessionType = 'Package Session';
+            } else {
+              sessionType = rawType.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+            }
+          }
+          
           setSessionDetails({
             psychologistName: 'your therapist',
-            date: session.scheduledDate || statusResponse.data.slotDetails?.scheduledDate,
-            time: session.scheduledTime || statusResponse.data.slotDetails?.scheduledTime
+            date: session?.scheduledDate || statusResponse.data.slotDetails?.scheduledDate,
+            time: session?.scheduledTime || statusResponse.data.slotDetails?.scheduledTime,
+            packageInfo: packageInfo,
+            sessionType: sessionType
           });
           setLoadingSessionDetails(false);
           isFetchingSessionRef.current = false;
@@ -624,10 +850,45 @@ function PaymentSuccessContent() {
             ? timeValue.split(' ')[0]
             : timeValue;
           
+          // Extract package info if available
+          let packageInfo = null;
+          if (session.package) {
+            packageInfo = {
+              completedSessions: session.package.completed_sessions || 0,
+              totalSessions: session.package.total_sessions || session.package.session_count || 0,
+              remainingSessions: (session.package.total_sessions || session.package.session_count || 0) - (session.package.completed_sessions || 0),
+              packageType: session.package.package_type || 'Package'
+            };
+          } else if (session.package_id) {
+            packageInfo = {
+              hasPackage: true
+            };
+          }
+          
+          // Determine session type - check package_id first
+          let sessionType = 'Individual Session';
+          // If it has a package_id, it's definitely a package session
+          if (session.package_id || packageInfo) {
+            sessionType = 'Package Session';
+          } else if (session.session_type) {
+            // Format session_type for display
+            if (session.session_type === 'therapy_session' || session.session_type === 'individual_session') {
+              sessionType = 'Individual Session';
+            } else if (session.session_type === 'package_session' || session.session_type.includes('package')) {
+              sessionType = 'Package Session';
+            } else {
+              sessionType = session.session_type.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+            }
+          }
+          
           setSessionDetails({
             psychologistName,
             date: session.scheduled_date,
-            time: timeOnly
+            time: timeOnly,
+            packageInfo: packageInfo,
+            sessionType: sessionType
           });
           setLoadingSessionDetails(false);
           // Reset fetching flag on success
@@ -749,10 +1010,45 @@ function PaymentSuccessContent() {
             ? timeValue.split(' ')[0]
             : timeValue;
           
+          // Extract package info if available
+          let packageInfo = null;
+          if (targetSession.package) {
+            packageInfo = {
+              completedSessions: targetSession.package.completed_sessions || 0,
+              totalSessions: targetSession.package.total_sessions || targetSession.package.session_count || 0,
+              remainingSessions: (targetSession.package.total_sessions || targetSession.package.session_count || 0) - (targetSession.package.completed_sessions || 0),
+              packageType: targetSession.package.package_type || 'Package'
+            };
+          } else if (targetSession.package_id) {
+            packageInfo = {
+              hasPackage: true
+            };
+          }
+          
+          // Determine session type - check package_id first
+          let sessionType = 'Individual Session';
+          // If it has a package_id, it's definitely a package session
+          if (targetSession.package_id || packageInfo) {
+            sessionType = 'Package Session';
+          } else if (targetSession.session_type) {
+            // Format session_type for display
+            if (targetSession.session_type === 'therapy_session' || targetSession.session_type === 'individual_session') {
+              sessionType = 'Individual Session';
+            } else if (targetSession.session_type === 'package_session' || targetSession.session_type.includes('package')) {
+              sessionType = 'Package Session';
+            } else {
+              sessionType = targetSession.session_type.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+            }
+          }
+          
           setSessionDetails({
             psychologistName,
             date: targetSession.scheduled_date,
-            time: timeOnly
+            time: timeOnly,
+            packageInfo: packageInfo,
+            sessionType: sessionType
           });
           setLoadingSessionDetails(false);
           // Reset fetching flag on success
@@ -1046,8 +1342,7 @@ function PaymentSuccessContent() {
                   marginBottom: '16px',
                   color: '#374151'
                 }}>
-                  Thank you for booking a session. Your session has been scheduled with{' '}
-                  <strong style={{ color: '#3f2e73' }}>{sessionDetails.psychologistName}</strong>.
+                  Thank you for booking a session. Your session has been scheduled.
                 </p>
                 
         <div style={{
@@ -1058,12 +1353,51 @@ function PaymentSuccessContent() {
                   border: '1px solid #e5e7eb'
         }}>
                   <div style={{ marginBottom: '8px' }}>
-                    <strong style={{ color: '#374151' }}>Session Date:</strong>{' '}
-                    <span style={{ color: '#6b7280' }}>{formatDate(sessionDetails.date)}</span>
+                    <strong style={{ color: '#3f2e73' }}>Therapist:</strong>{' '}
+                    <span style={{ color: '#3f2e73' }}>{sessionDetails.psychologistName}</span>
                   </div>
-                  <div>
-                    <strong style={{ color: '#374151' }}>Session Time:</strong>{' '}
-                    <span style={{ color: '#6b7280' }}>{formatTime(sessionDetails.time)}</span>
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong style={{ color: '#3f2e73' }}>Type:</strong>{' '}
+                    <span style={{ color: '#3f2e73' }}>
+                      {(() => {
+                        // If we have package info with total sessions, show "Package of X"
+                        if (sessionDetails.packageInfo && sessionDetails.packageInfo.totalSessions !== undefined && sessionDetails.packageInfo.totalSessions !== null && sessionDetails.packageInfo.totalSessions > 0) {
+                          return `Package of ${sessionDetails.packageInfo.totalSessions}`;
+                        }
+                        // If session type indicates package but no package info yet, show "Package Session"
+                        if (sessionDetails.sessionType === 'Package Session' || sessionDetails.packageInfo?.hasPackage) {
+                          return 'Package Session';
+                        }
+                        // For individual sessions, show "Individual Session"
+                        // Check if it's definitely an individual session (no package_id, session_type is individual)
+                        if (!sessionDetails.packageInfo && 
+                            (sessionDetails.sessionType === 'Individual Session' || 
+                             sessionDetails.sessionType === 'therapy_session' || 
+                             sessionDetails.sessionType === 'individual_session' ||
+                             !sessionDetails.sessionType)) {
+                          return 'Individual Session';
+                        }
+                        // Default: format the session type nicely or show Individual Session
+                        if (sessionDetails.sessionType) {
+                          // Format session_type values like "therapy_session" to "Individual Session"
+                          if (sessionDetails.sessionType === 'therapy_session' || sessionDetails.sessionType === 'individual_session') {
+                            return 'Individual Session';
+                          }
+                          // If it's already formatted, use it
+                          return sessionDetails.sessionType;
+                        }
+                        // Final fallback
+                        return 'Individual Session';
+                      })()}
+                    </span>
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong style={{ color: '#3f2e73' }}>Date:</strong>{' '}
+                    <span style={{ color: '#3f2e73' }}>{formatDate(sessionDetails.date)}</span>
+                  </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong style={{ color: '#3f2e73' }}>Time:</strong>{' '}
+                    <span style={{ color: '#3f2e73' }}>{formatTime(sessionDetails.time)}</span>
                   </div>
                 </div>
               </>

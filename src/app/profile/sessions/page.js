@@ -402,9 +402,9 @@ export default function SessionsPage() {
                               {((session.package && session.package.package_type) || session.package_id) && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                   {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                    <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                    <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                                   ) : (
-                                    session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                    session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                   )}
                             </span>
                               )}
@@ -581,9 +581,9 @@ export default function SessionsPage() {
                                     {((session.package && session.package.package_type) || session.package_id) && (
                                       <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                         {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                          <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                          <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                                         ) : (
-                                          session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                          session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                         )}
                                   </span>
                                     )}
@@ -720,9 +720,9 @@ export default function SessionsPage() {
                           {((session.package && session.package.package_type) || session.package_id) && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                               {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                               ) : (
-                                session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                               )}
                             </span>
                           )}
@@ -819,9 +819,9 @@ export default function SessionsPage() {
                                 {((session.package && session.package.package_type) || session.package_id) && (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                     {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                      <span>({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                      <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
                                     ) : (
-                                      session.package?.package_type ? session.package.package_type.replace('_', ' ') : 'Package Session'
+                                      session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                     )}
                                   </span>
                                 )}
