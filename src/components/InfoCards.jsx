@@ -135,7 +135,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
                   {getIcon(item.icon)}
                 </div>
               )}
-              <h2 className="info-card-title text-left font-medium text-sm md:text-base">
+              <h2 className="info-card-title text-left font-medium text-sm md:text-base" suppressHydrationWarning>
                 {item.title}
               </h2>
             </div>

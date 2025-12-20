@@ -190,6 +190,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                     .footer-description {
                         line-height: 1.2 !important;
                     }
+                    .footer-main-menu-item {
+                        margin-bottom: 0.25rem !important;
+                    }
+                    .footer-individual-menu-item {
+                        margin-bottom: 0.375rem !important;
+                    }
                 }
                 .copyright-symbol {
                     color: #3f2e73 !important;
@@ -273,9 +279,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 
                 <div className="w-full flex flex-col px-8 md:px-16 lg:px-24 mt-4">
                     {/* Main footer content - header-like FAQ dropdowns */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 xl:gap-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-12 lg:gap-8 xl:gap-16">
                         {/* Counselling (mirrors header nested submenu) */}
-                        <div className="space-y-5 text-left">
+                        <div className="space-y-1 md:space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('counselling')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
@@ -286,7 +292,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 </svg>
                             </button>
                             <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Counseling</h2>
-                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
+                            <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-1 md:space-y-3 text-left`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1 text-left">
                                     <button
@@ -300,12 +306,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_emotional ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.emotional.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Child Development & Learning */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_development')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -317,12 +323,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_development ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.development.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Behaviour & Confidence */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -334,12 +340,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_behaviour ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.behaviour.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Stress & Academic Support */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -351,12 +357,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_stress ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.stress.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Category: Trauma & Healing */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -368,14 +374,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.c_trauma ? 'block' : 'hidden'}`}>
                                         {counsellingMenu.trauma.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                             </div>
                         </div>
                         {/* Assessments (mirrors header groups) */}
-                        <div className="space-y-5 text-left">
+                        <div className="space-y-1 md:space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('assessments')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
@@ -386,7 +392,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 </svg>
                             </button>
                             <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Assessments</h2>
-                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-3 text-left`}>
+                            <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-1 md:space-y-3 text-left`}>
                                 {/* ADHD Assessments */}
                                 <div className="space-y-1 text-left">
                                     <button
@@ -400,12 +406,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_adhd ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.adhd.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* EBS Assessments */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_ebs')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -417,12 +423,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_ebs ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.ebs.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Intelligence Assessments */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -434,12 +440,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_intelligence ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.intelligence.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Projective Assessments */}
-                                <div className="space-y-1 mt-2 text-left">
+                                <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
                                         className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
@@ -451,12 +457,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                     </button>
                                     <ul className={`ml-2 pl-2 border-l border-white/20 space-y-2 text-left ${openSections.a_projective ? 'block' : 'hidden'}`}>
                                         {assessmentsMenu.projective.map((item) => (
-                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                            <li key={item.url} className="text-left"><a href={item.url} className="text-white hover:text-green-200 transition-colors duration-200 text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                         ))}
                                     </ul>
                                 </div>
                                 {/* Free 20 Min Assessment */}
-                                <div className="mt-4 pt-4 border-t border-white/20">
+                                <div className="mt-2 pt-2 md:mt-4 md:pt-4 border-t border-white/20">
                                     <a 
                                         href="/free-assessment"
                                         className="flex items-center justify-between text-base font-medium text-white hover:text-green-200 transition-colors duration-200 text-left"
@@ -471,7 +477,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         </div>
 
                         {/* Better Parenting (flat list) */}
-                        <div className="space-y-5 text-left">
+                        <div className="space-y-1 md:space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('better_parenting')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
@@ -482,14 +488,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 </svg>
                             </button>
                             <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Better Parenting</h2>
-                            <ul className={`space-y-3 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
+                            <ul className={`space-y-1 md:space-y-3 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
-                                    <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-left block"><h2 className="footer-individual-menu-item">{item.title}</h2></a></li>
+                                    <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
                                 ))}
                             </ul>
                         </div>
                         {/* About Us */}
-                        <div className="space-y-5 text-left">
+                        <div className="space-y-1 md:space-y-5 text-left">
                             <button
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"

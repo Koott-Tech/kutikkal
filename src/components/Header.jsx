@@ -490,10 +490,10 @@ export default function Header() {
         line-height: 1.2 !important;
         margin: 0 0 0.5rem 0 !important;
       }
-      /* Mobile main menu items (reduced from 18px to 15px) */
+      /* Mobile main menu items - increased from 15px to 18px */
       @media (max-width: 1279px) {
         header.w-full.bg-white.fixed h2.header-nav-item {
-          font-size: 15px !important;
+          font-size: 18px !important;
           line-height: 1.3 !important;
         }
       }
@@ -501,29 +501,32 @@ export default function Header() {
       @media (max-width: 1279px) {
         /* Override CMS submenu category headers in mobile view using class */
         header .xl\\:hidden h2.mobile-submenu-header {
-          font-size: 11px !important;
+          font-size: 15px !important;
           line-height: 1.3 !important;
           margin: 0 !important;
           font-weight: 500 !important;
         }
         /* Override individual CMS menu items in mobile view using class */
         header .xl\\:hidden h2.mobile-menu-item {
-          font-size: 11px !important;
+          font-size: 14px !important;
           line-height: 1.3 !important;
           margin: 0 0 0.25rem 0 !important;
           font-weight: 400 !important;
         }
         /* Additional specific overrides for nested mobile menu items */
         header .xl\\:hidden .ml-4 h2.mobile-submenu-header,
-        header .xl\\:hidden div[class*="px-4"] h2.mobile-submenu-header,
+        header .xl\\:hidden div[class*="px-4"] h2.mobile-submenu-header {
+          font-size: 15px !important;
+          line-height: 1.3 !important;
+        }
         header .xl\\:hidden .ml-2 h2.mobile-menu-item,
         header .xl\\:hidden div[class*="ml-2"] h2.mobile-menu-item {
-          font-size: 11px !important;
+          font-size: 14px !important;
           line-height: 1.3 !important;
         }
         /* Override Better Parenting and other span-based menu items */
         header .xl\\:hidden span.mobile-menu-item-text {
-          font-size: 11px !important;
+          font-size: 14px !important;
           line-height: 1.3 !important;
         }
       }
@@ -1353,7 +1356,7 @@ export default function Header() {
               )}
 
               {/* Navigation Links */}
-              <div className="space-y-0">
+              <div className="space-y-2">
                 {/* Counselling Dropdown */}
                 <div className="border-b border-gray-100">
                   <div 
@@ -1370,7 +1373,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Counselling</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Counselling</h2>
                     <svg className={`w-4 h-4 text-gray-600 transition-transform ${isMobileFindCareOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1386,7 +1389,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('emotional')}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Emotional & Mental Health</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Emotional & Mental Health</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.emotional ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1402,7 +1405,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1415,7 +1418,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('development')}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Child Development & Learning</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Child Development & Learning</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.development ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1431,7 +1434,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1444,7 +1447,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('behaviour')}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Behaviour & Confidence Building</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Behaviour & Confidence Building</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.behaviour ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1460,7 +1463,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1473,7 +1476,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('stress')}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Stress & Academic Support</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Stress & Academic Support</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.stress ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1489,7 +1492,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1502,7 +1505,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => toggleMobileSubmenu('trauma')}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Trauma & Healing</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Trauma & Healing</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileSubmenuOpen.trauma ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1518,7 +1521,7 @@ export default function Header() {
                                     setIsMobileMenuOpen(false);
                                   }}
                                 >
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{service.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1548,7 +1551,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Assessments</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Assessments</h2>
                     <svg className={`w-4 h-4 text-gray-600 transition-transform ${isMobileAssessmentsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1563,7 +1566,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, adhd: !prev.adhd }))}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>ADHD</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>ADHD</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.adhd ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1572,7 +1575,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.adhd.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1583,7 +1586,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, ebs: !prev.ebs }))}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Emotional & Behavioral Screening</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Emotional & Behavioral Screening</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.ebs ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1592,7 +1595,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.ebs.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1603,7 +1606,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, intelligence: !prev.intelligence }))}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Intelligence Test</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Intelligence Test</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.intelligence ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1612,7 +1615,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.intelligence.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1623,7 +1626,7 @@ export default function Header() {
                             className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
                             onClick={() => setIsMobileAssessmentsSubmenuOpen(prev => ({ ...prev, projective: !prev.projective }))}
                           >
-                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '11px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Projective Tests</h2>
+                            <h2 className="text-gray-900 mobile-submenu-header" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Projective Tests</h2>
                             <svg className={`w-4 h-4 text-gray-500 transition-transform ${isMobileAssessmentsSubmenuOpen.projective ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -1632,7 +1635,7 @@ export default function Header() {
                             <div className="ml-2 space-y-1">
                               {assessmentsMenuItems.projective.map((item, idx) => (
                                 <div key={idx} className="py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '11px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
+                                  <h2 className="text-gray-700 mobile-menu-item" style={{ fontSize: '14px', fontWeight: 400, lineHeight: '1.3', margin: '0 0 0.25rem 0' }}>{item.name}</h2>
                                 </div>
                               ))}
                             </div>
@@ -1674,7 +1677,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Better Parenting</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Better Parenting</h2>
                     <svg className={`w-4 h-4 text-gray-600 transition-transform ${isMobileBetterParentingOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1685,7 +1688,7 @@ export default function Header() {
                       <div className="px-4 py-1 space-y-1">
                         {betterParentingMenuItems.map((item, idx) => (
                           <div key={idx} className="py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-all duration-200" onClick={() => { router.push(item.url); setIsMobileMenuOpen(false); }}>
-                            <span className="text-gray-700 mobile-menu-item-text hover:translate-x-1 transition-all duration-200" style={{ fontSize: '11px' }}>{item.name}</span>
+                            <span className="text-gray-700 mobile-menu-item-text hover:translate-x-1 transition-all duration-200" style={{ fontSize: '14px' }}>{item.name}</span>
                           </div>
                         ))}
                       </div>
@@ -1709,7 +1712,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>About Us</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>About Us</h2>
                     <svg className={`w-4 h-4 text-gray-600 transition-transform ${isMobileAboutOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1727,7 +1730,7 @@ export default function Header() {
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <span className="text-gray-700 text-xs">Company</span>
+                            <span className="text-gray-700" style={{ fontSize: '14px' }}>Company</span>
                           </div>
                           <div 
                             className="py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1736,7 +1739,7 @@ export default function Header() {
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <span className="text-gray-700 text-xs">Career</span>
+                            <span className="text-gray-700" style={{ fontSize: '14px' }}>Career</span>
                           </div>
                         </div>
                       </div>
@@ -1760,7 +1763,7 @@ export default function Header() {
                       }
                     }}
                   >
-                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '15px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Resources</h2>
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>Resources</h2>
                     <svg className={`w-4 h-4 text-gray-600 transition-transform ${isMobileResourcesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1778,7 +1781,7 @@ export default function Header() {
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <span className="text-gray-700 text-xs">Blog</span>
+                            <span className="text-gray-700" style={{ fontSize: '14px' }}>Blog</span>
                           </div>
                           <div 
                             className="py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
@@ -1787,7 +1790,7 @@ export default function Header() {
                               setIsMobileMenuOpen(false);
                             }}
                           >
-                            <span className="text-gray-700 text-xs">FAQ</span>
+                            <span className="text-gray-700" style={{ fontSize: '14px' }}>FAQ</span>
                           </div>
                         </div>
                       </div>
