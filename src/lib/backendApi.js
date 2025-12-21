@@ -572,9 +572,37 @@ export const clientApi = {
     return apiRequest('/clients/receipts');
   },
 
-  // Download receipt
+  // Download receipt (returns blob for PDF download)
   async downloadReceipt(receiptId) {
-    return apiRequest(`/clients/receipts/${receiptId}/download`);
+    const token = getStoredToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    // Use BACKEND_BASE_URL which already includes /api, so just add the path
+    const response = await fetch(`${BACKEND_BASE_URL}/clients/receipts/${receiptId}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Failed to download receipt' }));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    // Check if response is a PDF (content-type: application/pdf)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/pdf')) {
+      // Return blob for PDF download
+      const blob = await response.blob();
+      return { success: true, blob, contentType: 'application/pdf' };
+    } else {
+      // Fallback: try to parse as JSON (for legacy responses with downloadUrl)
+      const data = await response.json();
+      return data;
+    }
   },
 
   // Get receipt by Razorpay order ID

@@ -69,25 +69,36 @@ export default function ReceiptsPage() {
         return;
       }
 
-      // If file_url is directly available, use it
+      // If file_url is directly available (legacy receipts), use it
       if (receipt.file_url) {
         window.open(receipt.file_url, '_blank');
         return;
       }
 
-      // Otherwise, use the backend API to get the download URL
-      const data = await clientApi.downloadReceipt(receiptId);
+      // Otherwise, fetch the PDF from the backend API
+      const result = await clientApi.downloadReceipt(receiptId);
 
-      const downloadUrl = data?.data?.downloadUrl || data?.downloadUrl;
-      if (data?.success && downloadUrl) {
-        // Open the download URL in a new tab
+      // Check if we got a blob (new system - PDF generated on-demand)
+      if (result.success && result.blob && result.contentType === 'application/pdf') {
+        // Create a blob URL and trigger download
+        const url = window.URL.createObjectURL(result.blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Receipt-${receipt.receipt_number || receiptId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else if (result.success && (result.data?.downloadUrl || result.downloadUrl)) {
+        // Legacy system: Use download URL
+        const downloadUrl = result.data?.downloadUrl || result.downloadUrl;
         window.open(downloadUrl, '_blank');
       } else {
-        showError(data?.message || 'Failed to get download link', 'Download Failed');
+        showError(result?.message || 'Failed to download receipt', 'Download Failed');
       }
     } catch (err) {
       console.error('❌ Error downloading receipt:', err);
-      showError('Failed to download receipt. Please try again.', 'Download Error');
+      showError(err.message || 'Failed to download receipt. Please try again.', 'Download Error');
     }
   };
 

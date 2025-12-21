@@ -30,6 +30,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
 import AdminManualBookingModal from '@/components/AdminManualBookingModal';
 import { cache } from '@/lib/cache';
+import WheelPagination from '@/components/ui/wheel-pagination';
 
 export default function BookingsPage() {
   const { showError, showSuccess } = useNotification();
@@ -47,61 +48,68 @@ export default function BookingsPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalBookings, setTotalBookings] = useState(0);
 
   useEffect(() => {
     loadBookings();
-  }, []);
+  }, [currentPage, filterStatus, filterDate]); // Reload when page or filters change
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change (but not on initial load)
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, filterStatus, filterDate]);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [filterStatus, filterDate, searchTerm]);
 
   const loadBookings = async () => {
     try {
       setIsLoading(true);
       
-      // Check cache first
-      const cachedBookings = cache.get('admin_bookings');
-      if (cachedBookings) {
-        console.log('📦 Using cached bookings data');
-        setBookings(cachedBookings);
-        setIsLoading(false);
-        
-        // Load fresh data in background
-        setTimeout(() => {
-          loadFreshBookings();
-        }, 100);
-        return;
+      // Build query parameters for server-side pagination
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        sort: 'created_at',
+        order: 'desc'
+      };
+
+      // Add filters
+      if (filterStatus && filterStatus !== 'all') {
+        params.status = filterStatus;
+      }
+      if (filterDate) {
+        params.date = filterDate;
       }
 
-      // Load fresh data
-      await loadFreshBookings();
-      
-    } catch (error) {
-      console.error('Failed to load bookings:', error);
-      showError('Failed to load bookings', 'Load Error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadFreshBookings = async () => {
-    try {
-      // Load more sessions with 2GB plan (last 100)
-      const response = await sessionsApi.getAllSessions({ limit: 100 });
+      // Load sessions with pagination from backend
+      const response = await sessionsApi.getAllSessions(params);
       
       if (response && response.success) {
         console.log('Bookings data received:', response);
         const bookingsData = response.data?.sessions || [];
-        setBookings(bookingsData);
+        const paginationData = response.data?.pagination || {};
         
-        // Cache for 5 minutes (optimized for 2GB plan)
-        cache.set('admin_bookings', bookingsData, 5 * 60 * 1000);
+        console.log('Pagination data:', paginationData);
+        console.log('Calculated totalPages:', Math.max(1, Math.ceil((paginationData.total || 0) / itemsPerPage)));
+        
+        setBookings(bookingsData);
+        setTotalBookings(paginationData.total || 0);
+        setTotalPages(Math.max(1, Math.ceil((paginationData.total || 0) / itemsPerPage)));
+      } else {
+        setBookings([]);
+        setTotalBookings(0);
+        setTotalPages(1);
       }
+      
     } catch (error) {
-      console.error('Failed to load fresh bookings:', error);
-      throw error;
+      console.error('Failed to load bookings:', error);
+      showError('Failed to load bookings', 'Load Error');
+      setBookings([]);
+      setTotalBookings(0);
+      setTotalPages(1);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -292,7 +300,10 @@ export default function BookingsPage() {
   };
 
 
+  // Client-side search filtering (status and date filters are now server-side)
   const filteredBookings = bookings.filter(booking => {
+    if (!searchTerm) return true; // No search filter, show all
+    
     const clientName = `${booking.client?.first_name || ''} ${booking.client?.last_name || ''}`.toLowerCase();
     const psychologistName = `${booking.psychologist?.first_name || ''} ${booking.psychologist?.last_name || ''}`.toLowerCase();
     const clientEmail = booking.client?.user?.email?.toLowerCase() || '';
@@ -303,37 +314,31 @@ export default function BookingsPage() {
       clientEmail.includes(searchTerm.toLowerCase()) ||
       booking.id?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
-    
-    const matchesDate = !filterDate || booking.scheduled_date === filterDate;
-    
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch;
   });
 
-  // Pagination calculations
-  const totalItems = filteredBookings.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
+  // Use filtered bookings (search is client-side, pagination is server-side)
+  const displayBookings = filteredBookings;
 
-  const statuses = [...new Set(bookings.map(b => b.status).filter(Boolean))];
+  // Debug logging
+  useEffect(() => {
+    console.log('Pagination state:', {
+      currentPage,
+      totalPages,
+      totalBookings,
+      displayBookingsLength: displayBookings.length,
+      shouldShowPagination: totalPages > 1
+    });
+  }, [currentPage, totalPages, totalBookings, displayBookings.length]);
+
+  // Get unique statuses from all bookings (for filter dropdown)
+  // Note: For better UX, you might want to fetch distinct statuses from backend
+  const statuses = ['all', 'booked', 'completed', 'cancelled', 'rescheduled', 'no_show'];
 
   // Pagination handlers
   const handlePageChange = (page) => {
     setCurrentPage(page);
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
@@ -345,9 +350,10 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h6>Bookings Management</h6>
           <p className="mt-1 text-sm text-gray-600">
@@ -368,8 +374,9 @@ export default function BookingsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
           <p className="text-sm text-gray-600">
             Showing{' '}
-            <span className="font-semibold text-gray-900">{totalItems}</span>{' '}
-            {totalItems === 1 ? 'booking' : 'bookings'}
+            <span className="font-semibold text-gray-900">{displayBookings.length}</span>{' '}
+            of <span className="font-semibold text-gray-900">{totalBookings}</span>{' '}
+            booking{totalBookings !== 1 ? 's' : ''}
             {filterStatus !== 'all' && (
               <>
                 {' '}with status{' '}
@@ -461,7 +468,7 @@ export default function BookingsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedBookings.map((booking) => (
+              {displayBookings.map((booking) => (
                 <tr key={booking.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
@@ -592,7 +599,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Empty State */}
-      {paginatedBookings.length === 0 && (
+      {displayBookings.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <Calendar className="mx-auto h-12 w-12 text-gray-400" />
           <h6>No bookings found</h6>
@@ -646,80 +653,23 @@ export default function BookingsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                <span className="font-medium">{Math.min(endIndex, totalItems)}</span> of{' '}
-                <span className="font-medium">{totalItems}</span> results
-                <span className="ml-2 text-xs text-gray-500">(10 per page)</span>
-              </p>
-            </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                
-                {/* Page numbers */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        currentPage === pageNum
-                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-                
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </nav>
-            </div>
-          </div>
+        <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+          <WheelPagination
+            totalPages={totalPages}
+            visibleCount={7}
+            currentPage={currentPage - 1} // Convert 1-indexed to 0-indexed
+            onPageChange={(page) => handlePageChange(page + 1)} // Convert back to 1-indexed
+            className="bg-white"
+          />
+        </div>
+      )}
+      
+      {/* Show total count */}
+      {displayBookings.length > 0 && (
+        <div className="text-center mt-4 text-sm text-gray-600">
+          Showing {displayBookings.length} of {totalBookings} booking{totalBookings !== 1 ? 's' : ''}
+          {searchTerm && ` (filtered by search)`}
+          {totalPages > 1 && ` - Page ${currentPage} of ${totalPages}`}
         </div>
       )}
 
@@ -926,6 +876,7 @@ export default function BookingsPage() {
         onBookingSuccess={handleManualBookingSuccess}
       />
 
+      </div>
     </div>
   );
 }

@@ -9,7 +9,11 @@ import {
   TrendingUp,
   Activity,
   Clock,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  XCircle,
+  DollarSign,
+  AlertCircle
 } from 'lucide-react';
 import { adminApi, dashboardApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +26,15 @@ export default function AdminDashboard() {
     totalUsers: 0,
     totalDoctors: 0,
     totalBookings: 0,
-    recentBookings: 0
+    recentBookings: 0,
+    failures: {
+      paymentFailures: 0,
+      pendingPayments: 0,
+      cancelledSessions: 0,
+      noShowSessions: 0,
+      totalPayments: 0
+    },
+    failureRate: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -95,14 +107,33 @@ export default function AdminDashboard() {
       };
       
       if (platformStats && platformStats.success) {
-        newStats = { ...newStats, ...platformStats.data };
+        newStats = { 
+          ...newStats, 
+          ...platformStats.data,
+          failures: platformStats.data?.failures || {
+            paymentFailures: 0,
+            pendingPayments: 0,
+            cancelledSessions: 0,
+            noShowSessions: 0,
+            totalPayments: 0
+          },
+          failureRate: platformStats.data?.failureRate || 0
+        };
       } else {
         console.warn('Platform stats response format unexpected:', platformStats);
         newStats = {
           ...newStats,
           totalUsers: platformStats?.data?.totalUsers || 0,
           totalDoctors: platformStats?.data?.totalDoctors || 0,
-          totalBookings: platformStats?.data?.totalBookings || 0
+          totalBookings: platformStats?.data?.totalBookings || 0,
+          failures: platformStats?.data?.failures || {
+            paymentFailures: 0,
+            pendingPayments: 0,
+            cancelledSessions: 0,
+            noShowSessions: 0,
+            totalPayments: 0
+          },
+          failureRate: platformStats?.data?.failureRate || 0
         };
       }
 
@@ -180,29 +211,47 @@ export default function AdminDashboard() {
     }
   ];
 
-  const quickActions = [
+  const failureCards = [
     {
-      title: 'Add New Doctor',
-      description: 'Register a new psychologist or therapist',
-      href: '/admin/doctors',
-      icon: UserCheck,
-      color: 'bg-green-100 text-green-800'
+      title: 'Payment Failures',
+      value: stats.failures?.paymentFailures || 0,
+      icon: XCircle,
+      color: 'bg-red-500',
+      description: `Failed payment attempts`,
+      subValue: stats.failures?.totalPayments > 0 
+        ? `${((stats.failures?.paymentFailures || 0) / stats.failures.totalPayments * 100).toFixed(1)}% failure rate`
+        : 'No payments yet'
     },
     {
-      title: 'View Users',
-      description: 'Manage user accounts and profiles',
-      href: '/admin/users',
-      icon: Users,
-      color: 'bg-blue-100 text-blue-800'
+      title: 'Pending Payments',
+      value: stats.failures?.pendingPayments || 0,
+      icon: Clock,
+      color: 'bg-yellow-500',
+      description: 'Payments awaiting processing',
+      subValue: 'Requires attention'
     },
     {
-      title: 'Manage Bookings',
-      description: 'View and manage therapy sessions',
-      href: '/admin/bookings',
-      icon: Calendar,
-      color: 'bg-purple-100 text-purple-800'
+      title: 'Cancelled Sessions',
+      value: stats.failures?.cancelledSessions || 0,
+      icon: AlertTriangle,
+      color: 'bg-orange-500',
+      description: 'Sessions that were cancelled',
+      subValue: stats.totalBookings > 0 
+        ? `${((stats.failures?.cancelledSessions || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        : ''
+    },
+    {
+      title: 'No-Show Sessions',
+      value: stats.failures?.noShowSessions || 0,
+      icon: AlertCircle,
+      color: 'bg-red-600',
+      description: 'Sessions where client did not show',
+      subValue: stats.totalBookings > 0 
+        ? `${((stats.failures?.noShowSessions || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        : ''
     }
   ];
+
 
   if (authLoading) {
     return (
@@ -274,7 +323,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
         <h6>Welcome to Admin Dashboard</h6>
@@ -306,26 +356,42 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Quick Actions */}
+      {/* Failure Metrics */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <h6>Quick Actions</h6>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-          {quickActions.map((action, index) => {
-            const Icon = action.icon;
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h6>Failure & Issue Metrics</h6>
+            <p className="text-sm text-gray-600 mt-1">Monitor payment failures, cancellations, and issues</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Refresh data"
+          >
+            <RefreshCw className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {failureCards.map((card, index) => {
+            const Icon = card.icon;
             return (
-              <a
-                key={index}
-                href={action.href}
-                className="block p-3 sm:p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
-              >
-                <div className="flex items-center mb-2 sm:mb-3">
-                  <div className={`p-2 rounded-lg ${action.color}`}>
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center mb-2">
+                      <div className={`p-2 rounded-lg ${card.color} text-white mr-3`}>
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </div>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
+                    <p className="text-xs text-gray-500 mb-1">{card.description}</p>
+                    {card.subValue && (
+                      <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
+                    )}
                   </div>
-                  <h6>{action.title}</h6>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-600">{action.description}</p>
-              </a>
+              </div>
             );
           })}
         </div>
@@ -355,6 +421,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

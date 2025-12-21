@@ -18,6 +18,7 @@ import UserModal from '@/components/UserModal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import WheelPagination from '@/components/ui/wheel-pagination';
 
 export default function UsersPage() {
   const { showError, showSuccess } = useNotification();
@@ -31,6 +32,9 @@ export default function UsersPage() {
   const [filterRole, setFilterRole] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     // Check authentication and role
@@ -50,45 +54,41 @@ export default function UsersPage() {
       // User is authenticated and has admin role, load users data
       loadUsers();
     }
-  }, [authLoading, isAuthenticated, hasRole, router]);
+  }, [authLoading, isAuthenticated, hasRole, router, currentPage]);
 
   const loadUsers = async () => {
     try {
       setIsLoading(true);
       console.log('🔍 Loading users...');
-      const response = await adminApi.getUsers();
+      const response = await adminApi.getUsers({
+        page: currentPage,
+        limit: 10,
+        role: 'client' // Only fetch client users
+      });
       console.log('📊 Users API response:', response);
       
-      if (response && response.success && response.data && response.data.users) {
-        console.log('🔍 All users from API:', response.data.users);
-        console.log('🔍 User roles:', response.data.users.map(u => ({ id: u.id, email: u.email, role: u.role })));
+      if (response && response.success && response.data) {
+        const usersData = response.data.users || [];
+        const pagination = response.data.pagination || {};
         
-        // Filter out psychologists (they're managed in doctors page)
-        const clientUsers = response.data.users.filter(user => user.role === 'client');
-        console.log('👥 Filtered client users:', clientUsers);
-
-        const dedupedClients = [];
-        const seen = new Set();
-
-        clientUsers.forEach((u) => {
-          const key = u.id || u.email;
-          if (!key) return;
-          if (!seen.has(key)) {
-            seen.add(key);
-            dedupedClients.push(u);
-          }
-        });
-
-        console.log('✅ Deduped client users:', dedupedClients);
-        setUsers(dedupedClients);
+        console.log('🔍 Users from API:', usersData);
+        console.log('📊 Pagination:', pagination);
+        
+        setUsers(usersData);
+        setTotalUsers(pagination.total || 0);
+        setTotalPages(Math.max(1, Math.ceil((pagination.total || 0) / 10)));
       } else {
         console.warn('Invalid response structure:', response);
         setUsers([]);
+        setTotalUsers(0);
+        setTotalPages(1);
       }
     } catch (error) {
       console.error('Failed to load users:', error);
       showError('Failed to load users', 'Load Error');
       setUsers([]);
+      setTotalUsers(0);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
@@ -138,8 +138,11 @@ export default function UsersPage() {
   };
 
 
+  // Note: Search and role filtering are now handled on the backend via API
+  // Keep client-side filtering as fallback if backend doesn't support it
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = !searchTerm || 
+                         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -150,6 +153,11 @@ export default function UsersPage() {
     
     return matchesSearch && matchesRole;
   });
+  
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage + 1); // WheelPagination uses 0-indexed, we use 1-indexed
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const roles = [...new Set(users.map(u => u.role).filter(Boolean))];
 
@@ -187,11 +195,19 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h6>Users Management</h6>
+          <div className="flex items-center gap-3">
+            <h6>Users Management</h6>
+            {totalUsers > 0 && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                {totalUsers} {totalUsers === 1 ? 'User' : 'Users'}
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             Manage client users and their accounts on the platform
           </p>
@@ -238,7 +254,7 @@ export default function UsersPage() {
 
       {/* Users List */}
       <div className="flex flex-col gap-4">
-        {filteredUsers.map((user) => (
+        {filteredUsers.length > 0 ? filteredUsers.map((user) => (
           <div
             key={user.id}
             className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 w-full rounded-[10px]"
@@ -302,8 +318,21 @@ export default function UsersPage() {
               </div>
             </div>
           </div>
-        ))}
+        )) : null}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+          <WheelPagination
+            totalPages={totalPages}
+            visibleCount={7}
+            currentPage={currentPage - 1} // Convert 1-indexed to 0-indexed
+            onPageChange={handlePageChange}
+            className="bg-white"
+          />
+        </div>
+      )}
 
       {/* Empty State */}
       {filteredUsers.length === 0 && (
@@ -448,6 +477,7 @@ export default function UsersPage() {
         </div>
       )}
 
+      </div>
     </div>
   );
 }

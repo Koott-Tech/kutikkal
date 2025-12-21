@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi, messagesApi } from "../../../lib/backendApi";
 import RescheduleModal from "../../../components/RescheduleModal";
 import SessionFeedbackModal from "../../../components/SessionFeedbackModal";
+import WheelPagination from "../../../components/ui/wheel-pagination";
 import { 
   Calendar, 
   MessageSquare,
@@ -24,6 +25,12 @@ export default function SessionsPage() {
   const [sessionToFeedback, setSessionToFeedback] = useState(null);
   const [showTooltip, setShowTooltip] = useState(null); // Track which tooltip is open
 
+  // Tab and pagination state
+  const [activeTab, setActiveTab] = useState('upcoming'); // Default to upcoming
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalSessions, setTotalSessions] = useState(0);
+
   // Helper function to conditionally apply hover handlers only on desktop
   const getHoverHandlers = () => {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -39,7 +46,7 @@ export default function SessionsPage() {
 
   useEffect(() => {
     loadSessions();
-  }, []);
+  }, [activeTab, currentPage]);
 
   // Close tooltip when clicking outside
   useEffect(() => {
@@ -60,36 +67,31 @@ export default function SessionsPage() {
   const loadSessions = async () => {
     try {
       setIsLoading(true);
-      const sessionsData = await clientApi.getSessions();
-      const sessionsList = sessionsData.data?.sessions || [];
+      setError(null); // Clear any previous errors
       
-      // Sort sessions: upcoming sessions by nearest time first, then completed by most recent
-      const now = new Date();
-      const sortedSessions = sessionsList.sort((a, b) => {
-        // Completed sessions go to the end
-        if (a.status === 'completed' && b.status !== 'completed') return 1;
-        if (a.status !== 'completed' && b.status === 'completed') return -1;
-        
-        // Both completed - sort by most recent first
-        if (a.status === 'completed' && b.status === 'completed') {
-          const dateA = new Date(`${a.scheduled_date}T${a.scheduled_time || '00:00:00'}+05:30`);
-          const dateB = new Date(`${b.scheduled_date}T${b.scheduled_time || '00:00:00'}+05:30`);
-          return dateB - dateA;
-        }
-        
-        // Both upcoming - sort by nearest time first
-        const timeA = a.scheduled_time || '00:00:00';
-        const timeOnlyA = timeA.split(' ')[0];
-        const dateA = new Date(`${a.scheduled_date}T${timeOnlyA}+05:30`);
-        
-        const timeB = b.scheduled_time || '00:00:00';
-        const timeOnlyB = timeB.split(' ')[0];
-        const dateB = new Date(`${b.scheduled_date}T${timeOnlyB}+05:30`);
-        
-        return dateA - dateB; // Nearest first
-      });
+      let sessionsList = [];
+      let pagination = {};
       
-      setSessions(sortedSessions);
+      // Optimized: All tabs use backend filtering for efficiency
+      // Backend handles all filtering and pagination server-side
+      // Status is passed directly: 'upcoming', 'completed', 'cancelled', 'rescheduled'
+      
+      const params = {
+        page: currentPage,
+        limit: 5,
+        status: activeTab // Backend handles the filtering for all tabs
+      };
+      
+      const sessionsData = await clientApi.getSessions(params);
+      
+      sessionsList = sessionsData.data?.sessions || [];
+      pagination = sessionsData.data?.pagination || {};
+      
+      // Backend handles all filtering and pagination, just use the results
+      setTotalPages(Math.max(1, Math.ceil((pagination.total || 0) / 5)));
+      setTotalSessions(pagination.total || 0);
+      
+      setSessions(sessionsList);
     } catch (err) {
       console.error('Error loading sessions:', err);
       setError(err.message);
@@ -97,6 +99,83 @@ export default function SessionsPage() {
       setIsLoading(false);
     }
   };
+  
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Sessions are already filtered and limited to 5 per page in loadSessions
+  const displaySessions = sessions;
+
+  // Use ref to store totalSessions for tabs badge - prevents tabs from re-rendering on page changes
+  const totalSessionsForTabsRef = useRef(totalSessions);
+  
+  // Update ref when totalSessions changes (but ref changes don't trigger re-renders)
+  useEffect(() => {
+    totalSessionsForTabsRef.current = totalSessions;
+  }, [totalSessions]);
+
+  // Memoize handleTabChange to keep it stable
+  const handleTabChangeMemoized = useCallback((tab) => {
+    // Optimistically update UI immediately for faster perceived performance
+    if (tab !== activeTab) {
+      setActiveTab(tab);
+      setCurrentPage(1); // Reset to first page when changing tabs
+      // Don't clear sessions immediately - let new data replace it smoothly
+    }
+  }, [activeTab]);
+
+  // Memoize tabs component - re-render when activeTab or totalSessions changes (for count display)
+  // IMPORTANT: This must be called before any conditional returns to follow React hooks rules
+  const tabsComponent = useMemo(() => {
+    const tabs = [
+      { id: 'upcoming', label: 'Upcoming' },
+      { id: 'completed', label: 'Completed' },
+      { id: 'rescheduled', label: 'Rescheduled' },
+      { id: 'cancelled', label: 'Cancelled' }
+    ];
+    
+    return (
+      <div className="mb-6">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {tabs.map((tab) => {
+            // For upcoming tab, show total upcoming sessions count
+            // Use totalSessions directly (only when upcoming tab is active) to ensure count updates
+            const count = tab.id === 'upcoming' && activeTab === 'upcoming' ? totalSessions : (tab.id === 'upcoming' ? totalSessionsForTabsRef.current : 0);
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChangeMemoized(tab.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full font-medium text-sm flex items-center gap-2 transition-all duration-300 ease-in-out ${
+                  isActive
+                    ? 'text-white shadow-sm'
+                    : 'bg-purple-100 text-gray-600 hover:text-gray-900'
+                }`}
+                style={isActive ? { 
+                  backgroundColor: '#3f2e73',
+                  transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+                } : {
+                  transition: 'background-color 0.3s ease-in-out, color 0.3s ease-in-out'
+                }}
+              >
+                <span>{tab.label}</span>
+                {tab.id === 'upcoming' && count > 0 && (
+                  <span className={`rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center px-1.5 ${
+                    isActive ? 'bg-white text-purple-800' : 'bg-white text-purple-800'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }, [activeTab, totalSessions, handleTabChangeMemoized]); // Include totalSessions so count updates when tab is selected
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -395,14 +474,32 @@ export default function SessionsPage() {
   return (
     <>
       <div className="bg-white p-6">
-        {sessions.length === 0 ? (
+        {/* Tabs - Fixed, won't refresh on page changes */}
+        {tabsComponent}
+
+        {displaySessions.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-gray-900 mb-2">No sessions yet</h3>
-            <p className="text-gray-600 mb-4 sm:mb-6">You haven&apos;t booked any sessions yet.</p>
+            <h3 className="text-gray-900 mb-2">No {activeTab} sessions</h3>
+            <p className="text-gray-600 mb-4 sm:mb-6">
+              {activeTab === 'upcoming' 
+                ? 'You don\'t have any upcoming sessions at the moment.'
+                : activeTab === 'completed'
+                ? 'You don\'t have any completed sessions yet.'
+                : activeTab === 'cancelled'
+                ? 'You don\'t have any cancelled sessions.'
+                : activeTab === 'rescheduled'
+                ? 'You don\'t have any rescheduled sessions.'
+                : 'You don\'t have any sessions yet.'}
+            </p>
             <button
               onClick={() => router.push('/psychologists')}
-              className="bg-blue-600 lg:hover:bg-blue-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
+              className="text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
+              style={{ backgroundColor: '#3f2e73' }}
+              {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
+                onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
+                onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
+              } : {})}
             >
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">View Therapists</span>
@@ -411,38 +508,12 @@ export default function SessionsPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Upcoming Sessions Section (not expired, including ongoing) */}
-            {sessions.filter(s => {
-              const displayStatus = getSessionDisplayStatus(s);
-              return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-                     displayStatus.status === 'ongoing';
-            }).length > 0 && (
+            {/* Sessions List */}
+            {displaySessions.length > 0 ? (
               <div>
-                <div className="flex flex-col gap-4 mb-6">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <Calendar className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#3f2e73' }} />
-                    <h5 className="text-gray-900">Upcoming Sessions</h5>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600">
-                    {sessions.filter(s => {
-                      const displayStatus = getSessionDisplayStatus(s);
-                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-                             displayStatus.status === 'ongoing';
-                    }).length} upcoming session{sessions.filter(s => {
-                      const displayStatus = getSessionDisplayStatus(s);
-                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-                             displayStatus.status === 'ongoing';
-                    }).length !== 1 ? 's' : ''}
-                  </div>
-                </div>
                 {/* Mobile Layout - Single Column Cards */}
                 <div className="block lg:hidden space-y-4">
-                  {sessions
-                    .filter(s => {
-                      const displayStatus = getSessionDisplayStatus(s);
-                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-                             displayStatus.status === 'ongoing';
-                    })
+                  {displaySessions
                     .map((session) => (
                       <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
                         {/* Status Badge */}
@@ -581,12 +652,7 @@ export default function SessionsPage() {
 
                 {/* Desktop Layout - Current Design */}
                 <div className="hidden lg:block space-y-4">
-                  {sessions
-                    .filter(s => {
-                      const displayStatus = getSessionDisplayStatus(s);
-                      return (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-                             displayStatus.status === 'ongoing';
-                    })
+                  {displaySessions
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
@@ -790,414 +856,25 @@ export default function SessionsPage() {
                       </div>
                     ))}
                 </div>
-              </div>
-            )}
 
-            {/* Time Passed Sessions Section */}
-            {sessions.filter(s => 
-              ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-              isSessionExpired(s)
-            ).length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="h-5 w-5 sm:h-6 sm:w-6 bg-orange-100 rounded-full flex items-center justify-center">
-                    <div className="h-2 w-2 sm:h-3 sm:w-3 bg-orange-600 rounded-full"></div>
-                  </div>
-                  <h5 className="text-gray-900">Time Passed Sessions</h5>
-                </div>
-                {/* Mobile Layout - Single Column Cards */}
-                <div className="block lg:hidden space-y-4">
-                  {sessions
-                    .filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      isSessionExpired(s)
-                    )
-                    .map((session) => (
-                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
-                        {/* Status Badge */}
-                        <div className="flex justify-end mb-3 gap-2">
-                          {(session.session_type === 'assessment' || session.type === 'assessment') && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              Assessment
-                            </span>
-                          )}
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
-                            Time Expired
-                          </span>
-                          {((session.package && session.package.package_type) || session.package_id) && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
-                              ) : (
-                                session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* Main Content */}
-                        <div className="flex gap-5 items-start">
-                          {/* Avatar - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                            <div className="flex-shrink-0">
-                              {session.psychologist?.cover_image_url ? (
-                                <img 
-                                  src={session.psychologist.cover_image_url}
-                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                                />
-                              ) : (
-                                <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xl">
-                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
+                {/* Pagination Controls - Wheel Pagination */}
+                {totalPages > 1 && displaySessions.length > 0 && (
+                  <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+                    <WheelPagination
+                      totalPages={totalPages}
+                      visibleCount={7}
+                      currentPage={currentPage - 1} // Convert 1-indexed to 0-indexed
+                      onPageChange={(page) => handlePageChange(page + 1)} // Convert back to 1-indexed
+                      className="bg-white"
+                    />
                                 </div>
                               )}
                             </div>
-                          )}
-                          
-                          {/* Session Details */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 mb-1">
-                              {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                            </p>
-                            <h6 className="text-gray-900 font-bold mb-2">
-                              {session.session_type === 'assessment' || session.type === 'assessment'
-                                ? `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
-                                : session.session_type === 'free_assessment'
-                                ? 'Free Assessment'
-                                : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
-                            </h6>
-                          </div>
-                        </div>
-                        
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 mt-6">
-                          {(() => {
-                            const displayStatus = getSessionDisplayStatus(session);
-                            if (displayStatus.status === 'ongoing') {
-                              return (
-                                <span className="flex-1 text-blue-600 bg-blue-100 px-2 py-1 rounded text-xs text-center">
-                                  Session Ongoing
-                            </span>
-                              );
-                            }
-                            if (displayStatus.status === 'pending_completion') {
-                              return (
-                            <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
-                                  Pending Completion
-                            </span>
-                              );
-                            }
-                            if (displayStatus.status === 'no_show') {
-                              return (
-                                <span className="flex-1 text-red-600 bg-red-100 px-2 py-1 rounded text-xs text-center">
-                                  No Show
-                                </span>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Desktop Layout */}
-                <div className="hidden lg:block space-y-4">
-                  {sessions
-                    .filter(s => 
-                      ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && 
-                      isSessionExpired(s)
-                    )
-                    .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-orange-50/30" {...getHoverHandlers()}>
-                        <div className="flex gap-4 items-center">
-                          {/* Avatar / Placeholder - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                            <div className="flex-shrink-0">
-                              {session.psychologist?.cover_image_url ? (
-                                <img 
-                                  src={session.psychologist.cover_image_url}
-                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                                />
-                              ) : (
-                                <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-xl">
-                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Session Details */}
-                          <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
-                            <div className="flex-1">
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
-                                <span className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${getStatusColor('expired')}`}>
-                                  Time Expired
-                                </span>
-                                <span className="text-xs sm:text-sm text-gray-500">
-                                  {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                                </span>
-                                {((session.package && session.package.package_type) || session.package_id) && (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                      <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
-                                    ) : (
-                                      session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
-                                    )}
-                                  </span>
-                                )}
-                              </div>
-                              
-                              <h5 className="text-gray-900 font-semibold mb-3">
-                                {session.session_type === 'free_assessment' ? (
-                                  <span className="flex items-center gap-2">
-                                    <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
-                                      Free Assessment
-                                    </span>
-                                  </span>
-                                ) : session.session_type === 'assessment' || session.type === 'assessment' ? (
-                                  `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
-                                ) : (
-                                  `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
-                                )}
-                              </h5>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Completed Sessions Section */}
-            {sessions.filter(s => s.status === 'completed').length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <div className="h-5 w-5 sm:h-6 sm:w-6 bg-green-100 rounded-full flex items-center justify-center">
-                    <div className="h-2 w-2 sm:h-3 sm:w-3 bg-green-600 rounded-full"></div>
-                  </div>
-                  <h5 className="text-gray-900">Completed Sessions</h5>
-                </div>
-                {/* Mobile Layout - Single Column Cards */}
-                <div className="block lg:hidden space-y-4">
-                  {sessions
-                    .filter(s => s.status === 'completed')
-                    .map((session) => (
-                      <div key={session.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
-                        {/* Status Badge */}
-                        <div className="flex justify-end mb-3">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Completed
-                          </span>
-                        </div>
-                        
-                        {/* Main Content */}
-                        <div className="flex gap-5 items-start">
-                          {/* Avatar - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                            <div className="flex-shrink-0">
-                              {session.psychologist?.cover_image_url ? (
-                                <img 
-                                  src={session.psychologist.cover_image_url}
-                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                                />
-                              ) : (
-                                <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
-                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Session Details */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 mb-1">
-                              {formatDateMobile(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                            </p>
-                            <h6 className="text-gray-900 font-bold mb-2">
-                              {session.session_type === 'assessment' || session.type === 'assessment'
-                                ? `Assessment: ${session.assessment?.hero_title || session.assessment?.seo_title || 'Assessment Session'}`
-                                : session.session_type === 'free_assessment' ? 'Free Assessment' : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
-                            </h6>
-                          </div>
-                        </div>
-                        
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 mt-6">
-                          <button
-                            onClick={() => handleViewFullReport(session)}
-                            className="flex-1 px-2 py-1 rounded text-xs font-medium transition-colors text-blue-600 border border-blue-300 hover:bg-blue-50"
-                          >
-                            View Report
-                          </button>
-                          {!session.feedback && (
-                            <button
-                              onClick={() => openFeedbackModal(session)}
-                              className="flex-1 text-purple-600 border border-purple-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-purple-50 transition-colors"
-                            >
-                              Give Feedback
-                            </button>
-                          )}
-                          {session.feedback && (
-                            <span className="flex-1 text-green-600 bg-green-100 px-2 py-1 rounded text-xs text-center">
-                              ✓ Feedback Submitted
-                            </span>
-                          )}
-                          
-                          {/* Book Next Session Button - Only for package sessions with remaining sessions and no upcoming sessions */}
-                          {session.package_id && 
-                           session.package && 
-                           session.package.remaining_sessions > 0 && 
-                           !hasUpcomingSessionsForPackage(session.package_id) && (
-                            <button
-                              onClick={() => {
-                                const psychologist = session.psychologist;
-                                if (psychologist && session.package_id) {
-                                  const doctorIdentifier = psychologist.id;
-                                  if (doctorIdentifier) {
-                                    router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`);
-                                  }
-                                }
-                              }}
-                              className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
-                              style={{ backgroundColor: '#3f2e73' }}
-                              {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
-                                onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
-                                onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
-                              } : {})}
-                            >
-                              <Calendar className="h-3 w-3" />
-                              Book Next Session
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Desktop Layout - Current Design */}
-                <div className="hidden lg:block space-y-4">
-                  {sessions
-                    .filter(s => s.status === 'completed')
-                    .map((session) => (
-                      <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-green-50/30" {...getHoverHandlers()}>
-                        <div className="flex gap-4 items-center">
-                          {/* Avatar / Placeholder - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                          <div className="flex-shrink-0">
-                              {session.psychologist?.cover_image_url ? (
-                                <img 
-                                  src={session.psychologist.cover_image_url}
-                                  alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                                />
-                              ) : (
-                                <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
-                                  {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
-                                </div>
-                            )}
-                          </div>
-                          )}
-                          
-                          {/* Session Details */}
-                          <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
-                            <div className="flex-1">
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mb-4">
-                                <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Completed
-                                </span>
-                                <span className="text-xs sm:text-sm text-gray-500">
-                                  {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
-                                </span>
-                                {session.reschedule_count > 0 && (
-                                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                    Rescheduled {session.reschedule_count} time{session.reschedule_count > 1 ? 's' : ''}
-                                  </span>
-                                )}
-                              </div>
-                              
-                              <h5 className="text-gray-900 font-semibold mb-3">
-                                {session.session_type === 'free_assessment' ? (
-                                  <span className="flex items-center gap-2">
-                                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                                      Free Assessment
-                                    </span>
-                                    Session with {session.psychologist?.first_name} {session.psychologist?.last_name}
-                                  </span>
-                                ) : (
-                                  `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`
-                                )}
-                              </h5>
-                              
-                              {session.package && (
-                                <p className="text-gray-600 mb-3">
-                                  Package: {session.package.package_type?.replace('_', ' ')}
-                                </p>
-                              )}
-                              
-                              {Number(session.price) > 0 && (
-                                <p className="text-gray-600 mb-2">
-                                  Price: ₹{session.price}
-                                </p>
-                              )}
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                onClick={() => handleViewFullReport(session)}
-                                className="text-blue-600 border border-blue-300 lg:hover:bg-blue-50 lg:hover:text-blue-900 text-xs sm:text-sm font-medium px-2 py-1 rounded-md transition-colors cursor-pointer"
-                              >
-                                View Complete Report
-                              </button>
-                              {!session.feedback && (
-                                <button
-                                  onClick={() => openFeedbackModal(session)}
-                                  className="text-purple-600 lg:hover:text-purple-900 text-xs sm:text-sm font-medium border border-purple-300 px-2 py-1 rounded-md lg:hover:bg-purple-50 transition-colors cursor-pointer"
-                                >
-                                  Give Feedback
-                                </button>
-                              )}
-                              {session.feedback && (
-                                <span className="text-green-600 bg-green-100 px-2 py-1 rounded-md text-xs sm:text-sm">
-                                  ✓ Feedback Submitted
-                                </span>
-                              )}
-                              
-                              {/* Book Next Session Button - Only for package sessions with remaining sessions and no upcoming sessions */}
-                              {session.package_id && 
-                               session.package && 
-                               session.package.remaining_sessions > 0 && 
-                               !hasUpcomingSessionsForPackage(session.package_id) && (
-                                <button
-                                  onClick={() => {
-                                    const psychologist = session.psychologist;
-                                    if (psychologist && session.package_id) {
-                                      const doctorIdentifier = psychologist.id;
-                                      if (doctorIdentifier) {
-                                        router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`);
-                                      }
-                                    }
-                                  }}
-                                  className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
-                                  style={{ backgroundColor: '#3f2e73' }}
-                                  {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
-                                    onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
-                                    onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
-                                  } : {})}
-                                >
-                                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                                  <span>Book Next Session</span>
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12">
+                <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-gray-900 mb-2">No {activeTab} sessions</h3>
+                <p className="text-gray-600">You don&apos;t have any {activeTab} sessions yet.</p>
               </div>
             )}
           </div>
