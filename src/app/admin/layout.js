@@ -233,8 +233,10 @@ export default function AdminLayout({ children }) {
         </div>
       </div>
 
-      {/* Desktop sidebar (always visible on lg and above) */}
-      <div className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-[#3f2e73]/20 z-40">
+      {/* Desktop sidebar (toggleable on lg and above) */}
+      <div className={`hidden lg:flex fixed inset-y-0 left-0 w-64 bg-white shadow-lg border-r border-[#3f2e73]/20 z-40 transition-transform duration-300 ease-in-out ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <div className="flex flex-col h-full w-full">
           {/* Logo/Brand */}
           <div className="p-6 border-b border-gray-200">
@@ -326,12 +328,24 @@ export default function AdminLayout({ children }) {
         </div>
       </div>
 
-      {/* Main content (push right for desktop left sidebar) */}
-      <div className="lg:ml-64">
-        {/* Top bar */}
-        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 w-full sticky top-0 z-30">
+      {/* Main content (adjust margin based on sidebar state) */}
+      <div className={`transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
+        {/* Top bar - Fixed header */}
+        <div className={`hidden lg:block bg-white shadow-sm border-b border-gray-200 px-6 py-4 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'left-64' : 'left-0'
+        }`}>
           <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {/* Toggle sidebar button */}
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                aria-label="Toggle sidebar"
+              >
+                {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
             <h6>Little Care Admin Panel</h6>
+            </div>
             <div className="flex items-center space-x-4">
               <SecurityNotificationCenter />
               {user && (
@@ -344,8 +358,8 @@ export default function AdminLayout({ children }) {
           </div>
         </div>
 
-        {/* Page content */}
-        <main>
+        {/* Page content - Add padding-top to account for fixed header */}
+        <main className="lg:pt-16">
           {children}
         </main>
       </div>

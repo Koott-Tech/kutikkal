@@ -278,7 +278,9 @@ async function apiRequest(endpoint, options = {}) {
       }
       
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        throw new Error('Network error. Please check your internet connection and try again.');
+        // Provide more helpful error message with endpoint info
+        const endpointInfo = endpoint ? ` while calling ${endpoint}` : '';
+        throw new Error(`Unable to connect to the server${endpointInfo}. Please check if the backend server is running and try again.`);
       }
       
       throw error;
@@ -872,7 +874,9 @@ export const adminApi = {
       if (value) queryParams.append(key, value);
     });
     
-    return apiRequest(`/admin/stats/platform?${queryParams}`);
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/admin/stats/platform?${queryString}` : '/admin/stats/platform';
+    return apiRequest(endpoint);
   },
 
   // Search users

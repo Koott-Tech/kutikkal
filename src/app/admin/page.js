@@ -13,7 +13,10 @@ import {
   AlertTriangle,
   XCircle,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  CheckCircle,
+  CalendarCheck,
+  ArrowRightLeft
 } from 'lucide-react';
 import { adminApi, dashboardApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,14 +33,24 @@ export default function AdminDashboard() {
     failures: {
       paymentFailures: 0,
       pendingPayments: 0,
+      successfulPayments: 0,
       cancelledSessions: 0,
       noShowSessions: 0,
       totalPayments: 0
+    },
+    bookingStatuses: {
+      upcoming: 0,
+      rescheduled: 0,
+      rescheduleRequested: 0,
+      completed: 0,
+      noShow: 0,
+      cancelled: 0
     },
     failureRate: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recentBookings, setRecentBookings] = useState([]);
 
   useEffect(() => {
     // Check authentication and role
@@ -113,9 +126,18 @@ export default function AdminDashboard() {
           failures: platformStats.data?.failures || {
             paymentFailures: 0,
             pendingPayments: 0,
+            successfulPayments: 0,
             cancelledSessions: 0,
             noShowSessions: 0,
             totalPayments: 0
+          },
+          bookingStatuses: platformStats.data?.bookingStatuses || {
+            upcoming: 0,
+            rescheduled: 0,
+            rescheduleRequested: 0,
+            completed: 0,
+            noShow: 0,
+            cancelled: 0
           },
           failureRate: platformStats.data?.failureRate || 0
         };
@@ -129,12 +151,32 @@ export default function AdminDashboard() {
           failures: platformStats?.data?.failures || {
             paymentFailures: 0,
             pendingPayments: 0,
+            successfulPayments: 0,
             cancelledSessions: 0,
             noShowSessions: 0,
             totalPayments: 0
           },
+          bookingStatuses: platformStats?.data?.bookingStatuses || {
+            upcoming: 0,
+            booked: 0,
+            rescheduled: 0,
+            rescheduleRequested: 0,
+            completed: 0,
+            noShow: 0,
+            cancelled: 0
+          },
           failureRate: platformStats?.data?.failureRate || 0
         };
+      }
+
+      // Load recent bookings for activity section (last 24 hours)
+      try {
+        const recentBookingsResponse = await adminApi.getRecentBookings(10);
+        if (recentBookingsResponse && recentBookingsResponse.success) {
+          setRecentBookings(recentBookingsResponse.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching recent bookings:', error);
       }
 
       // Load recent data in background (non-blocking)
@@ -213,6 +255,16 @@ export default function AdminDashboard() {
 
   const failureCards = [
     {
+      title: 'Successful Payments',
+      value: stats.failures?.successfulPayments || 0,
+      icon: CheckCircle,
+      color: 'bg-green-500',
+      description: 'Completed and processed payments',
+      subValue: stats.failures?.totalPayments > 0 
+        ? `${((stats.failures?.successfulPayments || 0) / stats.failures.totalPayments * 100).toFixed(1)}% success rate`
+        : 'No payments yet'
+    },
+    {
       title: 'Payment Failures',
       value: stats.failures?.paymentFailures || 0,
       icon: XCircle,
@@ -239,19 +291,59 @@ export default function AdminDashboard() {
       subValue: stats.totalBookings > 0 
         ? `${((stats.failures?.cancelledSessions || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
         : ''
+    }
+  ];
+
+  const bookingStatusCards = [
+    {
+      title: 'Upcoming Bookings',
+      value: stats.bookingStatuses?.upcoming || 0,
+      icon: CalendarCheck,
+      color: 'bg-blue-500',
+      description: 'All confirmed future sessions',
+      subValue: stats.totalBookings > 0 
+        ? `${((stats.bookingStatuses?.upcoming || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        : ''
+    },
+    {
+      title: 'Rescheduled',
+      value: stats.bookingStatuses?.rescheduled || 0,
+      icon: ArrowRightLeft,
+      color: 'bg-purple-500',
+      description: 'Sessions that were rescheduled',
+      subValue: stats.totalBookings > 0 
+        ? `${((stats.bookingStatuses?.rescheduled || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        : ''
+    },
+    {
+      title: 'Reschedule Requested',
+      value: stats.bookingStatuses?.rescheduleRequested || 0,
+      icon: RefreshCw,
+      color: 'bg-amber-500',
+      description: 'Pending reschedule requests',
+      subValue: 'Requires attention'
+    },
+    {
+      title: 'Completed',
+      value: stats.bookingStatuses?.completed || 0,
+      icon: CheckCircle,
+      color: 'bg-green-600',
+      description: 'Sessions that were completed',
+      subValue: stats.totalBookings > 0 
+        ? `${((stats.bookingStatuses?.completed || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        : ''
     },
     {
       title: 'No-Show Sessions',
-      value: stats.failures?.noShowSessions || 0,
+      value: stats.bookingStatuses?.noShow || 0,
       icon: AlertCircle,
       color: 'bg-red-600',
       description: 'Sessions where client did not show',
       subValue: stats.totalBookings > 0 
-        ? `${((stats.failures?.noShowSessions || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
+        ? `${((stats.bookingStatuses?.noShow || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
         : ''
     }
   ];
-
 
   if (authLoading) {
     return (
@@ -341,27 +433,22 @@ export default function AdminDashboard() {
           const Icon = stat.icon;
           return (
             <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-              <div className="flex items-center">
-                <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white`}>
+              <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white inline-block mb-3`}>
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="ml-3 sm:ml-4">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="number-bold">{stat.value}</p>
-                </div>
               </div>
-              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">{stat.description}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{stat.title}</p>
+              <p className="number-bold">{stat.value}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Failure Metrics */}
+      {/* Payment & Session Metrics */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h6>Failure & Issue Metrics</h6>
-            <p className="text-sm text-gray-600 mt-1">Monitor payment failures, cancellations, and issues</p>
+            <h6>Payment & Session Metrics</h6>
+            <p className="text-sm text-gray-600 mt-1">Monitor payment status, cancellations, and session issues</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -376,52 +463,114 @@ export default function AdminDashboard() {
             const Icon = card.icon;
             return (
               <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <div className={`p-2 rounded-lg ${card.color} text-white mr-3`}>
+                <div className={`p-2 rounded-lg ${card.color} text-white inline-block mb-3`}>
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
-                      <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
-                    </div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{card.title}</p>
                     <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
-                    <p className="text-xs text-gray-500 mb-1">{card.description}</p>
                     {card.subValue && (
                       <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
                     )}
                   </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Booking Status Metrics */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h6>Booking Status Metrics</h6>
+            <p className="text-sm text-gray-600 mt-1">Monitor session statuses and booking health</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            title="Refresh data"
+          >
+            <RefreshCw className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          {bookingStatusCards.map((card, index) => {
+            const Icon = card.icon;
+            return (
+              <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div className={`p-2 rounded-lg ${card.color} text-white inline-block mb-3`}>
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{card.title}</p>
+                <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
+                {card.subValue && (
+                  <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
+                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity - Last Day Bookings */}
+      {recentBookings.length > 0 && (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
           <h6>Recent Activity</h6>
+              <p className="text-sm text-gray-600 mt-1">Bookings from the last 24 hours</p>
+            </div>
           <a href="/admin/bookings" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
             View All
           </a>
         </div>
         <div className="space-y-2 sm:space-y-3">
-          <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
-            <Clock className="h-4 w-4 text-gray-400 mr-2 sm:mr-3" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">Dashboard loaded successfully</p>
-              <p className="text-xs text-gray-500">Just now</p>
+            {recentBookings.slice(0, 5).map((booking) => {
+              const clientName = booking.client?.child_name || 
+                `${booking.client?.first_name || ''} ${booking.client?.last_name || ''}`.trim() || 
+                'Unknown Client';
+              const psychologistName = booking.psychologist ? 
+                `Dr. ${booking.psychologist.first_name} ${booking.psychologist.last_name}` : 
+                'Unknown Psychologist';
+              
+              // Format time
+              const createdAt = new Date(booking.created_at);
+              const now = new Date();
+              const diffMs = now - createdAt;
+              const diffMins = Math.floor(diffMs / 60000);
+              const diffHours = Math.floor(diffMs / 3600000);
+              
+              let timeAgo;
+              if (diffMins < 1) {
+                timeAgo = 'Just now';
+              } else if (diffMins < 60) {
+                timeAgo = `${diffMins} ${diffMins === 1 ? 'minute' : 'minutes'} ago`;
+              } else if (diffHours < 24) {
+                timeAgo = `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+              } else {
+                timeAgo = createdAt.toLocaleDateString();
+              }
+
+              return (
+                <div key={booking.id} className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                  <Calendar className="h-4 w-4 text-gray-400 mr-2 sm:mr-3 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      Booking: {clientName} with {psychologistName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {booking.scheduled_date && booking.scheduled_time 
+                        ? `Scheduled: ${booking.scheduled_date} at ${booking.scheduled_time.split(':').slice(0, 2).join(':')}`
+                        : 'No date scheduled'}
+                      {' • '}
+                      {timeAgo}
+                    </p>
             </div>
           </div>
-          <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
-            <Users className="h-4 w-4 text-gray-400 mr-2 sm:mr-3" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">Platform statistics updated</p>
-              <p className="text-xs text-gray-500">A few minutes ago</p>
-            </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
       </div>
     </div>
   );
