@@ -170,30 +170,35 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 }
                 @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
                     .footer-heading {
-                        font-size: 32px !important;
-                        line-height: 1.1 !important;
-                        font-weight: 600 !important;
+                        font-size: 32px;
+                        line-height: 1.1;
+                        font-weight: 600;
                     }
                     .footer-description {
-                        line-height: 1.3 !important;
+                        line-height: 1.2;
                     }
                 }
                 @media (max-width: 767px) {
-                    .footer-heading {
-                        font-size: 28px !important;
+                    h4.footer-heading {
+                        font-size: 24px;
                         line-height: 1.1 !important;
-                        font-weight: 600 !important;
-                        text-align: left !important;
-                        padding-left: 1rem !important;
-                        padding-right: 1rem !important;
+                        font-weight: 600;
+                        text-align: center;
+                        padding-left: 0;
+                        padding-right: 0;
                     }
                     .footer-description {
-                        line-height: 1.2 !important;
+                        font-size: 13px !important;
+                        line-height: 1.1;
                     }
                     .footer-main-menu-item {
                         margin-bottom: 0.25rem !important;
                     }
+                    .footer-submenu-item {
+                        font-size: 17px !important;
+                    }
                     .footer-individual-menu-item {
+                        font-size: 16px !important;
                         margin-bottom: 0.375rem !important;
                     }
                 }
@@ -210,15 +215,15 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
             {/* New section above footer */}
             {isHomePage ? (
                 // Home page footer wrapper design (match CMS heading/paragraph styles)
-                <div className="w-full py-20 px-8 md:px-16 lg:px-24" style={{ 
+                <div className="w-full py-12 md:py-16 px-8 md:px-16 lg:px-24" style={{ 
                     background: 'linear-gradient(to bottom, #faf9ff, #e0d8ff)'
                 }}>
-                    <div className="text-center max-w-4xl mx-auto">
-                        <h4 className="footer-heading mb-2 font-semibold">
-                            Ready to Begin Your Child's Mental Well-Being & Therapy Journey?
+                    <div className="text-center max-w-full mx-auto px-4">
+                        <h4 className="footer-heading mb-2 font-semibold max-w-full" style={{ lineHeight: '1.1' }}>
+                            Start Your Child's Therapy Journey Today
                         </h4>
-                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
-                            We'll find you a provider in-network with your insurance that specializes in the care you're looking for.
+                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8 max-w-full">
+                            Connect with a trusted child psychologist in-network who can support your child's mental well-being.
                         </p>
                         <button 
                             className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-4 md:py-3 md:px-6 rounded-full text-sm md:text-base transition-colors duration-200"
@@ -230,14 +235,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 </div>
             ) : (
                 // CMS pages footer wrapper design (current design)
-                <div className="w-full py-16 px-8 md:px-16 lg:px-24" style={{ 
+                <div className="w-full py-12 md:py-14 px-8 md:px-16 lg:px-24" style={{ 
                     background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)'
                 }}>
-                    <div className="text-center max-w-4xl mx-auto">
+                    <div className="text-center max-w-4xl mx-auto px-4">
                         <h4 className="footer-heading mb-2 font-semibold">
                             {pathname === '/about' ? ' We’re  here to listen, guide, and support.' : 'Confused where to start?'}
                         </h4>
-                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8 leading-relaxed">
+                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8">
                             {pathname === '/about'
                                 ? 'Care doesn’t end here.'
                                 : 'Book a free 20 minutes session with our child psychologist.'}
@@ -273,11 +278,11 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
             )}
 
             {/* Original footer content */}
-            <div className="w-full py-16" style={{ backgroundColor: '#15171A' }}>
+            <div className="w-full py-8 md:py-16" style={{ backgroundColor: '#15171A' }}>
                 {/* Top horizontal line at the very beginning */}
                 <div className="absolute top-0 left-0 w-full h-3 bg-white"></div>
                 
-                <div className="w-full flex flex-col px-8 md:px-16 lg:px-24 mt-4">
+                <div className="w-full flex flex-col px-8 md:px-16 lg:px-24 mt-2 md:mt-4">
                     {/* Main footer content - header-like FAQ dropdowns */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-12 lg:gap-8 xl:gap-16">
                         {/* Counselling (mirrors header nested submenu) */}
@@ -297,9 +302,10 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 text-left">
                                     <button
                                         onClick={() => toggleSection('c_emotional')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Emotional & Mental Health</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Emotional & Mental Health</h2>
+                                        
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_emotional ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -314,9 +320,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_development')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Child Development & Learning</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Child Development & Learning</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_development ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -331,9 +337,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_behaviour')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Behaviour & Confidence</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Behaviour & Confidence</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_behaviour ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -348,9 +354,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_stress')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Stress & Academic Support</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Stress & Academic Support</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_stress ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -365,9 +371,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('c_trauma')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Trauma & Healing</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Trauma & Healing</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.c_trauma ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -397,9 +403,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 text-left">
                                     <button
                                         onClick={() => toggleSection('a_adhd')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">ADHD</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>ADHD</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_adhd ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -414,9 +420,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_ebs')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Emotional & Behavioural Scales</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Emotional & Behavioural Scales</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_ebs ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -431,9 +437,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_intelligence')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Intelligence</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Intelligence</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_intelligence ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -448,9 +454,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <div className="space-y-1 mt-1 md:mt-2 text-left">
                                     <button
                                         onClick={() => toggleSection('a_projective')}
-                                        className="flex w-full items-center justify-between text-base font-normal text-white/90 cursor-pointer text-left"
+                                        className="flex w-full items-center justify-between font-normal text-white/90 cursor-pointer text-left"
                                     >
-                                        <h2 className="footer-submenu-item text-left">Projective</h2>
+                                        <h2 className="footer-submenu-item text-left" suppressHydrationWarning>Projective</h2>
                                         <svg className={`w-4 h-4 transition-transform ${openSections.a_projective ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -467,7 +473,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                         href="/free-assessment"
                                         className="flex items-center justify-between text-base font-medium text-white hover:text-green-200 transition-colors duration-200 text-left"
                                     >
-                                        <h2 className="footer-submenu-item">Free 20 Min Assessment</h2>
+                                        <h2 className="footer-submenu-item" suppressHydrationWarning>Free 20 Min Assessment</h2>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>

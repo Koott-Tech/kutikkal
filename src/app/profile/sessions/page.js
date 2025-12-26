@@ -30,6 +30,10 @@ export default function SessionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalSessions, setTotalSessions] = useState(0);
+  
+  // Packages state (for Packages tab)
+  const [clientPackages, setClientPackages] = useState([]);
+  const [isLoadingPackages, setIsLoadingPackages] = useState(false);
 
   // Helper function to conditionally apply hover handlers only on desktop
   const getHoverHandlers = () => {
@@ -45,7 +49,11 @@ export default function SessionsPage() {
   const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
-    loadSessions();
+    if (activeTab === 'packages') {
+      loadPackages();
+    } else {
+      loadSessions();
+    }
   }, [activeTab, currentPage]);
 
   // Close tooltip when clicking outside
@@ -63,6 +71,33 @@ export default function SessionsPage() {
       };
     }
   }, [showTooltip]);
+
+  const loadPackages = async () => {
+    try {
+      setIsLoadingPackages(true);
+      setIsLoading(true);
+      setError(null);
+      const packagesData = await clientApi.getClientPackages();
+      const rawPackages = packagesData.data?.clientPackages || [];
+      // Filter to show only packages with remaining sessions (status: active)
+      const packagesWithRemaining = rawPackages.filter(pkg => {
+        const totalSessions = Number.isFinite(pkg.total_sessions)
+          ? pkg.total_sessions
+          : Number(pkg.package?.session_count) || 0;
+        const remainingSessions = Number.isFinite(pkg.remaining_sessions) && pkg.remaining_sessions >= 0
+          ? pkg.remaining_sessions
+          : Math.max(totalSessions - (pkg.completed_sessions || 0), 0);
+        return remainingSessions > 0 && pkg.status === 'active';
+      });
+      setClientPackages(packagesWithRemaining);
+    } catch (err) {
+      console.error('Error loading packages:', err);
+      setError('Failed to load packages');
+    } finally {
+      setIsLoadingPackages(false);
+      setIsLoading(false);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -131,8 +166,10 @@ export default function SessionsPage() {
   const tabsComponent = useMemo(() => {
     const tabs = [
       { id: 'upcoming', label: 'Upcoming' },
-      { id: 'completed', label: 'Completed' },
       { id: 'rescheduled', label: 'Rescheduled' },
+      { id: 'packages', label: 'Packages' },
+      { id: 'pending', label: 'Pending' },
+      { id: 'completed', label: 'Completed' },
       { id: 'cancelled', label: 'Cancelled' }
     ];
     
@@ -287,16 +324,53 @@ export default function SessionsPage() {
     return { status: session.status, label: session.status || 'Scheduled', color: getStatusColor(session.status) };
   };
 
+  // Store all sessions across all tabs for package checking
+  const [allSessionsForPackageCheck, setAllSessionsForPackageCheck] = useState([]);
+
+  // Load all booked/upcoming sessions for package checking
+  // This allows us to check if there are booked sessions even when viewing completed tab
+  useEffect(() => {
+    const loadAllSessionsForPackageCheck = async () => {
+      try {
+        // Fetch sessions with status 'upcoming' to check for booked sessions in packages
+        const bookedSessionsData = await clientApi.getSessions({ status: 'upcoming', page: 1, limit: 1000 });
+        const bookedSessions = bookedSessionsData.data?.sessions || [];
+        setAllSessionsForPackageCheck(bookedSessions);
+      } catch (err) {
+        console.error('Error loading sessions for package check:', err);
+        // Don't block UI if this fails - set empty array as fallback
+        setAllSessionsForPackageCheck([]);
+      }
+    };
+    
+    // Load when component mounts or when activeTab changes (to refresh booked sessions)
+    if (user) {
+      loadAllSessionsForPackageCheck();
+    }
+  }, [user, activeTab]); // Reload when tab changes to get fresh booked sessions
+
   // Check if there are any upcoming/scheduled sessions for the same package
   const hasUpcomingSessionsForPackage = (packageId) => {
     if (!packageId) return false;
-    return sessions.some(s => {
+    // Check both current tab sessions and all booked sessions
+    const allSessionsToCheck = [...sessions, ...allSessionsForPackageCheck];
+    return allSessionsToCheck.some(s => {
+      // Must match the package
+      if (s.package_id !== packageId) return false;
+      
+      // Exclude completed, no_show, cancelled sessions
+      if (s.status === 'completed' || s.status === 'no_show' || s.status === 'noshow' || s.status === 'cancelled') {
+        return false;
+      }
+      
+      // Check if it's an ongoing session
       const displayStatus = getSessionDisplayStatus(s);
-      return s.package_id === packageId && 
-      s.status !== 'completed' && 
-        s.status !== 'no_show' && s.status !== 'noshow' &&
-        (['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s)) ||
-        displayStatus.status === 'ongoing';
+      if (displayStatus.status === 'ongoing') {
+        return true;
+      }
+      
+      // Check if it's a booked/scheduled/rescheduled session that hasn't expired
+      return ['booked', 'scheduled', 'reschedule_requested', 'rescheduled'].includes(s.status) && !isSessionExpired(s);
     });
   };
 
@@ -477,7 +551,282 @@ export default function SessionsPage() {
         {/* Tabs - Fixed, won't refresh on page changes */}
         {tabsComponent}
 
-        {displaySessions.length === 0 ? (
+        {activeTab === 'packages' ? (
+          // Packages Tab Content
+          isLoadingPackages ? (
+            <div className="absolute inset-0 w-full flex items-center justify-center z-10" style={{ minHeight: 'calc(100vh - 8rem)' }}>
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderBottomColor: '#3f2e73' }}></div>
+                <p className="text-gray-600">Loading packages...</p>
+              </div>
+            </div>
+          ) : clientPackages.length === 0 ? (
+            <div className="text-center py-8 sm:py-12">
+              <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-gray-900 mb-2">No Active Packages</h3>
+              <p className="text-gray-600 mb-4 sm:mb-6">
+                You don't have any packages with remaining sessions.
+              </p>
+              <button
+                onClick={() => router.push('/psychologists')}
+                className="text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
+                style={{ backgroundColor: '#3f2e73' }}
+                {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
+                  onMouseEnter: (e) => e.currentTarget.style.backgroundColor = '#1d1733',
+                  onMouseLeave: (e) => e.currentTarget.style.backgroundColor = '#3f2e73'
+                } : {})}
+              >
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">View Therapists</span>
+                <span className="sm:hidden">View Therapists</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <div>
+                {/* Mobile Layout - Single Column Cards */}
+                <div className="block lg:hidden space-y-4">
+                  {clientPackages.map((pkg) => {
+                    const totalSessions = Number.isFinite(pkg.total_sessions)
+                      ? pkg.total_sessions
+                      : Number(pkg.package?.session_count) || 0;
+                    // Use completed_sessions from backend (counts actual completed sessions)
+                    const completedSessions = Number.isFinite(pkg.completed_sessions) && pkg.completed_sessions >= 0
+                      ? pkg.completed_sessions
+                      : 0;
+                    // Calculate remaining sessions for display: total - completed (always correct)
+                    // This shows how many sessions are left to COMPLETE, not to book
+                    const remainingSessions = Math.max(totalSessions - completedSessions, 0);
+                    // Use remaining_sessions_for_booking for button logic (sessions left to book)
+                    const remainingSessionsForBooking = Number.isFinite(pkg.remaining_sessions_for_booking) && pkg.remaining_sessions_for_booking >= 0
+                      ? pkg.remaining_sessions_for_booking
+                      : (Number.isFinite(pkg.remaining_sessions) && pkg.remaining_sessions >= 0
+                        ? pkg.remaining_sessions
+                        : Math.max(totalSessions - 1, 0));
+                    
+                    return (
+                      <div key={pkg.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
+                        {/* Status Badge */}
+                        <div className={`flex ${remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? 'justify-between' : 'justify-between'} items-center mb-3 gap-2`}>
+                          <div className="flex gap-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              Package ({completedSessions}/{totalSessions})
+                            </span>
+                            <span 
+                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white"
+                              style={{ backgroundColor: '#3f2e73' }}
+                            >
+                              {pkg.status === 'active' ? 'Active' : pkg.status}
+                            </span>
+                          </div>
+                          <span 
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${remainingSessions > 0 ? 'text-[#3f2e73] bg-purple-50 border border-purple-200' : 'text-red-600 bg-red-50 border border-red-200'} ${remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? 'ml-auto mr-2' : ''}`}
+                          >
+                            Remaining: {remainingSessions}
+                          </span>
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="flex gap-5 items-start">
+                          {/* Avatar */}
+                          {pkg.psychologist && (
+                            <div className="flex-shrink-0">
+                              {pkg.psychologist.cover_image_url ? (
+                                <img 
+                                  src={pkg.psychologist.cover_image_url}
+                                  alt={`${pkg.psychologist.first_name} ${pkg.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                  {pkg.psychologist.first_name?.[0]}{pkg.psychologist.last_name?.[0]}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Package Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-gray-500 mb-1">
+                              Purchased: {new Date(pkg.purchased_at).toLocaleDateString()}
+                            </p>
+                            <h6 className="text-gray-900 font-bold mb-2">
+                              {pkg.package?.name || `Package with ${pkg.psychologist?.first_name} ${pkg.psychologist?.last_name}`}
+                            </h6>
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <p>
+                                <span className="font-medium">Total Amount:</span> ₹{pkg.total_amount}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 mt-6">
+                          {/* Show button only if: remaining sessions to book > 0, package is active, at least one session completed, AND no booked sessions exist */}
+                          {remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? (
+                            <button
+                              onClick={() => {
+                                const psychologist = pkg.psychologist;
+                                if (psychologist) {
+                                  const doctorIdentifier = psychologist.id || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`
+                                    .toLowerCase()
+                                    .trim()
+                                    .replace(/[^a-z0-9]+/g, '-')
+                                    .replace(/^-+|-+$/g, '');
+                                  if (doctorIdentifier) {
+                                    router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${pkg.id}`);
+                                  }
+                                }
+                              }}
+                              className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                              style={{ backgroundColor: '#3f2e73' }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                            >
+                              <Calendar className="h-3 w-3" />
+                              Book Remaining Sessions
+                            </button>
+                          ) : (
+                            remainingSessions > 0 && hasUpcomingSessionsForPackage(pkg.package_id) ? (
+                              <span className="flex-1 text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded text-center">
+                                Complete booked sessions first
+                              </span>
+                            ) : pkg.status === 'completed' ? (
+                              <span className="flex-1 text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded text-center">
+                                Package Completed
+                              </span>
+                            ) : null
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Layout - Match Completed Sessions Design */}
+                <div className="hidden lg:block space-y-4">
+                  {clientPackages.map((pkg) => {
+                    const totalSessions = Number.isFinite(pkg.total_sessions)
+                      ? pkg.total_sessions
+                      : Number(pkg.package?.session_count) || 0;
+                    // Use completed_sessions from backend (counts actual completed sessions)
+                    const completedSessions = Number.isFinite(pkg.completed_sessions) && pkg.completed_sessions >= 0
+                      ? pkg.completed_sessions
+                      : 0;
+                    // Calculate remaining sessions for display: total - completed (always correct)
+                    // This shows how many sessions are left to COMPLETE, not to book
+                    const remainingSessions = Math.max(totalSessions - completedSessions, 0);
+                    // Use remaining_sessions_for_booking for button logic (sessions left to book)
+                    const remainingSessionsForBooking = Number.isFinite(pkg.remaining_sessions_for_booking) && pkg.remaining_sessions_for_booking >= 0
+                      ? pkg.remaining_sessions_for_booking
+                      : (Number.isFinite(pkg.remaining_sessions) && pkg.remaining_sessions >= 0
+                        ? pkg.remaining_sessions
+                        : Math.max(totalSessions - 1, 0));
+                    
+                    return (
+                      <div key={pkg.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
+                        <div className="flex gap-4 items-center">
+                          {/* Avatar */}
+                          {pkg.psychologist && (
+                            <div className="flex-shrink-0">
+                              {pkg.psychologist.cover_image_url ? (
+                                <img 
+                                  src={pkg.psychologist.cover_image_url}
+                                  alt={`${pkg.psychologist.first_name} ${pkg.psychologist.last_name}`}
+                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                  {pkg.psychologist.first_name?.[0]}{pkg.psychologist.last_name?.[0]}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Package Details */}
+                          <div className="flex-1 flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 mb-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                                  <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    Package ({completedSessions}/{totalSessions})
+                                  </span>
+                                  <span 
+                                    className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium text-white"
+                                    style={{ backgroundColor: '#3f2e73' }}
+                                  >
+                                    {pkg.status === 'active' ? 'Active' : pkg.status}
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-gray-500">
+                                    Purchased: {new Date(pkg.purchased_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <span 
+                                  className={`inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium ${remainingSessions > 0 ? 'text-[#3f2e73] bg-purple-50 border border-purple-200' : 'text-red-600 bg-red-50 border border-red-200'} ${remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? 'mr-auto ml-4' : ''}`}
+                                >
+                                  Remaining: {remainingSessions}
+                                </span>
+                              </div>
+                              
+                              <h5 className="text-gray-900 font-semibold mb-3">
+                                {pkg.package?.name || `Package with ${pkg.psychologist?.first_name} ${pkg.psychologist?.last_name}`}
+                              </h5>
+                              
+                              <div className="space-y-1 text-sm text-gray-600 mb-2">
+                                <p>
+                                  <span className="font-medium">Total Amount:</span> ₹{pkg.total_amount}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2">
+                              {/* Show button only if: remaining sessions to book > 0, package is active, at least one session completed, AND no booked sessions exist */}
+                              {remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? (
+                                <button
+                                  onClick={() => {
+                                    const psychologist = pkg.psychologist;
+                                    if (psychologist) {
+                                      const doctorIdentifier = psychologist.id || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`
+                                        .toLowerCase()
+                                        .trim()
+                                        .replace(/[^a-z0-9]+/g, '-')
+                                        .replace(/^-+|-+$/g, '');
+                                      if (doctorIdentifier) {
+                                        router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${pkg.id}`);
+                                      }
+                                    }
+                                  }}
+                                  className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                                  style={{ backgroundColor: '#3f2e73' }}
+                                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                >
+                                  <Calendar className="h-4 w-4" />
+                                  Book Remaining Sessions
+                                </button>
+                              ) : (
+                                remainingSessions > 0 && hasUpcomingSessionsForPackage(pkg.package_id) ? (
+                                  <span className="text-gray-500 text-sm px-3 py-2 bg-gray-100 rounded-lg">
+                                    Complete booked sessions first
+                                  </span>
+                                ) : pkg.status === 'completed' ? (
+                                  <span className="text-gray-500 text-sm px-3 py-2 bg-gray-100 rounded-lg">
+                                    Package Completed
+                                  </span>
+                                ) : null
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )
+        ) : displaySessions.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-gray-900 mb-2">No {activeTab} sessions</h3>
@@ -490,6 +839,8 @@ export default function SessionsPage() {
                 ? 'You don\'t have any cancelled sessions.'
                 : activeTab === 'rescheduled'
                 ? 'You don\'t have any rescheduled sessions.'
+                : activeTab === 'pending'
+                ? 'You don\'t have any pending sessions.'
                 : 'You don\'t have any sessions yet.'}
             </p>
             <button
@@ -640,6 +991,38 @@ export default function SessionsPage() {
                                   No Show
                             </span>
                               );
+                            }
+                            // Show "Book Next Session" button ONLY for completed package sessions with remaining sessions
+                            // AND only if there are NO booked/pending sessions in the package
+                            // Must check actual session.status === 'completed' (not display status)
+                            if (session.status === 'completed' && session.package_id && session.package?.remaining_sessions > 0) {
+                              // Check if there are any booked/pending sessions in this package
+                              // If yes, don't show the button (user should complete those first)
+                              const hasBookedSessions = hasUpcomingSessionsForPackage(session.package_id);
+                              if (!hasBookedSessions) {
+                                const psychologist = session.psychologist;
+                                if (psychologist) {
+                                  const doctorIdentifier = psychologist.id || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`
+                                    .toLowerCase()
+                                    .trim()
+                                    .replace(/[^a-z0-9]+/g, '-')
+                                    .replace(/^-+|-+$/g, '');
+                                  if (doctorIdentifier) {
+                                    return (
+                                      <button
+                                        onClick={() => router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`)}
+                                        className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                                        style={{ backgroundColor: '#3f2e73' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                      >
+                                        <Calendar className="h-3 w-3" />
+                                        Book Next Session
+                                      </button>
+                                    );
+                                  }
+                                }
+                              }
                             }
                             return null;
                           })()}
@@ -845,6 +1228,38 @@ export default function SessionsPage() {
                                       No Show
                                 </span>
                                   );
+                                }
+                                // Show "Book Next Session" button ONLY for completed package sessions with remaining sessions
+                                // AND only if there are NO booked/pending sessions in the package
+                                // Must check actual session.status === 'completed' (not display status)
+                                if (session.status === 'completed' && session.package_id && session.package?.remaining_sessions > 0) {
+                                  // Check if there are any booked/pending sessions in this package
+                                  // If yes, don't show the button (user should complete those first)
+                                  const hasBookedSessions = hasUpcomingSessionsForPackage(session.package_id);
+                                  if (!hasBookedSessions) {
+                                    const psychologist = session.psychologist;
+                                    if (psychologist) {
+                                      const doctorIdentifier = psychologist.id || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`
+                                        .toLowerCase()
+                                        .trim()
+                                        .replace(/[^a-z0-9]+/g, '-')
+                                        .replace(/^-+|-+$/g, '');
+                                      if (doctorIdentifier) {
+                                        return (
+                                          <button
+                                            onClick={() => router.push(`/therapist-profile?doctor=${doctorIdentifier}&package_id=${session.package_id}`)}
+                                            className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer"
+                                            style={{ backgroundColor: '#3f2e73' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                                          >
+                                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                                            Book Next Session
+                                          </button>
+                                        );
+                                      }
+                                    }
+                                  }
                                 }
                                 return null;
                               })()}

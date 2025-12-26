@@ -92,19 +92,34 @@ export default function TherapistCarousel({ therapists = [] }) {
       <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 767px) {
           .therapist-carousel-wrapper {
-            width: 100vw !important;
-            max-width: 100vw !important;
-            margin-left: calc(50% - 50vw) !important;
-            margin-right: calc(50% - 50vw) !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
+          }
+          .therapist-cards-stack {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            overflow: visible !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .therapist-card-item {
+            width: 95% !important;
+            max-width: 95% !important;
+            flex-shrink: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
           }
         }
       `}} />
       <div
-        ref={containerRef}
-        className="overflow-x-auto no-scrollbar flex gap-4 snap-x snap-mandatory"
-        style={{ scrollSnapType: 'x mandatory', paddingLeft: '0', paddingRight: '0' }}
+        className="therapist-cards-stack"
       >
         {therapists.map((doc, idx) => {
           const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
@@ -115,18 +130,11 @@ export default function TherapistCarousel({ therapists = [] }) {
             .trim()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, ''));
-          const isFirst = idx === 0;
           return (
             <a 
               key={idx} 
               href={`/therapist-profile?doctor=${doctorIdentifier}`} 
-              className="block snap-start flex-shrink-0 w-[90%]"
-              style={{ 
-                paddingLeft: isFirst ? 'clamp(18px, 7vw, 32px)' : '0',
-                paddingRight: '0'
-              }}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
+              className="therapist-card-item block"
             >
               <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">
                 <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -189,34 +197,19 @@ export default function TherapistCarousel({ therapists = [] }) {
           );
         })}
 
-        {/* Mobile-only extra card: View more */}
+        {/* View more link under last card */}
         <a 
           href="/psychologists" 
-          className="block snap-start flex-shrink-0 w-[90%]"
-          style={{ paddingRight: 'clamp(18px, 7vw, 32px)' }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
+          className="therapist-card-item block mt-2"
         >
-          <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 shadow-sm relative" style={{ backgroundColor: '#eae5ff' }}>
-            <div className="relative z-10 h-full flex items-center justify-center">
-              <span className="relative text-gray-900 text-lg group cursor-pointer">
-                View more →
+          <div className="w-full py-4 text-center">
+            <span className="text-gray-900 text-lg font-medium group cursor-pointer inline-flex items-center gap-2">
+              View more
+              <span className="text-gray-600">→</span>
                 <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gray-900 transition-all duration-300 ease-out group-hover:w-full" />
               </span>
-            </div>
           </div>
         </a>
-      </div>
-
-      {/* Dots */}
-      <div className="flex justify-center mt-4 gap-2">
-        {therapists.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => scrollTo(i)}
-            className={`w-2 h-2 rounded-full transition-colors duration-200 ${current === i ? 'bg-gray-900' : 'bg-gray-300'}`}
-          />
-        ))}
       </div>
     </div>
   );

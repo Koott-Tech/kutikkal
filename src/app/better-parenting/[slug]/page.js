@@ -197,18 +197,19 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       <LogosStrip bgColor="bg-[#15171A]" height="py-4" logosCount={6} swapSecondThird />
       <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 767px) {
-          .therapist-heading-mobile {
-            font-size: 30px !important;
-            line-height: 0.95 !important;
+          h2.therapist-heading-mobile {
+            font-size: 24px !important;
+            line-height: 1.1 !important;
+            max-width: 100% !important;
           }
         }
       `}} />
       <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
         <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
-          <div className="mt-3 text-center px-4">
-            <h3 className="how-it-works-heading therapist-heading-mobile text-center text-2xl md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+          <div className="mt-3 text-center max-w-full mx-auto px-4">
+            <h2 className="how-it-works-heading therapist-heading-mobile text-center text-2xl md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
               {therapistsHeading}
-            </h3>
+            </h2>
           </div>
         </div>
         <TherapistCarousel therapists={displayTherapists} />

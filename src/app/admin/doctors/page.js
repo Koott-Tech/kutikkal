@@ -106,8 +106,8 @@ export default function DoctorsPage() {
     // Check authentication and role
     if (!authLoading) {
       if (!isAuthenticated()) {
-        console.log('User not authenticated, redirecting to login');
-        router.push('/login');
+        console.log('User not authenticated, redirecting to home');
+        router.push('/');
         return;
       }
       
@@ -147,8 +147,8 @@ export default function DoctorsPage() {
       
       // Check if it's an authentication error
       if (error.message && (error.message.includes('401') || error.message.includes('unauthorized') || error.message.includes('token'))) {
-        console.log('Authentication error detected, redirecting to login');
-        router.push('/login');
+        console.log('Authentication error detected, redirecting to home');
+        router.push('/');
         return;
       }
       

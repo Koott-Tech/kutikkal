@@ -5,6 +5,7 @@ import { User, Calendar, Users, FileText, Plus, Edit, Trash2, Eye, Shield, Setti
 import { doctorsApi, usersApi, bookingsApi, dashboardApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
 import UserModal from '@/components/UserModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useNotification } from '@/contexts/NotificationContext';
 
 export default function SuperAdminPage() {
@@ -34,6 +35,9 @@ export default function SuperAdminPage() {
   const [showEditBookingModal, setShowEditBookingModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   // Helper function to filter bookings by status
   const getBookingsByStatus = (status) => {
@@ -355,62 +359,101 @@ export default function SuperAdminPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+  const handleDeleteUser = (userId) => {
+    setItemToDelete(userId);
+    setConfirmAction('deleteUser');
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!itemToDelete) return;
+    
       try {
-        await usersApi.delete(userId);
-        setUsers(prev => prev.filter(user => user.id !== userId));
+      await usersApi.delete(itemToDelete);
+      setUsers(prev => prev.filter(user => user.id !== itemToDelete));
         // Refresh dashboard stats
         loadDashboardData();
+      showSuccess('User deleted successfully');
+      setItemToDelete(null);
+      setConfirmAction(null);
       } catch (error) {
         console.error('Error deleting user:', error);
         showError('Failed to delete user', 'Delete Failed');
-      }
+      setItemToDelete(null);
+      setConfirmAction(null);
     }
   };
 
-  const handleDeleteDoctor = async (doctorId) => {
+  const handleDeleteDoctor = (doctorId) => {
     if (!doctorId) {
       console.error('No doctor ID provided for deletion');
       showError('Error: No doctor ID provided', 'Invalid Request');
       return;
     }
 
-    if (window.confirm('Are you sure you want to delete this staff member?')) {
+    setItemToDelete(doctorId);
+    setConfirmAction('deleteDoctor');
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteDoctor = async () => {
+    if (!itemToDelete) return;
+
       try {
-        console.log('Attempting to delete doctor with ID:', doctorId);
+      console.log('Attempting to delete doctor with ID:', itemToDelete);
         
-        const result = await doctorsApi.delete(doctorId);
+      const result = await doctorsApi.delete(itemToDelete);
         console.log('Delete doctor result:', result);
         
-        // Remove doctor from local state
-        setUsers(prev => prev.filter(user => user.id !== doctorId));
-        setDoctors(prev => prev.filter(doctor => doctor.id !== doctorId));
+      setDoctors(prev => prev.filter(doctor => doctor.id !== itemToDelete));
         
         // Refresh dashboard data
         await loadDashboardData();
-        await loadDoctors();
         
         showSuccess('Staff member deleted successfully');
+      setItemToDelete(null);
+      setConfirmAction(null);
       } catch (error) {
         console.error('Error deleting doctor:', error);
-        
-        // Provide more specific error messages
-        let errorMessage = 'Failed to delete staff member';
-        
-        if (error.message.includes('401')) {
-          errorMessage = 'Authentication failed. Please log in again.';
-        } else if (error.message.includes('403')) {
-          errorMessage = 'Permission denied. You cannot delete this staff member.';
-        } else if (error.message.includes('404')) {
-          errorMessage = 'Staff member not found.';
-        } else if (error.message.includes('500')) {
-          errorMessage = 'Server error. Please try again later.';
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        showError(`Error: ${errorMessage}`, 'Delete Failed');
+      showError('Failed to delete staff member', 'Delete Failed');
+      setItemToDelete(null);
+      setConfirmAction(null);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (confirmAction === 'deleteUser') {
+      confirmDeleteUser();
+    } else if (confirmAction === 'deleteDoctor') {
+      confirmDeleteDoctor();
+    }
+  };
+
+  const getConfirmModalProps = () => {
+    if (confirmAction === 'deleteUser') {
+      const user = users.find(u => u.id === itemToDelete);
+      return {
+        title: 'Delete User',
+        message: `Are you sure you want to delete ${user?.name || user?.email || 'this user'}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        variant: 'danger'
+      };
+    } else if (confirmAction === 'deleteDoctor') {
+      const doctor = doctors.find(d => d.id === itemToDelete);
+      return {
+        title: 'Delete Staff Member',
+        message: `Are you sure you want to delete ${doctor?.name || doctor?.email || 'this staff member'}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        variant: 'danger'
+      };
+    }
+    return {
+      title: 'Confirm Action',
+      message: 'Are you sure you want to proceed?',
+      confirmText: 'Confirm',
+      variant: 'danger'
+    };
+  };
       }
     }
   };
@@ -1756,6 +1799,18 @@ export default function SuperAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setItemToDelete(null);
+          setConfirmAction(null);
+        }}
+        onConfirm={handleConfirm}
+        {...getConfirmModalProps()}
+      />
     </div>
   );
 }

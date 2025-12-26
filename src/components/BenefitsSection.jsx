@@ -238,6 +238,17 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
         .benefits-title-text {
           line-height: 1.2 !important;
         }
+        h3.benefits-title-text {
+          font-size: 0.875rem !important; /* text-sm - 14px */
+          margin: 0 !important;
+          padding: 0 !important;
+          font-weight: 600 !important;
+        }
+        @media (min-width: 768px) {
+          h3.benefits-title-text {
+            font-size: 1rem !important; /* text-base - 16px */
+          }
+        }
         .benefits-description-text {
           line-height: 1.2 !important;
         }
@@ -245,9 +256,9 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
       <div className={containerClass}>
         {/* Header */}
         <div className={headerClass}>
-          <h3 className="font-medium text-black text-xl md:text-2xl lg:text-3xl px-2 text-left md:text-center">
+          <h2 className="how-it-works-heading text-base md:text-xl lg:text-2xl px-2 text-left md:text-center" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
             {currentContent.title}
-          </h3>
+          </h2>
         </div>
 
         {/* Content Grid */}
@@ -281,12 +292,12 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p 
+                    <h3 
                       className="font-semibold text-sm md:text-base text-black mb-1 md:mb-2 leading-tight benefits-title-text"
                       style={{ lineHeight: '1.2' }}
                     >
                       {benefit.title}
-                    </p>
+                    </h3>
                     <p 
                       className="text-xs md:text-sm text-black md:font-sans leading-tight benefits-description-text"
                       style={{ lineHeight: '1.2' }}

@@ -65,7 +65,7 @@ export default function BlogsPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated()) {
-        router.push('/login');
+        router.push('/');
         return;
       }
       

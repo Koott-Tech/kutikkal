@@ -1,5 +1,7 @@
 import "./globals.css";
 import { Suspense } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
@@ -10,13 +12,13 @@ import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata = {
-  title: "Little Care - Child Psychotherapy",
+  title: "India's Trusted Child Psychologist | Online Child Counseling",
   description:
-    "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+    "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
   openGraph: {
-    title: "Little Care - Child Psychotherapy",
+    title: "India's Trusted Child Psychologist | Online Child Counseling",
     description:
-      "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+      "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
     type: "website",
     siteName: "Little Care",
     url: "https://www.little.care",
@@ -31,9 +33,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Little Care - Child Psychotherapy",
+    title: "India's Trusted Child Psychologist | Online Child Counseling",
     description:
-      "Your Partner in Child Counseling & Parent Support. Connect with a trusted child psychologist online for quick, gentle child counseling from home.",
+      "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
     images: ["https://www.little.care/hero.png"],
   },
   robots: {
@@ -153,6 +155,8 @@ export default function RootLayout({ children }) {
             <WhatsAppWidget />
           </ConditionalProviders>
         </ErrorBoundary>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

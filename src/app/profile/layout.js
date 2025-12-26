@@ -77,7 +77,7 @@ export default function ProfileLayout({ children }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
 
   // Prefer showing full name from loaded profile or auth context; avoid flashing email

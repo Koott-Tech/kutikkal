@@ -194,7 +194,7 @@ const SecurityDashboard = () => {
     if (!authLoading) {
       if (!isAuthenticated()) {
         console.log('User not authenticated, redirecting to login');
-        router.push('/login');
+        router.push('/');
         return;
       }
       

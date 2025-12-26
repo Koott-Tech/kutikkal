@@ -193,13 +193,13 @@ export default function BlogTeaser() {
           }
         }
         @media (max-width: 767px) {
-          .blog-teaser-heading {
-            font-size: 28px;
-            font-weight: 600;
+          h3.blog-teaser-heading {
+            font-size: 24px !important;
+            font-weight: 600 !important;
             line-height: 1.1 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
           .blog-grid {
             display: flex !important;
@@ -280,10 +280,10 @@ export default function BlogTeaser() {
       `}} />
       <div className="mx-auto max-w-[1100px] px-0 md:px-0 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-12">
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left max-w-4xl md:max-w-none mx-auto md:mx-0 px-4 md:px-0">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
-                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl">
-               Parenting Tips & Child Mental Health Guidance for Everyday Life
+                 <h3 className="blog-teaser-heading mt-2 md:mt-3 mb-4 md:mb-0 break-words text-base md:text-xl lg:text-2xl max-w-full" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+               Parenting Tips & Child Mental Health<br className="hidden md:inline" /> Guidance for Everyday Life
              </h3>
            </div>
           <div className="flex justify-center md:justify-end md:self-start md:pt-8">

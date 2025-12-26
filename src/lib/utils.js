@@ -25,4 +25,26 @@ export const formatCurrencyINR = (value) => {
   }
 };
 
+// Format currency based on currency code (e.g., INR 200, $200)
+export const formatCurrency = (amount, currencyCode = 'INR') => {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) return '';
+  
+  const amountNum = Number(amount);
+  
+  // Format based on currency code
+  switch (currencyCode.toUpperCase()) {
+    case 'INR':
+      return `INR ${amountNum.toFixed(0)}`;
+    case 'USD':
+      return `$${amountNum.toFixed(0)}`;
+    case 'EUR':
+      return `€${amountNum.toFixed(0)}`;
+    case 'GBP':
+      return `£${amountNum.toFixed(0)}`;
+    default:
+      // For other currencies, show currency code followed by amount
+      return `${currencyCode.toUpperCase()} ${amountNum.toFixed(0)}`;
+  }
+};
+
 export { cn };

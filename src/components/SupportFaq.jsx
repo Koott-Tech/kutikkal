@@ -7,7 +7,7 @@ export default function SupportFaq() {
     {
       title: "Care that feels safe",
       body:
-        "Every child deserves a space where their feelings are seen and understood. Our child specialists create a gentle, non-judgmental environment where kids can open up freely and feel supported.",
+        "Every child deserves a space where their feelings are seen and understood. Our child psychologists create a gentle, non-judgmental environment where kids can open up freely and feel supported.",
       image: "/hero.png",
     },
     {
@@ -59,14 +59,18 @@ export default function SupportFaq() {
     const nextSrc = resolvedSrcByIndex[active] || (items[active]?.image || '/ourpromise1.webp');
     if (nextSrc !== currentSrc) {
       setPrevSrc(currentSrc);
-      setCurrentSrc(nextSrc);
       setIsImageTransitioning(true);
-      // Ensure smooth crossfade timing
-      const t = setTimeout(() => {
+      // Small delay to ensure previous image is set before starting fade
+      const delayTimer = setTimeout(() => {
+        setCurrentSrc(nextSrc);
+        // Complete transition after fade duration (increased to 1200ms for slower transition)
+        const transitionTimer = setTimeout(() => {
         setIsImageTransitioning(false);
         setPrevSrc(null);
-      }, 700);
-      return () => clearTimeout(t);
+        }, 1200);
+        return () => clearTimeout(transitionTimer);
+      }, 50);
+      return () => clearTimeout(delayTimer);
     }
   }, [active, currentSrc, items, resolvedSrcByIndex]);
 
@@ -157,13 +161,13 @@ export default function SupportFaq() {
             font-size: 13px;
             line-height: 1.4;
           }
-          .our-promise-title {
-            font-size: 28px;
-            font-weight: 600;
+          h2.our-promise-title {
+            font-size: 24px !important;
+            font-weight: 600 !important;
             line-height: 1.1 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
         }
         /* Override h3 FAQ titles for desktop to match original h6 size */
@@ -213,9 +217,11 @@ export default function SupportFaq() {
       `}</style>
       <div className="w-full mx-auto max-w-[1400px] px-3 sm:px-8 md:px-[50px]">
         <p className="text-center md:text-center text-sm md:text-base lg:text-lg font-normal text-gray-700 leading-tight mt-4 md:mt-6">Our promise</p>
-        <h2 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-        Supporting You and Your Little One With Compassionate Child Counseling
+        <div className="max-w-full md:max-w-4xl mx-auto px-4">
+        <h2 className="our-promise-title text-center md:text-center mt-4 md:mt-2 mb-8 md:mb-16 text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+        Supporting You and Your Little One With Expert Child Counseling
         </h2>
+        </div>
 
         {/* Desktop Layout: Image on left (55%), FAQ on right (45%) */}
         <div className="hidden xl:grid grid-cols-[55fr_45fr] gap-16 xl:gap-20 our-promise-grid " style={{ height: '600px' }}>
@@ -224,54 +230,102 @@ export default function SupportFaq() {
               {prevSrc && (
               <img
                   src={prevSrc}
-                  alt="Previous illustration of Little Care’s child counseling promise"
-                  className={`absolute inset-0 w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                  alt="Previous illustration of Little Care's child counseling promise"
+                  className={`absolute inset-0 w-full h-full object-contain rounded-[10px] transition-opacity duration-[1200ms] ease-in-out z-10 ${isImageTransitioning ? 'opacity-0' : 'opacity-100'}`}
                   style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
                 />
               )}
               <img
                 src={currentSrc}
-                alt="Illustration highlighting Little Care’s child counseling promise"
-                className={`relative w-full h-full object-contain rounded-[10px] transition-opacity duration-[900ms] ease-in-out ${isImageTransitioning ? 'opacity-100' : 'opacity-100'}`}
+                alt="Illustration highlighting Little Care's child counseling promise"
+                className={`relative w-full h-full object-contain rounded-[10px] transition-opacity duration-[1200ms] ease-in-out z-20 ${isImageTransitioning ? 'opacity-100' : 'opacity-100'}`}
                 style={{ width: '100%', height: '500px', objectFit: 'contain', borderRadius: '10px' }}
               />
             </div>
 
           {/* Right: FAQ Accordion */}
           <div className="w-full" style={{ height: '500px' }}>
-            <div className="rounded-2xl bg-white space-y-2 h-full max-h-full overflow-y-auto pr-2 shadow-none">
+            <div className="rounded-2xl bg-white space-y-0 h-full max-h-full overflow-y-auto pr-2 shadow-none" style={{ padding: '4px' }}>
               {items.map((item, idx) => {
                 const open = active === idx;
                 const gradient = gradients[idx % gradients.length];
                 return (
-                  <div key={item.title}>
-                    <div className={`relative overflow-hidden hover:bg-white hover:shadow-none pb-2 ${idx < items.length - 1 && !open ? 'border-b border-gray-200 pb-4 rounded-none' : 'rounded-2xl'}`}>
+                  <div key={item.title} className={open ? 'my-1' : ''}>
+                    <div className={`relative overflow-hidden hover:bg-white hover:shadow-none pb-1 ${idx < items.length - 1 && !open && active !== idx + 1 ? 'border-b border-gray-200 pb-2 rounded-none' : 'rounded-2xl'}`}>
                     {/* Background image for first FAQ when open */}
                     {idx === 0 && open && (
                       <div
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
-                        style={{ backgroundImage: "url('/faq1.png')" }}
+                        className="absolute inset-0 bg-no-repeat rounded-2xl"
+                        style={{ 
+                          backgroundImage: "url('/faq1.png')",
+                          backgroundSize: '200%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '16px'
+                        }}
                       />
                     )}
                     {/* Background image for second FAQ when open */}
                     {idx === 1 && open && (
                       <div
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
-                        style={{ backgroundImage: "url('/6.png')" }}
+                        className="absolute inset-0 bg-no-repeat rounded-2xl"
+                        style={{ 
+                          backgroundImage: "url('/6.png')",
+                          backgroundSize: '140%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '16px'
+                        }}
                       />
                     )}
                     {/* Background image for third FAQ when open */}
                     {idx === 2 && open && (
                       <div
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
-                        style={{ backgroundImage: "url('/7.png')" }}
+                        className="absolute inset-0 bg-no-repeat rounded-2xl"
+                        style={{ 
+                          backgroundImage: "url('/7.png')",
+                          backgroundSize: '140%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '16px'
+                        }}
                       />
                     )}
                     {/* Background image for fourth FAQ when open */}
                     {idx === 3 && open && (
                       <div
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-150"
-                        style={{ backgroundImage: "url('/8.png')" }}
+                        className="absolute inset-0 bg-no-repeat rounded-2xl"
+                        style={{ 
+                          backgroundImage: "url('/8.png')",
+                          backgroundSize: '140%',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '16px'
+                        }}
                       />
                     )}
 
@@ -320,12 +374,12 @@ export default function SupportFaq() {
 
         {/* Mobile/Tablet Layout: FAQ centered with image below when opened */}
         <div className="xl:hidden">
-          <div className="rounded-2xl bg-white space-y-2">
+          <div className="rounded-2xl bg-white space-y-0">
             {items.map((item, idx) => {
               const open = active === idx;
               const gradient = gradients[idx % gradients.length];
               return (
-                <div key={item.title} className={`relative overflow-hidden pb-2 ${idx < items.length - 1 && !open ? 'border-b border-gray-200 pb-4 rounded-none' : 'rounded-2xl'}`}>
+                <div key={item.title} className={`relative overflow-hidden pb-1 ${idx < items.length - 1 && !open && active !== idx + 1 ? 'border-b border-gray-200 pb-2 rounded-none' : 'rounded-2xl'}`}>
                   {open && (
                     <div
                       className="absolute inset-0 z-0"

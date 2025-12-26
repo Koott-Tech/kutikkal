@@ -39,6 +39,15 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
     status: 'draft',
     menu_order: 0,
     seo_title: '',
+    seo_description: '',
+    seo_keywords: '',
+    og_title: '',
+    og_description: '',
+    og_image: '',
+    canonical_url: '',
+    robots: 'index,follow',
+    schema_enabled: true,
+    schema_service_type: '',
     hero_title: '',
     hero_subtext: '',
     hero_cta_text: '',
@@ -80,6 +89,15 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
         status: initialData.status || 'draft',
         menu_order: initialData.menu_order || 0,
         seo_title: initialData.seo_title || '',
+        seo_description: initialData.seo_description || '',
+        seo_keywords: initialData.seo_keywords || '',
+        og_title: initialData.og_title || '',
+        og_description: initialData.og_description || '',
+        og_image: initialData.og_image || '',
+        canonical_url: initialData.canonical_url || '',
+        robots: initialData.robots || 'index,follow',
+        schema_enabled: initialData.schema_enabled !== false,
+        schema_service_type: initialData.schema_service_type || '',
         hero_title: initialData.hero_title || '',
         hero_subtext: initialData.hero_subtext || '',
         hero_cta_text: initialData.hero_cta_text || '',
@@ -536,13 +554,173 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
         );
       case 'seo':
         return (
-          <div className="space-y-4">
-            <h3 className="text-base md:text-lg font-semibold">SEO Settings</h3>
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Page Title (Meta Title)</label>
-              <input type="text" value={formData.seo_title} onChange={(e) => handleInputChange('seo_title', e.target.value)} maxLength={60} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <h3 className="text-lg font-semibold mb-4">SEO Settings</h3>
+              <p className="text-sm text-gray-600 mb-4">Optimize your page for search engines and social media sharing</p>
             </div>
-            <div className="pt-2 border-t">
+
+            {/* Basic SEO */}
+            <div className="border-b pb-4">
+              <h4 className="text-md font-medium mb-3 text-gray-800">📊 Basic SEO</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Page Title (Meta Title)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.seo_title}
+                    onChange={(e) => handleInputChange('seo_title', e.target.value)}
+                    placeholder="e.g., Better Parenting Support - Little Care"
+                    maxLength={60}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{formData.seo_title?.length || 0}/60 characters (optimal: 50-60)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Meta Description
+                  </label>
+                  <textarea
+                    value={formData.seo_description || ''}
+                    onChange={(e) => handleInputChange('seo_description', e.target.value)}
+                    placeholder="Brief description that appears in search results..."
+                    maxLength={160}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{formData.seo_description?.length || 0}/160 characters (optimal: 150-160)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Focus Keywords (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.seo_keywords || ''}
+                    onChange={(e) => handleInputChange('seo_keywords', e.target.value)}
+                    placeholder="e.g., parenting support, child behavior, family counseling"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Main keywords for this page (3-5 recommended)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Open Graph / Social Media */}
+            <div className="border-b pb-4">
+              <h4 className="text-md font-medium mb-3 text-gray-800">📱 Social Media Preview (Open Graph)</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Social Media Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.og_title || ''}
+                    onChange={(e) => handleInputChange('og_title', e.target.value)}
+                    placeholder="Leave empty to use SEO Title"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Title when shared on Facebook, LinkedIn, etc.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Social Media Description
+                  </label>
+                  <textarea
+                    value={formData.og_description || ''}
+                    onChange={(e) => handleInputChange('og_description', e.target.value)}
+                    placeholder="Leave empty to use Meta Description"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Social Media Image URL
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.og_image || ''}
+                    onChange={(e) => handleInputChange('og_image', e.target.value)}
+                    placeholder="https://example.com/image.jpg (1200x630px recommended)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Image shown when shared on social media (1200x630px optimal)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced SEO */}
+            <div className="border-b pb-4">
+              <h4 className="text-md font-medium mb-3 text-gray-800">🎯 Advanced SEO</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Canonical URL (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.canonical_url || ''}
+                    onChange={(e) => handleInputChange('canonical_url', e.target.value)}
+                    placeholder="Leave empty for default"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Prevent duplicate content issues</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Robots Meta Tag
+                  </label>
+                  <select
+                    value={formData.robots || 'index,follow'}
+                    onChange={(e) => handleInputChange('robots', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="index,follow">Index, Follow (Default - Allow search engines)</option>
+                    <option value="noindex,follow">Noindex, Follow (Don't index, but follow links)</option>
+                    <option value="index,nofollow">Index, Nofollow (Index, but don't follow links)</option>
+                    <option value="noindex,nofollow">Noindex, Nofollow (Don't index or follow)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Control how search engines crawl this page</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Structured Data */}
+            <div>
+              <h4 className="text-md font-medium mb-3 text-gray-800">🏗️ Structured Data (Schema.org)</h4>
+              <div className="space-y-3">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.schema_enabled !== false}
+                    onChange={(e) => handleInputChange('schema_enabled', e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">Enable Medical Service Schema</span>
+                </label>
+                <p className="text-xs text-gray-500">Helps Google understand this is a mental health service</p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Service Type
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.schema_service_type || ''}
+                    onChange={(e) => handleInputChange('schema_service_type', e.target.value)}
+                    placeholder="e.g., Parenting Counseling, Family Therapy"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Specific service type for schema markup</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Blog Teaser */}
+            <div className="pt-4 border-t">
               <h4 className="text-sm font-medium text-gray-800 mb-2">Blog Teaser</h4>
               <label className="flex items-center space-x-2 mb-2">
                 <input type="checkbox" checked={!!formData.blog_teaser_enabled} onChange={(e)=>handleInputChange('blog_teaser_enabled', e.target.checked)} className="rounded border-gray-300" />
@@ -663,10 +841,10 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
           {renderEditableElement('therapists', (
             <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
               <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
-                <div className="mt-3 text-center md:text-center px-4">
-                  <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+                <div className="mt-3 mb-8 md:mb-6 text-center md:text-center max-w-full md:max-w-4xl mx-auto px-4">
+                  <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
                     {formData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
-                  </h3>
+                  </h2>
                 </div>
               </div>
               <TherapistCarousel therapists={removeAssessmentSpecialist(therapists)} />

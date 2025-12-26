@@ -109,10 +109,10 @@ export default function Hero() {
               </div>
               
               <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
-                Your Partner in <br /> Child Counseling <br /> & Parent Support
+                Your Partner in <br /> Child Counseling <br /> & Parenting Support
               </h1>
               <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
-                 Connect with a trusted child psychologist online for quick, gentle child counseling from home.
+                 Connect with a trusted child psychologist online for gentle, child-friendly counselling from the comfort of your home, helping your child feel safe, supported, and understood without the stress of travel.
               </p>
               <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                 <button

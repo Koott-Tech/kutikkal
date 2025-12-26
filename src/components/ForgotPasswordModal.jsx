@@ -3,6 +3,7 @@ import { useState } from "react";
 import { X, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { authApi } from "../lib/backendApi";
 import { useNotification } from "../contexts/NotificationContext";
+import { validatePassword } from "../utils/passwordValidation";
 
 export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) {
   const [step, setStep] = useState(1); // 1: email, 2: OTP, 3: success
@@ -12,6 +13,9 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({ valid: false, unmetRequirements: [] });
   const { showError, showSuccess } = useNotification();
 
   const handleSendOTP = async (e) => {
@@ -51,8 +55,10 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
       return;
     }
     
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters long");
+    // Validate password using password policy
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) {
+      setError(`Password requirements not met: ${validation.unmetRequirements.join(', ')}`);
       return;
     }
     
@@ -85,6 +91,9 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
     setNewPassword("");
     setConfirmPassword("");
     setError("");
+    setPasswordValidation({ valid: false, unmetRequirements: [] });
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     onClose();
   };
 
@@ -94,6 +103,9 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
     setNewPassword("");
     setConfirmPassword("");
     setError("");
+    setPasswordValidation({ valid: false, unmetRequirements: [] });
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   if (!isOpen) return null;
@@ -221,28 +233,62 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter new password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => {
+                      const newPwd = e.target.value;
+                      setNewPassword(newPwd);
+                      // Validate password on change
+                      const validation = validatePassword(newPwd);
+                      setPasswordValidation(validation);
+                    }}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                  >
+                    {showNewPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
+                {newPassword && !passwordValidation.valid && (
+                  <div className="mt-2 text-xs text-gray-600">
+                    <p className="font-medium mb-1">Password must include:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
+                      {passwordValidation.unmetRequirements.map((req, idx) => (
+                        <li key={idx} className="text-red-600">{req}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Confirm new password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Confirm new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
 
               {error && (
@@ -262,7 +308,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }) 
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !passwordValidation.valid || newPassword !== confirmPassword}
                   className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Resetting..." : "Reset Password"}

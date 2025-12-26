@@ -119,6 +119,19 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
   return (
     <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0" style={{ marginBottom: '120px' }}>
       <style jsx>{`
+        .therapy-types-list h3 {
+          font-size: 0.875rem !important; /* text-sm - 14px */
+          margin: 0 !important;
+          padding: 0 !important;
+          font-weight: 600 !important;
+          margin-bottom: 0.5rem !important;
+        }
+        @media (min-width: 1024px) {
+          .therapy-types-list h3 {
+            font-size: 1.125rem !important; /* text-lg - 18px */
+            margin-bottom: 0.75rem !important;
+          }
+        }
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
           .therapy-types-section {
             padding-left: 24px !important;
@@ -168,23 +181,25 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
             className="therapy-types-content-area flex flex-col justify-start px-0 pt-10 pb-0 lg:py-20 text-[#1c331d] order-1 lg:order-1 relative bg-[#DEEFDC]"
           >
             <div className="therapy-types-content px-6 sm:px-8 lg:px-[120px]">
-            <h3 
-              className="mb-2"
+            <h2 
+              className="how-it-works-heading text-base md:text-xl lg:text-2xl mb-2"
               style={{
                 color: '#15171a',
-                fontWeight: 500,
+                fontSize: '24px',
+                fontWeight: 600,
+                lineHeight: '1.1',
                 marginBottom: '0.5rem'
               }}
             >
               {currentContent.title}
-            </h3>
+            </h2>
            
             <div className="therapy-types-list mt-8 lg:mt-12 space-y-6 lg:space-y-8">
               {currentContent.types.map((type, index) => (
                 <div key={index}>
-                  <p className="font-semibold text-sm lg:text-lg mb-2 lg:mb-3">
+                  <h3 className="font-semibold text-sm lg:text-lg mb-2 lg:mb-3">
                     {type.title}
-                  </p>
+                  </h3>
                   <p className="leading-relaxed font-normal text-xs lg:text-base">
                     {type.description}
                   </p>

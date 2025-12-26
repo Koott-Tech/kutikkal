@@ -18,13 +18,13 @@ export default function PersonalizedCare() {
             margin-top: 64px !important;
             margin-bottom: 64px !important;
           }
-          .personalized-care-heading {
-            font-size: 28px;
-            font-weight: 600;
-            line-height: 0.95;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+          h2.personalized-care-heading {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
           .personalized-care-description {
             line-height: 1.2 !important;
@@ -161,9 +161,9 @@ export default function PersonalizedCare() {
       `}</style>
       <div className="w-full px-4 sm:px-6 md:px-0 personalized-care-content" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
         {/* Header Section */}
-        <div className="text-center px-4 personalized-care-header" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
-          <h2 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontWeight: 500, marginTop: 0, marginBottom: 0 }}>
-            The care your child needs, whenever you need it
+        <div className="text-center max-w-4xl mx-auto px-4 personalized-care-header" style={{ marginTop: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}>
+          <h2 className="personalized-care-heading mb-0 mx-auto text-lg md:text-2xl lg:text-3xl" style={{ fontSize: '24px', fontWeight: 600, marginTop: 0, marginBottom: 0, lineHeight: '1.1' }}>
+            The care your child needs,<br className="hidden md:inline" /> whenever you need it
           </h2>
           <p className="p1 text-sm md:text-base lg:text-lg max-w-3xl mx-auto personalized-care-description" style={{ marginTop: '12px', marginBottom: 0, paddingBottom: 0, paddingTop: 0 }}>
             Wherever you are, Little Care offers a safe space with trusted child psychologists and gentle child counseling whenever you need it.

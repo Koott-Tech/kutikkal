@@ -9,6 +9,7 @@ import backendApi from '../../lib/backendApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { loadAuthData } from '../../lib/authStorage';
+import { formatCurrency } from '../../lib/utils';
 // import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation'; // Removed - contact details collected during signup
 // import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
@@ -238,6 +239,22 @@ const TherapistProfileContent = () => {
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  
+  // Package booking success modal state
+  const [showPackageBookingSuccess, setShowPackageBookingSuccess] = useState(false);
+  const [packageBookingInfo, setPackageBookingInfo] = useState(null);
+
+  // Auto-redirect to sessions page after showing package booking success modal
+  useEffect(() => {
+    if (showPackageBookingSuccess && packageBookingInfo) {
+      const timer = setTimeout(() => {
+        setShowPackageBookingSuccess(false);
+        router.push('/profile/sessions');
+      }, 4000); // Redirect after 4 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [showPackageBookingSuccess, packageBookingInfo, router]);
 
   // Share tooltip state
   const [showShareTooltip, setShowShareTooltip] = useState(false);
@@ -811,6 +828,12 @@ const TherapistProfileContent = () => {
   };
 
   const handleBookSession = async () => {
+    // Prevent duplicate calls while booking is in progress
+    if (isBooking) {
+      console.log('⚠️ Booking already in progress, ignoring duplicate call');
+      return;
+    }
+
     console.log('🎯 handleBookSession called', {
       isAuthenticated: isAuthenticated(),
       hasRole: hasRole('client'),
@@ -1358,17 +1381,19 @@ const TherapistProfileContent = () => {
       const response = await clientApi.bookRemainingSession(bookingData);
 
       if (response.success) {
-        setBookingSuccess(true);
+        // Store package info for the success popup
+        if (response.data?.packageInfo) {
+          setPackageBookingInfo(response.data.packageInfo);
+          setShowPackageBookingSuccess(true);
+        } else {
+          // Fallback to regular success message if packageInfo is not available
+          setBookingSuccess(true);
+          setTimeout(() => setBookingSuccess(false), 5000);
+        }
+        
         // Reset selections
         setSelectedDate(null);
         setSelectedTime(null);
-        // Show success message
-        setTimeout(() => setBookingSuccess(false), 5000);
-        
-        // Refresh client package data
-        // The original code had a fetchClientPackage function, but it's not defined.
-        // Assuming it would refetch packages or availability if needed.
-        // For now, we'll just show a success message.
       } else {
         showError(`Booking failed: ${response.message || 'Unknown error'}`, 'Booking Error');
       }
@@ -2233,7 +2258,7 @@ const TherapistProfileContent = () => {
                           {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
                         </p>
                         <p className="mt-1 text-[#3f2e73] font-medium">
-                          Total paid: ${clientPackage.amount_paid}
+                          Total paid: {formatCurrency(clientPackage.amount_paid, clientPackage.currency)}
                         </p>
                       </div>
                     </div>
@@ -2633,6 +2658,176 @@ const TherapistProfileContent = () => {
       )}
 
       {/* Quick contact modal removed - contact details collected during signup */}
+
+      {/* Package Booking Success Modal */}
+      <AnimatePresence>
+        {showPackageBookingSuccess && packageBookingInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+            onClick={() => {
+              setShowPackageBookingSuccess(false);
+              router.push('/profile/sessions');
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '16px',
+                padding: '32px',
+                maxWidth: '500px',
+                width: '100%',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                position: 'relative'
+              }}
+            >
+              {/* Success Icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 24px'
+                }}
+              >
+                <motion.svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <motion.path
+                    d="M5 13l4 4L19 7"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </motion.svg>
+              </motion.div>
+
+              {/* Title */}
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#1f2937',
+                  textAlign: 'center',
+                  marginBottom: '16px'
+                }}
+              >
+                Package Session Booked!
+              </h2>
+
+              {/* Package Status */}
+              <div
+                style={{
+                  backgroundColor: '#f5f1ff',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  marginBottom: '24px',
+                  textAlign: 'center'
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: '#6b7280',
+                    marginBottom: '12px'
+                  }}
+                >
+                  Package Progress
+                </p>
+                <div
+                  style={{
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    color: '#3f2e73',
+                    marginBottom: '8px'
+                  }}
+                >
+                  {packageBookingInfo.completedSessions || 0}/{packageBookingInfo.totalSessions || 0}
+                </div>
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: '#6b7280'
+                  }}
+                >
+                  {packageBookingInfo.completedSessions || 0} session{packageBookingInfo.completedSessions !== 1 ? 's' : ''} booked • {packageBookingInfo.remainingSessions || 0} remaining
+                </p>
+              </div>
+
+              {/* Message */}
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: '#4b5563',
+                  textAlign: 'center',
+                  marginBottom: '24px',
+                  lineHeight: '1.5'
+                }}
+              >
+                Your session has been successfully booked! You'll be redirected to your sessions page shortly.
+              </p>
+
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowPackageBookingSuccess(false);
+                  router.push('/profile/sessions');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 24px',
+                  backgroundColor: '#3f2e73',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+              >
+                View My Sessions
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -24,6 +24,7 @@ import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
 import SessionNotesModal from "../../../components/SessionNotesModal";
 import ScheduleAssessmentSessionModal from "../../../components/ScheduleAssessmentSessionModal";
+import WheelPagination from "../../../components/ui/wheel-pagination";
 // Removed RescheduleRequestPopup import - reschedule requests are handled on rescheduling page
 import { useNotification } from "../../../contexts/NotificationContext";
 
@@ -46,6 +47,8 @@ export default function PsychologistSessions() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
   const [feedbackToView, setFeedbackToView] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const sessionsPerPage = 10;
   // Removed reschedule notification state - notifications are only handled on rescheduling page
 
 
@@ -62,6 +65,8 @@ export default function PsychologistSessions() {
       // Request a high limit to ensure we get all sessions including pending ones
       const sessionsData = await psychologistApi.getSessions({ limit: 1000 });
       setSessions(sessionsData.data?.sessions || []);
+      // Reset to first page when sessions are reloaded
+      setCurrentPage(1);
     } catch (err) {
       console.error('Error loading sessions:', err);
       setError(err.message);
@@ -272,7 +277,7 @@ export default function PsychologistSessions() {
   // Include all sessions (booked, rescheduled, and pending) in upcoming sessions
   // Pending assessment sessions will also appear here, not in a separate section
   // But only include pending sessions that don't have a scheduled date/time yet (truly need scheduling)
-  const upcomingSessions = sessions.filter(s => {
+  const allUpcomingSessions = sessions.filter(s => {
     if (!isAssignedToCurrentPsychologist(s)) return false;
     if (!excludeFreeAssessment(s)) return false;
     // Include booked and rescheduled sessions
@@ -284,6 +289,28 @@ export default function PsychologistSessions() {
     }
     return false;
   });
+
+  // Sort upcoming sessions by date/time (nearest first)
+  const sortedUpcomingSessions = [...allUpcomingSessions].sort((a, b) => {
+    // Sessions without scheduled_date/time go to the end
+    if (!a.scheduled_date || !a.scheduled_time) return 1;
+    if (!b.scheduled_date || !b.scheduled_time) return -1;
+    
+    const dateA = new Date(`${a.scheduled_date}T${a.scheduled_time}`);
+    const dateB = new Date(`${b.scheduled_date}T${b.scheduled_time}`);
+    return dateA - dateB; // Ascending order (nearest first)
+  });
+
+  // Calculate pagination
+  const totalPages = Math.max(1, Math.ceil(sortedUpcomingSessions.length / sessionsPerPage));
+  const startIndex = (currentPage - 1) * sessionsPerPage;
+  const endIndex = startIndex + sessionsPerPage;
+  const upcomingSessions = sortedUpcomingSessions.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage + 1); // WheelPagination uses 0-indexed, we use 1-indexed
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const completedSessions = sessions.filter(s => s.status === 'completed' && excludeFreeAssessment(s));
   const pastSessions = sessions.filter(s => 
     (s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show') && 
@@ -338,7 +365,7 @@ export default function PsychologistSessions() {
       {/* Upcoming Sessions */}
       <div className="mt-8">
         <p className="font-medium text-gray-900 mb-4">
-          Upcoming Sessions ({upcomingSessions.length})
+          Upcoming Sessions ({sortedUpcomingSessions.length})
         </p>
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -551,6 +578,19 @@ export default function PsychologistSessions() {
               ))
             )}
           </div>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-200 px-6">
+              <WheelPagination
+                totalPages={totalPages}
+                visibleCount={7}
+                currentPage={currentPage - 1} // Convert 1-indexed to 0-indexed
+                onPageChange={handlePageChange}
+                className="bg-white"
+              />
+            </div>
+          )}
         </div>
       </div>
 

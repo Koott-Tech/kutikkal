@@ -188,13 +188,13 @@ export default function HowItWorks() {
             font-size: 13px;
             line-height: 1.3;
           }
-          .how-it-works-heading {
-            font-size: 28px;
-            font-weight: 600;
+          h2.how-it-works-heading {
+            font-size: 24px !important;
+            font-weight: 600 !important;
             line-height: 1.1 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
           .how-it-works-slide-number {
             display: none !important;
@@ -353,9 +353,9 @@ export default function HowItWorks() {
         </p>
 
         {/* Inline CTA under the heading */}
-        <div className="mt-3 mb-8 md:mb-6 text-center md:text-center px-4">
-          <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
-          Start Your Child's Therapy Journey Towards a<br /> Happier, Calmer Home
+        <div className="mt-3 mb-8 md:mb-6 text-center md:text-center max-w-full md:max-w-4xl mx-auto px-4">
+          <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+          Start Your Child's Therapy Journey Towards a Happier, Calmer Home
           </h2>
           <button
             type="button"
@@ -518,7 +518,7 @@ export default function HowItWorks() {
             <div className="flex justify-center items-center mt-4 px-4 gap-4">
               <button
                 onClick={prevSlide}
-                className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                className="p-2 rounded-full bg-white border border-gray-300 transition-shadow"
               >
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -531,7 +531,7 @@ export default function HowItWorks() {
               
               <button
                 onClick={nextSlide}
-                className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow"
+                className="p-2 rounded-full bg-white border border-gray-300 transition-shadow"
               >
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

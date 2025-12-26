@@ -293,7 +293,7 @@ export default function ConsultationBanner() {
               </h4>
               
               <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px', marginTop: '0px' }}>
-               Book a free 20 minutes  session<br className="md:hidden" /> with our psychologist.
+               Book a free 20 minutes  session<br className="md:hidden" /> with our child psychologist.
               </p>
               
               <div className="flex items-center gap-1" style={{ marginTop: '16px' }}>

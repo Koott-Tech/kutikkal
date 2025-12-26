@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/backendApi";
+import { validatePassword } from "@/utils/passwordValidation";
 // import { isClientContactComplete } from "@/lib/contactValidation"; // Removed - contact details collected during signup
 // import GoogleSignIn from "@/components/GoogleSignIn"; // Commented out - users login with email/password only
 
@@ -51,6 +52,12 @@ export default function AuthModal({
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [forgotStep, setForgotStep] = useState(1);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  
+  // Password validation states
+  const [signupPasswordValidation, setSignupPasswordValidation] = useState({ valid: false, unmetRequirements: [] });
+  const [resetPasswordValidation, setResetPasswordValidation] = useState({ valid: false, unmetRequirements: [] });
 
   const closeAndReset = useCallback(() => {
     setError("");
@@ -73,6 +80,11 @@ export default function AuthModal({
       termsAccepted: false,
       therapyAgreementAccepted: false
     });
+    // Reset password validations
+    setSignupPasswordValidation({ valid: false, unmetRequirements: [] });
+    setResetPasswordValidation({ valid: false, unmetRequirements: [] });
+    setShowNewPassword(false);
+    setShowConfirmNewPassword(false);
   }, [onClose]);
 
   useEffect(() => {
@@ -139,6 +151,9 @@ export default function AuthModal({
         setOtp("");
         setNewPassword("");
         setConfirmNewPassword("");
+        setResetPasswordValidation({ valid: false, unmetRequirements: [] });
+        setShowNewPassword(false);
+        setShowConfirmNewPassword(false);
         setRememberMe(false);
         // Reset signup form
         setSignup({ 
@@ -152,6 +167,7 @@ export default function AuthModal({
           termsAccepted: false,
           therapyAgreementAccepted: false
         });
+        setSignupPasswordValidation({ valid: false, unmetRequirements: [] });
         setShowEmailExistsMessage(false);
         // Don't call onClose here - parent (therapist-profile page) will handle closing and booking
       } else {
@@ -204,8 +220,10 @@ export default function AuthModal({
       return;
     }
     
-    if ((signup.password || "").length < 6) {
-      setError("Password must be at least 6 characters long");
+    // Validate password using password policy
+    const passwordValidation = validatePassword(signup.password);
+    if (!passwordValidation.valid) {
+      setError(`Password requirements not met: ${passwordValidation.unmetRequirements.join(', ')}`);
       setIsLoading(false);
       return;
     }
@@ -286,6 +304,9 @@ export default function AuthModal({
         setOtp("");
         setNewPassword("");
         setConfirmNewPassword("");
+        setResetPasswordValidation({ valid: false, unmetRequirements: [] });
+        setShowNewPassword(false);
+        setShowConfirmNewPassword(false);
         setRememberMe(false);
         // Reset signup form
         setSignup({ 
@@ -299,6 +320,7 @@ export default function AuthModal({
           termsAccepted: false,
           therapyAgreementAccepted: false
         });
+        setSignupPasswordValidation({ valid: false, unmetRequirements: [] });
         setShowEmailExistsMessage(false);
         // Don't call onClose here - parent (therapist-profile page) will handle closing and booking
       } else {
@@ -380,7 +402,12 @@ export default function AuthModal({
     e?.preventDefault?.();
     if (!otp?.trim()) return setError("Please enter the OTP");
     if (!newPassword?.trim()) return setError("Please enter a new password");
-    if (newPassword.length < 6) return setError("Password must be at least 6 characters long");
+    // Validate password using password policy
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      setError(`Password requirements not met: ${passwordValidation.unmetRequirements.join(', ')}`);
+      return;
+    }
     if (newPassword !== confirmNewPassword) return setError("Passwords do not match");
     setIsLoading(true);
     setError("");
@@ -468,14 +495,62 @@ export default function AuthModal({
                   <input type="text" value={otp} onChange={(e)=>setOtp(e.target.value)} maxLength={6} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="OTP code (6 digits)" />
                 </div>
                 <div>
-                  <input type="password" value={newPassword} onChange={(e)=>setNewPassword(e.target.value)} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="New password" />
+                  <div className="relative">
+                    <input 
+                      type={showNewPassword ? 'text' : 'password'} 
+                      value={newPassword} 
+                      onChange={(e) => {
+                        const newPwd = e.target.value;
+                        setNewPassword(newPwd);
+                        // Validate password on change
+                        const validation = validatePassword(newPwd);
+                        setResetPasswordValidation(validation);
+                      }} 
+                      required 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="New password" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNewPassword(!showNewPassword)} 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                    >
+                      {showNewPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
+                  {newPassword && !resetPasswordValidation.valid && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      <p className="font-medium mb-1">Password must include:</p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        {resetPasswordValidation.unmetRequirements.map((req, idx) => (
+                          <li key={idx} className="text-red-600">{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <input type="password" value={confirmNewPassword} onChange={(e)=>setConfirmNewPassword(e.target.value)} required className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" placeholder="Confirm new password" />
+                  <div className="relative">
+                    <input 
+                      type={showConfirmNewPassword ? 'text' : 'password'} 
+                      value={confirmNewPassword} 
+                      onChange={(e)=>setConfirmNewPassword(e.target.value)} 
+                      required 
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                      placeholder="Confirm new password" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)} 
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                    >
+                      {showConfirmNewPassword ? '🙈' : '👁️'}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <button type="button" onClick={()=>{ setForgotStep(1); setOtp(""); setNewPassword(""); setConfirmNewPassword(""); setError(""); }} className="flex-1 rounded-md border px-3 py-2 text-sm">Back</button>
-                  <button type="submit" disabled={isLoading} className="flex-1 rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isLoading ? 'Resetting…' : 'Reset Password'}</button>
+                  <button type="button" onClick={()=>{ setForgotStep(1); setOtp(""); setNewPassword(""); setConfirmNewPassword(""); setError(""); setResetPasswordValidation({ valid: false, unmetRequirements: [] }); setShowNewPassword(false); setShowConfirmNewPassword(false); }} className="flex-1 rounded-md border px-3 py-2 text-sm">Back</button>
+                  <button type="submit" disabled={isLoading || !resetPasswordValidation.valid || newPassword !== confirmNewPassword} className="flex-1 rounded-md bg-[#3f2e73] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60">{isLoading ? 'Resetting…' : 'Reset Password'}</button>
                 </div>
               </form>
             )
@@ -662,22 +737,40 @@ export default function AuthModal({
                     />
                   </div>
                   
-                  <div className="relative">
-                    <input 
-                      type={signupShowPassword ? 'text':'password'} 
-                      value={signup.password} 
-                      onChange={(e)=>setSignup(s=>({...s, password: e.target.value}))} 
-                      required 
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
-                      placeholder="Password (min 6 characters) *" 
-                    />
-                    <button 
-                      type="button" 
-                      onClick={()=>setSignupShowPassword(!signupShowPassword)} 
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
-                    >
-                      {signupShowPassword ? '🙈' : '👁️'}
-                    </button>
+                  <div>
+                    <div className="relative">
+                      <input 
+                        type={signupShowPassword ? 'text':'password'} 
+                        value={signup.password} 
+                        onChange={(e) => {
+                          const newPassword = e.target.value;
+                          setSignup(s => ({ ...s, password: newPassword }));
+                          // Validate password on change
+                          const validation = validatePassword(newPassword);
+                          setSignupPasswordValidation(validation);
+                        }} 
+                        required 
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
+                        placeholder="Password *" 
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setSignupShowPassword(!signupShowPassword)} 
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm hover:text-gray-700"
+                      >
+                        {signupShowPassword ? '🙈' : '👁️'}
+                      </button>
+                    </div>
+                    {signup.password && !signupPasswordValidation.valid && (
+                      <div className="mt-2 text-xs text-gray-600">
+                        <p className="font-medium mb-1">Password must include:</p>
+                        <ul className="list-disc list-inside space-y-0.5">
+                          {signupPasswordValidation.unmetRequirements.map((req, idx) => (
+                            <li key={idx} className="text-red-600">{req}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -713,7 +806,7 @@ export default function AuthModal({
                       !signup.phoneNumber?.trim() || 
                       !signup.email?.trim() || 
                       !signup.password || 
-                      signup.password.length < 6 ||
+                      !signupPasswordValidation.valid ||
                       !signup.termsAccepted || 
                       !signup.therapyAgreementAccepted
                     } 

@@ -80,13 +80,13 @@ export default function ChooseOptions() {
             bottom: 75px !important;
             left: 20px !important;
           }
-          .choose-options-heading {
+          h2.choose-options-heading {
             font-size: 24px !important;
             font-weight: 600 !important;
-            line-height: 0.95 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            line-height: 1.1 !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
         }
         @media (min-width: 480px) and (max-width: 599px) {
@@ -109,13 +109,13 @@ export default function ChooseOptions() {
             bottom: 85px !important;
             left: 22px !important;
           }
-          .choose-options-heading {
-            font-size: 26px !important;
+          h2.choose-options-heading {
+            font-size: 24px !important;
             font-weight: 600 !important;
-            line-height: 0.95 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            line-height: 1.1 !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
         }
         @media (min-width: 600px) and (max-width: 767px) {
@@ -138,16 +138,19 @@ export default function ChooseOptions() {
             bottom: 95px !important;
             left: 24px !important;
           }
-          .choose-options-heading {
-            font-size: 28px !important;
+          h2.choose-options-heading {
+            font-size: 24px !important;
             font-weight: 600 !important;
-            line-height: 0.95 !important;
-            text-align: left !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            line-height: 1.1 !important;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
         }
         @media (max-width: 767px) {
+          .choose-options-heading {
+            max-width: 100% !important;
+          }
           .card-content {
             padding: 20px !important;
             padding-bottom: 0 !important;
@@ -155,7 +158,7 @@ export default function ChooseOptions() {
           .card-title {
             font-size: 24px !important;
             margin-bottom: 8px !important;
-            line-height: 1.2 !important;
+            line-height: 1.1 !important;
           }
           .card-description {
             font-size: 14px !important;
@@ -193,7 +196,7 @@ export default function ChooseOptions() {
         {/* Header */}
         <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4">
           <p className="p1 text-base md:text-lg mb-2">Let us guide you.</p>
-          <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-medium">
+          <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
             Choose the Right Child Counseling Option to Get Started
           </h2>
         </div>

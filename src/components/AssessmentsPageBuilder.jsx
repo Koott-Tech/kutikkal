@@ -1325,10 +1325,10 @@ export default function AssessmentsPageBuilder({
             {renderEditableElement('therapists', (
               <div className="mx-auto max-w-4xl px-4 sm:px-6 mt-8 md:mt-12">
                 <div className="px-4 sm:px-6 mb-4 md:mb-6 text-center">
-                  <div className="mt-3 text-center md:text-center px-4">
-                    <h3 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>
+                  <div className="mt-3 mb-8 md:mb-6 text-center md:text-center max-w-full md:max-w-4xl mx-auto px-4">
+                    <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
                       {formData.therapists_heading || 'Your journey to a happier, calmer home begins here.'}
-                    </h3>
+                    </h2>
                   </div>
                 </div>
                 <TherapistCarousel therapists={therapists} />

@@ -41,7 +41,7 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated()) {
-        router.push('/login');
+        router.push('/');
         return;
       }
       
@@ -66,7 +66,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
 
   const navigation = [

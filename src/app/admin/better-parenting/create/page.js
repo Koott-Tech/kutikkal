@@ -14,7 +14,7 @@ export default function CreateBetterParentingPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (!isAuthenticated()) return router.push('/login');
+      if (!isAuthenticated()) return router.push('/');
       if (!hasRole('admin') && !hasRole('superadmin')) return router.push('/profile');
     }
   }, [authLoading]);

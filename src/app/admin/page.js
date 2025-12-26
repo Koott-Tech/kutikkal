@@ -56,8 +56,8 @@ export default function AdminDashboard() {
     // Check authentication and role
     if (!authLoading) {
       if (!isAuthenticated()) {
-        console.log('User not authenticated, redirecting to login');
-        router.push('/login');
+        console.log('User not authenticated, redirecting to home');
+        router.push('/');
         return;
       }
       

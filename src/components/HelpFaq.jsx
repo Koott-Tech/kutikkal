@@ -85,19 +85,23 @@ export default function HelpFaq({ cmsData = null }) {
           }
           /* Override h2 FAQ questions to match original span size */
           .help-faq-question {
-            font-size: 12px !important;
+            font-size: 14px !important;
             line-height: 1.2 !important;
             margin: 0 !important;
             font-weight: 400 !important;
           }
           /* Force smaller answer text on mobile */
           .faq-answer {
-            font-size: 11px !important;
+            font-size: 13px !important;
             line-height: 1.4 !important;
           }
           /* Reduce margin-bottom for last FAQ section in mobile */
           .faq-section:last-child {
             margin-bottom: 1rem !important;
+          }
+          /* Reduce space above "Understanding assessments" section on mobile */
+          .faq-section:not(:first-child) {
+            margin-top: 0.5rem !important;
           }
           /* Ensure parent container aligns content to left */
           .help-faq-left-column {

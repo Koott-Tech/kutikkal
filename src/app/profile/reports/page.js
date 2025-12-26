@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi } from "../../../lib/backendApi";
 import { FileText, X, BarChart3 } from "lucide-react";
+import WheelPagination from "../../../components/ui/wheel-pagination";
 
 export default function ReportsPage() {
   const { user } = useAuth();
@@ -12,6 +13,9 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalSessions, setTotalSessions] = useState(0);
 
   // Helper function to conditionally apply hover handlers only on desktop
   const getHoverHandlers = () => {
@@ -45,13 +49,22 @@ export default function ReportsPage() {
 
   useEffect(() => {
     loadSessions();
-  }, []);
+  }, [currentPage]);
 
   const loadSessions = async () => {
     try {
       setIsLoading(true);
-      const sessionsData = await clientApi.getSessions();
-      setSessions(sessionsData.data?.sessions || []);
+      // Fetch only completed sessions for reports page with pagination
+      const sessionsData = await clientApi.getSessions({ 
+        status: 'completed',
+        page: currentPage,
+        limit: 5
+      });
+      const sessionsList = sessionsData.data?.sessions || [];
+      const pagination = sessionsData.data?.pagination || {};
+      setSessions(sessionsList);
+      setTotalPages(Math.max(1, Math.ceil((pagination.total || 0) / 5)));
+      setTotalSessions(pagination.total || 0);
     } catch (err) {
       console.error('Error loading sessions:', err);
     } finally {
@@ -59,9 +72,30 @@ export default function ReportsPage() {
     }
   };
 
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const getSummary = (session) => session?.summary || session?.session_summary || '';
-  const getReport = (session) => session?.report || session?.session_report || '';
-  const getSummaryNotes = (session) => session?.summary_notes || session?.session_notes || '';
+  const getReport = (session) => {
+    // Report might be in session_notes with a separator, or in a separate field
+    const sessionNotes = session?.summary_notes || session?.session_notes || '';
+    if (sessionNotes.includes('--- Report ---')) {
+      const parts = sessionNotes.split('--- Report ---');
+      return parts.length > 1 ? parts[1].trim() : '';
+    }
+    // Check for separate report field
+    return session?.report || session?.session_report || '';
+  };
+  const getSummaryNotes = (session) => {
+    // If session_notes contains report, extract only the notes part
+    const sessionNotes = session?.summary_notes || session?.session_notes || '';
+    if (sessionNotes.includes('--- Report ---')) {
+      return sessionNotes.split('--- Report ---')[0].trim();
+    }
+    return sessionNotes;
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -122,7 +156,7 @@ export default function ReportsPage() {
           <h4 className="text-gray-900 text-lg sm:text-xl">Session Reports</h4>
         </div>
         
-        {sessions.filter(s => s.status === 'completed').length === 0 ? (
+        {sessions.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
             <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
             <h5 className="text-gray-900 mb-2 text-base sm:text-lg">No reports available</h5>
@@ -130,9 +164,7 @@ export default function ReportsPage() {
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {sessions
-              .filter(s => s.status === 'completed')
-              .map((session) => (
+            {sessions.map((session) => (
                 <div 
                   key={session.id} 
                   className="border border-gray-200 rounded-lg p-3 sm:p-4 md:p-5 transition-colors"
@@ -223,12 +255,25 @@ export default function ReportsPage() {
               ))}
           </div>
         )}
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && sessions.length > 0 && (
+          <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+            <WheelPagination
+              totalPages={totalPages}
+              visibleCount={7}
+              currentPage={currentPage - 1}
+              onPageChange={(page) => handlePageChange(page + 1)}
+              className="bg-white"
+            />
+          </div>
+        )}
       </div>
 
       {/* Report Modal */}
       {showReportModal && selectedReport && (
         <div 
-          className="fixed inset-0 bg-transparent sm:bg-black sm:bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+          className="fixed inset-0 bg-transparent sm:bg-black/30 sm:backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowReportModal(false);

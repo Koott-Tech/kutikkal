@@ -16,7 +16,7 @@ export default function AssessmentsAdminPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      if (!isAuthenticated()) return router.push('/login');
+      if (!isAuthenticated()) return router.push('/');
       if (!hasRole('admin') && !hasRole('superadmin')) return router.push('/profile');
       fetchRows();
     }

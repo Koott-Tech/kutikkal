@@ -33,7 +33,7 @@ export default function PsychologistLayout({ children }) {
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated()) {
-        router.push('/login');
+        router.push('/');
         return;
       }
       if (!hasRole('psychologist')) {
@@ -45,7 +45,7 @@ export default function PsychologistLayout({ children }) {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
 
   const navigation = [

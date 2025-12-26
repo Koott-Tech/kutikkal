@@ -552,9 +552,12 @@ export default function Testimonials() {
         }
         @media (max-width: 767px) {
           .testimonials-heading {
-            font-size: 28px;
-            font-weight: 600;
-            line-height: 0.95;
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.1;
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
           }
           .testimonials-carousel-track {
             padding-left: 0 !important;
@@ -682,21 +685,22 @@ export default function Testimonials() {
           bottom: 0;
           background: linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 100%);
         }
-        /* Mobile line height for testimonials heading and left alignment */
+        /* Mobile line height for testimonials heading and center alignment */
         @media (max-width: 767px) {
           .testimonials-heading {
             line-height: 1.1 !important;
-            text-align: left !important;
+            text-align: center !important;
             padding-left: 1rem !important;
             padding-right: 1rem !important;
+            max-width: 100% !important;
           }
         }
       `}</style>
       <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
         {/* Heading */}
-        <div className="text-center px-4 ">
+        <div className="text-center max-w-4xl mx-auto px-4">
           <p className="p1">Testimonials</p>
-          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl" style={{ fontWeight: 500 }}>What Families Are Saying About Our Child Counseling Support</h2>
+          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full" style={{ fontWeight: 500 }}>What Families Are Saying About Our<br className="hidden md:inline" /> Child Counseling Support</h2>
         </div>
 
         {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}

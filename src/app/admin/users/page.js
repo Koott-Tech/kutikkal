@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import UserModal from '@/components/UserModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -35,13 +36,15 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
     // Check authentication and role
     if (!authLoading) {
       if (!isAuthenticated()) {
-        console.log('User not authenticated, redirecting to login');
-        router.push('/login');
+        console.log('User not authenticated, redirecting to home');
+        router.push('/');
         return;
       }
       
@@ -104,18 +107,23 @@ export default function UsersPage() {
     setIsUserModalOpen(true);
   };
 
-  const handleDeleteUser = async (user) => {
-    if (!confirm(`Are you sure you want to delete ${user.name || user.email}?`)) {
-      return;
-    }
+  const handleDeleteUser = (user) => {
+    setUserToDelete(user);
+    setIsConfirmModalOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
 
     try {
-      await adminApi.deleteUser(user.id);
+      await adminApi.deleteUser(userToDelete.id);
       showSuccess('User deleted successfully');
       loadUsers();
+      setUserToDelete(null);
     } catch (error) {
       console.error('Error deleting user:', error);
       showError('Failed to delete user', 'Delete Error');
+      setUserToDelete(null);
     }
   };
 
@@ -368,6 +376,21 @@ export default function UsersPage() {
           user={editingUser}
         />
       )}
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={confirmDeleteUser}
+        title="Delete User"
+        message={`Are you sure you want to delete ${userToDelete?.name || userToDelete?.email || 'this user'}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
 
       {/* Full Profile Modal */}
       {isFullProfileOpen && selectedUser && (

@@ -116,10 +116,10 @@ export default function WheelPagination({
           <motion.div
             key={p}
             layout
-            animate={{ scale: active === p ? 1.3 : 1 }}
+            animate={{ scale: active === p ? 1.2 : 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className={cn(
-              "w-10 h-10 flex items-center justify-center rounded-full font-medium min-h-[40px] transition-colors",
+              "w-8 h-8 flex items-center justify-center rounded-full font-medium text-sm min-h-[32px] min-w-[32px] transition-colors",
               active === p
                 ? "bg-[#3f2e73] text-white border border-[#3f2e73]"
                 : "bg-gray-200 text-gray-800 hover:bg-gray-300"

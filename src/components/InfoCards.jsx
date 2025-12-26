@@ -1,31 +1,34 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function InfoCards({ cmsData = null, compact = false, hideIcons = false, isCmsPage = false }) {
   const defaultItems = [
     {
       icon: "speech-bubble",
       iconColor: "purple",
-      title: "Find Licensed Child Psychologists to Support Your Child's Emotions",
+      title: "Connect with a Licensed Child Psychologist Online",
       description:
-        "Child therapy provides a safe and nurturing space where children can express their feelings, build coping skills, and navigate challenges like anxiety, behavior issues, or school stress.",
+        "With online child counseling, parents can connect with a caring child psychologist who helps children talk through their feelings, handle anxiety or behaviour concerns, and develop healthy coping skills—right from home.",
       cta: "Find a therapist",
+      ctaLink: "/psychologists",
     },
     {
       icon: "pill",
       iconColor: "green",
-      title: "Get Expert Guidance to Understand Your Child's Needs & Strengths",
+      title: "Understand Your Child's Needs with Online Assessment Support",
       description:
-        "Understanding your child’s strengths and challenges is the key to giving the right support. Child Assessments help identify learning, attention, or emotional concerns like ADHD or autism.",
+        "With child counseling online, families gain a clearer understanding of their child's strengths and challenges, including attention, learning, or emotional concerns, making it easier to choose the right next steps.",
       cta: "Book an assessment",
+      ctaLink: "/free-assessment",
     },
     {
       icon: "combination",
       iconColor: "blue",
-      title: "Learn Parenting Counseling Strategies to Support Your Child Better",
+      title: "Learn Practical Parenting Strategies with Online Parenting Counseling",
       description:
-        "Parenting doesn’t come with a manual—but with supportive parenting counseling, you can learn effective ways to manage behaviour, communicate better, and understand your child’s emotions.",
+        "With online parenting counseling, parents receive thoughtful guidance to manage behaviour, improve communication, and support their child's emotional growth with confidence, clarity, and consistency.",
       cta: "Start parent coaching",
     },
   ];
@@ -135,25 +138,25 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
                   {getIcon(item.icon)}
                 </div>
               )}
-              <h2 className="info-card-title text-left font-medium text-sm md:text-base" suppressHydrationWarning>
+              <h2 className="info-card-title text-left font-medium" suppressHydrationWarning>
                 {item.title}
               </h2>
             </div>
             
             {/* Description */}
-            <p className="info-card-description p1 mt-3 md:mt-4 text-xs md:text-sm">
+            <p className="info-card-description p1 mt-3 md:mt-4" suppressHydrationWarning>
               {item.description}
             </p>
 
             {/* Call to Action */}
             <div className="mt-auto pt-4 md:pt-6">
-              <a
+              <Link
                 href={item.ctaLink || item.link || '#'}
-                className="info-card-cta flex items-center justify-between text-sm md:text-base text-gray-900 group"
+                className="info-card-cta flex items-center justify-between text-gray-900 group"
               >
-                <h6 className="transition-all group-hover:font-semibold">{item.cta}</h6>
+                <h6 className="transition-all group-hover:font-semibold" suppressHydrationWarning>{item.cta}</h6>
                 <span className="text-base md:text-lg group-hover:scale-125 group-hover:translate-x-1 transition-all duration-200 ease-out">→</span>
-              </a>
+              </Link>
             </div>
           </div>
         ))}

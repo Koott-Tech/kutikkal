@@ -5,13 +5,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Download, Receipt, Clock, User, CreditCard } from 'lucide-react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { clientApi } from '@/lib/backendApi';
+import WheelPagination from '@/components/ui/wheel-pagination';
 
 export default function ReceiptsPage() {
   const { user, token, isLoading: authLoading } = useAuth();
   const { showError } = useNotification();
   const [receipts, setReceipts] = useState([]);
+  const [allReceipts, setAllReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     if (!authLoading) {
@@ -24,6 +28,13 @@ export default function ReceiptsPage() {
     }
   }, [token, user, authLoading]);
 
+  useEffect(() => {
+    // Update displayed receipts when page or allReceipts changes
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setReceipts(allReceipts.slice(startIndex, endIndex));
+  }, [currentPage, allReceipts]);
+
   const fetchReceipts = async () => {
     try {
       setLoading(true);
@@ -31,7 +42,8 @@ export default function ReceiptsPage() {
       const data = await clientApi.getReceipts();
 
       if (data.success) {
-        setReceipts(data.data);
+        setAllReceipts(data.data || []);
+        // Initial page will be set by useEffect
       } else {
         setError(data.message || 'Failed to fetch receipts');
       }
@@ -145,7 +157,7 @@ export default function ReceiptsPage() {
         </div>
         <Receipt className="h-8 w-8" style={{ color: '#3f2e73' }} />
       </div>
-      {receipts.length === 0 ? (
+      {allReceipts.length === 0 ? (
         <div className="text-center py-12">
           <Receipt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h6 className="text-gray-900 mb-2">No receipts found</h6>
@@ -238,6 +250,22 @@ export default function ReceiptsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      
+      {/* Pagination Controls */}
+      {Math.ceil(allReceipts.length / itemsPerPage) > 1 && receipts.length > 0 && (
+        <div className="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+          <WheelPagination
+            totalPages={Math.ceil(allReceipts.length / itemsPerPage)}
+            visibleCount={7}
+            currentPage={currentPage - 1}
+            onPageChange={(page) => {
+              setCurrentPage(page + 1);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="bg-white"
+          />
         </div>
       )}
     </div>

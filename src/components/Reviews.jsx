@@ -37,6 +37,20 @@ export default function Reviews({ cmsData = null }) {
   return (
     <section className="w-screen py-0 mt-4 md:mt-0">
       <style jsx>{`
+        h3.reviews-subheading {
+          font-size: 0.875rem !important; /* text-sm - 14px */
+          font-weight: 400 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          margin-top: 0.5rem !important;
+          margin-bottom: 3.5rem !important;
+          line-height: 1.5 !important;
+        }
+        @media (min-width: 768px) {
+          h3.reviews-subheading {
+            font-size: 1rem !important; /* text-base - 16px */
+          }
+        }
         .marquee {
           display: flex;
           gap: 16px;
@@ -56,8 +70,8 @@ export default function Reviews({ cmsData = null }) {
       `}</style>
       <div className="w-full px-0">
         <div className="text-center" style={{ marginBottom: '20px' }}>
-          <h3 className="text-base md:text-xl lg:text-2xl font-semibold">{cmsData?.title || 'What parents say'}</h3>
-          <p className="text-sm md:text-base text-gray-600 mt-2 mb-14">Real experiences from families like yours</p>
+          <h2 className="how-it-works-heading text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>{cmsData?.title || 'What parents say'}</h2>
+          <h3 className="text-sm md:text-base text-gray-600 mt-2 mb-14 reviews-subheading">Real experiences from families like yours</h3>
         </div>
 
         {/* Always show scrolling marquee */}

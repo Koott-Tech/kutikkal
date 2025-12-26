@@ -650,8 +650,8 @@ export const psychologistApi = {
 
   // Complete session with summary, report, and notes
   async completeSession(sessionId, sessionData) {
-    return apiRequest(`/sessions/${sessionId}/complete`, {
-      method: 'PUT',
+    return apiRequest(`/psychologists/sessions/${sessionId}/complete`, {
+      method: 'POST',
       body: JSON.stringify(sessionData),
     });
   },
@@ -1292,7 +1292,7 @@ export const sessionsApi = {
       if (value) queryParams.append(key, value);
     });
     
-    return apiRequest(`/sessions/admin/all?${queryParams}`);
+    return apiRequest(`/admin/sessions/all?${queryParams}`);
   },
 
   // Update session status (admin only)
