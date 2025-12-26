@@ -454,9 +454,6 @@ export default function SuperAdminPage() {
       variant: 'danger'
     };
   };
-      }
-    }
-  };
 
   const openEditUser = (user) => {
     setSelectedUser(user);
