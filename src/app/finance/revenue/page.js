@@ -69,15 +69,15 @@ export default function FinanceRevenue() {
   const typeBreakdown = revenue.by_session_type || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Revenue Management</div>
-          <p className="text-gray-600">Track and analyze revenue performance</p>
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Revenue Management</div>
+          <p className="text-xs sm:text-sm text-gray-600">Track and analyze revenue performance</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
@@ -109,47 +109,47 @@ export default function FinanceRevenue() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-green-50 text-green-600">
-                <DollarSign className="h-6 w-6" />
+              <div className="p-2 sm:p-3 rounded-lg bg-green-50 text-green-600">
+                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
               ₹{(revenue.total_revenue || 0).toLocaleString('en-IN')}
             </h3>
-            <p className="text-sm text-gray-600">Total Revenue</p>
+            <p className="text-xs sm:text-sm text-gray-600">Total Revenue</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                <TrendingUp className="h-6 w-6" />
+              <div className="p-2 sm:p-3 rounded-lg bg-blue-50 text-blue-600">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
               ₹{(revenue.net_revenue || 0).toLocaleString('en-IN')}
             </h3>
-            <p className="text-sm text-gray-600">Net Revenue (After Commission)</p>
+            <p className="text-xs sm:text-sm text-gray-600">Net Revenue (After Commission)</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="p-3 rounded-lg bg-purple-50 text-purple-600">
-                <Calendar className="h-6 w-6" />
+              <div className="p-2 sm:p-3 rounded-lg bg-purple-50 text-purple-600">
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
               {revenue.total_sessions || 0}
             </h3>
-            <p className="text-sm text-gray-600">Total Sessions</p>
+            <p className="text-xs sm:text-sm text-gray-600">Total Sessions</p>
           </div>
         </div>
 
         {/* Monthly Breakdown */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Monthly Revenue Breakdown</h3>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-4">Monthly Revenue Breakdown</h3>
           {monthlyBreakdown.length > 0 ? (
             <div className="space-y-4">
               {monthlyBreakdown.map((month, index) => (

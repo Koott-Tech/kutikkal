@@ -1,5 +1,7 @@
 "use client";
 
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const extractYouTubeId = (url) => {
@@ -392,7 +394,7 @@ export default function VideosShowcase({ cmsData = null }) {
                 >
                   {(() => {
                     const videoUrl = displayVideos[i]?.url || displayVideos[i]?.src;
-                    const thumbnailUrl = displayVideos[i]?.thumbnailUrl || displayVideos[i]?.poster;
+                    const thumbnailUrl = normalizeImageUrl(displayVideos[i]?.thumbnailUrl || displayVideos[i]?.poster || '');
                     const isYouTube = isYouTubeUrl(videoUrl);
                     const embedUrl = isYouTube ? getYouTubeEmbedUrl(videoUrl, isMuted, playingVideo === i) : null;
                     const youtubeThumb = isYouTube ? getYouTubeThumbnailUrl(videoUrl) : null;

@@ -6,11 +6,32 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
+      // Supabase storage - using environment variable instead of hardcoded project ID
+      ...(process.env.NEXT_PUBLIC_SUPABASE_URL ? [{
+        protocol: 'https',
+        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
+      }] : []),
+      // Allow images from same domain (for proxy)
       {
         protocol: 'https',
-        hostname: 'iylutfwntoqcnqnjdnnp.supabase.co',
+        hostname: 'www.little.care',
+      },
+      {
+        protocol: 'https',
+        hostname: 'little.care',
+      },
+      // Development
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
+    // Also allow unoptimized images if needed (fallback)
+    unoptimized: false,
   },
   // Force cache busting
   generateBuildId: async () => {

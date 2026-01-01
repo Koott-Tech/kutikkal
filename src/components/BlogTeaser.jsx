@@ -1,4 +1,6 @@
 "use client";
+
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import Image from "next/image";
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -313,7 +315,7 @@ export default function BlogTeaser() {
         <div className="overflow-hidden md:overflow-visible">
           <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post, index) => {
-            const imageSrc = post.featured_image_url || post.src;
+            const imageSrc = normalizeImageUrl(post.featured_image_url || post.src);
             const author = post.author_name || post.author || "Little Care Team";
             const date = post.published_at || post.created_at || post.date || '';
             const altText = post.alt || post.title || "Blog cover image";

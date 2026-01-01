@@ -101,18 +101,18 @@ export default function FinanceSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Settings & Configuration</div>
-          <p className="text-gray-600">Manage expense categories and income sources</p>
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Settings & Configuration</div>
+          <p className="text-xs sm:text-sm text-gray-600">Manage expense categories and income sources</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Expense Categories */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#111827' }}>Expense Categories</h3>
+            <div className="p-4 sm:p-6 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900">Expense Categories</h3>
               <button
                 onClick={() => setShowCategoryModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors text-sm"

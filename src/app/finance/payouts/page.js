@@ -108,20 +108,20 @@ export default function FinancePayouts() {
   const totalDoctorWallet = pendingPayouts.reduce((sum, p) => sum + (parseFloat(p.total_doctor_wallet || p.net_payout) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Payouts & Payments</div>
-          <p className="text-gray-600">Manage doctor payouts and commission payments</p>
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Payouts & Payments</div>
+          <p className="text-xs sm:text-sm text-gray-600">Manage doctor payouts and commission payments</p>
         </div>
 
         {/* Tabs and Month Selector */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="flex border-b border-gray-200 items-center justify-between px-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row border-b border-gray-200 items-stretch sm:items-center justify-between px-4 sm:px-6">
             <div className="flex">
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`px-6 py-3 text-sm font-medium ${
+                className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
                   activeTab === 'pending'
                     ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
                     : 'text-gray-600 hover:text-gray-900'
@@ -131,7 +131,7 @@ export default function FinancePayouts() {
               </button>
               <button
                 onClick={() => setActiveTab('all')}
-                className={`px-6 py-3 text-sm font-medium ${
+                className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
                   activeTab === 'all'
                     ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
                     : 'text-gray-600 hover:text-gray-900'
@@ -141,7 +141,7 @@ export default function FinancePayouts() {
               </button>
             </div>
             {activeTab === 'pending' && (
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 py-3 sm:py-0">
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <select
                   value={selectedMonth}

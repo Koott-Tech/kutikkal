@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 export default function Reviews({ cmsData = null }) {
   const defaultReviews = [
@@ -78,7 +79,7 @@ export default function Reviews({ cmsData = null }) {
         <div className="relative overflow-hidden" style={{ marginBottom: '0px' }}>
           <div className="marquee">
             {loopReviews.map((r, idx) => {
-              const avatarSrc = r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG');
+              const avatarSrc = normalizeImageUrl(r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG'));
               const rawName = r.author || r.name || 'Parent';
               const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
               const handle = r.handle;

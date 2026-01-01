@@ -471,10 +471,10 @@ export default function PsychologistSettings() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Personal Information */}
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <p className="font-medium text-gray-900">Personal Information</p>
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Personal Information</p>
             </div>
-            <div className="px-6 py-6 space-y-6">
+            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -562,10 +562,10 @@ export default function PsychologistSettings() {
 
           {/* Education */}
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <p className="font-medium text-gray-900">Education</p>
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Education</p>
             </div>
-            <div className="px-6 py-6 space-y-6">
+            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -617,10 +617,10 @@ export default function PsychologistSettings() {
 
           {/* Professional Details */}
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <p className="font-medium text-gray-900">Professional Details</p>
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <p className="font-medium text-gray-900 text-sm sm:text-base">Professional Details</p>
             </div>
-            <div className="px-6 py-6 space-y-6">
+            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <BookOpen className="inline h-4 w-4 mr-1" />
@@ -657,13 +657,13 @@ export default function PsychologistSettings() {
 
           {/* Google Calendar Integration */}
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <p className="font-medium text-gray-900 flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+              <p className="font-medium text-gray-900 text-sm sm:text-base flex items-center">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Google Calendar Integration
               </p>
             </div>
-            <div className="px-6 py-6 space-y-4">
+            <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4">
               <div className="flex items-start">
                 <div className="flex-1">
                   <p className="text-sm text-gray-700 mb-4">
@@ -769,7 +769,7 @@ export default function PsychologistSettings() {
                     </div>
                     
                     {/* Calendar Header */}
-                    <div className="bg-white border rounded-lg p-2 sm:p-3 max-w-2xl mx-auto">
+                    <div className="bg-white border rounded-lg p-2 sm:p-3 w-full max-w-2xl mx-auto overflow-x-auto">
                       <div className="flex items-center justify-between mb-2 sm:mb-3">
                         <button
                           onClick={() => navigateMonth(-1)}

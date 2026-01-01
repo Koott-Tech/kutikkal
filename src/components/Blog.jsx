@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 // Removed backendApi import - will use direct fetch
 
 export default function Blog() {
@@ -153,7 +154,7 @@ export default function Blog() {
               {/* Image Container */}
               <div className="relative h-[360px] md:h-[420px] w-full">
                 <Image
-                  src={featuredPost.featured_image_url || "/kids.png"}
+                  src={normalizeImageUrl(featuredPost.featured_image_url || "/kids.png")}
                   alt={featuredPost.title}
                   fill
                   className="object-cover"
@@ -241,7 +242,7 @@ export default function Blog() {
                   {post.featured_image_url && (
                     <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
                     <Image
-                        src={post.featured_image_url}
+                        src={normalizeImageUrl(post.featured_image_url || '')}
                       alt={post.title}
                       fill
                         className="object-contain object-left"

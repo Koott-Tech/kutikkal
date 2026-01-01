@@ -185,57 +185,58 @@ export default function FinanceExpenses() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Expense Management</div>
-            <p className="text-gray-600">Track and manage company expenses</p>
+            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Expense Management</div>
+            <p className="text-xs sm:text-sm text-gray-600">Track and manage company expenses</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             Add Expense
           </button>
         </div>
 
         {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <p className="text-red-700">{error}</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {expenses.length > 0 ? (
                     expenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                           {new Date(expense.date).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                           {expense.category}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                           {expense.description}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
                           ₹{(expense.amount || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             expense.status === 'approved' ? 'bg-green-100 text-green-800' :
                             expense.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -244,29 +245,29 @@ export default function FinanceExpenses() {
                             {expense.status || 'Pending'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center gap-2">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center gap-1 sm:gap-2">
                             <button
                               onClick={() => handleEdit(expense)}
-                              className="text-blue-600 hover:text-blue-700"
+                                className="text-blue-600 hover:text-blue-700 p-1"
                               title="Edit expense"
                             >
-                              <Edit className="h-5 w-5" />
+                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(expense.id)}
-                              className="text-red-600 hover:text-red-700"
+                                className="text-red-600 hover:text-red-700 p-1"
                               title="Delete expense"
                             >
-                              <Trash2 className="h-5 w-5" />
+                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                             {expense.status === 'pending' && (
                               <button
                                 onClick={() => handleApprove(expense.id)}
-                                className="text-green-600 hover:text-green-700"
+                                  className="text-green-600 hover:text-green-700 p-1"
                                 title="Approve expense"
                               >
-                                <Check className="h-5 w-5" />
+                                  <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                               </button>
                             )}
                           </div>

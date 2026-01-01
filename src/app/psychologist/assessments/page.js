@@ -397,7 +397,7 @@ export default function PsychologistAssessments() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="divide-y divide-gray-200">
               {upcomingAssessments.map((session) => (
-                <div key={session.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div key={session.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="flex-shrink-0">
@@ -489,7 +489,7 @@ export default function PsychologistAssessments() {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="divide-y divide-gray-200">
               {completedAssessments.map((session) => (
-                <div key={session.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div key={session.id} className="px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="flex-shrink-0">
@@ -552,8 +552,8 @@ export default function PsychologistAssessments() {
 
       {/* Empty State */}
       {assessments.length === 0 && (
-        <div className="mt-8 bg-white shadow rounded-lg">
-          <div className="px-6 py-12 text-center">
+        <div className="mt-6 sm:mt-8 bg-white shadow rounded-lg">
+          <div className="px-4 sm:px-6 py-12 text-center">
             <Package className="mx-auto h-12 w-12 text-gray-400" />
             <p className="mt-4 text-sm font-medium text-gray-900">No assessment sessions</p>
             <p className="mt-1 text-sm text-gray-500">

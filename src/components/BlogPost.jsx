@@ -1,4 +1,6 @@
 "use client";
+
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -88,7 +90,7 @@ const StructuredContentRenderer = ({ content }) => {
             return (
               <div key={index} className="flex justify-center">
                 <img 
-                  src={block.src} 
+                  src={normalizeImageUrl(block.src || '')} 
                   alt={block.alt}
                   className="w-full max-w-[640px] max-h-96 object-cover rounded-lg shadow-md"
                   loading="lazy"
@@ -185,7 +187,7 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                 {blog.featured_image_url && (
                   <div className="h-36 bg-gray-100">
                     <img
-                      src={blog.featured_image_url}
+                      src={normalizeImageUrl(blog.featured_image_url || '')}
                       alt={blog.title}
                       className="w-full h-full object-contain rounded-t-lg"
                     />
@@ -387,7 +389,7 @@ export default function BlogPost({ slug }) {
             <div className="flex justify-center">
               <div className="w-full max-w-[640px] rounded-2xl overflow-hidden">
               <img
-                src={blogPost.featured_image_url}
+                src={normalizeImageUrl(blogPost.featured_image_url || '')}
             alt={blogPost.title}
                   className="w-full h-auto object-cover"
           />

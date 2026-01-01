@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 export default function TherapistCarousel({ therapists = [] }) {
   const containerRef = useRef(null);
@@ -122,7 +123,7 @@ export default function TherapistCarousel({ therapists = [] }) {
         className="therapist-cards-stack"
       >
         {therapists.map((doc, idx) => {
-          const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
+          const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
           const name = doc.name || doc.first_name || 'Therapist';
           // Create URL-friendly slug from name or use ID
           const doctorIdentifier = doc.id || (name

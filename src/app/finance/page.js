@@ -139,9 +139,9 @@ export default function FinanceDashboard() {
     };
 
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>{value}</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{value}</h3>
           <div className="flex items-center gap-2">
             {change && (
               <div className={`flex items-center text-sm ${changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
@@ -160,16 +160,16 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Finance Dashboard</div>
-          <p className="text-gray-600">Overview of financial performance and key metrics</p>
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Finance Dashboard</div>
+          <p className="text-xs sm:text-sm text-gray-600">Overview of financial performance and key metrics</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <StatCard
             title="Total Revenue"
             value={`₹${(stats.total_revenue || 0).toLocaleString('en-IN')}`}
@@ -203,44 +203,44 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Total Sessions</span>
               <Calendar className="h-5 w-5 text-gray-400" />
             </div>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>{stats.total_sessions || 0}</p>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Doctor Wallet</span>
               <Wallet className="h-5 w-5 text-gray-400" />
             </div>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>₹{(stats.total_doctor_wallet || 0).toLocaleString('en-IN')}</p>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.total_doctor_wallet || 0).toLocaleString('en-IN')}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">GST Collected</span>
               <Percent className="h-5 w-5 text-gray-400" />
             </div>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>₹{(stats.gst_collected || 0).toLocaleString('en-IN')}</p>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.gst_collected || 0).toLocaleString('en-IN')}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Commission Paid</span>
               <CreditCard className="h-5 w-5 text-gray-400" />
             </div>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>₹{(stats.commission_paid || 0).toLocaleString('en-IN')}</p>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.commission_paid || 0).toLocaleString('en-IN')}</p>
           </div>
         </div>
 
         {/* Pie Charts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Revenue by Type Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Revenue by Type</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Revenue by Type</div>
             {revenueByTypeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                 <PieChart>
                   <Pie
                     data={revenueByTypeData}
@@ -265,10 +265,10 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Commission Breakdown Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Commission Breakdown</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Commission Breakdown</div>
             {commissionBreakdownData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                 <PieChart>
                   <Pie
                     data={commissionBreakdownData}
@@ -293,10 +293,10 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Expense by Category Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Expenses by Category</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Expenses by Category</div>
             {expenseByCategoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                 <PieChart>
                   <Pie
                     data={expenseByCategoryData}
@@ -326,12 +326,12 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Line/Bar Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Monthly Revenue vs Expenses Line Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Revenue vs Expenses Trend</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Revenue vs Expenses Trend</div>
             {monthlyComparisonData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                 <LineChart data={monthlyComparisonData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" style={{ fontSize: '12px' }} />
@@ -348,10 +348,10 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Monthly Commission vs Doctor Wallet Bar Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Commission vs Doctor Wallet</div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Commission vs Doctor Wallet</div>
             {monthlyComparisonData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                 <BarChart data={monthlyComparisonData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" style={{ fontSize: '12px' }} />
@@ -369,8 +369,8 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Top Doctors */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827', marginBottom: '16px' }}>Top Earning Doctors</div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Top Earning Doctors</div>
           {topDoctors.length > 0 ? (
             <div className="space-y-4">
               {topDoctors.map((doctor, index) => (
@@ -399,9 +399,9 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Recent Sessions */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div role="heading" aria-level="3" style={{ fontSize: '14px', fontWeight: 500, color: '#111827' }}>Recent Sessions</div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900">Recent Sessions</div>
             <a
               href="/finance/sessions"
               className="text-sm text-[#3f2e73] hover:underline font-medium"
@@ -410,37 +410,38 @@ export default function FinanceDashboard() {
             </a>
           </div>
           {recentSessions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Doctor</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Client</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Amount</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Date</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Doctor</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">Client</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Type</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700">Amount</th>
+                      <th className="px-3 sm:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold text-gray-700">Status</th>
                   </tr>
                 </thead>
-                <tbody>
+                  <tbody className="bg-white divide-y divide-gray-200">
                   {recentSessions.map((session) => (
-                    <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm text-gray-900">
+                      <tr key={session.id} className="hover:bg-gray-50">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                         {new Date(session.session_date).toLocaleDateString('en-IN')}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                         {session.psychologist?.first_name} {session.psychologist?.last_name}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                         {session.client?.first_name} {session.client?.last_name}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600 capitalize">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-600 capitalize">
                         {session.session_type || 'Individual'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-right font-semibold text-gray-900">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-right font-semibold text-gray-900">
                         ₹{(session.amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                        <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-center">
                         {session.status === 'completed' ? (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <CheckCircle className="h-3 w-3 mr-1" />

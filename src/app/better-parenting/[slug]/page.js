@@ -1,5 +1,6 @@
 import BlogTeaser from '@/components/BlogTeaser';
 import HeroSection from '@/components/HeroSection';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import LogosStrip from '@/components/LogosStrip';
 import HelpFaq from '@/components/HelpFaq';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -177,7 +178,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Better Parenting');
   const subtext = data?.hero_subtext || '';
-  const imageUrl = data?.hero_image_url || '';
+  const imageUrl = normalizeImageUrl(data?.hero_image_url || '');
   const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
   const therapistsHeading = data?.therapists_heading || 'Your journey to a happier, calmer home begins here.';
 
@@ -217,7 +218,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch mt-8" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
+            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
             const name = doc.name || doc.first_name || 'Therapist';
             // Create URL-friendly slug from name or use ID
             const doctorIdentifier = doc.id || (name
@@ -337,17 +338,19 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         <HowItWorks />
       </div>
       <div className="mt-16 md:mt-20">
-        <BenefitsSection cmsData={{ title: data?.benefits_title || 'Why this program?', benefits: data?.benefits || [], benefitsImageUrl: data?.benefits_image_url || '' }} />
+        <BenefitsSection cmsData={{ title: data?.benefits_title || 'Why this program?', benefits: data?.benefits || [], benefitsImageUrl: normalizeImageUrl(data?.benefits_image_url || '') }} />
       </div>
       <div className="mt-0">
-        <TherapyTypesSplit cmsData={{ title: data?.types_title || 'What we offer', types: data?.types || [], rightImageUrl: data?.right_image_url || '' }} />
+        <TherapyTypesSplit cmsData={{ title: data?.types_title || 'What we offer', types: data?.types || [], rightImageUrl: normalizeImageUrl(data?.right_image_url || '') }} />
       </div>
       {/* Videos showcase */}
       <div className="mt-4 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
+            url: video.url || video.src,
             src: video.url || video.src,
-            poster: video.thumbnailUrl || video.poster,
+            thumbnailUrl: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
+            poster: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
             title: video.title,
             position: video.position
           })),
@@ -363,7 +366,14 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       )}
       {/* Reviews */}
       <div className="mt-8 md:-mt-24">
-        <Reviews cmsData={{ reviews: data?.reviews || [], title: data?.reviews_heading }} />
+        <Reviews cmsData={{ 
+          reviews: data?.reviews?.map(review => ({
+            ...review,
+            avatar: normalizeImageUrl(review.avatar || review.avatarUrl || ''),
+            avatarUrl: normalizeImageUrl(review.avatarUrl || review.avatar || '')
+          })) || [],
+          title: data?.reviews_heading
+        }} />
       </div>
       {(data?.blog_teaser_enabled !== false) && (
         <div className="mt-12 md:mt-16">
@@ -372,7 +382,12 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
       )}
       <div className="mt-12 md:mt-16 px-4 pb-16">
         <div className="max-w-4xl mx-auto">
-          <HelpFaq cmsData={{ faqs: data?.faqs || [], context: 'better-parenting' }} />
+          <HelpFaq cmsData={{ 
+            faqs: data?.faqs || [],
+            context: 'better-parenting',
+            leftImageUrl: normalizeImageUrl(data?.left_image_url || ''),
+            left_image_url: normalizeImageUrl(data?.left_image_url || '')
+          }} />
         </div>
       </div>
     </div>

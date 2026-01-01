@@ -165,7 +165,7 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -178,7 +178,7 @@ const NotificationsPage = () => {
         </div>
 
         {/* Stats and Actions */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-6">
               <div className="text-center">
@@ -233,12 +233,12 @@ const NotificationsPage = () => {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`bg-white rounded-lg shadow p-6 transition-all hover:shadow-md ${
+                className={`bg-white rounded-lg shadow p-4 sm:p-6 transition-all hover:shadow-md ${
                   !notification.is_read ? 'border-l-4 border-blue-500' : ''
                 }`}
               >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="font-semibold text-gray-900">
                         {notification.title}

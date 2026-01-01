@@ -173,87 +173,88 @@ export default function FinanceIncome() {
   const totalIncome = income.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>Income Management</div>
-            <p className="text-gray-600">Track and manage company income</p>
+            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Income Management</div>
+            <p className="text-xs sm:text-sm text-gray-600">Track and manage company income</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             Add Income
           </button>
         </div>
 
         {/* Summary Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Income</p>
-              <p style={{ fontSize: '24px', fontWeight: 600, color: '#111827' }}>₹{totalIncome.toLocaleString('en-IN')}</p>
+              <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Income</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">₹{totalIncome.toLocaleString('en-IN')}</p>
             </div>
-            <div className="p-4 rounded-lg bg-green-50 text-green-600">
-              <DollarSign className="h-8 w-8" />
+            <div className="p-3 sm:p-4 rounded-lg bg-green-50 text-green-600">
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8" />
             </div>
           </div>
         </div>
 
         {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <p className="text-red-700">{error}</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Payment Method</th>
+                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {income.length > 0 ? (
                     income.map((item) => (
                       <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                           {new Date(item.date).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                           {item.income_source}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                           {item.description}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
                           ₹{(item.amount || 0).toLocaleString('en-IN')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600 capitalize hidden md:table-cell">
                           {item.payment_method?.replace('_', ' ') || 'N/A'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center gap-2">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center gap-1 sm:gap-2">
                             <button
                               onClick={() => handleEdit(item)}
-                              className="text-blue-600 hover:text-blue-700"
+                                className="text-blue-600 hover:text-blue-700 p-1"
                               title="Edit income entry"
                             >
-                              <Edit className="h-5 w-5" />
+                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(item.id)}
-                              className="text-red-600 hover:text-red-700"
+                                className="text-red-600 hover:text-red-700 p-1"
                               title="Delete income entry"
                             >
-                              <Trash2 className="h-5 w-5" />
+                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                             </button>
                           </div>
                         </td>
@@ -268,6 +269,7 @@ export default function FinanceIncome() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}

@@ -163,13 +163,13 @@ export default function FinanceDoctors() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
             Doctor Commission Management
           </div>
-          <p className="text-gray-600">Manage commission amounts and view revenue statistics for each doctor</p>
+          <p className="text-xs sm:text-sm text-gray-600">Manage commission amounts and view revenue statistics for each doctor</p>
         </div>
 
         {/* Filters */}

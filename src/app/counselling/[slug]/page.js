@@ -12,6 +12,7 @@ import HelpFaq from '@/components/HelpFaq';
 import CounsellingNotFound from '@/components/CounsellingNotFound';
 import ScrollToTop from '@/components/ScrollToTop';
 import TherapistCarousel from '@/components/TherapistCarousel';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 // Force dynamic rendering and disable caching so edits reflect immediately
 export const dynamic = 'force-dynamic';
@@ -207,7 +208,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           title: serviceData.hero_title || 'Counseling',
           subtext: serviceData.hero_subtext || '',
           ctaText: serviceData.hero_cta_text || '',
-          imageUrl: serviceData.hero_image_url || '',
+          imageUrl: normalizeImageUrl(serviceData.hero_image_url || ''),
           features: [
             serviceData.hero_point_1,
             serviceData.hero_point_2,
@@ -239,7 +240,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = doc.cover_image_url || doc.profile_picture_url || '/hero.png';
+            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
             const name = doc.name || doc.first_name || 'Therapist';
             // Create URL-friendly slug from name or use ID
             const doctorIdentifier = doc.id || (name
@@ -329,7 +330,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         cmsData={{
           title: serviceData.benefits_title,
           benefits: serviceData.benefits || [],
-          benefitsImageUrl: serviceData.benefits_image_url || ''
+          benefitsImageUrl: normalizeImageUrl(serviceData.benefits_image_url || '')
         }}
       />
       </div>
@@ -339,7 +340,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           cmsData={{
             title: serviceData.types_title,
             types: serviceData.types || [],
-            rightImageUrl: serviceData.right_image_url || '',
+            rightImageUrl: normalizeImageUrl(serviceData.right_image_url || ''),
             buttonText: 'Get started'
           }}
         />
@@ -350,8 +351,8 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           videos: (serviceData.videos || []).map(video => ({
             url: video.url || video.src,
             src: video.url || video.src,
-            thumbnailUrl: video.thumbnailUrl || video.poster,
-            poster: video.thumbnailUrl || video.poster,
+            thumbnailUrl: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
+            poster: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
             title: video.title,
             position: video.position
           })),
@@ -368,7 +369,13 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       </div>
       {/* Reviews */}
       <div className="mt-8 md:-mt-24">
-        <Reviews cmsData={{ reviews: serviceData.reviews }} />
+        <Reviews cmsData={{ 
+          reviews: serviceData.reviews?.map(review => ({
+            ...review,
+            avatar: normalizeImageUrl(review.avatar || review.avatarUrl || ''),
+            avatarUrl: normalizeImageUrl(review.avatarUrl || review.avatar || '')
+          })) || []
+        }} />
       </div>
       {/* Blog Teaser above FAQ */}
       <div className="mt-12 md:mt-16">
@@ -377,7 +384,9 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       <div className="mt-12 md:mt-16">
         <HelpFaq 
           cmsData={{
-            faqs: serviceData.faqs || []
+            faqs: serviceData.faqs || [],
+            leftImageUrl: normalizeImageUrl(serviceData.left_image_url || ''),
+            left_image_url: normalizeImageUrl(serviceData.left_image_url || '')
           }}
         />
       </div>

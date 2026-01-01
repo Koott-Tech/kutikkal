@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const DATA = [
   {
@@ -61,7 +62,7 @@ export default function HelpFaq({ cmsData = null }) {
     })() : DATA; // Homepage: use default DATA with section headings
 
   // Get the left image from CMS data or use default
-  const leftImageUrl = cmsData?.leftImageUrl || "/footerfaq copy.webp";
+  const leftImageUrl = normalizeImageUrl(cmsData?.leftImageUrl || cmsData?.left_image_url || "/footerfaq copy.webp");
 
   return (
     <section className="w-full px-4 lg:px-6 mt-8 lg:mt-24">

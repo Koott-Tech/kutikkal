@@ -104,17 +104,35 @@ export default function PsychologistLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Mobile header with menu button */}
+      {/* Mobile header with menu button and stats */}
       <div 
-        className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-start px-4 z-50"
+        className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200"
         style={!isSidebarOpen ? { boxShadow: '0 2px 8px rgba(63, 46, 115, 0.15)' } : {}}
       >
+        <div className="flex items-center justify-between px-4 py-3">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 rounded-md bg-white shadow-lg"
+            className="p-2 rounded-md hover:bg-gray-100"
         >
           {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
+          <div className="flex-1 flex items-center justify-center gap-4 px-4">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+              <span className="text-xs text-gray-600">Completed:</span>
+              <span className="text-xs font-semibold text-gray-900">
+                {isLoadingStats ? '...' : (headerStats.completed_sessions || 0)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="h-3.5 w-3.5 text-blue-600" />
+              <span className="text-xs text-gray-600">Upcoming:</span>
+              <span className="text-xs font-semibold text-gray-900">
+                {isLoadingStats ? '...' : (headerStats.upcoming_sessions || 0)}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Mobile sidebar overlay and panel */}
@@ -149,15 +167,42 @@ export default function PsychologistLayout({ children }) {
           }}
         >
         <div className="flex flex-col h-full">
+          {/* Logo/Brand - Mobile only */}
+          <div className="lg:hidden p-4 border-b border-gray-200">
+            <a 
+              href="/psychologist"
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="Little Care - Go to psychologist dashboard"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                  setIsSidebarOpen(false);
+                }
+              }}
+            >
+              <img 
+                src="/mainlogo.webp"
+                alt="Little Care - Child Psychotherapy Logo"
+                width={120}
+                height={40}
+                className="object-contain"
+              />
+            </a>
+          </div>
+
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
+              const isActive = pathname === item.href || (item.href !== '/psychologist' && pathname?.startsWith(item.href));
               return (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 font-medium' 
+                      : 'hover:bg-blue-50 hover:text-blue-700'
+                  }`}
                   onClick={() => {
                     // Close mobile sidebar on navigation
                     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -210,11 +255,16 @@ export default function PsychologistLayout({ children }) {
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
               const Icon = item.icon;
+              const isActive = pathname === item.href || (item.href !== '/psychologist' && pathname?.startsWith(item.href));
               return (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-blue-50 text-blue-700 font-medium' 
+                      : 'hover:bg-blue-50 hover:text-blue-700'
+                  }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {item.name}
@@ -277,7 +327,7 @@ export default function PsychologistLayout({ children }) {
         </div>
 
         {/* Page content - Add padding-top to account for fixed header */}
-        <main className="lg:pt-20">
+        <main className="pt-16 lg:pt-20">
           {children}
         </main>
       </div>

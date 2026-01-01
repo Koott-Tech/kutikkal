@@ -112,17 +112,17 @@ export default function PsychologistDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Calendar className="h-6 w-6 text-blue-600" />
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.totalSessions}</dd>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">{stats.totalSessions}</dd>
                 </dl>
               </div>
             </div>
@@ -130,15 +130,15 @@ export default function PsychologistDashboard() {
         </div>
 
         <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Upcoming Sessions</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.upcomingSessions}</dd>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Upcoming Sessions</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">{stats.upcomingSessions}</dd>
                 </dl>
               </div>
             </div>
@@ -146,15 +146,15 @@ export default function PsychologistDashboard() {
         </div>
 
         <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Clock className="h-6 w-6 text-yellow-600" />
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Available Slots</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.totalAvailability}</dd>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Available Slots</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">{stats.totalAvailability}</dd>
                 </dl>
               </div>
             </div>
@@ -169,26 +169,26 @@ export default function PsychologistDashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <a
             href="/psychologist/sessions"
-            className="block bg-white p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+            className="block bg-white p-4 sm:p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
           >
-            <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-blue-600 mr-4" />
-              <div>
-                <p className="font-medium text-gray-900">View Sessions</p>
-                <p className="text-sm text-gray-500">Check your upcoming and past therapy sessions.</p>
+            <div className="flex items-start sm:items-center">
+              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-3 sm:mr-4 flex-shrink-0 mt-0.5 sm:mt-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm sm:text-base">View Sessions</p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">Check your upcoming and past therapy sessions.</p>
               </div>
             </div>
           </a>
 
           <a
             href="/psychologist/availability"
-            className="block bg-white p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+            className="block bg-white p-4 sm:p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
           >
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-green-600 mr-4" />
-              <div>
-                <p className="font-medium text-gray-900">Manage Availability</p>
-                <p className="text-sm text-gray-500">Set your available time slots for client bookings.</p>
+            <div className="flex items-start sm:items-center">
+              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mr-3 sm:mr-4 flex-shrink-0 mt-0.5 sm:mt-0" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm sm:text-base">Manage Availability</p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">Set your available time slots for client bookings.</p>
               </div>
             </div>
           </a>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import { useRouter } from "next/navigation";
 
 export default function TherapyTypesSplit({ therapyType = "individual", cmsData = null }) {
@@ -113,9 +114,12 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
   const currentContent = cmsData ? {
     title: cmsData.title || content[therapyType]?.title || content.individual.title,
     types: cmsData.types && cmsData.types.length > 0 ? cmsData.types : (content[therapyType]?.types || content.individual.types),
-    rightImageUrl: cmsData.rightImageUrl || content[therapyType]?.rightImageUrl || content.individual.rightImageUrl,
+    rightImageUrl: normalizeImageUrl(cmsData.rightImageUrl || content[therapyType]?.rightImageUrl || content.individual.rightImageUrl),
     buttonText: cmsData.buttonText || content[therapyType]?.buttonText || content.individual.buttonText
-  } : (content[therapyType] || content.individual);
+  } : {
+    ...(content[therapyType] || content.individual),
+    rightImageUrl: normalizeImageUrl(content[therapyType]?.rightImageUrl || content.individual.rightImageUrl)
+  };
   return (
     <section className="therapy-types-section w-full mt-4 lg:mt-0 mb-0 lg:mb-8 px-0 pt-8 lg:pt-0" style={{ marginBottom: '120px' }}>
       <style jsx>{`

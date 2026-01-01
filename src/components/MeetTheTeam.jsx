@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const teamMembers = [
   { 
@@ -260,7 +261,7 @@ export default function MeetTheTeam() {
               <div key={index} className="w-80 bg-white rounded-2xl overflow-hidden">
               <div className="h-80 w-full overflow-hidden rounded-[10px] team-image-container" suppressHydrationWarning>
                 <Image
-                    src={member.image}
+                    src={normalizeImageUrl(member.image)}
                     alt={`${member.name} - ${member.title} at Little Care`}
                   width={320}
                   height={320}
@@ -302,7 +303,7 @@ export default function MeetTheTeam() {
                             <div className="w-full bg-white rounded-2xl overflow-hidden">
                                 <div className="h-80 w-full overflow-hidden rounded-[10px] team-image-container" suppressHydrationWarning>
                                     <Image
-                                        src={member.image}
+                                        src={normalizeImageUrl(member.image)}
                                         alt={`${member.name} - ${member.title} at Little Care`}
                                         width={320}
                                         height={320}

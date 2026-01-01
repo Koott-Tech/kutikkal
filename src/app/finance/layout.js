@@ -121,17 +121,54 @@ export default function FinanceLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile header with menu button */}
+      {/* Mobile header with menu button and key stats */}
       <div 
-        className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-end px-4 z-50"
+        className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200"
         style={!isSidebarOpen ? { boxShadow: '0 2px 8px rgba(63, 46, 115, 0.15)' } : {}}
       >
+        <div className="px-4 py-2">
+          <div className="flex items-center justify-between mb-2">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 rounded-md bg-white shadow-lg"
+              className="p-2 rounded-md hover:bg-gray-100"
         >
-          {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
+            <h6 className="text-sm font-semibold text-gray-800">Finance</h6>
+            <div className="w-9"></div> {/* Spacer for centering */}
+          </div>
+          {/* Key Stats - Compact view for mobile */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3 text-green-600 flex-shrink-0" />
+              <span className="text-gray-600 truncate">Revenue:</span>
+              <span className="font-semibold text-gray-900 truncate">
+                {isLoadingStats ? '...' : `₹${((headerStats.total_revenue || 0) / 1000).toFixed(0)}k`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-3 w-3 text-purple-600 flex-shrink-0" />
+              <span className="text-gray-600 truncate">Profit:</span>
+              <span className="font-semibold text-gray-900 truncate">
+                {isLoadingStats ? '...' : `₹${((headerStats.net_profit || 0) / 1000).toFixed(0)}k`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Receipt className="h-3 w-3 text-orange-600 flex-shrink-0" />
+              <span className="text-gray-600 truncate">Expenses:</span>
+              <span className="font-semibold text-gray-900 truncate">
+                {isLoadingStats ? '...' : `₹${((headerStats.total_expenses || 0) / 1000).toFixed(0)}k`}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CreditCard className="h-3 w-3 text-blue-600 flex-shrink-0" />
+              <span className="text-gray-600 truncate">Payouts:</span>
+              <span className="font-semibold text-gray-900 truncate">
+                {isLoadingStats ? '...' : `₹${((headerStats.pending_payouts || 0) / 1000).toFixed(0)}k`}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Mobile sidebar overlay and panel */}
@@ -166,6 +203,28 @@ export default function FinanceLayout({ children }) {
           }}
         >
         <div className="flex flex-col h-full">
+          {/* Logo/Brand - Mobile only */}
+          <div className="lg:hidden p-4 border-b border-gray-200">
+            <a 
+              href="/finance"
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="Little Care - Go to finance dashboard"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                  setIsSidebarOpen(false);
+                }
+              }}
+            >
+              <img 
+                src="/mainlogo.webp"
+                alt="Little Care - Finance Dashboard"
+                width={120}
+                height={40}
+                className="object-contain"
+              />
+            </a>
+          </div>
+
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
@@ -341,8 +400,8 @@ export default function FinanceLayout({ children }) {
           </div>
         </div>
 
-        {/* Page content - Add padding-top to account for fixed header (increased for two-row header) */}
-        <main className="lg:pt-24">
+        {/* Page content - Add padding-top to account for fixed header */}
+        <main className="pt-20 lg:pt-24">
           {children}
         </main>
       </div>

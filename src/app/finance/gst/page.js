@@ -113,71 +113,72 @@ export default function FinanceGST() {
   }, { total: 0, inputTax: 0, outputTax: 0 });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div role="heading" aria-level="2" style={{ fontSize: '22px', fontWeight: 600, color: '#111827', marginBottom: '8px' }}>GST & Tax Management</div>
-            <p className="text-gray-600">Manage GST records and tax settings</p>
+            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">GST & Tax Management</div>
+            <p className="text-xs sm:text-sm text-gray-600">Manage GST records and tax settings</p>
           </div>
           <button
             onClick={() => setShowSettings(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
             GST Settings
           </button>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-600 mb-1">Total GST</p>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>₹{summary.total.toLocaleString('en-IN')}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Total GST</p>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{summary.total.toLocaleString('en-IN')}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-600 mb-1">Output Tax (Collected)</p>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#16a34a' }}>₹{summary.outputTax.toLocaleString('en-IN')}</p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Output Tax (Collected)</p>
+            <p className="text-lg sm:text-xl font-semibold text-green-600">₹{summary.outputTax.toLocaleString('en-IN')}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <p className="text-sm text-gray-600 mb-1">Input Tax (Paid)</p>
-            <p style={{ fontSize: '20px', fontWeight: 600, color: '#2563eb' }}>₹{summary.inputTax.toLocaleString('en-IN')}</p>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Input Tax (Paid)</p>
+            <p className="text-lg sm:text-xl font-semibold text-blue-600">₹{summary.inputTax.toLocaleString('en-IN')}</p>
           </div>
         </div>
 
         {/* GST Records */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#111827' }}>GST Records</h3>
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900">GST Records</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">GST Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tax Type</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Transaction</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">GST Amount</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Tax Type</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {gstRecords.length > 0 ? (
                   gstRecords.map((record) => (
                     <tr key={record.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                         {new Date(record.transaction_date).toLocaleDateString('en-IN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 capitalize">
                         {record.record_type}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                         {record.transaction_reference || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
                         ₹{(record.gst_amount || 0).toLocaleString('en-IN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                           record.is_input_tax ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                         }`}>

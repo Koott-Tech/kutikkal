@@ -368,12 +368,12 @@ export default function PsychologistSessions() {
           Upcoming Sessions ({sortedUpcomingSessions.length})
         </p>
         <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <p className="font-medium text-gray-900">Scheduled Appointments</p>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <p className="font-medium text-gray-900 text-sm sm:text-base">Scheduled Appointments</p>
           </div>
           <div className="divide-y divide-gray-200">
             {upcomingSessions.length === 0 ? (
-              <div className="px-6 py-8 text-center">
+              <div className="px-4 sm:px-6 py-8 text-center">
                 <Calendar className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</p>
                 <p className="mt-1 text-sm text-gray-500">
@@ -382,7 +382,7 @@ export default function PsychologistSessions() {
               </div>
             ) : (
               upcomingSessions.map((session) => (
-                <div key={session.id} className="px-6 py-4">
+                <div key={session.id} className="px-4 sm:px-6 py-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex-shrink-0">
@@ -581,7 +581,7 @@ export default function PsychologistSessions() {
           
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-200 px-6">
+            <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-200 px-4 sm:px-6">
               <WheelPagination
                 totalPages={totalPages}
                 visibleCount={7}
@@ -600,12 +600,12 @@ export default function PsychologistSessions() {
           Past Sessions ({pastSessions.length})
         </p>
         <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <p className="font-medium text-gray-900">Completed & Past Sessions</p>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <p className="font-medium text-gray-900 text-sm sm:text-base">Completed & Past Sessions</p>
           </div>
           <div className="divide-y divide-gray-200">
             {pastSessions.length === 0 ? (
-              <div className="px-6 py-8 text-center">
+              <div className="px-4 sm:px-6 py-8 text-center">
                 <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-2 text-sm font-medium text-gray-900">No past sessions</p>
                 <p className="mt-1 text-sm text-gray-500">
@@ -614,7 +614,7 @@ export default function PsychologistSessions() {
               </div>
             ) : (
               pastSessions.map((session) => (
-                <div key={session.id} className="px-6 py-4">
+                <div key={session.id} className="px-4 sm:px-6 py-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                       <div className="flex-shrink-0">
@@ -771,8 +771,8 @@ export default function PsychologistSessions() {
 
       {/* Session Details Modal */}
       {showDetailsModal && selectedSession && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 p-4">
+          <div className="relative top-4 sm:top-20 mx-auto p-4 sm:p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <p className="font-medium text-gray-900">Session Details</p>
               <button

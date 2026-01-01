@@ -10,6 +10,7 @@ import TherapistCarousel from '@/components/TherapistCarousel';
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -163,7 +164,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';
-  const imageUrl = data?.hero_image_url || '';
+  const imageUrl = normalizeImageUrl(data?.hero_image_url || '');
   const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
 
   return (
@@ -210,7 +211,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           cmsData={{ 
             title: data?.benefits_title || 'Why this assessment?', 
             benefits: data?.benefits || [],
-            benefitsImageUrl: data?.benefits_image_url || ''
+            benefitsImageUrl: normalizeImageUrl(data?.benefits_image_url || '')
           }} 
         />
       </div>
@@ -220,7 +221,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           cmsData={{ 
             title: data?.types_title || 'What we evaluate', 
             types: data?.types || [],
-            rightImageUrl: data?.right_image_url || '',
+            rightImageUrl: normalizeImageUrl(data?.right_image_url || ''),
             buttonText: data?.types_button_text || 'Get started'
           }} 
         />
@@ -228,8 +229,10 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
       <div className="mt-4 md:-mt-24">
         <VideosShowcase cmsData={{ 
           videos: (data?.videos || []).map(video => ({
+            url: video.url || video.src,
             src: video.url || video.src,
-            poster: video.thumbnailUrl || video.poster,
+            thumbnailUrl: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
+            poster: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
             title: video.title,
             position: video.position
           })),
@@ -244,11 +247,21 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
         </div>
       )}
       <div className="mt-8 md:-mt-24">
-        <Reviews cmsData={{ reviews: data?.reviews || [] }} />
+        <Reviews cmsData={{ 
+          reviews: data?.reviews?.map(review => ({
+            ...review,
+            avatar: normalizeImageUrl(review.avatar || review.avatarUrl || ''),
+            avatarUrl: normalizeImageUrl(review.avatarUrl || review.avatar || '')
+          })) || []
+        }} />
       </div>
       <div className="mt-12 md:mt-16 px-4 pb-16">
         <div className="max-w-4xl mx-auto">
-          <HelpFaq cmsData={{ faqs: data?.faqs || [] }} />
+          <HelpFaq cmsData={{ 
+            faqs: data?.faqs || [],
+            leftImageUrl: normalizeImageUrl(data?.left_image_url || ''),
+            left_image_url: normalizeImageUrl(data?.left_image_url || '')
+          }} />
         </div>
       </div>
     </div>

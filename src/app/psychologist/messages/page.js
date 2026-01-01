@@ -270,7 +270,7 @@ export default function PsychologistMessagesPage() {
       <div className="mt-8">
         {/* Conversations List */}
         <div className={`${showChatScreen ? 'hidden' : 'block'} bg-white rounded-lg shadow-sm`}>
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
             {isLoading ? (
               <div className="text-center py-4">
@@ -290,8 +290,8 @@ export default function PsychologistMessagesPage() {
                     onClick={() => handleConversationSelect(conversation)}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedConversation?.id === conversation.id
-                        ? 'bg-blue-100 border-blue-300'
-                        : 'bg-gray-50 hover:bg-gray-100'
+                        ? 'bg-blue-100 border border-blue-300'
+                        : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -321,7 +321,7 @@ export default function PsychologistMessagesPage() {
         {showChatScreen && selectedConversation && (
           <div className="fixed inset-0 bg-white z-50 flex flex-col" style={{ height: '100vh' }}>
             {/* Chat Header */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center space-x-3 flex-shrink-0">
+            <div className="bg-white border-b border-gray-200 px-3 sm:px-4 py-3 flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
               <button
                 onClick={handleBackToConversations}
                 className="text-gray-600 hover:text-gray-800"
@@ -386,7 +386,7 @@ export default function PsychologistMessagesPage() {
             </div>
 
             {/* Message Input - Fixed at Bottom */}
-            <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+            <div className="bg-white border-t border-gray-200 p-3 sm:p-4 flex-shrink-0">
               <form onSubmit={handleSendMessage} className="flex space-x-2">
                 <input
                   type="text"

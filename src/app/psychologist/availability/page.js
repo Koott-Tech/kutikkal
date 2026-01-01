@@ -469,7 +469,7 @@ export default function PsychologistAvailability() {
       </div>
 
       {/* Date Filter */}
-      <div className="mt-8 bg-white shadow rounded-lg p-6">
+      <div className="mt-6 sm:mt-8 bg-white shadow rounded-lg p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
             <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700 mb-2">
@@ -514,10 +514,10 @@ export default function PsychologistAvailability() {
           </div>
         )}
         <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <p className="font-medium text-gray-900">Your Available Time Slots</p>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <p className="font-medium text-gray-900 text-sm sm:text-base">Your Available Time Slots</p>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {availability.length === 0 ? (
               <div className="text-center py-8">
                 <Clock className="mx-auto h-12 w-12 text-gray-400" />
@@ -527,7 +527,7 @@ export default function PsychologistAvailability() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {availability.map((day) => (
                   <div key={day.id} className="border rounded-lg p-3 sm:p-4">
                     {editingAvailability?.id === day.id ? (
@@ -563,8 +563,8 @@ export default function PsychologistAvailability() {
                         
                         {/* Time Slots Editor */}
                         <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Time Slots</label>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Time Slots</label>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                             {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].map((time) => (
                               <button
                                 key={time}
@@ -636,7 +636,7 @@ export default function PsychologistAvailability() {
 
           {/* Pagination */}
           {totalPages > 1 && availability.length > 0 && (
-            <div className="px-6 py-4 border-t border-gray-200">
+            <div className="px-4 sm:px-6 py-4 border-t border-gray-200">
               <WheelPagination
                 totalPages={totalPages}
                 visibleCount={7}

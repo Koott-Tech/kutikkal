@@ -43,7 +43,7 @@ class ErrorBoundary extends Component {
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827', marginBottom: '0.5rem' }}>Something went wrong</h2>
             <p className="text-gray-600 mb-6">
               We encountered an error while loading this page. This might be due to a network issue or a temporary server problem.
             </p>
