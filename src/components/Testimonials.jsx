@@ -2,45 +2,59 @@
 import Image from "next/image";
 import { useState, useRef, useEffect, useCallback } from "react";
 
-// Helper function to convert YouTube URL to embed URL
-const getYouTubeEmbedUrl = (url, muted = true) => {
+// Helper function to extract YouTube video ID (matches VideosShowcase)
+const extractYouTubeId = (url) => {
   if (!url) return null;
-  
-  // Handle various YouTube URL formats including Shorts
   const patterns = [
-    /youtube\.com\/shorts\/([^&\n?#\/]+)/, // YouTube Shorts: youtube.com/shorts/VIDEO_ID
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/, // Regular YouTube URLs
-    /youtube\.com\/watch\?.*v=([^&\n?#]+)/ // YouTube watch URLs with other params
+    /youtube\.com\/shorts\/([^&\n?#\/]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
   ];
-  
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
-      const videoId = match[1];
-      const params = new URLSearchParams({
-        autoplay: '1',
-        mute: muted ? '1' : '0',
-        loop: '1',
-        playlist: videoId,
-        controls: '0',
-        modestbranding: '1',
-        rel: '0',
-        showinfo: '0',
-        iv_load_policy: '3',
-        fs: '0',
-        disablekb: '1',
-        playsinline: '1',
-        cc_load_policy: '0',
-        enablejsapi: '1',
-        origin: typeof window !== 'undefined' ? window.location.origin : '',
-        widget_referrer: typeof window !== 'undefined' ? window.location.href : ''
-      });
-      // Use nocookie domain and parameters to minimize branding
-      return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+      return match[1];
     }
   }
-  
   return null;
+};
+
+// Helper function to convert YouTube URL to embed URL (matches VideosShowcase)
+const getYouTubeEmbedUrl = (url, muted = true, autoplay = true) => {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) return null;
+  const params = new URLSearchParams({
+    autoplay: autoplay ? '1' : '0',
+    mute: muted ? '1' : '0',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    modestbranding: '1',
+    rel: '0',
+    showinfo: '0',
+    iv_load_policy: '3',
+    fs: '0',
+    disablekb: '1',
+    playsinline: '1',
+    cc_load_policy: '0',
+    enablejsapi: '1',
+    origin: typeof window !== 'undefined' ? window.location.origin : '',
+    widget_referrer: typeof window !== 'undefined' ? window.location.href : ''
+  });
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+};
+
+// Helper function to get YouTube thumbnail URL
+const getYouTubeThumbnailUrl = (url) => {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) return null;
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+};
+
+// Check if URL is YouTube
+const isYouTubeUrl = (url) => {
+  if (!url) return false;
+  return /youtube\.com|youtu\.be/.test(url);
 };
 
 export default function Testimonials() {
@@ -59,9 +73,17 @@ export default function Testimonials() {
   const [isMobileMarqueePaused, setIsMobileMarqueePaused] = useState(false);
   const marqueeResumeTimeoutRef = useRef(null);
   const testimonialVideoRef = useRef(null);
+  const [visibleVideoIndex, setVisibleVideoIndex] = useState(null);
+  const videoCardRefs = useRef({});
+  const desktopYouTubeIframeRef = useRef(null);
+  const [isDesktopVideoPlaying, setIsDesktopVideoPlaying] = useState(true);
+  const mobileYouTubeIframeRefs = useRef({});
+  
+  // Hardcoded YouTube video URL for desktop testimonial
+  const desktopYouTubeUrl = "https://www.youtube.com/watch?v=RSge3l2uKSI";
   
   const photos = [
-    { src: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Kids%20Need%20Care%20Too%20!!.webm", alt: "Testimonial video", type: "video" },
+    { src: "https://www.youtube.com/watch?v=RSge3l2uKSI", alt: "Testimonial video", type: "video" },
     { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
     { 
       text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
@@ -445,9 +467,6 @@ export default function Testimonials() {
     resumeMobileMarquee(4000);
   }, [pauseMobileMarquee, resumeMobileMarquee]);
 
-  const youtubeUrl = "https://youtube.com/shorts/RSge3l2uKSI";
-  const embedUrl = getYouTubeEmbedUrl(youtubeUrl, isMuted);
-
   const toggleMute = () => {
     setIsMuted(!isMuted);
     if (testimonialVideoRef.current) {
@@ -461,6 +480,131 @@ export default function Testimonials() {
       testimonialVideoRef.current.muted = isMuted;
     }
   }, [isMuted]);
+
+  // YouTube iframe API control (same as VideosShowcase)
+  const sendYouTubeCommand = useCallback((iframe, command) => {
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(JSON.stringify({
+      event: 'command',
+      func: command,
+      args: []
+    }), '*');
+  }, []);
+
+  // Control desktop YouTube video mute state
+  useEffect(() => {
+    if (!isYouTubeUrl(desktopYouTubeUrl) || !isDesktopVideoPlaying) return;
+    const iframe = desktopYouTubeIframeRef.current;
+    if (!iframe) return;
+    sendYouTubeCommand(iframe, isMuted ? 'mute' : 'unMute');
+  }, [isMuted, isDesktopVideoPlaying, sendYouTubeCommand]);
+
+  // Control mobile carousel YouTube videos mute state
+  useEffect(() => {
+    if (visibleVideoIndex == null) return;
+    const iframe = mobileYouTubeIframeRefs.current[visibleVideoIndex];
+    if (!iframe) return;
+    sendYouTubeCommand(iframe, isMuted ? 'mute' : 'unMute');
+  }, [isMuted, visibleVideoIndex, sendYouTubeCommand]);
+
+  // Control mobile carousel YouTube videos play/pause based on visibility
+  useEffect(() => {
+    Object.keys(mobileYouTubeIframeRefs.current).forEach((key) => {
+      const index = parseInt(key);
+      const iframe = mobileYouTubeIframeRefs.current[key];
+      if (!iframe) return;
+      if (visibleVideoIndex === index) {
+        sendYouTubeCommand(iframe, 'playVideo');
+      } else {
+        sendYouTubeCommand(iframe, 'pauseVideo');
+      }
+    });
+  }, [visibleVideoIndex, sendYouTubeCommand]);
+
+  // Auto-play desktop YouTube video on mount
+  useEffect(() => {
+    if (!isYouTubeUrl(desktopYouTubeUrl)) return;
+    const iframe = desktopYouTubeIframeRef.current;
+    if (!iframe) return;
+    // Small delay to ensure iframe is loaded
+    const timer = setTimeout(() => {
+      sendYouTubeCommand(iframe, 'playVideo');
+      setIsDesktopVideoPlaying(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [sendYouTubeCommand]);
+
+  // Track visible video card using IntersectionObserver
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Set initial visible video (first YouTube video in the array)
+    const firstYouTubeIndex = infinitePhotos.findIndex((photo) => 
+      photo.type === "video" && isYouTubeUrl(photo.src)
+    );
+    if (firstYouTubeIndex !== -1) {
+      setVisibleVideoIndex(firstYouTubeIndex);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the most visible entry
+        let mostVisibleEntry = null;
+        let highestRatio = 0;
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+            highestRatio = entry.intersectionRatio;
+            mostVisibleEntry = entry;
+          }
+        });
+
+        if (mostVisibleEntry && highestRatio > 0.2) {
+          const index = parseInt(mostVisibleEntry.target.getAttribute('data-video-index'));
+          if (!isNaN(index)) {
+            setVisibleVideoIndex(index);
+          }
+        }
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '0px',
+        threshold: [0.1, 0.2, 0.3, 0.5, 0.75, 1.0]
+      }
+    );
+
+    // Small delay to ensure refs are set, then observe
+    const timeoutId = setTimeout(() => {
+      // Observe all video cards (both desktop and mobile)
+      Object.values(videoCardRefs.current).forEach((ref) => {
+        if (ref) {
+          observer.observe(ref);
+        }
+      });
+      
+      // Also trigger initial check after observing
+      setTimeout(() => {
+        Object.values(videoCardRefs.current).forEach((ref) => {
+          if (ref) {
+            const rect = ref.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0 && 
+                             rect.left < window.innerWidth && rect.right > 0;
+            if (isVisible) {
+              const index = parseInt(ref.getAttribute('data-video-index'));
+              if (!isNaN(index)) {
+                setVisibleVideoIndex(index);
+              }
+            }
+          }
+        });
+      }, 100);
+    }, 500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [infinitePhotos]);
 
   return (
     <section className="w-full bg-white testimonials-section mt-8">
@@ -757,44 +901,75 @@ export default function Testimonials() {
               className="rounded-[10px] relative overflow-hidden" 
               style={{height: '446px'}}
             >
-              <video
-                ref={testimonialVideoRef}
-                className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
-                autoPlay
-                loop
-                playsInline
-                muted={isMuted}
-                style={{ 
-                  pointerEvents: 'none',
-                  width: '102%',
-                  height: '102%',
-                  left: '-1%',
-                  top: '-1%',
-                  objectFit: 'cover'
-                }}
-              >
-                <source src="https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Kids%20Need%20Care%20Too%20!!.webm" type="video/webm" />
-              </video>
-              {/* Mute/Unmute button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleMute();
-                }}
-                className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? (
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                  </svg>
-                )}
-              </button>
+              {isYouTubeUrl(desktopYouTubeUrl) && isDesktopVideoPlaying ? (
+                <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden rounded-[10px]">
+                  <iframe
+                    ref={desktopYouTubeIframeRef}
+                    key={`youtube-desktop-${isMuted ? 'muted' : 'unmuted'}`}
+                    src={getYouTubeEmbedUrl(desktopYouTubeUrl, isMuted, true)}
+                    className="absolute inset-0 w-full h-full rounded-[10px]"
+                    title="desktop-testimonial-video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen={false}
+                    frameBorder="0"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMute();
+                    }}
+                    className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
+                    aria-label={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? (
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
+                    <img
+                      src={getYouTubeThumbnailUrl(desktopYouTubeUrl) || '/hero.png'}
+                      alt="Testimonial video thumbnail"
+                      className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                      style={{ transform: 'scale(1.22)', transformOrigin: 'center center' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors rounded-[10px] cursor-pointer"
+                      onClick={() => setIsDesktopVideoPlaying(true)}
+                    >
+                      <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDesktopVideoPlaying(true);
+                    }}
+                    className="absolute bottom-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-colors"
+                    aria-label="Play video"
+                  >
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -876,6 +1051,12 @@ export default function Testimonials() {
                       >
                         {isVideoCard ? (
                           <div
+                            ref={(el) => {
+                              if (isYouTubeUrl(photo.src)) {
+                                videoCardRefs.current[`mobile-${index}`] = el;
+                                if (el) el.setAttribute('data-video-index', index.toString());
+                              }
+                            }}
                             className="relative h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto"
                             style={{
                               minHeight: '360px',
@@ -883,7 +1064,42 @@ export default function Testimonials() {
                               width: '100%'
                             }}
                           >
-                            {photo.src.includes('supabase.co') ? (
+                            {isYouTubeUrl(photo.src) ? (
+                              visibleVideoIndex === index && getYouTubeEmbedUrl(photo.src, isMuted, true) ? (
+                                <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden rounded-[10px]">
+                                  <iframe
+                                    key={`youtube-${index}-active`}
+                                    ref={(el) => { mobileYouTubeIframeRefs.current[index] = el; }}
+                                    src={getYouTubeEmbedUrl(photo.src, isMuted, true)}
+                                    className="absolute inset-0 w-full h-full rounded-[10px]"
+                                    title={`testimonial-video-${index}`}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen={false}
+                                    frameBorder="0"
+                                    style={{ pointerEvents: 'none' }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
+                                  <img
+                                    src={getYouTubeThumbnailUrl(photo.src) || '/hero.png'}
+                                    alt={photo.alt || "Testimonial video"}
+                                    className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                                    onError={(e) => {
+                                      // Fallback if thumbnail fails to load
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors rounded-[10px]">
+                                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            ) : photo.src.includes('supabase.co') ? (
                               <video
                                 className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
                                 autoPlay
@@ -899,20 +1115,6 @@ export default function Testimonials() {
                               >
                                 <source src={photo.src} type="video/webm" />
                               </video>
-                            ) : getYouTubeEmbedUrl(photo.src, isMuted) ? (
-                              <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                                <iframe
-                                  key={`youtube-${isMuted}-${index}`}
-                                  src={getYouTubeEmbedUrl(photo.src, isMuted)}
-                                  className="absolute inset-0 w-full h-full"
-                                  title={`testimonial-carousel-video-${index}`}
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen={false}
-                                  frameBorder="0"
-                                  loading="lazy"
-                                  style={{ border: 'none', pointerEvents: 'none' }}
-                                />
-                              </div>
                             ) : null}
                                 <button
                                   onClick={(e) => {
@@ -1008,6 +1210,12 @@ export default function Testimonials() {
                       >
                         {isVideoCard ? (
                           <div
+                            ref={(el) => {
+                              if (isYouTubeUrl(photo.src)) {
+                                videoCardRefs.current[`desktop-${index}`] = el;
+                                if (el) el.setAttribute('data-video-index', index.toString());
+                              }
+                            }}
                             className="relative h-[360px] rounded-[10px] overflow-hidden bg-black mx-auto"
                             style={{
                               minHeight: '360px',
@@ -1015,7 +1223,41 @@ export default function Testimonials() {
                               width: 'clamp(200px, 72vw, 300px)'
                             }}
                           >
-                            {photo.src.includes('supabase.co') ? (
+                            {isYouTubeUrl(photo.src) ? (
+                              visibleVideoIndex === index && getYouTubeEmbedUrl(photo.src, isMuted, true) ? (
+                                <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden rounded-[10px]">
+                                  <iframe
+                                    key={`youtube-${index}-active`}
+                                    ref={(el) => { mobileYouTubeIframeRefs.current[index] = el; }}
+                                    src={getYouTubeEmbedUrl(photo.src, isMuted, true)}
+                                    className="absolute inset-0 w-full h-full rounded-[10px]"
+                                    title={`testimonial-video-${index}`}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen={false}
+                                    frameBorder="0"
+                                    style={{ pointerEvents: 'none' }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
+                                  <img
+                                    src={getYouTubeThumbnailUrl(photo.src) || '/hero.png'}
+                                    alt={photo.alt || "Testimonial video"}
+                                    className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors rounded-[10px]">
+                                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            ) : photo.src.includes('supabase.co') ? (
                               <video
                                 className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
                                 autoPlay
@@ -1031,22 +1273,6 @@ export default function Testimonials() {
                               >
                                 <source src={photo.src} type="video/webm" />
                               </video>
-                            ) : getYouTubeEmbedUrl(photo.src, isMuted) ? (
-                          <div className="youtube-embed-wrapper relative w-full h-full overflow-hidden" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                            <iframe
-                              key={`youtube-${isMuted}-${index}`}
-                              src={getYouTubeEmbedUrl(photo.src, isMuted)}
-                                  className="absolute inset-0 w-full h-full"
-                                  title={`testimonial-carousel-video-${index}`}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen={false}
-                              frameBorder="0"
-                              loading="lazy"
-                                  style={{ border: 'none', pointerEvents: 'none' }}
-                            />
-                                <div className="absolute top-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                                <div className="absolute bottom-0 left-0 w-full h-[60px] bg-transparent z-10 pointer-events-none" />
-                              </div>
                             ) : null}
                             <button
                               onClick={(e) => {
