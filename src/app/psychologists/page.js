@@ -788,8 +788,8 @@ const Guide = () => {
               margin-top: 3.2rem;
               display: grid;
               grid-template-columns: repeat(3, 1fr);
-              gap: 12px 24px; /* row gap, column gap - reduced spacing */
-              padding: 0 3rem !important; /* adjusted side padding */
+              gap: 12px clamp(16px, 2.5vw, 28px); /* row gap, responsive column gap that scales with screen */
+              padding: 0 clamp(1.5rem, 3vw, 3rem) !important; /* responsive side padding */
               justify-items: center;
             }
             .guide-video-card {
@@ -815,13 +815,13 @@ const Guide = () => {
               box-shadow: none !important;
             }
             
-            /* 14-15 inch laptop view (1366px - 1440px) - 3 cards per row with reduced gap */
+            /* 14-15 inch laptop view (1366px - 1440px) - 3 cards per row with responsive gap */
             @media (min-width: 1366px) and (max-width: 1440px) {
               .guide-cards-container {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 16px 28px !important; /* row gap, column gap - reduced spacing */
+                gap: 16px clamp(20px, 2vw, 28px) !important; /* row gap, responsive column gap */
                 max-width: 1500px;
-                padding: 0 2.5rem !important;
+                padding: 0 clamp(1.5rem, 2.5vw, 2.5rem) !important;
               }
               .guide-video-card {
                 min-width: 300px; /* Minimum width for cards */
@@ -839,9 +839,9 @@ const Guide = () => {
             @media (min-width: 1100px) and (max-width: 1365px) and (max-height: 900px) {
               .guide-cards-container {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 12px 24px !important; /* row gap, column gap - reduced spacing */
+                gap: 12px clamp(16px, 2vw, 24px) !important; /* row gap, responsive column gap */
                 max-width: 1300px;
-                padding: 0 2.5rem !important; /* reduced padding to fit 3 cards */
+                padding: 0 clamp(1.25rem, 2vw, 2.5rem) !important; /* responsive padding */
               }
               .guide-video-card {
                 min-width: 270px; /* Minimum width for cards */
@@ -855,13 +855,33 @@ const Guide = () => {
               }
             }
             
-            /* Medium laptop view - 3 cards per row (for 14-15 inch screens) */
-            @media (min-width: 1025px) and (max-width: 1440px) and (min-height: 901px) {
+            /* Small laptop view (1025px - 1280px) - 3 cards per row with smaller gaps */
+            @media (min-width: 1025px) and (max-width: 1280px) and (min-height: 901px) {
               .guide-cards-container {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 16px 28px !important; /* row gap, column gap - reduced spacing */
+                gap: 14px clamp(16px, 1.8vw, 24px) !important; /* row gap, responsive column gap - smaller on small screens */
+                max-width: 1400px;
+                padding: 0 clamp(1.25rem, 2.5vw, 2.5rem) !important;
+              }
+              .guide-video-card {
+                min-width: 280px; /* Slightly smaller on small laptops */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
+                height: 360px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.04) translateY(-12px);
+                box-shadow: none !important;
+              }
+            }
+            
+            /* Medium laptop view (1281px - 1440px) - 3 cards per row */
+            @media (min-width: 1281px) and (max-width: 1440px) and (min-height: 901px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px clamp(20px, 2vw, 28px) !important; /* row gap, responsive column gap */
                 max-width: 1500px;
-                padding: 0 3rem !important;
+                padding: 0 clamp(2rem, 3vw, 3rem) !important;
               }
               .guide-video-card {
                 min-width: 300px; /* Minimum width for cards */
@@ -879,10 +899,10 @@ const Guide = () => {
             @media (min-width: 1441px) {
               .guide-cards-container {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 16px 24px !important; /* row gap, column gap - reduced spacing */
+                gap: 16px clamp(20px, 1.8vw, 28px) !important; /* row gap, responsive column gap */
                 row-gap: 16px !important;
                 max-width: 1800px;
-                padding: 0 4rem !important;
+                padding: 0 clamp(2.5rem, 4vw, 4rem) !important;
               }
               .guide-video-card {
                 min-width: 300px; /* Minimum width for cards */
