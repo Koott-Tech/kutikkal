@@ -66,7 +66,10 @@ export const storeAuthData = ({ token, user, remember }) => {
 
   if (remember) {
     const local = getLocalStorage();
-    if (!local) return;
+    if (!local) {
+      console.warn('localStorage not available - cannot store "Remember Me" data');
+      return;
+    }
     const expiresAt = Date.now() + REMEMBER_ME_DURATION_MS;
     local.setItem(TOKEN_KEY, token);
     local.setItem(ACCESS_TOKEN_KEY, token);
@@ -74,14 +77,19 @@ export const storeAuthData = ({ token, user, remember }) => {
     local.setItem(USER_KEY, serializedUser);
     local.setItem(LEGACY_USER_KEY, serializedUser);
     local.setItem(REMEMBER_UNTIL_KEY, String(expiresAt));
+    console.log('✅ Auth data stored in localStorage with "Remember Me" (expires:', new Date(expiresAt).toLocaleString(), ')');
   } else {
     const session = getSessionStorage();
-    if (!session) return;
+    if (!session) {
+      console.warn('sessionStorage not available - cannot store session data');
+      return;
+    }
     session.setItem(TOKEN_KEY, token);
     session.setItem(ACCESS_TOKEN_KEY, token);
     session.setItem(LEGACY_TOKEN_KEY, token);
     session.setItem(USER_KEY, serializedUser);
     session.setItem(LEGACY_USER_KEY, serializedUser);
+    console.log('✅ Auth data stored in sessionStorage (expires when tab closes)');
   }
 };
 
@@ -103,8 +111,11 @@ export const loadAuthData = () => {
     const rememberedUser = safeParse(local?.getItem(USER_KEY));
 
     if (!Number.isFinite(rememberUntil) || now > rememberUntil || !rememberedToken || !rememberedUser) {
+      console.log('⚠️ "Remember Me" data expired or invalid - clearing');
       clearLocal();
     } else {
+      const daysRemaining = Math.ceil((rememberUntil - now) / (1000 * 60 * 60 * 24));
+      console.log('✅ Loaded auth data from localStorage (Remember Me active,', daysRemaining, 'days remaining)');
       return { token: rememberedToken, user: rememberedUser, remember: true };
     }
   } else if (local) {
@@ -117,6 +128,7 @@ export const loadAuthData = () => {
       local.getItem(USER_KEY) || local.getItem(LEGACY_USER_KEY)
     );
     if (legacyToken && legacyUser) {
+      console.log('✅ Loaded auth data from localStorage (legacy format)');
       return { token: legacyToken, user: legacyUser, remember: true };
     }
   }
@@ -130,9 +142,11 @@ export const loadAuthData = () => {
   );
 
   if (sessionToken && sessionUser) {
+    console.log('✅ Loaded auth data from sessionStorage (session only)');
     return { token: sessionToken, user: sessionUser, remember: false };
   }
 
+  console.log('ℹ️ No stored auth data found');
   return null;
 };
 

@@ -30,21 +30,33 @@ export function AuthProvider({ children }) {
       try {
         // Decode JWT to check expiration
         const tokenParts = storedAuth.token.split('.');
+        let isTokenExpired = false;
+        
         if (tokenParts.length === 3) {
           const payload = JSON.parse(atob(tokenParts[1]));
           const expirationDate = new Date(payload.exp * 1000);
           const now = new Date();
-          const daysUntilExpiry = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
-          
-          // If token is expired, clear auth and redirect to login
-          if (now > expirationDate) {
-            clearAuthData();
-            localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
-            // Do NOT hard-redirect here to avoid unexpected redirects on public pages/home
-            // Let route-level guards handle navigation after auth loads
-            setIsLoading(false);
-            return;
-          }
+          isTokenExpired = now > expirationDate;
+        }
+        
+        // If token is expired BUT "Remember Me" is enabled and still valid
+        // Keep the user logged in - the API layer will handle token refresh/re-authentication
+        // Only clear if "Remember Me" period has also expired (handled by loadAuthData)
+        if (isTokenExpired && !storedAuth.remember) {
+          // Token expired and "Remember Me" not enabled - clear session storage
+          clearAuthData();
+          localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        // If token is expired but "Remember Me" is enabled, keep the data
+        // The API layer will handle re-authentication on next request
+        // This allows "Remember Me" to work even if JWT expires (user will need to re-login on first API call)
+        if (isTokenExpired && storedAuth.remember) {
+          console.log('Token expired but "Remember Me" is active - keeping session. User will be prompted to re-login on next API call.');
+          // Keep the user data but mark token as expired
+          // The API layer will handle prompting for re-login
         }
         
         setToken(storedAuth.token);
@@ -55,6 +67,7 @@ export function AuthProvider({ children }) {
         // The backend handles token validation and refresh
       } catch (error) {
         console.error('Error parsing stored user data:', error);
+        // Only clear if it's a parsing error, not just token expiration
         clearAuthData();
       }
     }

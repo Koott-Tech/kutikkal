@@ -19,6 +19,7 @@ import DoctorModal from '@/components/DoctorModal';
 import PsychologistCalendarView from '@/components/PsychologistCalendarView';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const getDoctorImageUrl = (doctor) => {
   if (!doctor) return null;
@@ -26,6 +27,7 @@ const getDoctorImageUrl = (doctor) => {
   const possibleFields = [
     doctor.profile_image_url,
     doctor.cover_image_url,
+    doctor.profile_picture_url,
     doctor.profile_image,
     doctor.photo_url,
     doctor.avatar_url,
@@ -35,16 +37,20 @@ const getDoctorImageUrl = (doctor) => {
 
   for (const field of possibleFields) {
     if (typeof field === 'string' && field.trim()) {
-      return field;
+      // Normalize the image URL (converts Supabase URLs to proxy URLs with signed signatures)
+      return normalizeImageUrl(field);
     }
   }
 
   if (doctor.photos && Array.isArray(doctor.photos) && doctor.photos.length > 0) {
-    return doctor.photos.find(Boolean);
+    const photo = doctor.photos.find(Boolean);
+    if (photo) {
+      return normalizeImageUrl(photo);
+    }
   }
 
   if (doctor.media && doctor.media.profile && doctor.media.profile.url) {
-    return doctor.media.profile.url;
+    return normalizeImageUrl(doctor.media.profile.url);
   }
 
   return null;

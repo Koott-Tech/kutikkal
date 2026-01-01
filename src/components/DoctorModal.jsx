@@ -53,6 +53,7 @@ export default function DoctorModal({
   mode = 'add' 
 }) {
   const [originalPackages, setOriginalPackages] = useState([]);
+  const [originalDoctorData, setOriginalDoctorData] = useState(null); // Store original doctor data for comparison
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -231,9 +232,10 @@ export default function DoctorModal({
   };
 
   useEffect(() => {
-    // Reset original packages when opening in add mode
+    // Reset original packages and original doctor data when opening in add mode
     if (mode === 'add') {
       setOriginalPackages([]);
+      setOriginalDoctorData(null);
     }
     
     if (doctor && mode === 'edit') {
@@ -266,6 +268,38 @@ export default function DoctorModal({
         }
         return [''];
       })();
+
+      // Filter and prepare languages for original data
+      const filteredLanguagesForOriginal = derivedLanguages
+        .map(lang => lang.trim())
+        .filter(Boolean);
+
+      // Store original doctor data for comparison (normalize to match backend format)
+      const originalData = {
+        first_name: doctor.first_name || doctor.firstName || '',
+        last_name: doctor.last_name || doctor.lastName || '',
+        phone: doctor.phone || '',
+        email: doctor.email || '',
+        designation: doctor.designation || null,
+        ug_college: doctor.ug_college || doctor.education?.ug || '',
+        pg_college: doctor.pg_college || doctor.education?.pg || '',
+        phd_college: doctor.phd_college || doctor.education?.phd || '',
+        description: doctor.description || '',
+        price: doctor.price || doctor.individual_session_price || null,
+        experience_years: doctor.experience_years || 0,
+        display_order: doctor.display_order !== null && doctor.display_order !== undefined ? doctor.display_order : null,
+        area_of_expertise: doctor.area_of_expertise || doctor.specializations || [],
+        personality_traits: doctor.personality_traits || doctor.personalities || [],
+        languages_json: filteredLanguagesForOriginal.length > 0 ? JSON.stringify(filteredLanguagesForOriginal) : null,
+        cover_image_url: resolveDoctorImage(doctor) || null,
+        faq_question_1: doctor.faq_question_1 || null,
+        faq_answer_1: doctor.faq_answer_1 || null,
+        faq_question_2: doctor.faq_question_2 || null,
+        faq_answer_2: doctor.faq_answer_2 || null,
+        faq_question_3: doctor.faq_question_3 || null,
+        faq_answer_3: doctor.faq_answer_3 || null
+      };
+      setOriginalDoctorData(originalData);
 
       setFormData({
         firstName: doctor.first_name || doctor.firstName || '',
@@ -813,6 +847,115 @@ export default function DoctorModal({
 
 
 
+  // Helper function to compare values (handles arrays, objects, and primitives)
+  const valuesAreEqual = (val1, val2) => {
+    // Handle null/undefined
+    if (val1 === null || val1 === undefined) return val2 === null || val2 === undefined;
+    if (val2 === null || val2 === undefined) return false;
+    
+    // Handle arrays
+    if (Array.isArray(val1) && Array.isArray(val2)) {
+      if (val1.length !== val2.length) return false;
+      const sorted1 = [...val1].sort().map(v => String(v).trim()).filter(Boolean);
+      const sorted2 = [...val2].sort().map(v => String(v).trim()).filter(Boolean);
+      return JSON.stringify(sorted1) === JSON.stringify(sorted2);
+    }
+    
+    // Handle objects
+    if (typeof val1 === 'object' && typeof val2 === 'object' && !Array.isArray(val1) && !Array.isArray(val2)) {
+      return JSON.stringify(val1) === JSON.stringify(val2);
+    }
+    
+    // Handle primitives (normalize for comparison)
+    const normalized1 = typeof val1 === 'string' ? val1.trim() : val1;
+    const normalized2 = typeof val2 === 'string' ? val2.trim() : val2;
+    
+    // Handle number comparison (convert strings to numbers if both are numeric)
+    if (!isNaN(normalized1) && !isNaN(normalized2) && normalized1 !== '' && normalized2 !== '') {
+      return Number(normalized1) === Number(normalized2);
+    }
+    
+    return normalized1 === normalized2;
+  };
+
+  // Get only changed fields compared to original data
+  const getChangedFields = (currentData, originalData) => {
+    if (!originalData || mode === 'add') {
+      // For new doctors, send all data
+      return currentData;
+    }
+
+    const changedFields = {};
+
+    // Compare simple fields
+    const simpleFields = [
+      'first_name', 'last_name', 'email', 'phone', 'description', 
+      'designation', 'experience_years', 'price', 'display_order',
+      'cover_image_url', 'faq_question_1', 'faq_answer_1', 
+      'faq_question_2', 'faq_answer_2', 'faq_question_3', 'faq_answer_3'
+    ];
+
+    simpleFields.forEach(field => {
+      const currentValue = currentData[field];
+      const originalValue = originalData[field];
+      
+      // Handle null/undefined comparison
+      const currentNormalized = currentValue === null || currentValue === undefined ? null : currentValue;
+      const originalNormalized = originalValue === null || originalValue === undefined ? null : originalValue;
+      
+      if (!valuesAreEqual(currentNormalized, originalNormalized)) {
+        changedFields[field] = currentValue;
+      }
+    });
+
+    // Compare education fields
+    const educationFields = ['ug_college', 'pg_college', 'phd_college'];
+    educationFields.forEach(field => {
+      const currentValue = currentData[field];
+      const originalValue = originalData[field];
+      if (!valuesAreEqual(currentValue, originalValue)) {
+        changedFields[field] = currentValue;
+      }
+    });
+
+    // Compare arrays (specializations, personalities)
+    if (!valuesAreEqual(currentData.area_of_expertise, originalData.area_of_expertise)) {
+      changedFields.area_of_expertise = currentData.area_of_expertise;
+    }
+
+    if (!valuesAreEqual(currentData.personality_traits, originalData.personality_traits)) {
+      changedFields.personality_traits = currentData.personality_traits;
+    }
+
+    // Compare languages_json
+    const currentLanguages = currentData.languages_json ? JSON.parse(currentData.languages_json) : [];
+    const originalLanguages = originalData.languages_json ? JSON.parse(originalData.languages_json) : [];
+    if (!valuesAreEqual(currentLanguages, originalLanguages)) {
+      changedFields.languages_json = currentData.languages_json;
+    }
+
+    // Always include availability if it exists (complex to compare, so always send if present)
+    if (currentData.availability && Array.isArray(currentData.availability) && currentData.availability.length > 0) {
+      changedFields.availability = currentData.availability;
+    }
+
+    // Always include packages if they exist (complex to compare, so always send if present)
+    if (currentData.packages && Array.isArray(currentData.packages) && currentData.packages.length > 0) {
+      changedFields.packages = currentData.packages;
+      // Include deletePackages flag if needed
+      if (currentData.deletePackages !== undefined) {
+        changedFields.deletePackages = currentData.deletePackages;
+      }
+    }
+
+    // Always include password if it's being changed
+    if (currentData.password) {
+      changedFields.password = currentData.password;
+    }
+
+    return changedFields;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('🚀 Form submission started');
@@ -863,7 +1006,9 @@ export default function DoctorModal({
 
       const resolvedImage = typeof formData.coverImage === 'string' ? formData.coverImage : null;
       const safeImageUrl = resolvedImage && !resolvedImage.startsWith('data:') ? resolvedImage : undefined;
-      const doctorData = {
+      
+      // Build full doctor data object
+      const fullDoctorData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
@@ -927,17 +1072,24 @@ export default function DoctorModal({
         .map(lang => lang.trim())
         .filter(Boolean);
       if (filteredLanguages.length > 0) {
-        doctorData.languages_json = JSON.stringify(filteredLanguages);
+        fullDoctorData.languages_json = JSON.stringify(filteredLanguages);
       }
 
       // Handle password for edit mode
       if (mode === 'edit' && showPasswordReset && newPassword.trim()) {
-        doctorData.password = newPassword;
+        fullDoctorData.password = newPassword;
       } else if (mode === 'add') {
-        doctorData.password = formData.password;
+        fullDoctorData.password = formData.password;
       }
 
-      console.log('📤 Sending doctor data to backend:', doctorData);
+      // Get only changed fields (for edit mode)
+      const doctorData = mode === 'edit' 
+        ? getChangedFields(fullDoctorData, originalDoctorData)
+        : fullDoctorData;
+
+      console.log('📤 Full doctor data:', fullDoctorData);
+      console.log('📤 Changed fields only:', doctorData);
+      console.log('📤 Number of fields changed:', Object.keys(doctorData).length);
       console.log('📤 Display order in doctorData:', doctorData.display_order);
       console.log('📤 Display order type:', typeof doctorData.display_order);
 
@@ -956,6 +1108,8 @@ export default function DoctorModal({
     setHasUserModifiedAvailability(false);
     // Reset original packages
     setOriginalPackages([]);
+    // Reset original doctor data
+    setOriginalDoctorData(null);
     onClose();
   };
 
