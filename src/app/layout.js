@@ -73,13 +73,13 @@ export default function RootLayout({ children }) {
           </>
         )}
         {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-PBKE518Y0H"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K7Z8F94Z80"></script>
         <script dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-PBKE518Y0H');
+            gtag('config', 'G-K7Z8F94Z80');
           `
         }} />
         {/* Favicon for browsers */}
