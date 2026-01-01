@@ -226,6 +226,7 @@ export default function FinanceFreeAssessments() {
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* Assessment Details Modal */}

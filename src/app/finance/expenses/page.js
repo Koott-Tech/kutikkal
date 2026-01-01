@@ -285,6 +285,7 @@ export default function FinanceExpenses() {
               </table>
             </div>
           </div>
+          </div>
         )}
 
         {/* Add Expense Modal */}

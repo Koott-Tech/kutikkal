@@ -197,6 +197,7 @@ export default function FinanceGST() {
               </tbody>
             </table>
           </div>
+          </div>
         </div>
 
         {/* GST Settings Modal */}

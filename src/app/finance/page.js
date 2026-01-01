@@ -463,6 +463,7 @@ export default function FinanceDashboard() {
                 </tbody>
               </table>
             </div>
+            </div>
           ) : (
             <p className="text-gray-500 text-center py-8">No recent sessions</p>
           )}

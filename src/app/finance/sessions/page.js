@@ -220,6 +220,7 @@ export default function FinanceSessions() {
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* Session Details Modal */}
