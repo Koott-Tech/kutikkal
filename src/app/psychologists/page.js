@@ -5,6 +5,7 @@ import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
 import LoadingScreen from '@/components/LoadingScreen';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const Guide = () => {
   const [showOnboarding, setShowOnboarding] = React.useState(false);
@@ -1064,6 +1065,11 @@ const Guide = () => {
                     // First try actual image URLs from database
                     let imageSrc = doc.cover_image_url || doc.profile_picture_url;
                     
+                    // Normalize the image URL (converts Supabase URLs to proxy URLs)
+                    if (imageSrc) {
+                      imageSrc = normalizeImageUrl(imageSrc);
+                    }
+                    
                     // If no database image, use fallback based on name
                     if (!imageSrc) {
                       const name = (doc.name || doc.first_name || '').toLowerCase();
@@ -1822,7 +1828,7 @@ const Guide = () => {
               <div className="doctor-modal-image" onClick={e => e.stopPropagation()}>
                 {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? (
                   <img
-                    src={doctors[selected].profile_picture_url || doctors[selected].cover_image_url}
+                    src={normalizeImageUrl(doctors[selected].profile_picture_url || doctors[selected].cover_image_url)}
                     alt={`${doctors[selected]?.name || doctors[selected]?.first_name} - Child psychologist profile photo`}
                     className="doctor-modal-img"
                     style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: "10px", transform: "none" }}

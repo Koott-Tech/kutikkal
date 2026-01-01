@@ -1194,13 +1194,13 @@ export default function Header() {
               </button>
             )}
             <button 
-              onClick={() => setShowGuide(true)} 
+              onClick={() => router.push('/psychologists')} 
               className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
               style={{ backgroundColor: '#3f2e73' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
             >
-              Get started
+              Book Now
             </button>
             </div>
 
@@ -1339,18 +1339,18 @@ export default function Header() {
                     Login
                   </button>
                   
-                  {/* Get Started Button */}
+                  {/* Book Now Button */}
                   <button 
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      setShowGuide(true);
+                      router.push('/psychologists');
                     }}
                     className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
                     style={{ backgroundColor: '#3f2e73' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                   >
-                    Get started
+                    Book Now
                   </button>
                 </div>
               )}
