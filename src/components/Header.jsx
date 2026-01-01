@@ -375,7 +375,7 @@ export default function Header() {
     } else if (user?.role === 'psychologist') {
       router.push('/psychologist');
     } else if (user?.role === 'finance') {
-      router.push('/admin'); // Redirect finance role to admin since finance page is removed
+      router.push('/finance'); // Redirect finance role to finance dashboard
     } else {
       router.push('/profile');
     }

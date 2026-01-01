@@ -6,7 +6,7 @@ import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
-import WhatsAppWidget from "@/components/WhatsAppWidget";
+import WhatsAppWidgetWrapper from "@/components/WhatsAppWidgetWrapper";
 import PageLoadingOverlay from "@/components/PageLoadingOverlay";
 import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -152,7 +152,7 @@ export default function RootLayout({ children }) {
               {children}
             </ConditionalPadding>
             <FooterWrapper />
-            <WhatsAppWidget />
+            <WhatsAppWidgetWrapper />
           </ConditionalProviders>
         </ErrorBoundary>
         <SpeedInsights />

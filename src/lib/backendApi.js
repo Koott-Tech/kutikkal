@@ -1199,6 +1199,16 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+
+  // Get free assessments (admin only)
+  async getFreeAssessments(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/free-assessments/admin/list${queryParams.toString() ? `?${queryParams}` : ''}`);
+  },
 };
 
 // Superadmin API
@@ -1548,6 +1558,169 @@ export const bookingsApi = {
   },
 };
 
+// Finance API
+export const financeApi = {
+  // Dashboard
+  async getDashboard() {
+    return apiRequest('/finance/dashboard');
+  },
+
+  // Sessions
+  async getSessions(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/sessions${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getSessionDetails(sessionId) {
+    return apiRequest(`/finance/sessions/${sessionId}`);
+  },
+
+  // Revenue
+  async getRevenue(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/revenue${queryString ? `?${queryString}` : ''}`);
+  },
+
+  // Commissions
+  async getCommissions(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/commissions${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async updateCommissionRate(psychologistId, data) {
+    return apiRequest(`/finance/commissions/${psychologistId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Expenses
+  async getExpenses(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/expenses${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async createExpense(data) {
+    return apiRequest('/finance/expenses', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateExpense(expenseId, data) {
+    return apiRequest(`/finance/expenses/${expenseId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteExpense(expenseId) {
+    return apiRequest(`/finance/expenses/${expenseId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async approveExpense(expenseId) {
+    return apiRequest(`/finance/expenses/${expenseId}/approve`, {
+      method: 'POST',
+    });
+  },
+
+  // Income
+  async getIncome(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/income${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async createIncome(data) {
+    return apiRequest('/finance/income', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateIncome(incomeId, data) {
+    return apiRequest(`/finance/income/${incomeId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteIncome(incomeId) {
+    return apiRequest(`/finance/income/${incomeId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // GST
+  async getGSTRecords(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/gst${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getGSTSettings() {
+    return apiRequest('/finance/gst/settings');
+  },
+
+  async updateGSTSettings(data) {
+    return apiRequest('/finance/gst/settings', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Settings
+  async getExpenseCategories() {
+    return apiRequest('/finance/settings/categories');
+  },
+
+  async createExpenseCategory(data) {
+    return apiRequest('/finance/settings/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getIncomeSources() {
+    return apiRequest('/finance/settings/income-sources');
+  },
+
+  async createIncomeSource(data) {
+    return apiRequest('/finance/settings/income-sources', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Payouts
+  async getPayouts(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/payouts${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getPendingPayouts(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/payouts/pending${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getPayoutDetails(payoutId) {
+    return apiRequest(`/finance/payouts/${payoutId}`);
+  },
+
+  async processPayout(data) {
+    return apiRequest('/finance/payouts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Free Assessments
+  async getFreeAssessments(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/free-assessments${queryString ? `?${queryString}` : ''}`);
+  },
+};
+
 // Default export with common methods for backward compatibility
 export const backendApi = {
   auth: authApi,
@@ -1560,6 +1733,7 @@ export const backendApi = {
   doctors: doctorsApi,
   users: usersApi,
   bookings: bookingsApi,
+  finance: financeApi,
   
   // Generic GET method for backward compatibility
   async get(endpoint) {
