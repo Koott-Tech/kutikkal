@@ -11,8 +11,10 @@ import {
   DollarSign,
   Loader2,
   CalendarDays,
-  CheckCircle
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { adminApi } from '@/lib/backendApi';
 import { publicApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -26,6 +28,9 @@ export default function AdminManualBookingModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [error, setError] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailureModal, setShowFailureModal] = useState(false);
+  const [failureMessage, setFailureMessage] = useState('');
   
   // Client mode: 'existing' or 'new'
   const [isNewClient, setIsNewClient] = useState(false);
@@ -56,6 +61,7 @@ export default function AdminManualBookingModal({
     const d = String(now.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   });
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [notes, setNotes] = useState('');
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   
@@ -132,12 +138,16 @@ export default function AdminManualBookingModal({
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
     setPaymentReceivedDate(`${y}-${m}-${d}`);
+    setPaymentMethod('cash');
     setNotes('');
     setError(null);
     setPsychologistAvailability({});
     setCurrentDate(new Date());
     setSearchClient('');
     setSearchPsychologist('');
+    setShowSuccessModal(false);
+    setShowFailureModal(false);
+    setFailureMessage('');
   };
 
   const handleNewClientInputChange = (field, value) => {
@@ -362,10 +372,10 @@ export default function AdminManualBookingModal({
 
     // If creating a new client, create it first
     if (isNewClient) {
-      // Validate new client data
-      if (!newClientData.email || !newClientData.first_name || !newClientData.last_name || 
-          !newClientData.phone_number || !newClientData.child_name || !newClientData.child_age) {
-        setError('Please fill in all required client details: Email, First Name, Last Name, Phone Number, Child Name, and Child Age');
+      // Validate new client data - only email, first_name, and phone_number are required
+      // last_name, child_name, and child_age are optional
+      if (!newClientData.email || !newClientData.first_name || !newClientData.phone_number) {
+        setError('Please fill in all required client details: Email, First Name, and Phone Number');
         return;
       }
 
@@ -376,11 +386,13 @@ export default function AdminManualBookingModal({
         return;
       }
 
-      // Validate child age
+      // Validate child age only if provided
+      if (newClientData.child_age && newClientData.child_age.trim() !== '') {
       const childAge = parseInt(newClientData.child_age);
       if (isNaN(childAge) || childAge < 1 || childAge > 18) {
         setError('Child age must be between 1 and 18');
         return;
+        }
       }
 
       setIsLoading(true);
@@ -395,10 +407,10 @@ export default function AdminManualBookingModal({
           email: newClientData.email.trim().toLowerCase(),
           password: randomPassword, // Auto-generated password
           first_name: newClientData.first_name,
-          last_name: newClientData.last_name,
+          last_name: newClientData.last_name || '', // Optional
           phone_number: fullPhoneNumber,
-          child_name: newClientData.child_name,
-          child_age: parseInt(newClientData.child_age)
+          child_name: newClientData.child_name || null, // Optional
+          child_age: newClientData.child_age && newClientData.child_age.trim() !== '' ? parseInt(newClientData.child_age) : null // Optional
         });
 
         console.log('🔍 Client creation response:', JSON.stringify(clientResponse, null, 2));
@@ -495,6 +507,7 @@ export default function AdminManualBookingModal({
         scheduled_time: convertTo24Hour(selectedTime),
         amount: parseFloat(amount),
         payment_received_date: paymentReceivedDate,
+        payment_method: paymentMethod,
         notes: notes || null
       };
 
@@ -504,15 +517,18 @@ export default function AdminManualBookingModal({
       const response = await adminApi.createManualBooking(bookingData);
 
       if (response.success) {
-        const successMessage = isNewClient 
-          ? 'New client created and manual booking created successfully!'
-          : 'Manual booking created successfully!';
-        showSuccess(successMessage, 'Booking Created');
+        // Show success popup
+        setShowSuccessModal(true);
         onBookingSuccess?.(response.data);
+        // Close the form modal after a short delay
+        setTimeout(() => {
         onClose();
+        }, 1500);
       } else {
         console.error('Booking creation failed:', response);
-        setError(response.message || 'Failed to create booking');
+        const errorMessage = response.message || 'Failed to create booking';
+        setFailureMessage(errorMessage);
+        setShowFailureModal(true);
       }
     } catch (error) {
       console.error('Create booking error:', error);
@@ -526,7 +542,9 @@ export default function AdminManualBookingModal({
           scheduled_time: selectedTime
         }
       });
-      setError(error.message || 'Failed to create booking');
+      const errorMessage = error.message || 'Failed to create booking';
+      setFailureMessage(errorMessage);
+      setShowFailureModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -640,15 +658,14 @@ export default function AdminManualBookingModal({
                     {/* Last Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Last Name *
+                        Last Name
                       </label>
                       <input
                         type="text"
                         value={newClientData.last_name}
                         onChange={(e) => handleNewClientInputChange('last_name', e.target.value)}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Doe"
+                        placeholder="Doe (optional)"
                       />
                     </div>
 
@@ -682,22 +699,21 @@ export default function AdminManualBookingModal({
                     {/* Child Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Child Name *
+                        Child Name
                       </label>
                       <input
                         type="text"
                         value={newClientData.child_name}
                         onChange={(e) => handleNewClientInputChange('child_name', e.target.value)}
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Child's name"
+                        placeholder="Child's name (optional)"
                       />
                     </div>
 
                     {/* Child Age */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Child Age *
+                        Child Age
                       </label>
                       <input
                         type="number"
@@ -705,9 +721,8 @@ export default function AdminManualBookingModal({
                         onChange={(e) => handleNewClientInputChange('child_age', e.target.value)}
                         min="1"
                         max="18"
-                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Age (1-18)"
+                        placeholder="Age 1-18 (optional)"
                       />
                     </div>
                   </div>
@@ -1005,6 +1020,30 @@ export default function AdminManualBookingModal({
               <p className="mt-1 text-xs text-gray-500">Date when payment was received manually</p>
             </div>
 
+            {/* Payment Method */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <DollarSign className="h-4 w-4 inline mr-1" />
+                Payment Method *
+              </label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="cash">Cash</option>
+                <option value="card">Card (Debit/Credit)</option>
+                <option value="upi">UPI (GPay, PhonePe, etc.)</option>
+                <option value="netbanking">Net Banking</option>
+                <option value="wallet">Wallet (Paytm, etc.)</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="cheque">Cheque</option>
+                <option value="other">Other</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Method used for manual payment</p>
+            </div>
+
             {/* Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1056,6 +1095,161 @@ export default function AdminManualBookingModal({
           </div>
         </form>
       </div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-white rounded-lg shadow-xl max-w-md w-full relative"
+            >
+              {/* Close button at top right */}
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  onClose();
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Modal Content */}
+              <div className="p-6 pt-12">
+                <div className="text-center mb-6">
+                  {/* Success Icon */}
+                  <div className="mb-4 flex justify-center">
+                    <div className="rounded-full bg-green-100 p-3">
+                      <CheckCircle className="h-12 w-12 text-green-600" />
+                    </div>
+                  </div>
+                  <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.4 }}
+                    className="text-xl font-semibold text-gray-900 mb-2"
+                  >
+                    Booking Created Successfully!
+                  </motion.h3>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="text-gray-600 text-sm"
+                  >
+                    {isNewClient 
+                      ? 'New client created and manual booking created successfully!'
+                      : 'Manual booking has been created successfully.'}
+                  </motion.p>
+                </div>
+
+                {/* Close Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="mt-6"
+                >
+                  <button
+                    onClick={() => {
+                      setShowSuccessModal(false);
+                      onClose();
+                    }}
+                    className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
+                    style={{ backgroundColor: '#3f2e73' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                  >
+                    Close
+                  </button>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Failure Modal */}
+      <AnimatePresence>
+        {showFailureModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-white rounded-lg shadow-xl max-w-md w-full relative"
+            >
+              {/* Close button at top right */}
+              <button
+                onClick={() => setShowFailureModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Modal Content */}
+              <div className="p-6 pt-12">
+                <div className="text-center mb-6">
+                  {/* Failure Icon */}
+                  <div className="mb-4 flex justify-center">
+                    <div className="rounded-full bg-red-100 p-3">
+                      <XCircle className="h-12 w-12 text-red-600" />
+                    </div>
+                  </div>
+                  <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.4 }}
+                    className="text-xl font-semibold text-gray-900 mb-2"
+                  >
+                    Booking Failed
+                  </motion.h3>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="text-gray-600 text-sm"
+                  >
+                    {failureMessage || 'Failed to create booking. Please try again.'}
+                  </motion.p>
+                </div>
+
+                {/* Close Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="mt-6"
+                >
+                  <button
+                    onClick={() => setShowFailureModal(false)}
+                    className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200 bg-red-600 hover:bg-red-700"
+                  >
+                    Close
+                  </button>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

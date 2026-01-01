@@ -29,6 +29,7 @@ import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
 import AdminManualBookingModal from '@/components/AdminManualBookingModal';
+import AdminEditSessionModal from '@/components/AdminEditSessionModal';
 import { cache } from '@/lib/cache';
 import WheelPagination from '@/components/ui/wheel-pagination';
 
@@ -43,7 +44,10 @@ export default function BookingsPage() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [isEditSessionOpen, setIsEditSessionOpen] = useState(false);
   const [feedbackToView, setFeedbackToView] = useState(null);
+  const [showNoShowConfirm, setShowNoShowConfirm] = useState(false);
+  const [sessionToMarkNoShow, setSessionToMarkNoShow] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -124,6 +128,15 @@ export default function BookingsPage() {
     setIsRescheduleOpen(true);
   };
 
+  const handleEditSession = (session) => {
+    setSelectedSession(session);
+    setIsEditSessionOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    loadBookings(); // Reload bookings after successful edit
+  };
+
   const handleDeleteSession = async (session) => {
     if (!confirm(`Are you sure you want to delete this session? This action cannot be undone.`)) {
       return;
@@ -154,32 +167,46 @@ export default function BookingsPage() {
     }
   };
 
-  const handleMarkAsNoShow = async (session, reason = '') => {
-    if (!confirm('Are you sure you want to mark this session as no-show? This action cannot be undone.')) {
-      return;
-    }
+  const handleMarkAsNoShowClick = (session) => {
+    setSessionToMarkNoShow(session);
+    setShowNoShowConfirm(true);
+  };
+
+  const handleNoShowConfirm = async () => {
+    if (!sessionToMarkNoShow) return;
 
     try {
-      await sessionsApi.markSessionAsNoShow(session.id, reason);
+      await sessionsApi.markSessionAsNoShow(sessionToMarkNoShow.id, '');
       
       // Update the booking in the list
       setBookings(prevBookings => 
         prevBookings.map(booking => 
-          booking.id === session.id ? { ...booking, status: 'no_show' } : booking
+          booking.id === sessionToMarkNoShow.id ? { ...booking, status: 'no_show' } : booking
         )
       );
       
       showSuccess('Session marked as no-show successfully!', 'No-Show Success');
       
       // Close details modal if it's open for this session
-      if (selectedSession && selectedSession.id === session.id) {
+      if (selectedSession && selectedSession.id === sessionToMarkNoShow.id) {
         setIsSessionDetailsOpen(false);
         setSelectedSession(null);
       }
+
+      // Close confirmation modal
+      setShowNoShowConfirm(false);
+      setSessionToMarkNoShow(null);
     } catch (error) {
       console.error('Error marking session as no-show:', error);
       showError(`Failed to mark session as no-show: ${error.message}`, 'No-Show Error');
+      setShowNoShowConfirm(false);
+      setSessionToMarkNoShow(null);
     }
+  };
+
+  const handleNoShowCancel = () => {
+    setShowNoShowConfirm(false);
+    setSessionToMarkNoShow(null);
   };
 
   const handleRescheduleSuccess = (updatedSession) => {
@@ -292,7 +319,6 @@ export default function BookingsPage() {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -537,8 +563,7 @@ export default function BookingsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      {getStatusIcon(booking.status, booking)}
-                      <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status, booking)}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status, booking)}`}>
                         {getStatusText(booking.status, booking)}
                       </span>
                     </div>
@@ -549,8 +574,14 @@ export default function BookingsPage() {
                         onClick={() => handleViewSession(booking)}
                         className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Details
+                        Details
+                      </button>
+                      <button
+                        onClick={() => handleEditSession(booking)}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
                       </button>
                       {['booked', 'rescheduled', 'confirmed'].includes(booking.status) && (
                         <button
@@ -572,7 +603,7 @@ export default function BookingsPage() {
                       )}
                       {booking.status !== 'completed' && booking.status !== 'no_show' && booking.status !== 'noshow' && (
                         <button
-                          onClick={() => handleMarkAsNoShow(booking)}
+                          onClick={() => handleMarkAsNoShowClick(booking)}
                           className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
                           title="Mark session as no-show"
                         >
@@ -875,6 +906,48 @@ export default function BookingsPage() {
         onClose={() => setIsManualBookingOpen(false)}
         onBookingSuccess={handleManualBookingSuccess}
       />
+
+      {/* Edit Session Modal */}
+      <AdminEditSessionModal
+        isOpen={isEditSessionOpen}
+        onClose={() => {
+          setIsEditSessionOpen(false);
+          setSelectedSession(null);
+        }}
+        session={selectedSession}
+        onUpdateSuccess={handleEditSuccess}
+      />
+
+      {/* No Show Confirmation Modal */}
+      {showNoShowConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <XCircle className="h-6 w-6 text-orange-600 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900">Confirm No Show</h3>
+              </div>
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to mark this session as no-show? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={handleNoShowCancel}
+                  className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleNoShowConfirm}
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  Mark as No Show
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       </div>
     </div>

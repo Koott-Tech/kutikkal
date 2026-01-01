@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import {
   Calendar,
   Clock,
-  FileText,
   BarChart3,
   Settings,
   LogOut,
@@ -14,9 +13,11 @@ import {
   X,
   MessageSquare,
   Package,
-  RefreshCw
+  CheckCircle,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { psychologistApi } from '@/lib/backendApi';
 
 export default function PsychologistLayout({ children }) {
   // Desktop (>= 1024px): open by default, Mobile: closed by default
@@ -29,6 +30,15 @@ export default function PsychologistLayout({ children }) {
   });
   const { user, isAuthenticated, hasRole, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  
+  // Header stats state
+  const [headerStats, setHeaderStats] = useState({
+    completed_sessions: 0,
+    upcoming_sessions: 0,
+    month: ''
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     if (!authLoading) {
@@ -43,6 +53,33 @@ export default function PsychologistLayout({ children }) {
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
 
+  // Load header stats
+  useEffect(() => {
+    const loadHeaderStats = async () => {
+      try {
+        setIsLoadingStats(true);
+        const response = await psychologistApi.getMonthlyStats();
+        if (response.success && response.data) {
+          setHeaderStats(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to load header stats:', err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    if (!authLoading && hasRole('psychologist')) {
+      loadHeaderStats();
+      // Refresh every 30 seconds to keep data fresh
+      const interval = setInterval(() => {
+        loadHeaderStats();
+      }, 30 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [authLoading, hasRole]);
+
   const handleLogout = () => {
     logout();
     router.push('/');
@@ -52,9 +89,7 @@ export default function PsychologistLayout({ children }) {
     { name: 'Dashboard', href: '/psychologist', icon: BarChart3 },
     { name: 'Sessions', href: '/psychologist/sessions', icon: Calendar },
     { name: 'Assessments', href: '/psychologist/assessments', icon: Package },
-    { name: 'Rescheduling', href: '/psychologist/rescheduling', icon: RefreshCw },
     { name: 'Availability', href: '/psychologist/availability', icon: Clock },
-    { name: 'Packages', href: '/psychologist/packages', icon: FileText },
     { name: 'Messages', href: '/psychologist/messages', icon: MessageSquare },
     { name: 'Settings', href: '/psychologist/settings', icon: Settings }
   ];
@@ -202,9 +237,47 @@ export default function PsychologistLayout({ children }) {
       </div>
 
       {/* Main content (push right for desktop left sidebar) */}
-      <div className="lg:ml-64">
-        {/* Page content */}
-        <main>
+      <div className={`lg:ml-64 transition-all duration-300 ease-in-out`}>
+        {/* Top bar - Fixed header with Monthly Stats */}
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-64 z-30">
+          <div className="px-6 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-4">
+                <h6 className="text-lg font-semibold text-gray-800">Psychologist Dashboard</h6>
+                {headerStats.month && (
+                  <span className="text-sm text-gray-500">({headerStats.month})</span>
+                )}
+              </div>
+              {user && (
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{user.email}</span>
+                  <span className="ml-2 text-gray-400 capitalize">({user.role})</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Monthly Stats Row */}
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-xs text-gray-600">Completed:</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {isLoadingStats ? '...' : (headerStats.completed_sessions || 0).toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="text-xs text-gray-600">Upcoming:</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {isLoadingStats ? '...' : (headerStats.upcoming_sessions || 0).toLocaleString('en-IN')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Page content - Add padding-top to account for fixed header */}
+        <main className="lg:pt-20">
           {children}
         </main>
       </div>

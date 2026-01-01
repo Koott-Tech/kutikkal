@@ -640,6 +640,11 @@ export const psychologistApi = {
     return apiRequest(`/psychologists/sessions?${queryParams}`);
   },
 
+  // Get monthly stats (completed and upcoming sessions)
+  async getMonthlyStats() {
+    return apiRequest('/psychologists/stats/monthly');
+  },
+
   // Update session (notes, summary, status)
   async updateSession(sessionId, updateData) {
     return apiRequest(`/psychologists/sessions/${sessionId}`, {
@@ -658,7 +663,7 @@ export const psychologistApi = {
 
   // Mark session as no-show
   async markSessionAsNoShow(sessionId, reason = '') {
-    return apiRequest(`/sessions/${sessionId}/no-show`, {
+    return apiRequest(`/admin/sessions/${sessionId}/no-show`, {
       method: 'PUT',
       body: JSON.stringify({ reason }),
     });
@@ -694,27 +699,6 @@ export const psychologistApi = {
     });
   },
 
-  // Respond to reschedule request
-  async respondToRescheduleRequest(sessionId, responseData) {
-    return apiRequest(`/psychologists/sessions/${sessionId}/reschedule-response`, {
-      method: 'POST',
-      body: JSON.stringify(responseData),
-    });
-  },
-
-  // Handle reschedule request (approve/reject)
-  async handleRescheduleRequest(notificationId, action, reason = '') {
-    return apiRequest(`/sessions/reschedule-request/${notificationId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ action, reason }),
-    });
-  },
-
-  // Get reschedule requests for psychologist's sessions
-  async getRescheduleRequests(status) {
-    const query = status ? `?status=${status}` : '';
-    return apiRequest(`/sessions/reschedule-requests${query}`);
-  },
 
   // Get availability
   async getAvailability(params = {}) {
@@ -749,33 +733,6 @@ export const psychologistApi = {
     });
   },
 
-  // Get packages
-  async getPackages() {
-    return apiRequest('/psychologists/packages');
-  },
-
-  // Create package
-  async createPackage(packageData) {
-    return apiRequest('/psychologists/packages', {
-      method: 'POST',
-      body: JSON.stringify(packageData),
-    });
-  },
-
-  // Update package
-  async updatePackage(packageId, packageData) {
-    return apiRequest(`/psychologists/packages/${packageId}`, {
-      method: 'PUT',
-      body: JSON.stringify(packageData),
-    });
-  },
-
-  // Delete package
-  async deletePackage(packageId) {
-    return apiRequest(`/psychologists/packages/${packageId}`, {
-      method: 'DELETE',
-    });
-  },
 
   // Get Google Calendar events
   async getGoogleCalendarEvents(params = {}) {
@@ -965,6 +922,22 @@ export const adminApi = {
     return apiRequest(`/admin/sessions/${sessionId}/reschedule`, {
       method: 'PUT',
       body: JSON.stringify(rescheduleData),
+    });
+  },
+
+  // Update session payment details
+  async updateSessionPayment(sessionId, paymentData) {
+    return apiRequest(`/admin/sessions/${sessionId}/payment`, {
+      method: 'PUT',
+      body: JSON.stringify(paymentData),
+    });
+  },
+
+  // Update session (comprehensive - all fields)
+  async updateSession(sessionId, sessionData) {
+    return apiRequest(`/admin/sessions/${sessionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(sessionData),
     });
   },
 
@@ -1350,7 +1323,7 @@ export const sessionsApi = {
 
   // Mark session as no-show (admin or psychologist)
   async markSessionAsNoShow(sessionId, reason = '') {
-    return apiRequest(`/sessions/${sessionId}/no-show`, {
+    return apiRequest(`/admin/sessions/${sessionId}/no-show`, {
       method: 'PUT',
       body: JSON.stringify({ reason }),
     });

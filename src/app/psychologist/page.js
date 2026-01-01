@@ -6,7 +6,6 @@ import { useNotification } from "../../contexts/NotificationContext";
 import { 
   Calendar, 
   Clock, 
-  FileText, 
   TrendingUp,
   AlertCircle
 } from "lucide-react";
@@ -17,8 +16,7 @@ export default function PsychologistDashboard() {
   const [stats, setStats] = useState({
     totalSessions: 0,
     upcomingSessions: 0,
-    totalAvailability: 0,
-    totalPackages: 0
+    totalAvailability: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,22 +48,16 @@ export default function PsychologistDashboard() {
       setStats({
         totalSessions: sessions.length,
         upcomingSessions: upcomingSessions.length,
-        totalAvailability: 0, // Will be updated
-        totalPackages: 0 // Will be updated
+        totalAvailability: 0 // Will be updated
       });
 
       // Load secondary data in background
-      Promise.all([
-        psychologistApi.getAvailability(),
-        psychologistApi.getPackages()
-      ]).then(([availabilityData, packagesData]) => {
+      psychologistApi.getAvailability().then(availabilityData => {
         const availability = availabilityData.data || [];
-        const packages = packagesData.data || [];
         
         setStats(prev => ({
           ...prev,
-          totalAvailability: availability.length,
-          totalPackages: packages.length
+          totalAvailability: availability.length
         }));
       }).catch(err => {
         console.error('Error loading secondary dashboard data:', err);
@@ -169,21 +161,6 @@ export default function PsychologistDashboard() {
           </div>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <FileText className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Active Packages</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.totalPackages}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Quick Actions */}
@@ -216,18 +193,6 @@ export default function PsychologistDashboard() {
             </div>
           </a>
 
-          <a
-            href="/psychologist/packages"
-            className="block bg-white p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-          >
-            <div className="flex items-center">
-              <FileText className="h-8 w-8 text-purple-600 mr-4" />
-              <div>
-                <p className="font-medium text-gray-900">View Packages</p>
-                <p className="text-sm text-gray-500">Check your therapy packages and pricing.</p>
-              </div>
-            </div>
-          </a>
         </div>
       </div>
 

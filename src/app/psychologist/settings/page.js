@@ -769,33 +769,33 @@ export default function PsychologistSettings() {
                     </div>
                     
                     {/* Calendar Header */}
-                    <div className="bg-white border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-4">
+                    <div className="bg-white border rounded-lg p-2 sm:p-3 max-w-2xl mx-auto">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
                         <button
                           onClick={() => navigateMonth(-1)}
-                          className="p-2 hover:bg-gray-100 rounded-full"
+                          className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-full"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                           </svg>
                         </button>
-                        <p className="font-semibold">
+                        <p className="font-semibold text-sm sm:text-base">
                           {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                         </p>
                         <button
                           onClick={() => navigateMonth(1)}
-                          className="p-2 hover:bg-gray-100 rounded-full"
+                          className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-full"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </button>
                       </div>
                       
                       {/* Calendar Grid */}
-                      <div className="grid grid-cols-7 gap-1">
+                      <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                          <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
+                          <div key={day} className="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-1 sm:py-1.5">
                             {day}
                           </div>
                         ))}
@@ -807,7 +807,7 @@ export default function PsychologistSettings() {
                           // Empty cells before first day
                           for (let i = 0; i < startingDayOfWeek; i++) {
                             days.push(
-                              <div key={`empty-${i}`} className="aspect-square p-1"></div>
+                              <div key={`empty-${i}`} className="aspect-square"></div>
                             );
                           }
                           
@@ -822,10 +822,10 @@ export default function PsychologistSettings() {
                               <button
                                 key={day}
                                 onClick={() => setSelectedDate(date)}
-                                className={`aspect-square p-1 text-sm rounded-lg transition-colors ${
+                                className={`aspect-square text-[10px] sm:text-xs rounded transition-colors ${
                                   isToday ? 'bg-blue-100 font-bold' : ''
                                 } ${
-                                  isSelected ? 'ring-2 ring-blue-500' : ''
+                                  isSelected ? 'ring-1 sm:ring-2 ring-blue-500' : ''
                                 } ${
                                   eventsForDay.length > 0 ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
                                 }`}
@@ -835,7 +835,7 @@ export default function PsychologistSettings() {
                                   {eventsForDay.length > 0 && (
                                     <div className="flex gap-0.5 mt-0.5">
                                       {eventsForDay.slice(0, 3).map((_, i) => (
-                                        <div key={i} className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                        <div key={i} className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-red-500 rounded-full"></div>
                                       ))}
                                     </div>
                                   )}

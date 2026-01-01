@@ -6,6 +6,7 @@ import { useNotification } from "../../../contexts/NotificationContext";
 import TimeBlockingModal from "../../../components/TimeBlockingModal";
 import BlockedTimeSlots from "../../../components/BlockedTimeSlots";
 import AvailabilityModal from "../../../components/AvailabilityModal";
+import WheelPagination from "../../../components/ui/wheel-pagination";
 import { getStoredToken } from "@/lib/authStorage";
 import { 
   Plus,
@@ -15,7 +16,9 @@ import {
   XCircle,
   AlertCircle,
   Clock,
-  Shield
+  Shield,
+  Calendar as CalendarIcon,
+  X
 } from "lucide-react";
 
 export default function PsychologistAvailability() {
@@ -24,6 +27,15 @@ export default function PsychologistAvailability() {
   const [availability, setAvailability] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
+
+  // Date filter state
+  const [selectedDate, setSelectedDate] = useState('');
   
   // Availability management state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -36,19 +48,48 @@ export default function PsychologistAvailability() {
     if (user) {
       loadAvailability();
     }
-  }, [user]);
+  }, [user, currentPage, selectedDate]);
 
   const loadAvailability = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const availabilityData = await psychologistApi.getAvailability();
+      
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+      
+      // Add date filter if selected
+      if (selectedDate) {
+        params.date = selectedDate;
+      }
+      
+      const availabilityData = await psychologistApi.getAvailability(params);
       console.log('Raw availability data from backend:', availabilityData);
       
+      // Handle both old format (array) and new format (object with availability and pagination)
+      let availabilityList = [];
+      if (Array.isArray(availabilityData.data)) {
+        // Old format - just an array
+        availabilityList = availabilityData.data;
+        setTotalPages(1);
+        setTotalCount(availabilityList.length);
+      } else if (availabilityData.data?.availability) {
+        // New format - object with availability and pagination
+        availabilityList = availabilityData.data.availability || [];
+        setTotalPages(availabilityData.data.pagination?.totalPages || 1);
+        setTotalCount(availabilityData.data.pagination?.total || 0);
+      } else {
+        availabilityList = [];
+        setTotalPages(1);
+        setTotalCount(0);
+      }
+      
       // Clean up duplicate time slots for each date
-      const cleanedAvailability = (availabilityData.data || []).map(day => ({
+      const cleanedAvailability = availabilityList.map(day => ({
         ...day,
-        time_slots: Array.from(new Set(day.time_slots)).sort()
+        time_slots: Array.from(new Set(day.time_slots || [])).sort()
       }));
       
       console.log('Cleaned availability data:', cleanedAvailability);
@@ -62,31 +103,111 @@ export default function PsychologistAvailability() {
     }
   };
 
+  const handleDateFilterChange = (date) => {
+    setSelectedDate(date);
+    setCurrentPage(1); // Reset to first page when date filter changes
+  };
+
+  const handleClearDateFilter = () => {
+    setSelectedDate('');
+    setCurrentPage(1); // Reset to first page when clearing filter
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page + 1); // WheelPagination is 0-indexed, API is 1-indexed
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper function to convert time to 24-hour format (HH:MM)
+  const normalizeTimeTo24Hour = (timeStr) => {
+    if (!timeStr) return null;
+    
+    const time = String(timeStr).trim();
+    
+    // If already in 24-hour format (HH:MM), return as-is
+    const hhmmMatch = time.match(/^(\d{1,2}):(\d{2})$/);
+    if (hhmmMatch) {
+      const hours = hhmmMatch[1].padStart(2, '0');
+      const minutes = hhmmMatch[2];
+      return `${hours}:${minutes}`;
+    }
+    
+    // If in 12-hour format (e.g., "2:30 PM" or "2:30PM")
+    const ampmMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (ampmMatch) {
+      let hours = parseInt(ampmMatch[1], 10);
+      const minutes = ampmMatch[2];
+      const period = ampmMatch[3].toUpperCase();
+      
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      
+      return `${String(hours).padStart(2, '0')}:${minutes}`;
+    }
+    
+    // Try to extract HH:MM from any string
+    const extractMatch = time.match(/(\d{1,2}):(\d{2})/);
+    if (extractMatch) {
+      const hours = extractMatch[1].padStart(2, '0');
+      const minutes = extractMatch[2];
+      return `${hours}:${minutes}`;
+    }
+    
+    return null;
+  };
+
   // Function to clean up duplicates in the database
   const cleanupDuplicates = async () => {
     try {
-      const availabilityData = await psychologistApi.getAvailability();
-      const cleanedData = (availabilityData.data || []).map(day => ({
+      // Fetch all availability (no pagination/date filter for cleanup)
+      const availabilityData = await psychologistApi.getAvailability({ limit: 1000 });
+      
+      // Handle both old format (array) and new format (object with availability and pagination)
+      let availabilityList = [];
+      if (Array.isArray(availabilityData.data)) {
+        availabilityList = availabilityData.data;
+      } else if (availabilityData.data?.availability) {
+        availabilityList = availabilityData.data.availability || [];
+      }
+      
+      // Clean and normalize time slots to 24-hour format
+      const cleanedData = availabilityList.map(day => {
+        const normalizedSlots = (day.time_slots || [])
+          .map(slot => normalizeTimeTo24Hour(slot))
+          .filter(slot => slot !== null); // Remove invalid slots
+        
+        return {
         ...day,
-        time_slots: Array.from(new Set(day.time_slots)).sort()
-      }));
+          time_slots: Array.from(new Set(normalizedSlots)).sort()
+        };
+      });
       
       // Update each availability entry to remove duplicates
       for (const day of cleanedData) {
-        if (day.time_slots.length > 0) {
+        if (day.time_slots && day.time_slots.length > 0 && day.date) {
+          try {
           await psychologistApi.updateAvailability({
             date: day.date,
             time_slots: day.time_slots
           });
+          } catch (updateErr) {
+            console.error(`Error updating availability for ${day.date}:`, updateErr);
+            // Continue with next entry instead of failing completely
+          }
         }
       }
       
       // Reload the data
       await loadAvailability();
+      showSuccess('Duplicates cleaned up successfully', 'Success');
       setError(null);
     } catch (err) {
       console.error('Error cleaning up duplicates:', err);
       setError('Failed to clean up duplicate time slots');
+      showError('Failed to clean up duplicate time slots: ' + (err.message || 'Unknown error'), 'Cleanup Error');
     }
   };
 
@@ -269,8 +390,23 @@ export default function PsychologistAvailability() {
 
 
   const formatTimeForDisplay = (time) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
+    // If time already contains AM/PM, return as-is (already formatted)
+    if (typeof time === 'string' && (time.includes('AM') || time.includes('PM') || time.includes('am') || time.includes('pm'))) {
+      return time;
+    }
+    
+    // Otherwise, convert from 24-hour format (HH:MM) to 12-hour format
+    const timeStr = String(time).trim();
+    const timeMatch = timeStr.match(/^(\d{1,2}):(\d{2})/);
+    
+    if (!timeMatch) {
+      return timeStr; // Return as-is if format is unexpected
+    }
+    
+    const hour = parseInt(timeMatch[1], 10);
+    const minutes = timeMatch[2];
+    
+    // Convert to 12-hour format
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minutes} ${ampm}`;
@@ -332,9 +468,51 @@ export default function PsychologistAvailability() {
         </div>
       </div>
 
-      {/* Current Availability */}
+      {/* Date Filter */}
+      <div className="mt-8 bg-white shadow rounded-lg p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Date (Optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5 text-gray-400" />
+              <input
+                id="date-filter"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => handleDateFilterChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {selectedDate && (
+                <button
+                  onClick={handleClearDateFilter}
+                  className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
+                  title="Clear date filter"
+                >
+                  <X className="h-4 w-4" />
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+          {selectedDate && (
+            <div className="text-sm text-gray-600">
+              Showing availability for: <span className="font-medium">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Availability List */}
       <div className="mt-8">
-        <p className="font-medium text-gray-900 mb-4">Current Availability</p>
+        {totalCount > 0 && (
+          <div className="flex items-center justify-end mb-4">
+            <p className="text-sm text-gray-600">
+              Showing {availability.length} of {totalCount} entries
+            </p>
+          </div>
+        )}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <p className="font-medium text-gray-900">Your Available Time Slots</p>
@@ -455,6 +633,19 @@ export default function PsychologistAvailability() {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && availability.length > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <WheelPagination
+                totalPages={totalPages}
+                visibleCount={7}
+                currentPage={currentPage - 1} // Convert 1-indexed to 0-indexed
+                onPageChange={handlePageChange}
+                className="bg-white"
+              />
+            </div>
+          )}
         </div>
       </div>
 
