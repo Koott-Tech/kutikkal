@@ -784,12 +784,12 @@ const Guide = () => {
           <style>{`
             .guide-cards-container {
               width: 100%;
-              max-width: 1200px;
+              max-width: 1400px;
               margin-top: 3.2rem;
               display: grid;
               grid-template-columns: repeat(3, 1fr);
-              gap: 4px 40px; /* column gap, row gap */
-              padding: 0 6rem !important; /* more side padding */
+              gap: 12px 24px; /* row gap, column gap - reduced spacing */
+              padding: 0 3rem !important; /* adjusted side padding */
               justify-items: center;
             }
             .guide-video-card {
@@ -798,8 +798,8 @@ const Guide = () => {
               transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
               z-index: 1;
               width: 100%;
-              min-width: 280px; /* Ensure minimum width even without images */
-              max-width: 280px;
+              min-width: 280px; /* Minimum width for cards */
+              max-width: 100%; /* Allow cards to grow with grid - remains flexible */
               height: 360px;
               border-radius: 10px;
               overflow: hidden;
@@ -815,19 +815,38 @@ const Guide = () => {
               box-shadow: none !important;
             }
             
-            /* Landscape tablet (1180 x 810) - 3 cards per row to prevent overflow */
-            @media (min-width: 1100px) and (max-width: 1199px) and (max-height: 900px) {
+            /* 14-15 inch laptop view (1366px - 1440px) - 3 cards per row with reduced gap */
+            @media (min-width: 1366px) and (max-width: 1440px) {
               .guide-cards-container {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 4px 20px !important; /* column gap, row gap */
-                row-gap: 10px !important;
-                max-width: 1200px;
-                padding: 0 3rem !important; /* reduced padding to fit 3 cards */
+                gap: 16px 28px !important; /* row gap, column gap - reduced spacing */
+                max-width: 1500px;
+                padding: 0 2.5rem !important;
               }
               .guide-video-card {
-                min-width: 280px;
-                max-width: 280px;
-                width: 280px !important;
+                min-width: 300px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
+                height: 360px;
+              }
+              .guide-video-card:hover {
+                transform: scale(1.04) translateY(-12px);
+                box-shadow: none !important;
+              }
+            }
+            
+            /* Landscape tablet (1180 x 810) - 3 cards per row to prevent overflow */
+            @media (min-width: 1100px) and (max-width: 1365px) and (max-height: 900px) {
+              .guide-cards-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px 24px !important; /* row gap, column gap - reduced spacing */
+                max-width: 1300px;
+                padding: 0 2.5rem !important; /* reduced padding to fit 3 cards */
+              }
+              .guide-video-card {
+                min-width: 270px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
                 height: 360px;
               }
               .guide-video-card:hover {
@@ -836,38 +855,39 @@ const Guide = () => {
               }
             }
             
-            /* Medium laptop view - 4 cards per row (for taller screens) */
-            @media (min-width: 1025px) and (max-width: 1199px) and (min-height: 901px) {
+            /* Medium laptop view - 3 cards per row (for 14-15 inch screens) */
+            @media (min-width: 1025px) and (max-width: 1440px) and (min-height: 901px) {
               .guide-cards-container {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 4px !important; /* base gap */
-                row-gap: 10px !important; /* slightly larger vertical spacing */
-                max-width: 1400px;
-                padding: 0 5rem !important; /* more side padding */
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px 28px !important; /* row gap, column gap - reduced spacing */
+                max-width: 1500px;
+                padding: 0 3rem !important;
               }
               .guide-video-card {
-                min-width: 280px;
-                max-width: 280px;
+                min-width: 300px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
                 height: 360px;
               }
               .guide-video-card:hover {
-                transform: scale(1.03) translateY(-10px);
+                transform: scale(1.04) translateY(-12px);
                 box-shadow: none !important;
               }
             }
             
-            /* Large laptop/desktop view - 4 cards per row with larger cards */
-            @media (min-width: 1200px) {
+            /* Large laptop/desktop view (1441px+) - 4 cards per row with larger cards */
+            @media (min-width: 1441px) {
               .guide-cards-container {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 6px !important; /* base gap */
-                row-gap: 12px !important; /* slightly larger vertical spacing */
-                max-width: 1600px;
-                padding: 0 7rem !important; /* more side padding */
+                gap: 16px 24px !important; /* row gap, column gap - reduced spacing */
+                row-gap: 16px !important;
+                max-width: 1800px;
+                padding: 0 4rem !important;
               }
               .guide-video-card {
-                min-width: 300px;
-                max-width: 300px;
+                min-width: 300px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
                 height: 380px;
               }
               .guide-video-card:hover {
@@ -880,13 +900,13 @@ const Guide = () => {
             @media (max-width: 1024px) and (min-width: 769px) {
               .guide-cards-container {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 4px !important; /* unified row/column gap */
-                padding: 0 4rem !important; /* more side padding */
+                gap: 12px 20px !important; /* row gap, column gap - reduced spacing */
+                padding: 0 3rem !important; /* more side padding */
               }
               .guide-video-card {
-                min-width: 320px;
-                max-width: 320px;
-                width: 320px !important; /* Ensure exact width on tablet */
+                min-width: 270px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
                 height: 350px;
               }
               .guide-video-card:hover {
@@ -899,12 +919,13 @@ const Guide = () => {
             @media (max-width: 900px) and (min-width: 769px) {
               .guide-cards-container {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 4px !important; /* unified row/column gap */
-                padding: 0 3rem !important; /* more side padding */
+                gap: 12px 16px !important; /* row gap, column gap - reduced spacing */
+                padding: 0 2.5rem !important; /* more side padding */
               }
               .guide-video-card {
-                max-width: 280px;
-                width: 280px !important; /* Ensure exact width on tablet */
+                min-width: 250px; /* Minimum width for cards */
+                max-width: 100%; /* Flexible width - scales with screen */
+                width: 100%;
                 height: 330px;
               }
               .guide-video-card:hover {
@@ -962,37 +983,54 @@ const Guide = () => {
               }
             }
             
-            /* Availability div width matching - responsive */
+            /* Availability div width matching - responsive (flexible to match card width) */
             .availability-container {
-              max-width: 280px;
+              max-width: 100%;
               width: 100%;
             }
             
-            @media (min-width: 1200px) {
+            @media (min-width: 1441px) {
               .availability-container {
-                max-width: 300px;
+                max-width: 100%;
+                width: 100%;
               }
             }
             
-            /* Landscape tablet (1180 x 810) - match 3 cards layout */
-            @media (min-width: 1100px) and (max-width: 1199px) and (max-height: 900px) {
+            /* 14-15 inch laptop view - match flexible card width */
+            @media (min-width: 1366px) and (max-width: 1440px) {
               .availability-container {
-                max-width: 280px;
-                width: 280px !important; /* Match exact card width */
+                max-width: 100%;
+                width: 100%;
+              }
+            }
+            
+            /* Landscape tablet (1180 x 810) - match flexible card width */
+            @media (min-width: 1100px) and (max-width: 1365px) and (max-height: 900px) {
+              .availability-container {
+                max-width: 100%;
+                width: 100%;
+              }
+            }
+            
+            /* Medium laptop - match flexible card width */
+            @media (min-width: 1025px) and (max-width: 1440px) and (min-height: 901px) {
+              .availability-container {
+                max-width: 100%;
+                width: 100%;
               }
             }
             
             @media (max-width: 1024px) and (min-width: 769px) {
               .availability-container {
-                max-width: 320px;
-                width: 320px !important; /* Match exact card width on tablet */
+                max-width: 100%;
+                width: 100%;
               }
             }
             
             @media (max-width: 900px) and (min-width: 769px) {
               .availability-container {
-                max-width: 280px;
-                width: 280px !important; /* Match exact card width on tablet */
+                max-width: 100%;
+                width: 100%;
               }
             }
             
@@ -2361,3 +2399,4 @@ const Guide = () => {
 };
 
 export default Guide;
+
