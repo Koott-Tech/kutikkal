@@ -235,7 +235,6 @@ export default function FinanceDoctors() {
                         <div role="heading" aria-level="3" style={{ fontSize: '16px', fontWeight: 600, color: '#111827', margin: 0 }}>
                           {doctor.psychologist?.first_name} {doctor.psychologist?.last_name}
                         </div>
-                        <p className="text-sm text-gray-600">{doctor.psychologist?.email}</p>
                       </div>
                     </div>
 
