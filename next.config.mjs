@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Target modern browsers to reduce legacy JavaScript polyfills
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Optimize for modern browsers (reduces bundle size by removing unnecessary polyfills)
+  swcMinify: true,
   images: {
     remotePatterns: [
       {
@@ -36,10 +42,6 @@ const nextConfig = {
   // Force cache busting
   generateBuildId: async () => {
     return `build-${Date.now()}`;
-  },
-  // Enable prefetching for better navigation performance
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
   },
   // Optimize bundle size
   webpack: (config, { isServer }) => {

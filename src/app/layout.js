@@ -2,6 +2,7 @@ import "./globals.css";
 // Suspense removed - no longer needed without PageLoadingOverlay
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import HeaderWrapper from "@/components/HeaderWrapper";
 import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
@@ -92,16 +93,11 @@ export default function RootLayout({ children }) {
             <link rel="preconnect" href={process.env.NEXT_PUBLIC_BACKEND_URL.replace('/api', '')} crossOrigin="anonymous" />
           </>
         )}
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K7Z8F94Z80"></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-K7Z8F94Z80');
-          `
-        }} />
+        {/* Preconnect to critical third-party origins for better performance */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
         {/* Explicit favicon links for Google search results - ensures favicon appears in SERP */}
         <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
         <link rel="icon" type="image/png" href="/favicon.png" sizes="16x16" />
@@ -110,10 +106,7 @@ export default function RootLayout({ children }) {
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Preload critical fonts */}
-        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" as="style" />
-        <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" as="style" />
-        {/* Load fonts with font-display: swap to prevent invisible text */}
+        {/* Load fonts - Varela Round loaded first as it's render-blocking, others can load async */}
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -284,6 +277,19 @@ export default function RootLayout({ children }) {
         </ErrorBoundary>
         <SpeedInsights />
         <Analytics />
+        {/* Google Analytics - Load after interactive to prevent forced reflows */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-K7Z8F94Z80"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-K7Z8F94Z80');
+          `}
+        </Script>
       </body>
     </html>
   );
