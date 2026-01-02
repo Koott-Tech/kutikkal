@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Suspense } from "react";
+// Suspense removed - no longer needed without PageLoadingOverlay
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import HeaderWrapper from "@/components/HeaderWrapper";
@@ -7,7 +7,8 @@ import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidgetWrapper from "@/components/WhatsAppWidgetWrapper";
-import PageLoadingOverlay from "@/components/PageLoadingOverlay";
+// REMOVED: PageLoadingOverlay - causes CLS on navigation
+// Next.js loading.js handles route transitions automatically
 import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -107,49 +108,24 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Ensure loader stays visible initially
-                // This runs BEFORE body content is parsed
-                window.__LOADER_START_TIME__ = Date.now();
-                window.__LOADER_MIN_TIME__ = 300; // Reduced to 300ms for better FCP
-                window.__DOM_READY__ = false;
-                
-                // Function to hide loader when ready
-                window.__HIDE_LOADER__ = function() {
-                  var elapsed = Date.now() - window.__LOADER_START_TIME__;
-                  var remaining = Math.max(0, window.__LOADER_MIN_TIME__ - elapsed);
-                  
-                  setTimeout(function() {
-                    if (document.body) {
-                      document.body.classList.add('loaded');
-                    } else {
-                      // Body not ready yet, try again
-                      setTimeout(window.__HIDE_LOADER__, 50);
-                    }
-                  }, remaining);
-                };
-                
-                // Mark DOM as ready
-                function markReady() {
-                  if (!window.__DOM_READY__) {
-                    window.__DOM_READY__ = true;
-                    window.__HIDE_LOADER__();
-                  }
-                }
-                
-                // Check if already ready
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', markReady);
-                } else {
-                  // Already interactive or complete
-                  setTimeout(markReady, 100);
-                }
-                
-                // Safety fallback - hide after 1 second max (reduced for better performance)
-                setTimeout(function() {
-                  if (document.body && !document.body.classList.contains('loaded')) {
+                // CRITICAL: No fixed delays - hide immediately when DOM is ready
+                // This prevents CLS by allowing content to render immediately
+                function hideLoader() {
+                  if (document.body) {
                     document.body.classList.add('loaded');
+                  } else {
+                    // Body not ready yet, try again on next tick
+                    requestAnimationFrame(hideLoader);
                   }
-                }, 1000);
+                }
+                
+                // Hide loader as soon as DOM is interactive (not complete - too late)
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', hideLoader, { once: true });
+                } else {
+                  // Already interactive or complete - hide immediately
+                  hideLoader();
+                }
               })();
             `,
           }}
@@ -167,11 +143,12 @@ export default function RootLayout({ children }) {
               }
             }
             /* Instant loading screen - renders with HTML, no hydration needed */
-            /* CRITICAL: Don't hide content - let it render for FCP/LCP, just overlay loader */
+            /* CRITICAL: Loader is position:fixed overlay - NEVER affects layout flow */
+            /* Content renders immediately for FCP/LCP metrics */
             body:not(.loaded) {
               overflow: hidden !important;
             }
-            /* Only hide content visually, but allow browser to render for metrics */
+            /* Prevent interaction during initial load, but allow rendering */
             body:not(.loaded) > *:not(#initial-loader) {
               pointer-events: none !important;
             }
@@ -214,6 +191,7 @@ export default function RootLayout({ children }) {
               opacity: 0 !important;
               pointer-events: none !important;
               visibility: hidden !important;
+              transition: opacity 200ms ease-out !important;
             }
             #initial-loader .loading-logo {
               width: 240px;
@@ -271,13 +249,12 @@ export default function RootLayout({ children }) {
       </head>
       <body className="antialiased bg-gray-50">
         {/* INSTANT - Server-rendered loader (appears at 0ms, no hydration needed) */}
+        {/* Position:fixed overlay - NEVER affects layout flow, prevents CLS */}
         <div id="initial-loader">
           <div className="loading-logo"></div>
         </div>
-        {/* Client-side loader for navigation transitions (only after hydration) */}
-        <Suspense fallback={null}>
-          <PageLoadingOverlay />
-        </Suspense>
+        {/* REMOVED: Client-side PageLoadingOverlay - caused CLS on navigation */}
+        {/* Next.js loading.js (app/loading.js) handles route transitions automatically */}
         <ClickBurst />
         <ErrorBoundary>
           <ConditionalProviders>
