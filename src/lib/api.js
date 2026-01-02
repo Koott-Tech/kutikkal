@@ -24,13 +24,6 @@ async function apiRequest(endpoint, options = {}) {
   // Get token from localStorage if available
   const token = typeof window !== 'undefined' ? getStoredToken() : null;
   
-  console.log('API Request:', {
-    url,
-    method: options.method || 'GET',
-    hasToken: !!token,
-    tokenLength: token ? token.length : 0
-  });
-  
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -42,12 +35,6 @@ async function apiRequest(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config);
-    console.log('API Response:', {
-      url,
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
     
     if (!response.ok) {
       try {
@@ -110,17 +97,14 @@ export const doctorsApi = {
   getAll: async () => {
     try {
       const doctors = await apiRequest('/doctors');
-      console.log('Doctors API response:', doctors);
       
       // Handle empty responses
       if (!doctors || doctors === null) {
-        console.log('No doctors data received, returning empty array');
         return [];
       }
       
       // Ensure doctors is an array
       if (!Array.isArray(doctors)) {
-        console.log('Doctors response is not an array, returning empty array');
         return [];
       }
       
@@ -272,11 +256,9 @@ export const usersApi = {
   getAll: async () => {
     try {
       const response = await apiRequest('/auth/users');
-      console.log('Users API response:', response);
       
       // Handle various response types
       if (response === null) {
-        console.log('No users data received, returning empty array');
         return [];
       }
       
@@ -290,7 +272,6 @@ export const usersApi = {
         return response;
       }
       
-      console.log('Unexpected users response format, returning empty array');
       return [];
     } catch (error) {
       console.warn('Users API not available, returning empty array:', error.message);
@@ -351,11 +332,9 @@ export const usersApi = {
 
   delete: async (id) => {
     try {
-      console.log('Calling delete user API for ID:', id);
       const result = await apiRequest(`/auth/users/${id}`, {
         method: 'DELETE',
       });
-      console.log('Delete user API response:', result);
       return result;
     } catch (error) {
       console.error('Delete user API error:', error);
@@ -381,11 +360,9 @@ export const bookingsApi = {
   getAll: async () => {
     try {
       const result = await apiRequest('/bookings');
-      console.log('Bookings API response:', result);
       
       // Handle various response types
       if (result === null) {
-        console.log('No bookings data received, returning empty array');
         return [];
       }
       
@@ -399,11 +376,9 @@ export const bookingsApi = {
           return result.data;
         }
         // If it's an object but not an array, return empty array
-        console.log('Bookings response is object but not array, returning empty array');
         return [];
       }
       
-      console.log('Unexpected bookings response format, returning empty array');
       return [];
     } catch (error) {
       console.warn('Bookings API not available, returning empty array:', error.message);
@@ -422,12 +397,10 @@ export const bookingsApi = {
 
   create: async (bookingData) => {
     try {
-      console.log('Creating booking with data:', bookingData);
       const result = await apiRequest('/bookings', {
         method: 'POST',
         body: JSON.stringify(bookingData),
       });
-      console.log('Booking created successfully:', result);
       return result;
     } catch (error) {
       console.error('Error creating booking:', error);

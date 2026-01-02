@@ -38,17 +38,17 @@ export function AuthProvider({ children }) {
           const now = new Date();
           isTokenExpired = now > expirationDate;
         }
-        
+          
         // If token is expired BUT "Remember Me" is enabled and still valid
         // Keep the user logged in - the API layer will handle token refresh/re-authentication
         // Only clear if "Remember Me" period has also expired (handled by loadAuthData)
         if (isTokenExpired && !storedAuth.remember) {
           // Token expired and "Remember Me" not enabled - clear session storage
-          clearAuthData();
-          localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
-          setIsLoading(false);
-          return;
-        }
+            clearAuthData();
+            localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
+            setIsLoading(false);
+            return;
+          }
         
         // If token is expired but "Remember Me" is enabled, keep the data
         // The API layer will handle re-authentication on next request

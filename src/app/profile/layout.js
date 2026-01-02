@@ -296,11 +296,7 @@ export default function ProfileLayout({ children }) {
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-40 bg-white w-full border-b border-gray-200">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center">
-            <img 
-              src="/mainlogo.webp" 
-              alt="Little Care Logo" 
-              className="h-8 w-auto hover:opacity-80 transition-opacity"
-            />
+            {/* Logo removed */}
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">

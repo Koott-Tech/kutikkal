@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { messagesApi } from "../lib/backendApi";
+import { normalizeImageUrl } from "@/utils/urlNormalizer";
 import { 
   Send, 
   MessageSquare, 
@@ -470,12 +471,12 @@ export default function MessagesPage({ session = null }) {
                   >
                     <div className="flex items-center justify-between space-x-6">
                       <div className="flex items-center space-x-6 flex-1 min-w-0">
-                        <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
+                        <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
                           {conversation.psychologist?.cover_image_url ? (
                             <img 
-                              src={conversation.psychologist.cover_image_url}
+                              src={normalizeImageUrl(conversation.psychologist.cover_image_url)}
                               alt={getConversationName(conversation)}
-                              className="w-14 h-14 rounded-full object-cover"
+                              className="w-full h-full object-cover"
                             />
                           ) : (
                             <User className="h-6 w-6" style={{ color: '#3f2e73' }} />
@@ -533,12 +534,12 @@ export default function MessagesPage({ session = null }) {
                   >
                     <ArrowLeft className="h-5 w-5 text-gray-600" />
                   </button>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#f5f3ff' }}>
                     {selectedConversation.psychologist?.cover_image_url ? (
                       <img 
-                        src={selectedConversation.psychologist.cover_image_url}
+                        src={normalizeImageUrl(selectedConversation.psychologist.cover_image_url)}
                         alt={getConversationName(selectedConversation)}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <User className="h-5 w-5" style={{ color: '#3f2e73' }} />

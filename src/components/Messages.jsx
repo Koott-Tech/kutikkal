@@ -31,7 +31,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
   // Auto-select conversation when conversations are loaded
   useEffect(() => {
     if (conversations.length > 0 && !selectedConversation) {
-      console.log('Auto-selecting first conversation:', conversations[0]);
       setSelectedConversation(conversations[0]);
       // Don't auto-show chat screen - let user select
     }
@@ -53,16 +52,12 @@ export default function Messages({ isOpen, onClose, session = null }) {
   // Auto-select conversation if session is provided
   useEffect(() => {
     if (session && session.conversationId && conversations.length > 0) {
-      console.log('Looking for conversation with ID:', session.conversationId);
-      console.log('Available conversations:', conversations);
       const targetConversation = conversations.find(conv => conv.id === session.conversationId);
       if (targetConversation && targetConversation.id !== selectedConversation?.id) {
-        console.log('Found target conversation:', targetConversation);
         setSelectedConversation(targetConversation);
         // Show chat screen for session-specific conversations
         setShowChatScreen(true);
       } else if (!targetConversation) {
-        console.log('Target conversation not found, selecting first conversation');
         // If the specific conversation is not found, select the first one
         if (conversations[0] && conversations[0].id !== selectedConversation?.id) {
           setSelectedConversation(conversations[0]);
@@ -71,7 +66,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
       }
     } else if (conversations.length > 0 && !selectedConversation) {
       // If no session is provided but conversations exist, select the first one
-      console.log('No session provided, selecting first conversation:', conversations[0]);
       setSelectedConversation(conversations[0]);
       // Don't auto-show chat screen
     }
@@ -94,21 +88,13 @@ export default function Messages({ isOpen, onClose, session = null }) {
   const loadConversations = async () => {
     // Prevent reloading if conversations are already loaded
     if (conversations.length > 0) {
-      console.log('Conversations already loaded, skipping reload');
       return;
     }
 
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading conversations...');
       const response = await messagesApi.getConversations();
-      console.log('Raw API response:', response);
-      console.log('Response data:', response.data);
-      console.log('Response message:', response.message);
-      console.log('Response success:', response.success);
-      console.log('Response type:', typeof response);
-      console.log('Response keys:', Object.keys(response));
       
       // Check different possible response structures
       let conversationsData = [];
@@ -128,16 +114,12 @@ export default function Messages({ isOpen, onClose, session = null }) {
         conversationsData = response;
       }
       
-      console.log('Parsed conversations array:', conversationsData);
       setConversations(conversationsData);
       
       // If no conversations loaded but we have a session, create a mock conversation
       if (conversationsData.length === 0 && session) {
-        console.log('No conversations found, creating mock conversation for session:', session);
-        
         // If session has a conversationId, try to load that conversation first
         if (session.conversationId && !session.conversationId.startsWith('mock-')) {
-          console.log('Session has conversation ID, trying to load it:', session.conversationId);
           try {
             const conversationResponse = await messagesApi.getMessages(session.conversationId);
             if (conversationResponse && conversationResponse.data) {
@@ -156,13 +138,12 @@ export default function Messages({ isOpen, onClose, session = null }) {
                 last_message_at: new Date().toISOString(),
                 messages: conversationResponse.data.messages || []
               };
-              console.log('Created real conversation from session ID:', realConversation);
               setConversations([realConversation]);
               setSelectedConversation(realConversation);
               return;
             }
           } catch (err) {
-            console.log('Failed to load conversation with ID:', session.conversationId, err);
+            // Failed to load conversation, will fallback to mock
           }
         }
         
@@ -181,7 +162,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
           last_message_at: new Date().toISOString(),
           messages: []
         };
-        console.log('Created mock conversation:', mockConversation);
         setConversations([mockConversation]);
         setSelectedConversation(mockConversation);
       }
@@ -191,7 +171,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
       
       // Fallback: create mock conversation if API fails
       if (session) {
-        console.log('API failed, creating fallback conversation for session:', session);
         const fallbackConversation = {
           id: session.conversationId || 'fallback-conversation-id',
           psychologist: {
@@ -206,7 +185,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
           last_message_at: new Date().toISOString(),
           messages: []
         };
-        console.log('Created fallback conversation:', fallbackConversation);
         setConversations([fallbackConversation]);
         setSelectedConversation(fallbackConversation);
       }
@@ -218,7 +196,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
   const loadMessages = async (conversationId) => {
     // Prevent loading messages for the same conversation
     if (messages.length > 0 && messages[0]?.conversation_id === conversationId) {
-      console.log('Messages already loaded for conversation:', conversationId);
       return;
     }
 
@@ -228,24 +205,16 @@ export default function Messages({ isOpen, onClose, session = null }) {
       
       // Don't try to load messages for mock/fallback conversations
       if (conversationId.startsWith('mock-') || conversationId.startsWith('fallback-')) {
-        console.log('Skipping message load for mock conversation:', conversationId);
         setMessages([]);
         return;
       }
       
       const response = await messagesApi.getMessages(conversationId);
-      console.log('Messages API response:', response);
-      console.log('Messages data:', response.data?.messages || response.message?.messages);
       
       const messagesData = response.data?.messages || response.message?.messages || [];
-      console.log('Parsed messages:', messagesData);
-      console.log('Messages array type:', Array.isArray(messagesData));
-      console.log('Messages array length:', messagesData.length);
-      console.log('First message:', messagesData[0]);
       
       // Ensure we have valid messages
       const validMessages = messagesData.filter(message => message && message.id);
-      console.log('Valid messages:', validMessages);
       
       setMessages(validMessages);
       
@@ -268,7 +237,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
 
     // Don't send messages to mock conversations
     if (selectedConversation.id.startsWith('mock-') || selectedConversation.id.startsWith('fallback-')) {
-      console.log('Cannot send messages to mock conversation');
       setError('Please wait for the conversation to be properly created. Try refreshing the page.');
       return;
     }
@@ -278,8 +246,6 @@ export default function Messages({ isOpen, onClose, session = null }) {
         content: newMessage.trim(),
         messageType: 'text'
       });
-
-      console.log('Send message response:', response);
 
       // Add new message to the list - handle both response formats
       let newMessageData = null;
@@ -292,11 +258,10 @@ export default function Messages({ isOpen, onClose, session = null }) {
       }
 
       if (newMessageData) {
-        console.log('Adding new message to UI:', newMessageData);
         setMessages(prev => [...prev, newMessageData]);
         setNewMessage("");
       } else {
-        console.error('Could not extract message data from response:', response);
+        console.error('Could not extract message data from response');
         setError('Message sent but could not update UI. Please refresh.');
       }
 

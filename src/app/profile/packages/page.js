@@ -6,6 +6,7 @@ import { clientApi } from "../../../lib/backendApi";
 import { FileText } from "lucide-react";
 import WheelPagination from "../../../components/ui/wheel-pagination";
 import { formatCurrency } from "../../../lib/utils";
+import { normalizeImageUrl } from "@/utils/urlNormalizer";
 
 export default function PackagesPage() {
   const { user, hasRole } = useAuth();
@@ -131,15 +132,15 @@ export default function PackagesPage() {
               <div className="flex gap-4 items-start">
                 {/* Avatar - Left Side */}
                 {pkg.psychologist && (
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200">
                     {pkg.psychologist.cover_image_url ? (
                       <img 
-                        src={pkg.psychologist.cover_image_url}
+                        src={normalizeImageUrl(pkg.psychologist.cover_image_url)}
                         alt={`${pkg.psychologist.first_name} ${pkg.psychologist.last_name}`}
-                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-2xl">
+                      <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-semibold text-2xl">
                         {pkg.psychologist.first_name?.[0]}{pkg.psychologist.last_name?.[0]}
                       </div>
                     )}

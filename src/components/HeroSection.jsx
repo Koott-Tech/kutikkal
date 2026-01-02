@@ -272,15 +272,15 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
              <div className="cms-hero-image-container relative h-96 md:h-full order-2 lg:order-2" style={{ minHeight: '300px' }}>
                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
                  {currentContent.image ? (
-                  <Image
-                    src={currentContent.image}
-                    alt={currentContent.title ? `${currentContent.title} - Hero illustration for child counseling and parent support` : (currentContent.alt || "Child counseling and parent support hero illustration")}
-                    fill
-                    className="object-cover"
-                    priority
+                   <Image
+                     src={currentContent.image}
+                     alt={currentContent.title ? `${currentContent.title} - Hero illustration for child counseling and parent support` : (currentContent.alt || "Child counseling and parent support hero illustration")}
+                     fill
+                     className="object-cover"
+                     priority
                     fetchPriority="high"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
-                    style={{ objectPosition: 'center center' }}
+                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 50vw"
+                     style={{ objectPosition: 'center center' }}
                      onError={(e) => {
                        console.error('Image failed to load:', currentContent.image);
                        e.target.src = '/kids.png'; // Fallback image

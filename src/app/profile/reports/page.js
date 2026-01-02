@@ -5,6 +5,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi } from "../../../lib/backendApi";
 import { FileText, X, BarChart3 } from "lucide-react";
 import WheelPagination from "../../../components/ui/wheel-pagination";
+import { normalizeImageUrl } from "@/utils/urlNormalizer";
 
 export default function ReportsPage() {
   const { user } = useAuth();
@@ -174,15 +175,15 @@ export default function ReportsPage() {
                   <div className="lg:hidden">
                     <div className="flex items-center gap-2 sm:gap-3">
                       {/* Psychologist Avatar - Left side on mobile */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
                         {session.psychologist?.cover_image_url ? (
                           <img 
-                            src={session.psychologist.cover_image_url}
+                            src={normalizeImageUrl(session.psychologist.cover_image_url)}
                             alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                            className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
+                          <div className="w-full h-full bg-green-500 flex items-center justify-center text-white font-semibold text-xl">
                             {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                           </div>
                         )}

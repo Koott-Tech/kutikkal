@@ -56,8 +56,9 @@ const handleResponse = async (response, options = {}) => {
         console.error('Backend API Error Response:', {
           status: response.status,
           statusText: response.statusText,
-          error: error,
-          headers: Object.fromEntries(response.headers.entries())
+          // Don't log full error object to avoid exposing sensitive data
+          errorMessage: error?.message || error?.error || 'Unknown error',
+          // Don't log headers to avoid exposing tokens or sensitive headers
         });
       }
       

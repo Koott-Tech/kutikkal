@@ -37,8 +37,8 @@ function PageLoadingOverlayContent() {
       isInitialMount.current = false;
       // Mark as hydrated, but don't show (server loader is handling initial load)
       hasHydrated.current = true;
-      setIsVisible(false);
-      setShouldRender(false);
+          setIsVisible(false);
+            setShouldRender(false);
       return;
     }
   }, []);

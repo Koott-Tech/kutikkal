@@ -6,6 +6,7 @@ import { clientApi, messagesApi } from "../../../lib/backendApi";
 import RescheduleModal from "../../../components/RescheduleModal";
 import SessionFeedbackModal from "../../../components/SessionFeedbackModal";
 import WheelPagination from "../../../components/ui/wheel-pagination";
+import { normalizeImageUrl } from "@/utils/urlNormalizer";
 import { 
   Calendar, 
   MessageSquare,
@@ -129,7 +130,7 @@ export default function SessionsPage() {
       setSessions(sessionsList);
     } catch (err) {
       console.error('Error loading sessions:', err);
-      setError(err.message);
+      setError('Failed to load sessions. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -460,7 +461,7 @@ export default function SessionsPage() {
       router.push('/profile/messages');
     } catch (err) {
       console.error('Error creating conversation:', err);
-      setError(err.message);
+      setError('Failed to create conversation. Please try again.');
       // Still navigate to messages page - conversation might already exist
       router.push('/profile/messages');
     }
@@ -492,7 +493,7 @@ export default function SessionsPage() {
       await loadSessions();
     } catch (err) {
       console.error('Error requesting reschedule:', err);
-      setError(err.message);
+      setError('Failed to request reschedule. Please try again.');
     }
   };
 
@@ -630,15 +631,15 @@ export default function SessionsPage() {
                         <div className="flex gap-5 items-start">
                           {/* Avatar */}
                           {pkg.psychologist && (
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {pkg.psychologist.cover_image_url ? (
                                 <img 
-                                  src={pkg.psychologist.cover_image_url}
+                                  src={normalizeImageUrl(pkg.psychologist.cover_image_url)}
                                   alt={`${pkg.psychologist.first_name} ${pkg.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
                                   {pkg.psychologist.first_name?.[0]}{pkg.psychologist.last_name?.[0]}
                                 </div>
                               )}
@@ -730,15 +731,15 @@ export default function SessionsPage() {
                         <div className="flex gap-4 items-center">
                           {/* Avatar */}
                           {pkg.psychologist && (
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {pkg.psychologist.cover_image_url ? (
                                 <img 
-                                  src={pkg.psychologist.cover_image_url}
+                                  src={normalizeImageUrl(pkg.psychologist.cover_image_url)}
                                   alt={`${pkg.psychologist.first_name} ${pkg.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
                                   {pkg.psychologist.first_name?.[0]}{pkg.psychologist.last_name?.[0]}
                                 </div>
                               )}
@@ -902,15 +903,15 @@ export default function SessionsPage() {
                         <div className="flex gap-5 items-start">
                           {/* Avatar - Only for regular sessions */}
                           {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
-                                  src={session.psychologist.cover_image_url}
+                                  src={normalizeImageUrl(session.psychologist.cover_image_url)}
                                   alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
                                   {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                                 </div>
                               )}
@@ -1044,15 +1045,15 @@ export default function SessionsPage() {
                         <div className="flex gap-4 items-center">
                           {/* Avatar / Placeholder - Only for regular sessions */}
                           {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
-                                  src={session.psychologist.cover_image_url}
+                                  src={normalizeImageUrl(session.psychologist.cover_image_url)}
                                   alt={`${session.psychologist.first_name} ${session.psychologist.last_name}`}
-                                  className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xl">
                                   {session.psychologist?.first_name?.[0]}{session.psychologist?.last_name?.[0]}
                                 </div>
                             )}
@@ -1136,7 +1137,7 @@ export default function SessionsPage() {
                                 )}
                               </div>
                               
-                              <h5 className="text-gray-900 font-semibold mb-3">
+                              <h5 className="text-gray-900 font-semibold mb-1 leading-tight">
                                 {session.session_type === 'assessment' || session.type === 'assessment'
                                   ? (
                                     <span className="flex items-center gap-2">
@@ -1159,13 +1160,13 @@ export default function SessionsPage() {
                               </h5>
                               
                               {session.package && (
-                                <p className="text-gray-600 mb-3">
+                                <p className="text-gray-600 mb-1 leading-tight">
                                   Package: {session.package.package_type?.replace('_', ' ')}
                                 </p>
                               )}
                               
                               {Number(session.price) > 0 && (
-                                <p className="text-gray-600 mb-2">
+                                <p className="text-gray-600 mb-1 leading-tight">
                                   Price: ₹{session.price}
                                 </p>
                               )}

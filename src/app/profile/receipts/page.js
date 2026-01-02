@@ -110,7 +110,7 @@ export default function ReceiptsPage() {
       }
     } catch (err) {
       console.error('❌ Error downloading receipt:', err);
-      showError(err.message || 'Failed to download receipt. Please try again.', 'Download Error');
+      showError('Failed to download receipt. Please try again.', 'Download Error');
     }
   };
 

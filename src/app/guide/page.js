@@ -1116,10 +1116,10 @@ const Guide = () => {
                         const name = doctor.name || `${doctor.first_name || ''} ${doctor.last_name || ''}`.trim();
                         if (name) {
                           const slug = name
-                            .toLowerCase()
-                            .trim()
-                            .replace(/[^a-z0-9]+/g, '-')
-                            .replace(/^-+|-+$/g, '');
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
                           router.push(`/online-child-psycologist/${slug}`);
                         }
                       }

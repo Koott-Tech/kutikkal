@@ -1577,9 +1577,9 @@ const TherapistProfileContent = ({ slug, packageId }) => {
       
       // Fallback: Try UUID if slug doesn't match (backward compatibility)
       if (!doctor) {
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
-        if (isUUID) {
-          doctor = doctors.find(doc => doc.id === doctorParam);
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
+      if (isUUID) {
+        doctor = doctors.find(doc => doc.id === doctorParam);
         }
       }
 
