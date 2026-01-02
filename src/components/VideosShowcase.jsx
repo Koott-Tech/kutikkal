@@ -407,12 +407,20 @@ export default function VideosShowcase({ cmsData = null }) {
                             key={`youtube-${i}-active`}
                               ref={(el) => { youtubeIframeRefs.current[i] = el; }}
                                 src={embedUrl}
-                            className="absolute inset-0 w-full h-full"
+                            className="absolute"
                             title={`video-review-${i}`}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen={false}
                                 frameBorder="0"
-                            style={{ pointerEvents: 'none' }}
+                            style={{ 
+                              pointerEvents: 'none',
+                              transform: 'scale(1.25)',
+                              transformOrigin: 'center center',
+                              width: '125%',
+                              height: '125%',
+                              left: '-12.5%',
+                              top: '-12.5%'
+                            }}
                               />
                               <button
                                 onClick={(e) => {
@@ -435,12 +443,17 @@ export default function VideosShowcase({ cmsData = null }) {
                               </button>
                             </div>
                       ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="absolute inset-0 w-full h-full overflow-hidden">
                               <img
                                 src={youtubeThumb || thumbnailUrl || '/hero.png'}
                                 alt={displayVideos[i]?.title ? `${displayVideos[i].title} - Video review thumbnail` : 'Child counseling video review thumbnail'}
                                 className="absolute inset-0 w-full h-full object-cover"
-                                style={{ transform: 'scale(1.22)', transformOrigin: 'center center' }}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%',
+                                  transform: 'scale(1.25)',
+                                  transformOrigin: 'center center'
+                                }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">
                                 <svg className="w-14 h-14 text-white drop-shadow-lg opacity-95" viewBox="0 0 24 24">
@@ -465,6 +478,15 @@ export default function VideosShowcase({ cmsData = null }) {
                             muted={isMuted}
                             playsInline
                             className={`w-full h-full object-cover transition-opacity duration-200 ${playingVideo === i ? 'opacity-100' : 'opacity-0'}`}
+                            style={playingVideo === i ? {
+                              transform: 'scale(1.25)',
+                              transformOrigin: 'center center',
+                              width: '125%',
+                              height: '125%',
+                              left: '-12.5%',
+                              top: '-12.5%',
+                              position: 'absolute'
+                            } : {}}
                           />
                           {playingVideo === i && (
                             <button
@@ -488,11 +510,17 @@ export default function VideosShowcase({ cmsData = null }) {
                             </button>
                           )}
                           {playingVideo !== i && (
-                            <div className="absolute inset-0 bg-white flex items-center justify-center">
+                            <div className="absolute inset-0 w-full h-full overflow-hidden">
                               <img
                                 src={thumbnailUrl || '/hero.png'}
                                 alt={displayVideos[i]?.title ? `${displayVideos[i].title} - Video review thumbnail` : 'Child counseling video review thumbnail'}
-                                className="max-w-full max-h-full object-contain"
+                                className="absolute inset-0 w-full h-full object-cover"
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%',
+                                  transform: 'scale(1.25)',
+                                  transformOrigin: 'center center'
+                                }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">
                                 <svg className="w-14 h-14 text-white drop-shadow-lg opacity-95" viewBox="0 0 24 24">
