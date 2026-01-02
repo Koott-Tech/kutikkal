@@ -2066,8 +2066,16 @@ const Guide = () => {
                   style={{ background: '#3f2e73', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => {
                     const doctor = doctors[selected];
-                    if (doctor && doctor.id) {
-                      router.push(`/online-child-psycologist/${doctor.id}`);
+                    if (doctor) {
+                      const name = doctor.name || `${doctor.first_name || ''} ${doctor.last_name || ''}`.trim();
+                      if (name) {
+                        const slug = name
+                          .toLowerCase()
+                          .trim()
+                          .replace(/[^a-z0-9]+/g, '-')
+                          .replace(/^-+|-+$/g, '');
+                        router.push(`/online-child-psycologist/${slug}`);
+                      }
                     }
                   }}
                 >

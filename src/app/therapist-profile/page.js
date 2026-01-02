@@ -2853,6 +2853,8 @@ function TherapistProfileRedirect() {
     
     if (doctorParam) {
       // Redirect to new URL structure
+      // If it's a UUID, we need to fetch the doctor name first, but for now just redirect
+      // The new route will handle both UUID and slug for backward compatibility
       const newUrl = packageId 
         ? `/online-child-psycologist/${doctorParam}?package_id=${packageId}`
         : `/online-child-psycologist/${doctorParam}`;

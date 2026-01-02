@@ -50,14 +50,24 @@ export default async function sitemap() {
         data?.psychologists ||
         [];
       return (psychologists || [])
-        .filter((psych) => psych?.id)
-        .map((psych) => psych.id);
+        .filter((psych) => {
+          const name = psych?.name || `${psych?.first_name || ''} ${psych?.last_name || ''}`.trim();
+          return name;
+        })
+        .map((psych) => {
+          const name = psych.name || `${psych.first_name || ''} ${psych.last_name || ''}`.trim();
+          return name
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        });
     } catch {
       return [];
     }
   }
 
-  const [counsellingSlugs, assessmentSlugs, parentingSlugs, blogSlugs, psychologistIds] = await Promise.all([
+  const [counsellingSlugs, assessmentSlugs, parentingSlugs, blogSlugs, psychologistSlugs] = await Promise.all([
     fetchSlugs("/api/counselling"),
     fetchSlugs("/api/assessments"),
     fetchSlugs("/api/better-parenting"),
@@ -86,8 +96,8 @@ export default async function sitemap() {
       changeFrequency: "weekly",
       priority: 0.7,
     })),
-    ...psychologistIds.map((id) => ({
-      url: `${baseUrl}/online-child-psycologist/${id}`,
+    ...psychologistSlugs.map((slug) => ({
+      url: `${baseUrl}/online-child-psycologist/${slug}`,
       changeFrequency: "monthly",
       priority: 0.9,
     })),

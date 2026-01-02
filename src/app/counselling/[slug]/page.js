@@ -242,10 +242,15 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           {displayTherapists.map((doc, idx) => {
             const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
             const name = doc.name || doc.first_name || 'Therapist';
-            // Use UUID for the new URL structure
-            if (!doc.id) return null; // Skip if no ID
+            // Create slug from doctor name
+            const nameSlug = name
+              .toLowerCase()
+              .trim()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '');
+            if (!nameSlug) return null; // Skip if no valid name
             return (
-              <a key={idx} href={`/online-child-psycologist/${doc.id}`} className="block">
+              <a key={idx} href={`/online-child-psycologist/${nameSlug}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
                   <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div

@@ -186,11 +186,21 @@ function BookingLoadingAnimation() {
   );
 }
 
+// Helper function to create slug from doctor name
+const createSlug = (name) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 // Separate component that uses route params
-const TherapistProfileContent = ({ id, packageId }) => {
+const TherapistProfileContent = ({ slug, packageId }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const doctorParam = id; // Use route param instead of search param
+  const doctorParam = slug; // Use route param (slug) instead of id
   // Get package_id from query params if not passed as prop
   const packageIdFromQuery = packageId || searchParams?.get('package_id');
   const { user, token, isAuthenticated, hasRole } = useAuth();
@@ -1558,34 +1568,18 @@ const TherapistProfileContent = ({ id, packageId }) => {
 
   useEffect(() => {
     if (doctorParam !== null && doctors.length > 0) {
-      // Helper function to create slug from name
-      const createSlug = (name) => {
-        return name
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '');
-      };
+      // Find doctor by name slug (primary method)
+      let doctor = doctors.find(doc => {
+        const name = doc.name || `${doc.first_name || ''} ${doc.last_name || ''}`.trim();
+        const docSlug = createSlug(name);
+        return docSlug === doctorParam;
+      });
       
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
-      let doctor = null;
-
-      if (isUUID) {
-        doctor = doctors.find(doc => doc.id === doctorParam);
-      } else {
-        // Try to find by name slug first
-        doctor = doctors.find(doc => {
-          const name = doc.name || `${doc.first_name} ${doc.last_name}`;
-          const slug = createSlug(name);
-          return slug === doctorParam;
-        });
-        
-        // Fallback: Check if it's a number (for backward compatibility)
-        if (!doctor) {
-          const index = parseInt(doctorParam, 10);
-          if (!Number.isNaN(index)) {
-            doctor = doctors[index];
-          }
+      // Fallback: Try UUID if slug doesn't match (backward compatibility)
+      if (!doctor) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
+        if (isUUID) {
+          doctor = doctors.find(doc => doc.id === doctorParam);
         }
       }
 
@@ -2845,14 +2839,14 @@ const TherapistProfileLoading = () => (
 
 // Main component with route params
 export default function TherapistProfilePage({ params }) {
-  const [doctorId, setDoctorId] = React.useState(null);
+  const [doctorSlug, setDoctorSlug] = React.useState(null);
   const [packageId, setPackageId] = React.useState(null);
 
   React.useEffect(() => {
     // Get params asynchronously (Next.js 15+)
     if (params && typeof params.then === 'function') {
       params.then((resolvedParams) => {
-        setDoctorId(resolvedParams.id);
+        setDoctorSlug(resolvedParams.slug);
         // Check for package_id in URL search params if needed
         if (typeof window !== 'undefined') {
           const urlParams = new URLSearchParams(window.location.search);
@@ -2861,7 +2855,7 @@ export default function TherapistProfilePage({ params }) {
         }
       });
     } else if (params) {
-      setDoctorId(params.id);
+      setDoctorSlug(params.slug);
       // Check for package_id in URL search params if needed
       if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
@@ -2871,13 +2865,13 @@ export default function TherapistProfilePage({ params }) {
     }
   }, [params]);
 
-  if (!doctorId) {
+  if (!doctorSlug) {
     return <TherapistProfileLoading />;
   }
 
   return (
     <Suspense fallback={<TherapistProfileLoading />}>
-      <TherapistProfileContent id={doctorId} packageId={packageId} />
+      <TherapistProfileContent slug={doctorSlug} packageId={packageId} />
     </Suspense>
   );
 }

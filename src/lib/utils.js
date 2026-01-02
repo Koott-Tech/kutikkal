@@ -47,4 +47,16 @@ export const formatCurrency = (amount, currencyCode = 'INR') => {
   }
 };
 
+// Create URL-friendly slug from doctor name
+export const createDoctorSlug = (doctor) => {
+  if (!doctor) return '';
+  const name = doctor.name || `${doctor.first_name || ''} ${doctor.last_name || ''}`.trim();
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export { cn };

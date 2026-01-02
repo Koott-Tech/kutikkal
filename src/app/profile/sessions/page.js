@@ -668,8 +668,16 @@ export default function SessionsPage() {
                             <button
                               onClick={() => {
                                 const psychologist = pkg.psychologist;
-                                if (psychologist && psychologist.id) {
-                                  router.push(`/online-child-psycologist/${psychologist.id}?package_id=${pkg.id}`);
+                                if (psychologist) {
+                                  const name = psychologist.name || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim();
+                                  if (name) {
+                                    const slug = name
+                                      .toLowerCase()
+                                      .trim()
+                                      .replace(/[^a-z0-9]+/g, '-')
+                                      .replace(/^-+|-+$/g, '');
+                                    router.push(`/online-child-psycologist/${slug}?package_id=${pkg.id}`);
+                                  }
                                 }
                               }}
                               className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
@@ -780,8 +788,14 @@ export default function SessionsPage() {
                                   onClick={() => {
                                     const psychologist = pkg.psychologist;
                                     if (psychologist) {
-                                      if (psychologist && psychologist.id) {
-                                        router.push(`/online-child-psycologist/${psychologist.id}?package_id=${pkg.id}`);
+                                      const name = psychologist.name || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim();
+                                      if (name) {
+                                        const slug = name
+                                          .toLowerCase()
+                                          .trim()
+                                          .replace(/[^a-z0-9]+/g, '-')
+                                          .replace(/^-+|-+$/g, '');
+                                        router.push(`/online-child-psycologist/${slug}?package_id=${pkg.id}`);
                                       }
                                     }
                                   }}
@@ -990,10 +1004,17 @@ export default function SessionsPage() {
                               if (!hasBookedSessions) {
                                 const psychologist = session.psychologist;
                                 if (psychologist) {
-                                  if (psychologist && psychologist.id) {
-                                    return (
-                                      <button
-                                        onClick={() => router.push(`/online-child-psycologist/${psychologist.id}?package_id=${session.package_id}`)}
+                                  if (psychologist) {
+                                    const name = psychologist.name || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim();
+                                    if (name) {
+                                      const slug = name
+                                        .toLowerCase()
+                                        .trim()
+                                        .replace(/[^a-z0-9]+/g, '-')
+                                        .replace(/^-+|-+$/g, '');
+                                      return (
+                                        <button
+                                          onClick={() => router.push(`/online-child-psycologist/${slug}?package_id=${session.package_id}`)}
                                         className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
                                         style={{ backgroundColor: '#3f2e73' }}
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -1221,10 +1242,17 @@ export default function SessionsPage() {
                                   const hasBookedSessions = hasUpcomingSessionsForPackage(session.package_id);
                                   if (!hasBookedSessions) {
                                     const psychologist = session.psychologist;
-                                    if (psychologist && psychologist.id) {
-                                      return (
-                                        <button
-                                          onClick={() => router.push(`/online-child-psycologist/${psychologist.id}?package_id=${session.package_id}`)}
+                                    if (psychologist) {
+                                      const name = psychologist.name || `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim();
+                                      if (name) {
+                                        const slug = name
+                                          .toLowerCase()
+                                          .trim()
+                                          .replace(/[^a-z0-9]+/g, '-')
+                                          .replace(/^-+|-+$/g, '');
+                                        return (
+                                          <button
+                                            onClick={() => router.push(`/online-child-psycologist/${slug}?package_id=${session.package_id}`)}
                                             className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer"
                                             style={{ backgroundColor: '#3f2e73' }}
                                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
