@@ -12,11 +12,12 @@ import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
-// Enable ISR (Incremental Static Regeneration) for better performance
-// Pages will be regenerated at most once per hour, or on-demand via revalidation
-export const revalidate = 3600; // Revalidate every hour (3600 seconds)
-// Allow static generation with dynamic params
+// Use force-dynamic to match counselling/better-parenting pages
+// This ensures consistent performance and avoids ISR overhead
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export const dynamicParams = true;
+export const fetchCache = 'force-no-store';
 
 // Dynamic metadata for assessment pages
 export async function generateMetadata({ params, searchParams }) {
@@ -91,11 +92,15 @@ async function fetchAssessment(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = preview ? '?preview=1' : '';
-    // Use ISR caching for better performance (except in preview mode)
-    const fetchOptions = preview 
-      ? { cache: 'no-store' } // No caching in preview mode
-      : { next: { revalidate: 3600 } }; // Revalidate every hour
-    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, fetchOptions);
+    // Use no-store to match counselling/better-parenting (backend has caching)
+    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
 
     if (response.ok) {
       const json = await response.json();
@@ -119,9 +124,9 @@ async function fetchAssessment(slug, { preview = false } = {}) {
 async function fetchPublicTherapists(limit = 6) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    // Cache therapists data for 1 hour using ISR (they don't change frequently)
+    // Use no-store to match counselling/better-parenting (backend has caching)
     const response = await fetch(`${baseUrl}/api/public/psychologists?limit=${limit}`, {
-      next: { revalidate: 3600 } // Revalidate every hour
+      cache: 'no-store'
     });
 
     if (response.ok) {

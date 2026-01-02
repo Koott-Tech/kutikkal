@@ -96,11 +96,12 @@ export async function GET(request, { params }) {
     const contentType = response.headers.get('content-type') || 'image/jpeg';
 
     // Return the image with appropriate headers
+    // Increased cache time: 24 hours browser, 7 days CDN (stale-while-revalidate for better UX)
     return new NextResponse(imageBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour (matches signed URL expiration)
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400', // 24h browser, 7d CDN, stale-while-revalidate
         'X-Content-Type-Options': 'nosniff',
       },
     });

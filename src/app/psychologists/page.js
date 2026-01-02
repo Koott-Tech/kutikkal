@@ -17,6 +17,7 @@ const Guide = () => {
   const [selected, setSelected] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [doctorAvailability, setDoctorAvailability] = useState({}); // Store availability for each doctor
+  const [loadingAvailability, setLoadingAvailability] = useState(new Set()); // Track which doctors are loading
   // Modal animation state
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [isClosingDoctorModal, setIsClosingDoctorModal] = useState(false);
@@ -336,15 +337,18 @@ const Guide = () => {
         return cached.data;
       }
 
+      // Mark as loading
+      setLoadingAvailability(prev => new Set(prev).add(doctorId));
+
       const today = new Date();
       const startDate = today.toISOString().split('T')[0]; // Today
       const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 14); // Only next 14 days (reduced from 30)
+      endDate.setDate(endDate.getDate() + 7); // Only next 7 days (reduced from 14 for faster queries)
       const endDateStr = endDate.toISOString().split('T')[0];
 
-      // Add shorter timeout to prevent hanging (3 seconds)
+      // Increased timeout to 5 seconds (backend caching should make most requests fast)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 3000)
+        setTimeout(() => reject(new Error('Timeout')), 5000)
       );
 
       const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr);
@@ -415,11 +419,34 @@ const Guide = () => {
             data: result,
             timestamp: Date.now()
           });
+          
+          // Mark as not loading
+          setLoadingAvailability(prev => {
+            const next = new Set(prev);
+            next.delete(doctorId);
+            return next;
+          });
+          
           return result;
         }
       }
+      
+      // Mark as not loading
+      setLoadingAvailability(prev => {
+        const next = new Set(prev);
+        next.delete(doctorId);
+        return next;
+      });
+      
       return null;
     } catch (err) {
+      // Mark as not loading
+      setLoadingAvailability(prev => {
+        const next = new Set(prev);
+        next.delete(doctorId);
+        return next;
+      });
+      
       // Silently fail - don't log timeout errors
       if (err.message !== 'Timeout') {
         console.error(`Error fetching availability for doctor ${doctorId}:`, err);
@@ -428,40 +455,36 @@ const Guide = () => {
     }
   };
 
-  // Fetch availability for all doctors (optimized with batching)
+  // Fetch availability for all doctors (optimized - parallel fetching with Promise.allSettled)
   const fetchAllDoctorsAvailability = async (doctorsList) => {
     if (doctorsList.length === 0) return;
     
-    // Process in batches of 5 to avoid overwhelming the server
-    const batchSize = 5;
-    const batches = [];
-    for (let i = 0; i < doctorsList.length; i += batchSize) {
-      batches.push(doctorsList.slice(i, i + batchSize));
-    }
-
-    // Process batches sequentially but doctors within batch in parallel
-    for (const batch of batches) {
-      const batchPromises = batch.map(async (doctor) => {
+    // Fetch all doctors in parallel (not batches) - backend caching handles load
+    // Use Promise.allSettled to handle failures gracefully
+    const availabilityPromises = doctorsList.map(async (doctor) => {
+      try {
         const availability = await fetchDoctorAvailability(doctor.id);
-        return { doctorId: doctor.id, availability };
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-      
-      // Update state incrementally for each batch (better UX)
-      setDoctorAvailability(prev => {
-        const updated = { ...prev };
-        batchResults.forEach(({ doctorId, availability }) => {
-          updated[doctorId] = availability;
-        });
-        return updated;
-      });
-
-      // Small delay between batches to avoid overwhelming
-      if (batches.indexOf(batch) < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        return { doctorId: doctor.id, availability, success: true };
+      } catch (error) {
+        console.error(`Failed to fetch availability for doctor ${doctor.id}:`, error);
+        return { doctorId: doctor.id, availability: null, success: false };
       }
-    }
+    });
+
+    // Wait for all requests to complete (parallel)
+    const results = await Promise.allSettled(availabilityPromises);
+    
+    // Update state with all results at once (better performance)
+    setDoctorAvailability(prev => {
+      const updated = { ...prev };
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value) {
+          const { doctorId, availability } = result.value;
+          updated[doctorId] = availability;
+        }
+      });
+      return updated;
+    });
   };
 
   // Handle scroll restoration on page load/refresh
@@ -600,10 +623,10 @@ const Guide = () => {
     // Debounce availability fetching to prevent duplicate requests
     if (doctors.length > 0) {
       const timeoutId = setTimeout(() => {
-      fetchAllDoctorsAvailability(doctors).catch(err => {
-        console.error('Error fetching doctors availability:', err);
-      });
-      }, 500); // Debounce delay to prevent duplicate requests
+        fetchAllDoctorsAvailability(doctors).catch(err => {
+          console.error('Error fetching doctors availability:', err);
+        });
+      }, 200); // Reduced debounce delay (backend caching makes this safe)
       
       return () => clearTimeout(timeoutId);
     }
@@ -690,6 +713,15 @@ const Guide = () => {
   return (
     <div style={{ width: "100vw", minHeight: "100vh", background: "#f8fafc", overflowX: "hidden", position: "relative" }}>
       <style>{`
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
         @media (max-width: 768px) {
           .company-name-guide {
             display: none !important;
@@ -1168,6 +1200,8 @@ const Guide = () => {
                     console.log(`Doctor ${doc.name || doc.first_name}: profile_picture_url = ${doc.profile_picture_url}`);
                     
                     if (imageSrc) {
+                      // Preload first 3 images (above the fold) for faster initial render
+                      const isAboveFold = idx < 3;
                       return (
                         <img
                           key={`img-${doc.id || idx}`}
@@ -1176,7 +1210,8 @@ const Guide = () => {
                           className="doctor-card-image"
                           width={400}
                           height={500}
-                          loading="lazy"
+                          loading={isAboveFold ? "eager" : "lazy"}
+                          fetchPriority={isAboveFold ? "high" : "auto"}
                           decoding="async"
                           style={{ 
                             width: "100%", 
@@ -1346,7 +1381,15 @@ const Guide = () => {
                     overflow: 'hidden' // Hide overflow if content is too long
                   }}>
                     {(() => {
+                      const isLoading = loadingAvailability.has(doc.id);
                       const availability = doctorAvailability[doc.id];
+                      
+                      // Show loading state first
+                      if (isLoading) {
+                        return 'Loading next availability...';
+                      }
+                      
+                      // Show availability if it exists
                       if (availability && availability.timeSlots && availability.timeSlots.length > 0) {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
@@ -1413,7 +1456,9 @@ const Guide = () => {
                           </>
                         );
                       }
-                      return 'Loading availability...';
+                      
+                      // Only show "No availability" if not loading and no slots found
+                      return 'No availability';
                     })()}
                     </div>
                   </div>
