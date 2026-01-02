@@ -37,6 +37,9 @@ export async function generateMetadata({ params, searchParams }) {
         'Professional assessments to better understand children’s needs and strengths.';
       const ogImage =
         data.og_image || data.hero_image_url || '/hero.png';
+      const normalizedOgImage = ogImage.startsWith('http')
+        ? ogImage
+        : `https://www.little.care${ogImage}`;
 
       return {
         title,
@@ -49,9 +52,9 @@ export async function generateMetadata({ params, searchParams }) {
           url: `https://www.little.care/assessments/${slug}`,
           images: [
             {
-              url: ogImage.startsWith('http')
-                ? ogImage
-                : `https://www.little.care${ogImage}`,
+              url: normalizedOgImage,
+              width: 1200,
+              height: 630,
             },
           ],
         },
@@ -59,11 +62,7 @@ export async function generateMetadata({ params, searchParams }) {
           card: 'summary_large_image',
           title,
           description,
-          images: [
-            ogImage.startsWith('http')
-              ? ogImage
-              : `https://www.little.care${ogImage}`,
-          ],
+          images: [normalizedOgImage],
         },
         alternates: {
           canonical: `https://www.little.care/assessments/${slug}`,
@@ -142,7 +141,12 @@ async function fetchPublicTherapists(limit = 6) {
 export default async function AssessmentDynamicPage({ params, searchParams }) {
   const { slug } = await params;
   const isPreview = searchParams?.preview === '1' || searchParams?.preview === 'true';
-  const data = await fetchAssessment(slug, { preview: isPreview });
+  
+  // Fetch data in parallel to reduce TTFB - don't block on therapists
+  const [data, therapists] = await Promise.all([
+    fetchAssessment(slug, { preview: isPreview }),
+    fetchPublicTherapists(6).catch(() => []) // Don't block page if therapists fail
+  ]);
 
   if (!data) {
     return (
@@ -165,8 +169,6 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
       </div>
     );
   }
-
-  const therapists = await fetchPublicTherapists(6);
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';
