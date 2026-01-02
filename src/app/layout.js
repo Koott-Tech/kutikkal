@@ -16,6 +16,15 @@ export const metadata = {
   title: "India's Trusted Child Psychologist | Online Child Counseling",
   description:
     "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
+  icons: {
+    icon: [
+      {
+        url: '/Fav Icon 1.png',
+        type: 'image/png',
+      },
+    ],
+    apple: '/Fav Icon 1.png',
+  },
   openGraph: {
     title: "India's Trusted Child Psychologist | Online Child Counseling",
     description:
@@ -83,14 +92,7 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-K7Z8F94Z80');
           `
         }} />
-        {/* Favicon for browsers */}
-        <link rel="icon" href="/Fav Icon 1.png" type="image/png" />
-        <link rel="shortcut icon" href="/Fav Icon 1.png" type="image/png" />
-        {/* Apple touch icon for iOS */}
-        <link rel="apple-touch-icon" href="/Fav Icon 1.png" />
-        {/* Additional favicon formats for better Google compatibility */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/Fav Icon 1.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/Fav Icon 1.png" />
+        {/* Favicon is handled by Next.js metadata.icons - no manual links needed */}
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
