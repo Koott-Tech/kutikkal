@@ -110,7 +110,7 @@ export default function RootLayout({ children }) {
                 // Ensure loader stays visible initially
                 // This runs BEFORE body content is parsed
                 window.__LOADER_START_TIME__ = Date.now();
-                window.__LOADER_MIN_TIME__ = 800; // Minimum 800ms display
+                window.__LOADER_MIN_TIME__ = 300; // Reduced to 300ms for better FCP
                 window.__DOM_READY__ = false;
                 
                 // Function to hide loader when ready
@@ -125,7 +125,7 @@ export default function RootLayout({ children }) {
                       // Body not ready yet, try again
                       setTimeout(window.__HIDE_LOADER__, 50);
                     }
-                  }, remaining + 100);
+                  }, remaining);
                 };
                 
                 // Mark DOM as ready
@@ -144,12 +144,12 @@ export default function RootLayout({ children }) {
                   setTimeout(markReady, 100);
                 }
                 
-                // Safety fallback - hide after 2 seconds max
+                // Safety fallback - hide after 1 second max (reduced for better performance)
                 setTimeout(function() {
                   if (document.body && !document.body.classList.contains('loaded')) {
                     document.body.classList.add('loaded');
                   }
-                }, 2000);
+                }, 1000);
               })();
             `,
           }}
@@ -167,20 +167,16 @@ export default function RootLayout({ children }) {
               }
             }
             /* Instant loading screen - renders with HTML, no hydration needed */
-            /* CRITICAL: Hide ALL body content until loader is ready to hide */
+            /* CRITICAL: Don't hide content - let it render for FCP/LCP, just overlay loader */
             body:not(.loaded) {
               overflow: hidden !important;
             }
+            /* Only hide content visually, but allow browser to render for metrics */
             body:not(.loaded) > *:not(#initial-loader) {
-              opacity: 0 !important;
-              visibility: hidden !important;
               pointer-events: none !important;
             }
             body.loaded > *:not(#initial-loader) {
-              opacity: 1 !important;
-              visibility: visible !important;
               pointer-events: auto !important;
-              transition: opacity 200ms ease-in-out;
             }
             /* Prevent layout shifts during font loading */
             body {
