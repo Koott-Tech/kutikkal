@@ -1139,8 +1139,17 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
                 >
-                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <span className="text-indigo-700 font-semibold text-sm">
+                  <div className="w-7 h-7 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                    <img 
+                      src="/Fav Icon 1.png"
+                      alt={getUserDisplayName()}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <span className="text-indigo-700 font-semibold text-xs" style={{ display: 'none' }}>
                       {getUserInitial()}
                     </span>
                   </div>
@@ -1195,7 +1204,7 @@ export default function Header() {
             )}
             <button 
               onClick={() => router.push('/psychologists')} 
-              className="inline-flex items-center rounded-full px-3 md:px-4 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
+              className="inline-flex items-center rounded-full px-3 md:px-4 xl:px-6 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
               style={{ backgroundColor: '#3f2e73' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
@@ -1291,8 +1300,17 @@ export default function Header() {
               {isAuthenticated() && (
                 <div className="border-b border-gray-200 pb-6 mb-6">
                   <div className="flex flex-col items-center text-center py-2">
-                    <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
-                      <span className="text-indigo-700 font-semibold text-lg">
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-100 flex items-center justify-center mb-3 flex-shrink-0">
+                      <img 
+                        src="/Fav Icon 1.png"
+                        alt={getUserDisplayName()}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <span className="text-indigo-700 font-semibold text-base" style={{ display: 'none' }}>
                         {getUserInitial()}
                       </span>
                     </div>
