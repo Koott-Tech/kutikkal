@@ -90,8 +90,13 @@ export default function RootLayout({ children }) {
         {/* Additional favicon formats for better Google compatibility */}
         <link rel="icon" type="image/png" sizes="32x32" href="/Fav Icon 1.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/Fav Icon 1.png" />
+        {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Preload critical fonts */}
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" as="style" />
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" as="style" />
+        {/* Load fonts with font-display: swap to prevent invisible text */}
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -176,6 +181,18 @@ export default function RootLayout({ children }) {
               visibility: visible !important;
               pointer-events: auto !important;
               transition: opacity 200ms ease-in-out;
+            }
+            /* Prevent layout shifts during font loading */
+            body {
+              font-display: swap;
+            }
+            /* Reserve space for images to prevent CLS */
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            img[width][height] {
+              aspect-ratio: attr(width) / attr(height);
             }
             /* Loader must be visible and on top */
             #initial-loader {

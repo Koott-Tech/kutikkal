@@ -1174,6 +1174,8 @@ const Guide = () => {
                           src={imageSrc}
                           alt={`${doc.name || doc.first_name} - Child psychologist profile photo`}
                           className="doctor-card-image"
+                          width={400}
+                          height={500}
                           loading="lazy"
                           decoding="async"
                           style={{ 
@@ -1181,7 +1183,8 @@ const Guide = () => {
                             height: "100%", 
                             minHeight: "100%",
                             objectFit: "cover",
-                            display: "block"
+                            display: "block",
+                            aspectRatio: "4/5"
                           }}
                           onError={(e) => {
                             console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);

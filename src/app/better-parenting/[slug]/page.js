@@ -230,7 +230,20 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
             return (
               <a key={idx} href={`/online-child-psycologist/${nameSlug}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
-                  <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img 
+                    src={imageSrc} 
+                    alt={name} 
+                    width={400}
+                    height={360}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover',
+                      aspectRatio: '400/360'
+                    }} 
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div
                     style={{
                       position: 'absolute',

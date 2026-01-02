@@ -12,8 +12,11 @@ import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Enable ISR (Incremental Static Regeneration) for better performance
+// Pages will be regenerated at most once per hour, or on-demand via revalidation
+export const revalidate = 3600; // Revalidate every hour (3600 seconds)
+// Allow static generation with dynamic params
+export const dynamicParams = true;
 
 // Dynamic metadata for assessment pages
 export async function generateMetadata({ params, searchParams }) {
@@ -89,9 +92,11 @@ async function fetchAssessment(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = preview ? '?preview=1' : '';
-    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, {
-      cache: 'no-store'
-    });
+    // Use ISR caching for better performance (except in preview mode)
+    const fetchOptions = preview 
+      ? { cache: 'no-store' } // No caching in preview mode
+      : { next: { revalidate: 3600 } }; // Revalidate every hour
+    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, fetchOptions);
 
     if (response.ok) {
       const json = await response.json();
@@ -115,8 +120,9 @@ async function fetchAssessment(slug, { preview = false } = {}) {
 async function fetchPublicTherapists(limit = 6) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    const response = await fetch(`${baseUrl}/api/public/psychologists`, {
-      cache: 'no-store'
+    // Cache therapists data for 1 hour using ISR (they don't change frequently)
+    const response = await fetch(`${baseUrl}/api/public/psychologists?limit=${limit}`, {
+      next: { revalidate: 3600 } // Revalidate every hour
     });
 
     if (response.ok) {

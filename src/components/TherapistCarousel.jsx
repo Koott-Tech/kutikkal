@@ -139,7 +139,20 @@ export default function TherapistCarousel({ therapists = [] }) {
               className="therapist-card-item block"
             >
               <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">
-                <img src={imageSrc} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img 
+                  src={imageSrc} 
+                  alt={name} 
+                  width={400}
+                  height={380}
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    aspectRatio: '400/380'
+                  }} 
+                  loading="lazy"
+                  decoding="async"
+                />
           <div
             style={{
               position: 'absolute',
