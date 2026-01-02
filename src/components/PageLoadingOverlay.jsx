@@ -4,65 +4,88 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
 
-const HIDE_DELAY = 600;
 const FADE_DURATION = 300; // Duration for fade out animation
 
+/**
+ * PageLoadingOverlay - Client-side loader for navigation transitions
+ * 
+ * NOTE: This is ONLY for client-side navigation transitions.
+ * Initial page load is handled by server-rendered #initial-loader in layout.js
+ * 
+ * This component:
+ * - Only shows AFTER React hydration (for client navigation)
+ * - Hides when DOMContentLoaded fires (not window.load)
+ * - No fixed delays - adapts to actual page readiness
+ */
 export default function PageLoadingOverlay() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isVisible, setIsVisible] = useState(true);
-  const [shouldRender, setShouldRender] = useState(true);
+  const [isVisible, setIsVisible] = useState(false); // Start hidden (initial load handled by server loader)
+  const [shouldRender, setShouldRender] = useState(false);
   const timeoutRef = useRef(null);
   const isInitialMount = useRef(true);
+  const hasHydrated = useRef(false);
 
   const navigationKey = useMemo(() => {
     const search = searchParams?.toString();
     return search ? `${pathname}?${search}` : pathname;
   }, [pathname, searchParams]);
 
+  // On initial mount, hide immediately (server loader handles initial load)
   useEffect(() => {
-    // On initial mount, ensure loading screen shows immediately
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      setIsVisible(true);
-      setShouldRender(true);
-      
-      // Wait for page to load, then fade out
-      const handleLoad = () => {
-        // Small delay to ensure images are loading
-        setTimeout(() => {
-          setIsVisible(false);
-          // Remove from DOM after fade out completes
-          setTimeout(() => {
-            setShouldRender(false);
-          }, FADE_DURATION);
-        }, HIDE_DELAY);
-      };
+      // Mark as hydrated, but don't show (server loader is handling initial load)
+      hasHydrated.current = true;
+      setIsVisible(false);
+      setShouldRender(false);
+      return;
+    }
+  }, []);
 
-      if (document.readyState === 'complete') {
-        handleLoad();
-      } else {
-        window.addEventListener('load', handleLoad);
-        return () => window.removeEventListener('load', handleLoad);
-      }
+  // Handle navigation transitions (only after hydration)
+  useEffect(() => {
+    // Don't show on initial mount (server loader handles that)
+    if (!hasHydrated.current) {
       return;
     }
 
-    // For subsequent navigations, show loading immediately
+    // Show loading screen for navigation
     setIsVisible(true);
     setShouldRender(true);
 
+    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    timeoutRef.current = setTimeout(() => {
+    // Hide when DOM is ready (interactive state, not window.load)
+    const hideLoader = () => {
       setIsVisible(false);
       // Remove from DOM after fade out completes
       setTimeout(() => {
         setShouldRender(false);
       }, FADE_DURATION);
-    }, HIDE_DELAY);
+    };
+
+    // Check if DOM is already ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      // Small delay to ensure smooth transition
+      timeoutRef.current = setTimeout(hideLoader, 100);
+    } else {
+      // Wait for DOMContentLoaded (fires when HTML is parsed, CSS applied)
+      const handleDOMReady = () => {
+        timeoutRef.current = setTimeout(hideLoader, 100);
+      };
+      document.addEventListener('DOMContentLoaded', handleDOMReady, { once: true });
+      
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        document.removeEventListener('DOMContentLoaded', handleDOMReady);
+      };
+    }
 
     return () => {
       if (timeoutRef.current) {

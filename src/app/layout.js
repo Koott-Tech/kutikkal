@@ -1,5 +1,4 @@
 import "./globals.css";
-import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import HeaderWrapper from "@/components/HeaderWrapper";
@@ -95,6 +94,60 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Preload logo for instant loading screen display */}
+        <link rel="preload" as="image" href="/mainlogo.webp" />
+        {/* CRITICAL: Script to manage loader - runs immediately in head */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Ensure loader stays visible initially
+                // This runs BEFORE body content is parsed
+                window.__LOADER_START_TIME__ = Date.now();
+                window.__LOADER_MIN_TIME__ = 800; // Minimum 800ms display
+                window.__DOM_READY__ = false;
+                
+                // Function to hide loader when ready
+                window.__HIDE_LOADER__ = function() {
+                  var elapsed = Date.now() - window.__LOADER_START_TIME__;
+                  var remaining = Math.max(0, window.__LOADER_MIN_TIME__ - elapsed);
+                  
+                  setTimeout(function() {
+                    if (document.body) {
+                      document.body.classList.add('loaded');
+                    } else {
+                      // Body not ready yet, try again
+                      setTimeout(window.__HIDE_LOADER__, 50);
+                    }
+                  }, remaining + 100);
+                };
+                
+                // Mark DOM as ready
+                function markReady() {
+                  if (!window.__DOM_READY__) {
+                    window.__DOM_READY__ = true;
+                    window.__HIDE_LOADER__();
+                  }
+                }
+                
+                // Check if already ready
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', markReady);
+                } else {
+                  // Already interactive or complete
+                  setTimeout(markReady, 100);
+                }
+                
+                // Safety fallback - hide after 2 seconds max
+                setTimeout(function() {
+                  if (document.body && !document.body.classList.contains('loaded')) {
+                    document.body.classList.add('loaded');
+                  }
+                }, 2000);
+              })();
+            `,
+          }}
+        />
         <style
           dangerouslySetInnerHTML={{
             __html: `
@@ -105,6 +158,68 @@ export default function RootLayout({ children }) {
               }
               .hero-title {
                 line-height: 0.95 !important;
+              }
+            }
+            /* Instant loading screen - renders with HTML, no hydration needed */
+            /* CRITICAL: Hide ALL body content until loader is ready to hide */
+            body:not(.loaded) {
+              overflow: hidden !important;
+            }
+            body:not(.loaded) > *:not(#initial-loader) {
+              opacity: 0 !important;
+              visibility: hidden !important;
+              pointer-events: none !important;
+            }
+            body.loaded > *:not(#initial-loader) {
+              opacity: 1 !important;
+              visibility: visible !important;
+              pointer-events: auto !important;
+              transition: opacity 200ms ease-in-out;
+            }
+            /* Loader must be visible and on top */
+            #initial-loader {
+              position: fixed !important;
+              inset: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: #ffffff !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              z-index: 999999 !important;
+              font-family: Arial, Helvetica, sans-serif !important;
+              overflow: hidden !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              transition: opacity 300ms ease-in-out !important;
+              pointer-events: auto !important;
+              opacity: 1 !important;
+              visibility: visible !important;
+            }
+            body.loaded #initial-loader {
+              opacity: 0 !important;
+              pointer-events: none !important;
+              visibility: hidden !important;
+            }
+            #initial-loader .loading-logo {
+              width: 240px;
+              height: 79px;
+              margin: 0 auto;
+              background-image: url('/mainlogo.webp');
+              background-size: contain;
+              background-repeat: no-repeat;
+              background-position: center;
+              animation: pulseScale 2s ease-in-out infinite;
+            }
+            @keyframes pulseScale {
+              0% { transform: scale(1); opacity: 0.9; }
+              50% { transform: scale(1.05); opacity: 1; }
+              100% { transform: scale(1); opacity: 0.9; }
+            }
+            @media (max-width: 767px) {
+              #initial-loader .loading-logo {
+                width: 200px !important;
+                height: 66px !important;
               }
             }
           `,
@@ -141,9 +256,12 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="antialiased bg-gray-50">
-        <Suspense fallback={null}>
-          <PageLoadingOverlay />
-        </Suspense>
+        {/* INSTANT - Server-rendered loader (appears at 0ms, no hydration needed) */}
+        <div id="initial-loader">
+          <div className="loading-logo"></div>
+        </div>
+        {/* Client-side loader for navigation transitions (only after hydration) */}
+        <PageLoadingOverlay />
         <ClickBurst />
         <ErrorBoundary>
           <ConditionalProviders>
