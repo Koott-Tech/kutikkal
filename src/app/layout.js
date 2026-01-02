@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import HeaderWrapper from "@/components/HeaderWrapper";
@@ -261,7 +262,9 @@ export default function RootLayout({ children }) {
           <div className="loading-logo"></div>
         </div>
         {/* Client-side loader for navigation transitions (only after hydration) */}
-        <PageLoadingOverlay />
+        <Suspense fallback={null}>
+          <PageLoadingOverlay />
+        </Suspense>
         <ClickBurst />
         <ErrorBoundary>
           <ConditionalProviders>

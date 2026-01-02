@@ -17,7 +17,7 @@ const FADE_DURATION = 300; // Duration for fade out animation
  * - Hides when DOMContentLoaded fires (not window.load)
  * - No fixed delays - adapts to actual page readiness
  */
-export default function PageLoadingOverlay() {
+function PageLoadingOverlayContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isVisible, setIsVisible] = useState(false); // Start hidden (initial load handled by server loader)
@@ -99,5 +99,13 @@ export default function PageLoadingOverlay() {
   }
 
   return <LoadingScreen isVisible={isVisible} />;
+}
+
+/**
+ * Wrapper component with Suspense boundary for useSearchParams
+ * This prevents build errors during static generation
+ */
+export default function PageLoadingOverlay() {
+  return <PageLoadingOverlayContent />;
 }
 
