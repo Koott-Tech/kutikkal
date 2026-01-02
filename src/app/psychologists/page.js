@@ -2066,14 +2066,8 @@ const Guide = () => {
                   style={{ background: '#3f2e73', color: '#fff', border: 'none', borderRadius: 14, padding: '16px 120px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}
                   onClick={() => {
                     const doctor = doctors[selected];
-                    if (doctor) {
-                      // Create URL-friendly slug from doctor name
-                      const nameSlug = (doctor.name || `${doctor.first_name} ${doctor.last_name}`)
-                        .toLowerCase()
-                        .trim()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                      router.push(`/therapist-profile?doctor=${nameSlug}`);
+                    if (doctor && doctor.id) {
+                      router.push(`/online-child-psycologist/${doctor.id}`);
                     }
                   }}
                 >

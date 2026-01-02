@@ -19,12 +19,15 @@ export default async function sitemap() {
         data?.data?.services ||
         data?.data?.assessments ||
         data?.data?.pages ||
+        data?.data?.blogs ||
         data?.message?.services ||
         data?.message?.assessments ||
         data?.message?.pages ||
+        data?.message?.blogs ||
         data?.services ||
         data?.assessments ||
         data?.pages ||
+        data?.blogs ||
         data?.data ||
         [];
       return (items || [])
@@ -35,10 +38,31 @@ export default async function sitemap() {
     }
   }
 
-  const [counsellingSlugs, assessmentSlugs, parentingSlugs] = await Promise.all([
+  async function fetchPsychologists() {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.little.care";
+      const res = await fetch(`${apiBase}/api/public/psychologists`, { cache: "no-store" });
+      if (!res.ok) return [];
+      const data = await res.json();
+      const psychologists = 
+        data?.data?.psychologists ||
+        data?.message?.psychologists ||
+        data?.psychologists ||
+        [];
+      return (psychologists || [])
+        .filter((psych) => psych?.id)
+        .map((psych) => psych.id);
+    } catch {
+      return [];
+    }
+  }
+
+  const [counsellingSlugs, assessmentSlugs, parentingSlugs, blogSlugs, psychologistIds] = await Promise.all([
     fetchSlugs("/api/counselling"),
     fetchSlugs("/api/assessments"),
     fetchSlugs("/api/better-parenting"),
+    fetchSlugs("/api/blogs"),
+    fetchPsychologists(),
   ]);
 
   const dynamicRoutes = [
@@ -56,6 +80,16 @@ export default async function sitemap() {
       url: `${baseUrl}/better-parenting/${slug}`,
       changeFrequency: "weekly",
       priority: 0.8,
+    })),
+    ...blogSlugs.map((slug) => ({
+      url: `${baseUrl}/blog/${slug}`,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    })),
+    ...psychologistIds.map((id) => ({
+      url: `${baseUrl}/online-child-psycologist/${id}`,
+      changeFrequency: "monthly",
+      priority: 0.9,
     })),
   ];
 

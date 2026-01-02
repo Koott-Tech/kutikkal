@@ -1112,13 +1112,9 @@ const Guide = () => {
                     const doctor = doctors[selected];
                     if (doctor) {
                       // Create URL-friendly slug from doctor name or use ID
-                      const nameSlug = (doctor.name || `${doctor.first_name} ${doctor.last_name}`)
-                        .toLowerCase()
-                        .trim()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                      const doctorIdentifier = doctor.id || nameSlug;
-                      router.push(`/therapist-profile?doctor=${doctorIdentifier}`);
+                      if (doctor && doctor.id) {
+                        router.push(`/online-child-psycologist/${doctor.id}`);
+                      }
                     }
                   }}
                 >

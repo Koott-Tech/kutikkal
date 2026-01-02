@@ -125,16 +125,12 @@ export default function TherapistCarousel({ therapists = [] }) {
         {therapists.map((doc, idx) => {
           const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
           const name = doc.name || doc.first_name || 'Therapist';
-          // Create URL-friendly slug from name or use ID
-          const doctorIdentifier = doc.id || (name
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, ''));
+          // Use UUID for the new URL structure
+          if (!doc.id) return null; // Skip if no ID
           return (
             <a 
               key={idx} 
-              href={`/therapist-profile?doctor=${doctorIdentifier}`} 
+              href={`/online-child-psycologist/${doc.id}`} 
               className="therapist-card-item block"
             >
               <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">

@@ -3,15 +3,15 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { publicApi } from '../../lib/backendApi';
-import { clientApi, paymentApi } from '../../lib/backendApi';
-import backendApi from '../../lib/backendApi';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNotification } from '../../contexts/NotificationContext';
-import { loadAuthData } from '../../lib/authStorage';
-import { formatCurrency } from '../../lib/utils';
-// import { isClientContactComplete, getIncompleteContactFields } from '../../lib/contactValidation'; // Removed - contact details collected during signup
-// import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
+import { publicApi } from '../../../lib/backendApi';
+import { clientApi, paymentApi } from '../../../lib/backendApi';
+import backendApi from '../../../lib/backendApi';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useNotification } from '../../../contexts/NotificationContext';
+import { loadAuthData } from '../../../lib/authStorage';
+import { formatCurrency } from '../../../lib/utils';
+// import { isClientContactComplete, getIncompleteContactFields } from '../../../lib/contactValidation'; // Removed - contact details collected during signup
+// import ContactCompletionWarning from '../../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
@@ -186,12 +186,13 @@ function BookingLoadingAnimation() {
   );
 }
 
-// Separate component that uses useSearchParams
-const TherapistProfileContent = () => {
+// Separate component that uses route params
+const TherapistProfileContent = ({ id, packageId }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const doctorParam = searchParams.get('doctor');
-  const packageId = searchParams.get('package_id'); // Add package_id parameter
+  const doctorParam = id; // Use route param instead of search param
+  // Get package_id from query params if not passed as prop
+  const packageIdFromQuery = packageId || searchParams?.get('package_id');
   const { user, token, isAuthenticated, hasRole } = useAuth();
   const { showError, showWarning, showSuccess } = useNotification();
   
@@ -1650,10 +1651,10 @@ const TherapistProfileContent = () => {
 
   // Handle package_id parameter for booking remaining sessions
   useEffect(() => {
-    if (packageId && isAuthenticated() && hasRole('client')) {
-      fetchClientPackage(packageId);
+    if (packageIdFromQuery && isAuthenticated() && hasRole('client')) {
+      fetchClientPackage(packageIdFromQuery);
     }
-  }, [packageId, isAuthenticated, hasRole]);
+  }, [packageIdFromQuery, isAuthenticated, hasRole]);
 
   // Automatically select today's date if it exists in availability (even if no slots available)
   useEffect(() => {
@@ -2842,37 +2843,41 @@ const TherapistProfileLoading = () => (
   </div>
 );
 
-// Redirect component that uses useSearchParams
-function TherapistProfileRedirect() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  useEffect(() => {
-    const doctorParam = searchParams?.get('doctor');
-    const packageId = searchParams?.get('package_id');
-    
-    if (doctorParam) {
-      // Redirect to new URL structure
-      const newUrl = packageId 
-        ? `/online-child-psycologist/${doctorParam}?package_id=${packageId}`
-        : `/online-child-psycologist/${doctorParam}`;
-      router.replace(newUrl);
-    } else {
-      // If no doctor param, redirect to psychologists page
-      router.replace('/psychologists');
-    }
-  }, [router, searchParams]);
-  
-  return <TherapistProfileLoading />;
-}
+// Main component with route params
+export default function TherapistProfilePage({ params }) {
+  const [doctorId, setDoctorId] = React.useState(null);
+  const [packageId, setPackageId] = React.useState(null);
 
-// Main component with Suspense boundary - Redirects to new URL structure
-const TherapistProfilePage = () => {
+  React.useEffect(() => {
+    // Get params asynchronously (Next.js 15+)
+    if (params && typeof params.then === 'function') {
+      params.then((resolvedParams) => {
+        setDoctorId(resolvedParams.id);
+        // Check for package_id in URL search params if needed
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const pkgId = urlParams.get('package_id');
+          if (pkgId) setPackageId(pkgId);
+        }
+      });
+    } else if (params) {
+      setDoctorId(params.id);
+      // Check for package_id in URL search params if needed
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pkgId = urlParams.get('package_id');
+        if (pkgId) setPackageId(pkgId);
+      }
+    }
+  }, [params]);
+
+  if (!doctorId) {
+    return <TherapistProfileLoading />;
+  }
+
   return (
     <Suspense fallback={<TherapistProfileLoading />}>
-      <TherapistProfileRedirect />
+      <TherapistProfileContent id={doctorId} packageId={packageId} />
     </Suspense>
   );
-};
-
-export default TherapistProfilePage;
+}
