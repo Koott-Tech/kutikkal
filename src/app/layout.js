@@ -22,11 +22,18 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: '/Fav Icon 1.png',
+        url: '/favicon.png',
         type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        url: '/favicon.png',
+        type: 'image/png',
+        sizes: '16x16',
       },
     ],
-    apple: '/Fav Icon 1.png',
+    apple: '/favicon.png',
+    shortcut: '/favicon.png',
   },
   openGraph: {
     title: "India's Trusted Child Psychologist | Online Child Counseling",
@@ -95,7 +102,11 @@ export default function RootLayout({ children }) {
             gtag('config', 'G-K7Z8F94Z80');
           `
         }} />
-        {/* Favicon is handled by Next.js metadata.icons - no manual links needed */}
+        {/* Explicit favicon links for Google search results - ensures favicon appears in SERP */}
+        <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+        <link rel="icon" type="image/png" href="/favicon.png" sizes="16x16" />
+        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -233,7 +244,7 @@ export default function RootLayout({ children }) {
               description:
                 "Online child psychotherapy and counseling services for children and parents.",
               url: "https://www.little.care",
-              logo: "https://www.little.care/Fav Icon 1.png",
+              logo: "https://www.little.care/favicon.png",
               image: "https://www.little.care/hero.png",
               telephone: "+91 95390 07766",
               email: "hey@little.care",
