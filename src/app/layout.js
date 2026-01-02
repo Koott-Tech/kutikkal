@@ -13,7 +13,10 @@ import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata = {
-  title: "India's Trusted Child Psychologist | Online Child Counseling",
+  title: {
+    default: "India's Trusted Child Psychologist | Online Child Counseling",
+    template: "%s | Little Care"
+  },
   description:
     "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
   icons: {
