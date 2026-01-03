@@ -97,6 +97,7 @@ export default function DoctorModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
   const [availablePackages, setAvailablePackages] = useState([
     { id: 2, name: 'Package of 2 Sessions', sessions: 2 },
     { id: 3, name: 'Package of 3 Sessions', sessions: 3 },
@@ -236,6 +237,7 @@ export default function DoctorModal({
     if (mode === 'add') {
       setOriginalPackages([]);
       setOriginalDoctorData(null);
+      setCountryCode('+91');
     }
     
     if (doctor && mode === 'edit') {
@@ -274,6 +276,35 @@ export default function DoctorModal({
         .map(lang => lang.trim())
         .filter(Boolean);
 
+      // Parse phone number to extract country code and number
+      const parsePhoneNumber = (phoneStr) => {
+        if (!phoneStr) return { code: '+91', number: '' };
+        
+        const raw = String(phoneStr).trim();
+        const digitsOnly = raw.replace(/[^\d+]/g, "");
+        
+        let extractedCode = "+91";
+        let numberOnly = digitsOnly;
+        
+        if (digitsOnly.startsWith("+")) {
+          const match = digitsOnly.match(/^\+\d{1,4}/);
+          if (match) {
+            extractedCode = match[0];
+            numberOnly = digitsOnly.slice(match[0].length);
+          }
+        } else if (digitsOnly.length > 10) {
+          const match = digitsOnly.match(/^(\d{1,4})/);
+          if (match) {
+            extractedCode = `+${match[1]}`;
+            numberOnly = digitsOnly.slice(match[1].length);
+          }
+        }
+        
+        return { code: extractedCode, number: numberOnly.replace(/\D/g, "") };
+      };
+
+      const parsedPhone = parsePhoneNumber(doctor.phone || '');
+      
       // Store original doctor data for comparison (normalize to match backend format)
       const originalData = {
         first_name: doctor.first_name || doctor.firstName || '',
@@ -301,10 +332,13 @@ export default function DoctorModal({
       };
       setOriginalDoctorData(originalData);
 
+      // Set country code
+      setCountryCode(parsedPhone.code);
+      
       setFormData({
         firstName: doctor.first_name || doctor.firstName || '',
         lastName: doctor.last_name || doctor.lastName || '',
-        phone: doctor.phone || '',
+        phone: parsedPhone.number,
         email: doctor.email || '',
         designation: doctor.designation || '', // Use designation directly from doctor object (same as other fields)
         password: '', // Don't load password for editing (passwords are hashed)
@@ -934,17 +968,60 @@ export default function DoctorModal({
       changedFields.languages_json = currentData.languages_json;
     }
 
-    // Always include availability if it exists (complex to compare, so always send if present)
-    if (currentData.availability && Array.isArray(currentData.availability) && currentData.availability.length > 0) {
+    // Only include availability if user actually modified it
+    if (hasUserModifiedAvailability && currentData.availability && Array.isArray(currentData.availability) && currentData.availability.length > 0) {
       changedFields.availability = currentData.availability;
     }
 
-    // Always include packages if they exist (complex to compare, so always send if present)
+    // Only include packages if they were actually changed
+    // Compare packages by checking if IDs, prices, or structure changed
     if (currentData.packages && Array.isArray(currentData.packages) && currentData.packages.length > 0) {
-      changedFields.packages = currentData.packages;
-      // Include deletePackages flag if needed
-      if (currentData.deletePackages !== undefined) {
-        changedFields.deletePackages = currentData.deletePackages;
+      // Check if packages were actually modified by comparing with original packages
+      const packagesChanged = (() => {
+        // If no original packages, packages are new/changed
+        if (!originalPackages || originalPackages.length === 0) {
+          return currentData.packages.some(pkg => pkg.sessions > 1); // Only check multi-session packages
+        }
+        
+        // Compare package counts (excluding individual session)
+        const currentMultiSession = currentData.packages.filter(pkg => pkg.sessions > 1);
+        const originalMultiSession = originalPackages.filter(pkg => pkg.sessions > 1);
+        
+        if (currentMultiSession.length !== originalMultiSession.length) {
+          return true; // Package count changed
+        }
+        
+        // Compare each package
+        for (const currentPkg of currentMultiSession) {
+          const originalPkg = originalMultiSession.find(op => op.id === currentPkg.id);
+          if (!originalPkg) {
+            return true; // New package added
+          }
+          // Check if price or name changed
+          if (parseInt(currentPkg.price) !== parseInt(originalPkg.price) || 
+              currentPkg.name !== originalPkg.name ||
+              currentPkg.sessions !== originalPkg.sessions) {
+            return true; // Package modified
+          }
+        }
+        
+        // Check if any original package was removed
+        for (const originalPkg of originalMultiSession) {
+          const currentPkg = currentMultiSession.find(cp => cp.id === originalPkg.id);
+          if (!currentPkg) {
+            return true; // Package removed
+          }
+        }
+        
+        return false; // No changes
+      })();
+      
+      if (packagesChanged) {
+        changedFields.packages = currentData.packages;
+        // Include deletePackages flag if needed
+        if (currentData.deletePackages !== undefined) {
+          changedFields.deletePackages = currentData.deletePackages;
+        }
       }
     }
 
@@ -1012,7 +1089,7 @@ export default function DoctorModal({
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
+        phone: countryCode + formData.phone,
         ug_college: formData.education.ug,
         pg_college: formData.education.pg,
         phd_college: formData.education.phd,
@@ -1177,15 +1254,49 @@ export default function DoctorModal({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number *
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.phone ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter phone number"
-              />
+              <div className="flex gap-2">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-28 rounded-md border border-gray-300 px-3 py-2 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+33">🇫🇷 +33</option>
+                  <option value="+49">🇩🇪 +49</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+971">🇦🇪 +971</option>
+                  <option value="+966">🇸🇦 +966</option>
+                  <option value="+60">🇲🇾 +60</option>
+                  <option value="+64">🇳🇿 +64</option>
+                  <option value="+27">🇿🇦 +27</option>
+                  <option value="+39">🇮🇹 +39</option>
+                  <option value="+34">🇪🇸 +34</option>
+                  <option value="+31">🇳🇱 +31</option>
+                  <option value="+32">🇧🇪 +32</option>
+                  <option value="+41">🇨🇭 +41</option>
+                  <option value="+46">🇸🇪 +46</option>
+                  <option value="+47">🇳🇴 +47</option>
+                  <option value="+45">🇩🇰 +45</option>
+                  <option value="+358">🇫🇮 +358</option>
+                  <option value="+351">🇵🇹 +351</option>
+                  <option value="+353">🇮🇪 +353</option>
+                  <option value="+48">🇵🇱 +48</option>
+                </select>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^\d]/g, ''))}
+                  className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter phone number"
+                  inputMode="tel"
+                />
+              </div>
               {errors.phone && (
                 <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
               )}
