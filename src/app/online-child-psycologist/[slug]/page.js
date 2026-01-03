@@ -13,6 +13,7 @@ import { formatCurrency } from '../../../lib/utils';
 // import { isClientContactComplete, getIncompleteContactFields } from '../../../lib/contactValidation'; // Removed - contact details collected during signup
 // import ContactCompletionWarning from '../../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
 // Booking Loading Animation Component
@@ -1758,15 +1759,18 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                     (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
                                            selectedDoctor.name.toLowerCase().includes('marium')))) ? (
                     <img 
-                      src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                           (() => {
-                             const name = selectedDoctor.name?.toLowerCase() || '';
-                             if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
-                             if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                             if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
-                             if (name.includes('child') || name.includes('teen')) return '/kids.png';
-                             return null;
-                           })()}
+                      src={(() => {
+                        const rawUrl = selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url;
+                        if (rawUrl) {
+                          return normalizeImageUrl(rawUrl);
+                        }
+                        const name = selectedDoctor.name?.toLowerCase() || '';
+                        if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                        if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                        if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                        if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                        return null;
+                      })()}
                       alt={`${selectedDoctor.name || selectedDoctor.first_name} - Child psychologist profile photo`}
                     className="w-full h-full object-cover"
                       onError={(e) => {
@@ -1845,15 +1849,18 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   (selectedDoctor.name && (selectedDoctor.name.toLowerCase().includes('irene') ||
                                          selectedDoctor.name.toLowerCase().includes('marium')))) ? (
                   <img 
-                    src={selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url ||
-                         (() => {
-                           const name = selectedDoctor.name?.toLowerCase() || '';
-                           if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
-                           if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
-                           if (name.includes('child') || name.includes('teen')) return '/kids.png';
-                           return null;
-                         })()}
+                    src={(() => {
+                      const rawUrl = selectedDoctor.profile_picture_url || selectedDoctor.cover_image_url;
+                      if (rawUrl) {
+                        return normalizeImageUrl(rawUrl);
+                      }
+                      const name = selectedDoctor.name?.toLowerCase() || '';
+                      if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
+                      if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
+                      if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                      if (name.includes('child') || name.includes('teen')) return '/kids.png';
+                      return null;
+                    })()}
                     alt={`${selectedDoctor.name || selectedDoctor.first_name} - Child psychologist profile photo`}
                   className="w-full h-full object-cover"
                     onError={(e) => {

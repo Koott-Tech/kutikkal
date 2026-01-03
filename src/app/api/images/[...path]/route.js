@@ -80,11 +80,23 @@ export async function GET(request, { params }) {
       .createSignedUrl(filename, 3600); // 1 hour expiration
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error('Error creating signed URL:', signedUrlError);
-      console.error('Bucket:', bucket, 'Filename:', filename);
-      // If bucket is still public, try direct access as fallback
-      if (signedUrlError?.message?.includes('not found') || signedUrlError?.statusCode === 404) {
-        return new NextResponse(`Image not found: ${filename}`, { status: 404 });
+      console.error('❌ Error creating signed URL:', signedUrlError);
+      console.error('📁 Bucket:', bucket);
+      console.error('📄 Requested filename:', filename);
+      console.error('🔍 Full error details:', JSON.stringify(signedUrlError, null, 2));
+      
+      // If file not found, return 404 with helpful message
+      if (signedUrlError?.message?.includes('not found') || 
+          signedUrlError?.statusCode === 404 ||
+          signedUrlError?.statusCode === '404' ||
+          signedUrlError?.error === 'not_found') {
+        console.error(`❌ File not found in storage: ${filename} in bucket ${bucket}`);
+        console.error(`💡 This usually means:`);
+        console.error(`   1. The file was never uploaded to Supabase storage`);
+        console.error(`   2. The file was deleted from storage`);
+        console.error(`   3. The URL in the database doesn't match the actual filename in storage`);
+        console.error(`   4. The file exists but with a different name (check for typos or naming changes)`);
+        return new NextResponse(`Image not found: ${filename} in bucket ${bucket}`, { status: 404 });
       }
       return new NextResponse(`Access denied or error: ${signedUrlError?.message || 'Unknown error'}`, { status: 403 });
     }
