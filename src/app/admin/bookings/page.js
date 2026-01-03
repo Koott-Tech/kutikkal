@@ -118,7 +118,6 @@ export default function BookingsPage() {
   };
 
   const handleViewSession = (session) => {
-    console.log('Session data for details:', session);
     setSelectedSession(session);
     setIsSessionDetailsOpen(true);
   };
@@ -737,6 +736,51 @@ export default function BookingsPage() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status, selectedSession)}`}>
                       {getStatusText(selectedSession.status, selectedSession)}
                     </span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Session Type</p>
+                    <p className="text-sm text-gray-900 flex items-center">
+                      <Package className="h-4 w-4 mr-1 text-gray-500" />
+                      {selectedSession.package || selectedSession.package_id ? (
+                        (() => {
+                          const pkg = selectedSession.package || {};
+                          
+                          // Get total sessions from various possible fields
+                          let totalSessions = pkg.total_sessions 
+                            || pkg.session_count 
+                            || 0;
+                          
+                          // If still 0, try to extract from package_type (e.g., "3_session", "package_6")
+                          if (totalSessions === 0 && pkg.package_type) {
+                            const match = String(pkg.package_type).match(/\d+/);
+                            if (match) {
+                              totalSessions = parseInt(match[0], 10);
+                            }
+                          }
+                          
+                          const completedSessions = pkg.completed_sessions;
+                          
+                          // Always show count if it's a package
+                          if (totalSessions > 0) {
+                            return (
+                              <>
+                                Package
+                                <span className="ml-1">
+                                  ({completedSessions !== undefined && completedSessions !== null
+                                    ? `${completedSessions}/${totalSessions}`
+                                    : totalSessions} sessions)
+                                </span>
+                              </>
+                            );
+                          } else {
+                            // Package exists but no count available - still show Package
+                            return 'Package';
+                          }
+                        })()
+                      ) : (
+                        'Individual'
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">Date</p>

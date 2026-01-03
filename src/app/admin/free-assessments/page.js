@@ -14,7 +14,8 @@ import {
   AlertCircle,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Copy
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -107,6 +108,21 @@ export default function FreeAssessmentsPage() {
   const handleViewAssessment = (assessment) => {
     setSelectedAssessment(assessment);
     setIsDetailsOpen(true);
+  };
+
+  const handleCopyMeetLink = async (meetLink) => {
+    if (!meetLink) {
+      showError('No meet link available', 'Copy Error');
+      return;
+    }
+    
+    try {
+      await navigator.clipboard.writeText(meetLink);
+      showSuccess('Meet link copied to clipboard!', 'Copied');
+    } catch (error) {
+      console.error('Failed to copy meet link:', error);
+      showError('Failed to copy meet link', 'Copy Error');
+    }
   };
 
   const formatTime = (time) => {
@@ -493,13 +509,25 @@ export default function FreeAssessmentsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleViewAssessment(assessment)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </button>
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleViewAssessment(assessment)}
+                          className="text-blue-600 hover:text-blue-900 flex items-center"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </button>
+                        {assessment.meetLink && (
+                          <button
+                            onClick={() => handleCopyMeetLink(assessment.meetLink)}
+                            className="text-green-600 hover:text-green-900 flex items-center"
+                            title="Copy Meet Link"
+                          >
+                            <Copy className="h-4 w-4 mr-1" />
+                            Meet Link
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

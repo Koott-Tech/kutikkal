@@ -88,7 +88,6 @@ export default function AdminLayout({ children }) {
         { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
       ]
     },
-    { name: 'Free Assessment', href: '/admin/free-assessment-timeslots', icon: Clock },
     { name: 'Security', href: '/admin/security', icon: Shield },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
