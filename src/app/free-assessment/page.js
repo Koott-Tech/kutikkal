@@ -933,52 +933,6 @@ export default function FreeAssessmentPage() {
           </div>
         )}
 
-
-        {/* Existing Assessments */}
-        {user && assessmentStatus?.assessments && assessmentStatus.assessments.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h5 className="font-semibold text-gray-900 mb-4">Your Booked Assessments</h5>
-            <div className="space-y-4">
-              {assessmentStatus.assessments.map((assessment) => (
-                <div key={assessment.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center mb-2">
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                          Assessment #{assessment.assessment_number}
-                        </span>
-                        <span className={`ml-2 text-xs font-medium px-2.5 py-0.5 rounded ${
-                          assessment.status === 'booked' ? 'bg-green-100 text-green-800' :
-                          assessment.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {assessment.status.charAt(0).toUpperCase() + assessment.status.slice(1)}
-                        </span>
-                      </div>
-                      <p className="text-gray-900 font-medium">
-                        {formatDate(assessment.scheduled_date)} at {formatTime(assessment.scheduled_time)}
-                      </p>
-                      {assessment.psychologist && (
-                        <p className="text-gray-600 text-sm">
-                          Therapist: {assessment.psychologist.first_name} {assessment.psychologist.last_name}
-                        </p>
-                      )}
-                    </div>
-                    {assessment.status === 'booked' && (
-                      <button
-                        onClick={() => cancelAssessment(assessment.id)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Error and Success Messages */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -1081,39 +1035,69 @@ export default function FreeAssessmentPage() {
                   for (let day = 1; day <= daysInMonth; day++) {
                     const isToday = isCurrentMonth && day === today.getDate();
                     const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear();
-                    const isAvailable = day >= today.getDate() || !isCurrentMonth;
                     
-                    // Check if this specific date is available for free assessments
+                    // Properly check if date is in the past (same logic as therapist profile)
                     const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    todayStart.setHours(0, 0, 0, 0);
+                    calendarDate.setHours(0, 0, 0, 0);
+                    const isPastDate = calendarDate < todayStart;
+                    const isAvailable = !isPastDate;
+                    
+                    // Get date string for availability lookup
                     const year = calendarDate.getFullYear();
                     const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
                     const dayStr = String(calendarDate.getDate()).padStart(2, '0');
                     const dateStr = `${year}-${month}-${dayStr}`;
                     const dateAvailability = freeAssessmentAvailability[dateStr];
                     
-                    // Highlight if the date is configured OR has available slots > 0
-                    const shouldHighlight = !!dateAvailability && (
-                      (typeof dateAvailability.isConfigured === 'boolean' && dateAvailability.isConfigured) ||
-                      (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0)
-                    );
+                    // STRICT check: Only highlight dates that have isConfigured: true AND availableSlots > 0
+                    // If date is not in availability object, treat as having 0 slots and not configured
+                    let availableSlotsCount = 0;
+                    let isConfigured = false;
                     
-                    // Debug logging for first few days
-                    if (day <= 5) {
-                      console.log(`🔍 Date ${dateStr}:`, {
-                        dateAvailability,
+                    if (dateAvailability && typeof dateAvailability === 'object' && dateAvailability !== null) {
+                      // Check if date is configured (has specific date config)
+                      isConfigured = dateAvailability.isConfigured === true;
+                      
+                      const slots = dateAvailability.availableSlots;
+                      // Only accept positive numbers - reject 0, negative, or non-numbers
+                      if (typeof slots === 'number' && slots > 0 && Number.isFinite(slots)) {
+                        availableSlotsCount = slots;
+                      } else {
+                        // Explicitly set to 0 if slots is 0, negative, or invalid
+                        availableSlotsCount = 0;
+                      }
+                    }
+                    // If dateAvailability is undefined/null, availableSlotsCount remains 0 and isConfigured remains false
+                    
+                    // Only consider available if: isConfigured is true AND slots count is strictly greater than 0
+                    // This is the ONLY condition that determines if a date should be highlighted
+                    const isFreeAssessmentAvailable = isConfigured && availableSlotsCount > 0;
+                    
+                    // Only show highlight/available indicator if it's configured AND has available slots (> 0) AND is not a past date
+                    // CRITICAL: isConfigured MUST be true AND availableSlotsCount MUST be > 0 for any highlighting
+                    const shouldHighlight = isFreeAssessmentAvailable && !isPastDate;
+                    const isActuallyAvailable = shouldHighlight && isAvailable;
+                    
+                    // Debug: Log all dates to see what's happening
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log(`📅 Date ${dateStr}:`, {
+                        hasAvailabilityData: !!dateAvailability,
+                        isConfigured,
+                        availableSlotsCount,
+                        isFreeAssessmentAvailable,
                         shouldHighlight,
-                        availableSlots: dateAvailability?.availableSlots,
-                        isConfigured: dateAvailability?.isConfigured
+                        isActuallyAvailable,
+                        isPastDate
                       });
                     }
-                    
-                    // Only show dates as available if they actually have availability data
-                    const isActuallyAvailable = shouldHighlight && isAvailable;
                     
                     calendarDays.push(
                       <div
                         key={`day-${day}`}
                         onClick={() => {
+                          // Allow clicking on any future date, not just those with availability (same as therapist profile)
                           if (isAvailable) {
                             handleDateSelect(day);
                           }
@@ -1121,23 +1105,31 @@ export default function FreeAssessmentPage() {
                         className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
                           isSelected
                             ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
-                            : (isToday && shouldHighlight)
-                              ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
-                              : isToday
-                                ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
-                                : shouldHighlight
-                                  ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
-                                  : isAvailable
-                                    ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
-                                    : 'text-gray-300 cursor-not-allowed'
+                            : // Only highlight if: isConfigured is true AND slots > 0 AND actually available
+                            (isConfigured && availableSlotsCount > 0 && isActuallyAvailable)
+                              ? (isToday 
+                                  ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
+                                  : 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]')
+                              : // Today without config or slots - just show it's today, not highlighted
+                            isToday
+                              ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
+                              : // Future date without config or slots - clickable but not highlighted
+                            isAvailable
+                              ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
+                              : // Past date
+                            'text-gray-300 cursor-not-allowed'
                         }`}
-                        title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
+                        title={isFreeAssessmentAvailable && !isPastDate ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
                       >
                         {day}
-                        {shouldHighlight && (
+                        {shouldHighlight && isConfigured && availableSlotsCount > 0 && (
                           <div
                             className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
-                              isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                              isSelected 
+                                ? 'bg-[#f0edff]' 
+                                : (isToday && isActuallyAvailable)
+                                  ? 'bg-white'
+                                  : 'bg-[#3f2e73]'
                             }`}
                           ></div>
                         )}
