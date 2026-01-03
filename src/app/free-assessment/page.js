@@ -347,9 +347,6 @@ export default function FreeAssessmentPage() {
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
       
-      console.log('🔍 Fetching availability for:', startDate, 'to', endDate);
-      
-      console.log('[FreeAssess] fetchAvailability:range', { startDate, endDate });
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const response = await fetch(
         `/api/free-assessments/availability-range?startDate=${startDate}&endDate=${endDate}`,
@@ -357,7 +354,6 @@ export default function FreeAssessmentPage() {
       );
       
       const data = await response.json();
-      console.log('🔍 Availability response:', data);
       
       if (data.success) {
         // Convert array to object with date keys
@@ -366,7 +362,6 @@ export default function FreeAssessmentPage() {
           availabilityObject[dayAvailability.date] = dayAvailability;
         });
         
-        console.log('🔍 Processed availability object:', availabilityObject);
         setFreeAssessmentAvailability(availabilityObject);
       } else {
         console.error('Failed to fetch availability:', data);
@@ -652,13 +647,6 @@ export default function FreeAssessmentPage() {
             })();
             
             const contextAuthReady = user && token;
-            
-            console.log(`🔍 Free Assessment - Checking auth state (attempt ${attempts}/${maxAttempts}):`, {
-              storedAuthReady,
-              contextAuthReady,
-              hasUser: !!user,
-              hasToken: !!token
-            });
             
             if ((storedAuthReady || contextAuthReady) && attempts >= 3) {
               clearInterval(checkAuth);
@@ -1008,7 +996,6 @@ export default function FreeAssessmentPage() {
                     <span>Selected</span>
                   </div>
                 </div>
-                {/* Debug info removed for production */}
               </div>
               
               {/* Calendar Grid */}
@@ -1079,19 +1066,6 @@ export default function FreeAssessmentPage() {
                     // CRITICAL: isConfigured MUST be true AND availableSlotsCount MUST be > 0 for any highlighting
                     const shouldHighlight = isFreeAssessmentAvailable && !isPastDate;
                     const isActuallyAvailable = shouldHighlight && isAvailable;
-                    
-                    // Debug: Log all dates to see what's happening
-                    if (process.env.NODE_ENV === 'development') {
-                      console.log(`📅 Date ${dateStr}:`, {
-                        hasAvailabilityData: !!dateAvailability,
-                        isConfigured,
-                        availableSlotsCount,
-                        isFreeAssessmentAvailable,
-                        shouldHighlight,
-                        isActuallyAvailable,
-                        isPastDate
-                      });
-                    }
                     
                     calendarDays.push(
                       <div
