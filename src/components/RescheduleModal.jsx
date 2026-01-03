@@ -464,11 +464,17 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                     for (let day = 1; day <= daysInMonth; day++) {
                       const isToday = isCurrentMonth && day === today.getDate();
                       const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear();
-                      const isAvailable = day >= today.getDate() || !isCurrentMonth;
+                      
+                      // Properly check if date is in the past (same logic as free assessment page)
+                      const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                      todayStart.setHours(0, 0, 0, 0);
+                      calendarDate.setHours(0, 0, 0, 0);
+                      const isPastDate = calendarDate < todayStart;
+                      const isAvailable = !isPastDate;
                       
                       // Check if this specific date is available for the psychologist
                       // Use local date formatting to avoid timezone conversion issues
-                      const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                       const year = calendarDate.getFullYear();
                       const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
                       const dayStr = String(calendarDate.getDate()).padStart(2, '0');
@@ -478,14 +484,33 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                       // For free assessments, use same highlighting logic as free assessment page
                       let isPsychologistAvailable = false;
                       let shouldHighlight = false;
+                      let availableSlotsCount = 0;
+                      let isConfigured = false;
                       
                       if (session.session_type === 'free_assessment') {
-                        // Highlight if the date is configured OR has available slots > 0
-                        shouldHighlight = !!dateAvailability && (
-                          (typeof dateAvailability.isConfigured === 'boolean' && dateAvailability.isConfigured) ||
-                          (typeof dateAvailability.availableSlots === 'number' && dateAvailability.availableSlots > 0)
-                        );
-                        isPsychologistAvailable = shouldHighlight;
+                        // STRICT check: Only highlight dates that have isConfigured: true AND availableSlots > 0
+                        // If date is not in availability object, treat as having 0 slots and not configured
+                        
+                        if (dateAvailability && typeof dateAvailability === 'object' && dateAvailability !== null) {
+                          // Check if date is configured (has specific date config)
+                          isConfigured = dateAvailability.isConfigured === true;
+                          
+                          const slots = dateAvailability.availableSlots;
+                          // Only accept positive numbers - reject 0, negative, or non-numbers
+                          if (typeof slots === 'number' && slots > 0 && Number.isFinite(slots)) {
+                            availableSlotsCount = slots;
+                          } else {
+                            // Explicitly set to 0 if slots is 0, negative, or invalid
+                            availableSlotsCount = 0;
+                          }
+                        }
+                        // If dateAvailability is undefined/null, availableSlotsCount remains 0 and isConfigured remains false
+                        
+                        // Only consider available if: isConfigured is true AND slots count is strictly greater than 0
+                        isPsychologistAvailable = isConfigured && availableSlotsCount > 0;
+                        
+                        // Only show highlight/available indicator if it's configured AND has available slots (> 0) AND is not a past date
+                        shouldHighlight = isPsychologistAvailable && !isPastDate;
                       } else {
                         // Regular session logic
                         isPsychologistAvailable = dateAvailability && dateAvailability.availableSlots > 0;
@@ -508,13 +533,14 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                             session.session_type === 'free_assessment' 
                               ? (
                                 // Free assessment styling - same as free assessment page
+                                // Only highlight if: isConfigured is true AND slots > 0 AND actually available
                                 isSelected
                                   ? 'bg-[#3f2e73] text-white font-bold shadow-lg cursor-pointer border border-[#3f2e73]'
-                                  : (isToday && shouldHighlight)
-                                    ? 'bg-[#3f2e73] text-white font-semibold shadow-md cursor-pointer border border-[#3f2e73]'
-                                    : isToday
+                                  : (isToday && isConfigured && availableSlotsCount > 0 && shouldHighlight)
+                                    ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
+                                    : isToday && (!isConfigured || availableSlotsCount === 0 || !shouldHighlight)
                                       ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
-                                      : shouldHighlight
+                                      : (isConfigured && availableSlotsCount > 0 && shouldHighlight)
                                         ? 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]'
                                         : isAvailable
                                           ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
@@ -538,7 +564,14 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                           title={shouldHighlight ? (isToday ? 'Today - Available for free assessment' : 'Available for free assessment') : isAvailable ? 'Click to check availability' : 'Past date'}
                         >
                           {day}
-                          {shouldHighlight && (
+                          {shouldHighlight && session.session_type === 'free_assessment' && isConfigured && availableSlotsCount > 0 && (
+                            <div
+                              className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
+                                isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'
+                              }`}
+                            ></div>
+                          )}
+                          {shouldHighlight && session.session_type !== 'free_assessment' && (
                             <div
                               className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
                                 isSelected ? 'bg-[#f0edff]' : 'bg-[#3f2e73]'

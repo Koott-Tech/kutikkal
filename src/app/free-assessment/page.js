@@ -953,7 +953,7 @@ export default function FreeAssessmentPage() {
           )}
             {/* Left Side - Calendar */}
             <div className="bg-white rounded-2xl shadow-2xl p-6">
-              <div className="text-center mb-4">
+              <div className="text-center mb-4 mt-4">
                 <h6 className="font-bold text-gray-800 mb-1">Select Your Date</h6>
                 {loadingAvailability && (
                   <div className="mt-2 flex items-center justify-center text-blue-600 text-xs">
@@ -1120,7 +1120,7 @@ export default function FreeAssessmentPage() {
             <div className="bg-white rounded-2xl shadow-2xl p-6 flex flex-col">
               {/* Available Time Slots */}
               {selectedDate && (
-                <div className="flex flex-col flex-grow mb-6">
+                <div className="flex flex-col flex-grow mb-2">
                   <h6 className="font-semibold text-gray-800 mb-3">Time Slots</h6>
                   {loadingTimeslots ? (
                     <div className="flex items-center justify-center py-4 min-h-[200px]">
@@ -1196,7 +1196,7 @@ export default function FreeAssessmentPage() {
               )}
 
                   {/* Booking Button - At the bottom of time slots div */}
-                  <div className="mt-auto pt-6">
+                  <div className="mt-auto pt-2">
                   <button
                     onClick={bookAssessment}
                       disabled={loading || !canBookFreeAssessment || !selectedTime}

@@ -901,8 +901,16 @@ export default function SessionsPage() {
                         
                         {/* Main Content */}
                         <div className="flex gap-5 items-start">
-                          {/* Avatar - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
+                          {/* Avatar - For regular sessions, or Icon for free assessments */}
+                          {session.session_type === 'free_assessment' ? (
+                            <div className="flex-shrink-0 w-20 h-20 rounded-full overflow-hidden">
+                              <img 
+                                src="/favicon.png"
+                                alt="Free Assessment"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : session.session_type !== 'assessment' && session.type !== 'assessment' && (
                             <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
@@ -945,6 +953,7 @@ export default function SessionsPage() {
                                 
                                 return (
                             <>
+                              {session.session_type !== 'free_assessment' && (
                               <button
                                 onClick={() => handleMessageClick(session)}
                                 className="flex-1 text-green-600 border border-green-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-green-50 transition-colors flex items-center justify-center gap-1"
@@ -952,6 +961,7 @@ export default function SessionsPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 Message
                               </button>
+                              )}
                                     {session.status !== 'reschedule_requested' && !isOngoing && (
                               <button
                                 onClick={() => handleRescheduleClick(session)}
@@ -1043,8 +1053,16 @@ export default function SessionsPage() {
                     .map((session) => (
                       <div key={session.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
                         <div className="flex gap-4 items-center">
-                          {/* Avatar / Placeholder - Only for regular sessions */}
-                          {session.session_type !== 'free_assessment' && session.session_type !== 'assessment' && session.type !== 'assessment' && (
+                          {/* Avatar / Placeholder - For regular sessions, or Icon for free assessments */}
+                          {session.session_type === 'free_assessment' ? (
+                            <div className="flex-shrink-0 w-20 h-20 rounded-full overflow-hidden">
+                              <img 
+                                src="/favicon.png"
+                                alt="Free Assessment"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : session.session_type !== 'assessment' && session.type !== 'assessment' && (
                           <div className="flex-shrink-0 w-28 h-28 rounded-full overflow-hidden border-2 border-gray-200">
                               {session.psychologist?.cover_image_url ? (
                                 <img 
@@ -1148,14 +1166,7 @@ export default function SessionsPage() {
                                     </span>
                                   )
                                   : session.session_type === 'free_assessment'
-                                  ? (
-                                    <span className="flex items-center gap-2">
-                                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-                                        Free Assessment
-                                      </span>
-                                      Free assessment
-                                    </span>
-                                  )
+                                  ? 'Free Assessment'
                                   : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
                               </h5>
                               
@@ -1183,6 +1194,7 @@ export default function SessionsPage() {
                                 
                                 return (
                                 <>
+                                  {session.session_type !== 'free_assessment' && (
                                   <button
                                     onClick={() => handleMessageClick(session)}
                                     className="text-green-600 lg:hover:text-green-900 text-xs sm:text-sm font-medium border border-green-300 px-2 py-1 rounded-md lg:hover:bg-green-50 transition-colors flex items-center gap-1 cursor-pointer"
@@ -1190,6 +1202,7 @@ export default function SessionsPage() {
                                     <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                                     <span>Message</span>
                                   </button>
+                                  )}
                                     {session.status !== 'reschedule_requested' && !isOngoing && (
                                   <button
                                     onClick={() => handleRescheduleClick(session)}
