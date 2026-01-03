@@ -31,7 +31,16 @@ export async function GET(request, { params }) {
     }
 
     const bucket = pathParts[0];
-    const filename = pathParts.slice(1).join('/');
+    let filename = pathParts.slice(1).join('/');
+    
+    // Decode URL-encoded filename (handles spaces and special characters)
+    // This ensures the filename matches what's actually stored in Supabase storage
+    try {
+      filename = decodeURIComponent(filename);
+    } catch (e) {
+      // If decoding fails, use original filename
+      console.warn('Failed to decode filename in image proxy:', filename, e);
+    }
 
     // Whitelist allowed buckets for security
     const allowedBuckets = [

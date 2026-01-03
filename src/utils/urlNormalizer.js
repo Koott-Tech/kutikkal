@@ -27,7 +27,15 @@ export function normalizeImageUrl(url) {
   const supabaseStorageMatch = url.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
   if (supabaseStorageMatch) {
     const bucket = supabaseStorageMatch[1];
-    const filename = supabaseStorageMatch[2];
+    let filename = supabaseStorageMatch[2];
+    // Decode URL-encoded characters (e.g., %20 -> space) to get the actual filename
+    // The filename will be re-encoded by the browser when making the request
+    try {
+      filename = decodeURIComponent(filename);
+    } catch (e) {
+      // If decoding fails, use original filename (might already be decoded)
+    }
+    // Return with filename (will be encoded by browser automatically in URL)
     return `/api/images/${bucket}/${filename}`;
   }
   
@@ -46,7 +54,9 @@ export function normalizeImageUrl(url) {
       const supabaseMatch = urlObj.pathname.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
       if (supabaseMatch) {
         const bucket = supabaseMatch[1];
+        // pathname is already decoded by URL constructor, so use it directly
         const filename = supabaseMatch[2];
+        // Return with filename (will be encoded by browser automatically in URL)
         return `/api/images/${bucket}/${filename}`;
       }
     }
