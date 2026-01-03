@@ -85,44 +85,41 @@ export async function GET(request, { params }) {
       }
     });
 
-    // For public buckets (like profile-pictures), use getPublicUrl
-    // For private buckets, use createSignedUrl
-    console.log('🔑 Attempting to get image URL for:', filename);
-    
-    const { data: publicUrlData } = supabaseAdmin.storage
+    // Try signed URL first (works for both public and private buckets, and verifies file exists)
+    // If that fails, try public URL as fallback
+    console.log('🔑 Attempting to create signed URL for:', filename);
+    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from(bucket)
-      .getPublicUrl(filename);
-    
-    let imageUrl = null;
-    
-    // Use public URL if available (works for public buckets)
-    if (publicUrlData?.publicUrl) {
-      imageUrl = publicUrlData.publicUrl;
-      console.log('✅ Using public URL for bucket:', bucket);
-    } else {
-      // Fall back to signed URL for private buckets
-      console.log('🔒 Creating signed URL (private bucket):', filename);
-      const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
-        .from(bucket)
-        .createSignedUrl(filename, 3600);
+      .createSignedUrl(filename, 3600);
 
-      if (signedUrlError || !signedUrlData?.signedUrl) {
-        console.error('❌ Error creating signed URL:');
-        console.error('   Bucket:', bucket);
-        console.error('   Filename used:', filename);
-        console.error('   Filename length:', filename.length);
-        if (typeof Buffer !== 'undefined') {
-          console.error('   Filename bytes:', Buffer.from(filename).toString('hex'));
-        }
-        console.error('   Error code:', signedUrlError?.statusCode || signedUrlError?.error);
-        console.error('   Error message:', signedUrlError?.message);
-        console.error('   Full error:', JSON.stringify(signedUrlError, null, 2));
+    let imageUrl = null;
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      console.error('❌ Error creating signed URL:');
+      console.error('   Bucket:', bucket);
+      console.error('   Filename used:', filename);
+      console.error('   Filename length:', filename.length);
+      if (typeof Buffer !== 'undefined') {
+        console.error('   Filename bytes:', Buffer.from(filename).toString('hex'));
+      }
+      console.error('   Error code:', signedUrlError?.statusCode || signedUrlError?.error);
+      console.error('   Error message:', signedUrlError?.message);
+      console.error('   Full error:', JSON.stringify(signedUrlError, null, 2));
+      
+      // If file not found, try public URL as fallback (for public buckets)
+      if (signedUrlError?.message?.includes('not found') || 
+          signedUrlError?.statusCode === 404 ||
+          signedUrlError?.statusCode === '404' ||
+          signedUrlError?.error === 'not_found') {
+        console.log('⚠️ File not found with signed URL, trying public URL as fallback...');
+        const { data: publicUrlData } = supabaseAdmin.storage
+          .from(bucket)
+          .getPublicUrl(filename);
         
-        // If file not found, return 404 with helpful message
-        if (signedUrlError?.message?.includes('not found') || 
-            signedUrlError?.statusCode === 404 ||
-            signedUrlError?.statusCode === '404' ||
-            signedUrlError?.error === 'not_found') {
+        if (publicUrlData?.publicUrl) {
+          imageUrl = publicUrlData.publicUrl;
+          console.log('✅ Using public URL as fallback for bucket:', bucket);
+        } else {
           console.error(`❌ File not found in storage: ${filename} in bucket ${bucket}`);
           console.error(`💡 This usually means:`);
           console.error(`   1. The file was never uploaded to Supabase storage`);
@@ -131,9 +128,10 @@ export async function GET(request, { params }) {
           console.error(`   4. The file exists but with a different name (check for typos or naming changes)`);
           return new NextResponse(`Image not found: ${filename} in bucket ${bucket}`, { status: 404 });
         }
+      } else {
         return new NextResponse(`Access denied or error: ${signedUrlError?.message || 'Unknown error'}`, { status: 403 });
       }
-      
+    } else {
       imageUrl = signedUrlData.signedUrl;
       console.log('✅ Using signed URL for bucket:', bucket);
     }
