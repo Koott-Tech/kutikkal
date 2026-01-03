@@ -24,7 +24,6 @@ const Guide = () => {
   const [loading, setLoading] = useState(true);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [error, setError] = useState(null);
-  const [imageLoadingStates, setImageLoadingStates] = useState({}); // Track individual image loading states
   const router = useRouter();
   const loadedImagesCount = useRef(0);
   const totalImagesCount = useRef(0);
@@ -200,13 +199,6 @@ const Guide = () => {
         if (cached) {
           // Use cached data immediately - don't wait for version check
             setDoctors(cached);
-          // Initialize image loading states for cached doctors
-          const initialLoadingStates = {};
-          cached.forEach((doc, idx) => {
-            const cardId = doc.id || idx;
-            initialLoadingStates[cardId] = true; // Start with loading state
-          });
-          setImageLoadingStates(initialLoadingStates);
           setImagesLoaded(true); // Don't wait for images - show content immediately
           setLoading(false);
           
@@ -275,13 +267,6 @@ const Guide = () => {
       // Cache the filtered doctors with version
       setCachedDoctors(filteredPsychologists, cacheVersion);
       setDoctors(filteredPsychologists);
-      // Initialize image loading states for all doctors
-      const initialLoadingStates = {};
-      filteredPsychologists.forEach((doc, idx) => {
-        const cardId = doc.id || idx;
-        initialLoadingStates[cardId] = true; // Start with loading state
-      });
-      setImageLoadingStates(initialLoadingStates);
       // Don't wait for images - show content immediately after doctors are loaded
       setImagesLoaded(true); // Set to true immediately so page shows without waiting for images
     } catch (err) {
@@ -292,19 +277,11 @@ const Guide = () => {
       if (cached) {
         console.log('📦 Using cached data as fallback due to fetch error');
         setDoctors(cached);
-        // Initialize image loading states for cached doctors
-        const initialLoadingStates = {};
-        cached.forEach((doc, idx) => {
-          const cardId = doc.id || idx;
-          initialLoadingStates[cardId] = true; // Start with loading state
-        });
-        setImageLoadingStates(initialLoadingStates);
         setImagesLoaded(true); // Don't wait for images - show content immediately
         setError(null);
       } else {
         setError('Failed to load doctors. Please check if the backend server is running.');
         setDoctors([]);
-        setImageLoadingStates({});
       }
     } finally {
       // Always clear loading state, even on error
@@ -681,9 +658,14 @@ const Guide = () => {
 
   // Sync availability for a specific doctor (called on hover/interaction for accuracy)
   const syncDoctorAvailability = async (doctorId) => {
-    // Track ongoing syncs to avoid duplicate requests (but don't cache results)
+    // Check if already loading
     if (loadingAvailability.has(doctorId)) {
       return; // Already syncing
+    }
+    
+    // Check if availability is already cached
+    if (doctorAvailability[doctorId]) {
+      return; // Already have availability data, no need to fetch again
     }
     
     try {
@@ -694,7 +676,6 @@ const Guide = () => {
           ...prev,
           [doctorId]: availability
         }));
-        // No caching - availability can change anytime
       }
     } catch (error) {
       // Silently fail - don't interrupt user experience
@@ -740,15 +721,6 @@ const Guide = () => {
   return (
     <div style={{ width: "100vw", minHeight: "100vh", background: "#f8fafc", overflowX: "hidden", position: "relative" }}>
       <style>{`
-        @keyframes shimmer {
-          0% {
-            background-position: -200% 0;
-          }
-          100% {
-            background-position: 200% 0;
-          }
-        }
-        
         @media (max-width: 768px) {
           .company-name-guide {
             display: none !important;
@@ -790,14 +762,6 @@ const Guide = () => {
         
         
         <style>{`
-          @keyframes shimmer {
-            0% {
-              background-position: -200% 0;
-            }
-            100% {
-              background-position: 200% 0;
-            }
-          }
           .find-therapist-btn {
             position: relative;
             overflow: hidden;
@@ -1211,8 +1175,6 @@ const Guide = () => {
                   {(() => {
                     // Use cover_image_url from database
                     let imageSrc = doc.cover_image_url;
-                    const cardId = doc.id || idx;
-                    const isImageLoading = imageLoadingStates[cardId] !== false;
                     
                     // Normalize the image URL (converts Supabase URLs to proxy URLs)
                     if (imageSrc) {
@@ -1240,64 +1202,40 @@ const Guide = () => {
                       // Preload first 3 images (above the fold) for faster initial render
                       const isAboveFold = idx < 3;
                       return (
-                        <>
-                          {/* Skeleton Loader */}
-                          {isImageLoading && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                width: "100%",
-                                height: "100%",
-                                background: "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-                                backgroundSize: "200% 100%",
-                                animation: "shimmer 1.5s infinite",
-                                zIndex: 1
-                              }}
-                            />
-                          )}
-                          <img
-                            key={`img-${cardId}`}
-                            src={imageSrc}
-                            alt={`${doc.name || doc.first_name} - Child psychologist profile photo`}
-                            className="doctor-card-image"
-                            width={400}
-                            height={500}
-                            loading={isAboveFold ? "eager" : "lazy"}
-                            fetchPriority={isAboveFold ? "high" : "auto"}
-                            decoding="async"
-                            style={{ 
-                              width: "100%", 
-                              height: "100%", 
-                              minHeight: "100%",
-                              objectFit: "cover",
-                              display: isImageLoading ? "none" : "block",
-                              aspectRatio: "4/5",
-                              position: "relative",
-                              zIndex: 2
-                            }}
-                            onError={(e) => {
-                              console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);
-                              // Mark as loaded (even on error)
-                              setImageLoadingStates(prev => ({ ...prev, [cardId]: false }));
-                              // Fallback to initials if image fails to load
-                              e.target.style.display = 'none';
-                              if (e.target.nextSibling) {
-                                e.target.nextSibling.style.display = 'flex';
-                              }
-                              // Mark as loaded even on error so we don't block the page
-                              handleImageLoad();
-                            }}
-                            onLoad={(e) => {
-                              console.log(`Image loaded successfully for ${doc.name || doc.first_name}: ${imageSrc}`);
-                              // Mark image as loaded
-                              setImageLoadingStates(prev => ({ ...prev, [cardId]: false }));
-                              e.target.style.display = 'block';
-                              handleImageLoad();
-                            }}
-                          />
-                        </>
+                        <img
+                          key={`img-${doc.id || idx}`}
+                          src={imageSrc}
+                          alt={`${doc.name || doc.first_name} - Child psychologist profile photo`}
+                          className="doctor-card-image"
+                          width={400}
+                          height={500}
+                          loading={isAboveFold ? "eager" : "lazy"}
+                          fetchPriority={isAboveFold ? "high" : "auto"}
+                          decoding="async"
+                          style={{ 
+                            width: "100%", 
+                            height: "100%", 
+                            minHeight: "100%",
+                            objectFit: "cover",
+                            aspectRatio: "4/5",
+                            position: "relative",
+                            zIndex: 2
+                          }}
+                          onError={(e) => {
+                            console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            // Fallback to initials if image fails to load
+                            e.target.style.display = 'none';
+                            if (e.target.nextSibling) {
+                              e.target.nextSibling.style.display = 'flex';
+                            }
+                            // Mark as loaded even on error so we don't block the page
+                            handleImageLoad();
+                          }}
+                          onLoad={(e) => {
+                            console.log(`Image loaded successfully for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            handleImageLoad();
+                          }}
+                        />
                       );
                     }
                     return null;
