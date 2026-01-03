@@ -112,11 +112,14 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         {/* Preload logo for instant loading screen display */}
         <link rel="preload" as="image" href="/mainlogo.webp" />
-        {/* CRITICAL: Script to manage loader - runs immediately in head */}
+        {/* CRITICAL: Script to manage loader - runs only on client side to prevent hydration mismatch */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
+                // Only run on client side (not during SSR)
+                if (typeof window === 'undefined') return;
+                
                 // CRITICAL: No fixed delays - hide immediately when DOM is ready
                 // This prevents CLS by allowing content to render immediately
                 function hideLoader() {
@@ -256,7 +259,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="antialiased bg-gray-50">
+      <body className="antialiased bg-gray-50" suppressHydrationWarning>
         {/* INSTANT - Server-rendered loader (appears at 0ms, no hydration needed) */}
         {/* Position:fixed overlay - NEVER affects layout flow, prevents CLS */}
         <div id="initial-loader">

@@ -578,7 +578,7 @@ const Guide = () => {
     if (doctors.length > 0) {
       // Count total images (doctors with image URLs)
       const totalImages = doctors.filter(doc => {
-        const imageSrc = doc.cover_image_url || doc.profile_picture_url;
+        const imageSrc = doc.cover_image_url;
         // Also count fallback images
         if (!imageSrc) {
           const name = (doc.name || doc.first_name || '').toLowerCase();
@@ -1173,8 +1173,8 @@ const Guide = () => {
                     minHeight: "100%"
                   }}>
                   {(() => {
-                    // First try actual image URLs from database
-                    let imageSrc = doc.cover_image_url || doc.profile_picture_url;
+                    // Use cover_image_url from database
+                    let imageSrc = doc.cover_image_url;
                     
                     // Normalize the image URL (converts Supabase URLs to proxy URLs)
                     if (imageSrc) {
@@ -1197,7 +1197,6 @@ const Guide = () => {
                     
                     console.log(`Doctor ${doc.name || doc.first_name}: imageSrc = ${imageSrc}`);
                     console.log(`Doctor ${doc.name || doc.first_name}: cover_image_url = ${doc.cover_image_url}`);
-                    console.log(`Doctor ${doc.name || doc.first_name}: profile_picture_url = ${doc.profile_picture_url}`);
                     
                     if (imageSrc) {
                       // Preload first 3 images (above the fold) for faster initial render
@@ -1260,7 +1259,7 @@ const Guide = () => {
                       display: (() => {
                         // Check if we have any image (database or fallback)
                         const name = (doc.name || doc.first_name || '').toLowerCase();
-                        if (doc.cover_image_url || doc.profile_picture_url) return 'none';
+                        if (doc.cover_image_url) return 'none';
                         if (name.includes('irene') || name.includes('marium') || 
                             name.includes('doug') || name.includes('douglas') || 
                             name.includes('ashley') || name.includes('ash') || 
@@ -1953,9 +1952,9 @@ const Guide = () => {
               
               {/* Left: Doctor Profile Picture or Cover Image */}
               <div className="doctor-modal-image" onClick={e => e.stopPropagation()}>
-                {(doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? (
+                {doctors[selected]?.cover_image_url ? (
                   <img
-                    src={normalizeImageUrl(doctors[selected].profile_picture_url || doctors[selected].cover_image_url)}
+                    src={normalizeImageUrl(doctors[selected].cover_image_url)}
                     alt={`${doctors[selected]?.name || doctors[selected]?.first_name} - Child psychologist profile photo`}
                     className="doctor-modal-img"
                     style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: "10px", transform: "none" }}
@@ -1970,7 +1969,7 @@ const Guide = () => {
                 {/* Fallback: Doctor Initials Avatar */}
                 <div 
                   style={{
-                    display: (doctors[selected]?.profile_picture_url || doctors[selected]?.cover_image_url) ? 'none' : 'flex',
+                    display: doctors[selected]?.cover_image_url ? 'none' : 'flex',
                     width: "100%",
                     height: "100%",
                     background: "linear-gradient(135deg, #667eea 0%, #764ba2 หว100%)",

@@ -33,14 +33,26 @@ export async function GET(request, { params }) {
     const bucket = pathParts[0];
     let filename = pathParts.slice(1).join('/');
     
+    // Log the original filename before decoding
+    console.log('🔍 Image Proxy Request:');
+    console.log('   Original path:', imagePath);
+    console.log('   Bucket:', bucket);
+    console.log('   Filename (before decode):', filename);
+    
     // Decode URL-encoded filename (handles spaces and special characters)
     // This ensures the filename matches what's actually stored in Supabase storage
     try {
-      filename = decodeURIComponent(filename);
+      const decodedFilename = decodeURIComponent(filename);
+      if (decodedFilename !== filename) {
+        console.log('   Filename (after decode):', decodedFilename);
+      }
+      filename = decodedFilename;
     } catch (e) {
       // If decoding fails, use original filename
-      console.warn('Failed to decode filename in image proxy:', filename, e);
+      console.warn('⚠️ Failed to decode filename in image proxy:', filename, e);
     }
+    
+    console.log('   Final filename to use:', filename);
 
     // Whitelist allowed buckets for security
     const allowedBuckets = [
@@ -75,15 +87,22 @@ export async function GET(request, { params }) {
 
     // Generate signed URL (valid for 1 hour)
     // This allows access to private bucket files
+    console.log('🔑 Attempting to create signed URL for:', filename);
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
       .from(bucket)
       .createSignedUrl(filename, 3600); // 1 hour expiration
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error('❌ Error creating signed URL:', signedUrlError);
-      console.error('📁 Bucket:', bucket);
-      console.error('📄 Requested filename:', filename);
-      console.error('🔍 Full error details:', JSON.stringify(signedUrlError, null, 2));
+      console.error('❌ Error creating signed URL:');
+      console.error('   Bucket:', bucket);
+      console.error('   Filename used:', filename);
+      console.error('   Filename length:', filename.length);
+      if (typeof Buffer !== 'undefined') {
+        console.error('   Filename bytes:', Buffer.from(filename).toString('hex'));
+      }
+      console.error('   Error code:', signedUrlError?.statusCode || signedUrlError?.error);
+      console.error('   Error message:', signedUrlError?.message);
+      console.error('   Full error:', JSON.stringify(signedUrlError, null, 2));
       
       // If file not found, return 404 with helpful message
       if (signedUrlError?.message?.includes('not found') || 
