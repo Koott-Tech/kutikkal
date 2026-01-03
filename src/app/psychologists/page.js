@@ -321,21 +321,16 @@ const Guide = () => {
     }
   };
 
-  // Cache for availability data to prevent duplicate requests
-  const availabilityCache = new Map();
-  const AVAILABILITY_CACHE_TTL = 1 * 60 * 1000; // 1 minute cache (reduced from 5 minutes for fresher data)
+  // No frontend caching - availability can change anytime (bookings, blocks, calendar events)
+  // Backend handles caching for performance, but we always fetch fresh data
 
-  // Fetch availability for a doctor (optimized - only 14 days, with caching)
-  const fetchDoctorAvailability = async (doctorId) => {
+  // Fetch availability for a doctor (no caching - always fresh data)
+  // withSync: if true, syncs Google Calendar for accurate real-time data (slower but accurate)
+  //           if false, uses backend cache (faster but backend handles caching)
+  const fetchDoctorAvailability = async (doctorId, withSync = false) => {
     try {
-      // Check cache first (but allow bypass for fresh data)
-      const cacheKey = `availability-${doctorId}`;
-      const cached = availabilityCache.get(cacheKey);
-      // Reduced cache time to 1 minute for fresher availability data
-      if (cached && (Date.now() - cached.timestamp) < AVAILABILITY_CACHE_TTL) {
-        console.log('📦 Using cached availability data');
-        return cached.data;
-      }
+      // No frontend caching - availability can change anytime (bookings, blocks, etc.)
+      // Backend still has its own cache for performance, but we always fetch fresh from backend
 
       // Mark as loading
       setLoadingAvailability(prev => new Set(prev).add(doctorId));
@@ -351,7 +346,8 @@ const Guide = () => {
         setTimeout(() => reject(new Error('Timeout')), 5000)
       );
 
-      const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr);
+      // Hybrid approach: sync=false for fast initial load, sync=true for on-demand accuracy
+      const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr, withSync);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (response.success && response.data && response.data.data) {
@@ -414,44 +410,20 @@ const Guide = () => {
             timeSlots: collectedSlots.slice(0, 3), // Ensure max 3 slots
             slotsByDate: collectedSlots // Keep date info for each slot
           };
-          // Cache the result
-          availabilityCache.set(cacheKey, {
-            data: result,
-            timestamp: Date.now()
-          });
-          
-          // Mark as not loading
-          setLoadingAvailability(prev => {
-            const next = new Set(prev);
-            next.delete(doctorId);
-            return next;
-          });
+          // No caching - availability can change anytime (bookings, blocks, calendar events)
           
           return result;
         }
       }
       
-      // Mark as not loading
-      setLoadingAvailability(prev => {
-        const next = new Set(prev);
-        next.delete(doctorId);
-        return next;
-      });
-      
-      return null;
+      // No slots found - return empty result object (not null) to indicate fetch completed
+      return { timeSlots: [], nextDate: null };
     } catch (err) {
-      // Mark as not loading
-      setLoadingAvailability(prev => {
-        const next = new Set(prev);
-        next.delete(doctorId);
-        return next;
-      });
-      
       // Silently fail - don't log timeout errors
       if (err.message !== 'Timeout') {
         console.error(`Error fetching availability for doctor ${doctorId}:`, err);
       }
-      return null;
+      return { timeSlots: [], nextDate: null };
     }
   };
 
@@ -475,14 +447,21 @@ const Guide = () => {
     const results = await Promise.allSettled(availabilityPromises);
     
     // Update state with all results at once (better performance)
+    // Also remove loading state for all doctors that completed
     setDoctorAvailability(prev => {
       const updated = { ...prev };
+      const updatedLoading = new Set(loadingAvailability);
+      
       results.forEach((result) => {
         if (result.status === 'fulfilled' && result.value) {
           const { doctorId, availability } = result.value;
-          updated[doctorId] = availability;
+          // Always update availability (even if empty) and remove loading state
+          updated[doctorId] = availability || { timeSlots: [], nextDate: null };
+          updatedLoading.delete(doctorId);
         }
       });
+      
+      setLoadingAvailability(updatedLoading);
       return updated;
     });
   };
@@ -677,7 +656,32 @@ const Guide = () => {
     }
   };
 
+  // Sync availability for a specific doctor (called on hover/interaction for accuracy)
+  const syncDoctorAvailability = async (doctorId) => {
+    // Track ongoing syncs to avoid duplicate requests (but don't cache results)
+    if (loadingAvailability.has(doctorId)) {
+      return; // Already syncing
+    }
+    
+    try {
+      // Sync in background (don't block UI)
+      const availability = await fetchDoctorAvailability(doctorId, true);
+      if (availability) {
+        setDoctorAvailability(prev => ({
+          ...prev,
+          [doctorId]: availability
+        }));
+        // No caching - availability can change anytime
+      }
+    } catch (error) {
+      // Silently fail - don't interrupt user experience
+      console.error(`Background sync failed for doctor ${doctorId}:`, error);
+    }
+  };
+
   const handleDoctorClick = (doctor, index) => {
+    // Sync availability when user clicks (accurate data for booking)
+    syncDoctorAvailability(doctor.id);
     // Open modal with selected doctor for all screen sizes
     setSelected(index);
   };
@@ -1162,6 +1166,7 @@ const Guide = () => {
                 <div
                   className="guide-video-card"
                   onClick={() => handleDoctorClick(doc, idx)}
+                  onMouseEnter={() => syncDoctorAvailability(doc.id)} // Sync on hover for accurate data
                 >
                   {/* Doctor Profile Picture or Cover Image */}
                   <div style={{ 
