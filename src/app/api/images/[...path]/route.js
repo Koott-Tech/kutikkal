@@ -85,43 +85,61 @@ export async function GET(request, { params }) {
       }
     });
 
-    // Generate signed URL (valid for 1 hour)
-    // This allows access to private bucket files
-    console.log('🔑 Attempting to create signed URL for:', filename);
-    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+    // For public buckets (like profile-pictures), use getPublicUrl
+    // For private buckets, use createSignedUrl
+    console.log('🔑 Attempting to get image URL for:', filename);
+    
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from(bucket)
-      .createSignedUrl(filename, 3600); // 1 hour expiration
+      .getPublicUrl(filename);
+    
+    let imageUrl = null;
+    
+    // Use public URL if available (works for public buckets)
+    if (publicUrlData?.publicUrl) {
+      imageUrl = publicUrlData.publicUrl;
+      console.log('✅ Using public URL for bucket:', bucket);
+    } else {
+      // Fall back to signed URL for private buckets
+      console.log('🔒 Creating signed URL (private bucket):', filename);
+      const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
+        .from(bucket)
+        .createSignedUrl(filename, 3600);
 
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error('❌ Error creating signed URL:');
-      console.error('   Bucket:', bucket);
-      console.error('   Filename used:', filename);
-      console.error('   Filename length:', filename.length);
-      if (typeof Buffer !== 'undefined') {
-        console.error('   Filename bytes:', Buffer.from(filename).toString('hex'));
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        console.error('❌ Error creating signed URL:');
+        console.error('   Bucket:', bucket);
+        console.error('   Filename used:', filename);
+        console.error('   Filename length:', filename.length);
+        if (typeof Buffer !== 'undefined') {
+          console.error('   Filename bytes:', Buffer.from(filename).toString('hex'));
+        }
+        console.error('   Error code:', signedUrlError?.statusCode || signedUrlError?.error);
+        console.error('   Error message:', signedUrlError?.message);
+        console.error('   Full error:', JSON.stringify(signedUrlError, null, 2));
+        
+        // If file not found, return 404 with helpful message
+        if (signedUrlError?.message?.includes('not found') || 
+            signedUrlError?.statusCode === 404 ||
+            signedUrlError?.statusCode === '404' ||
+            signedUrlError?.error === 'not_found') {
+          console.error(`❌ File not found in storage: ${filename} in bucket ${bucket}`);
+          console.error(`💡 This usually means:`);
+          console.error(`   1. The file was never uploaded to Supabase storage`);
+          console.error(`   2. The file was deleted from storage`);
+          console.error(`   3. The URL in the database doesn't match the actual filename in storage`);
+          console.error(`   4. The file exists but with a different name (check for typos or naming changes)`);
+          return new NextResponse(`Image not found: ${filename} in bucket ${bucket}`, { status: 404 });
+        }
+        return new NextResponse(`Access denied or error: ${signedUrlError?.message || 'Unknown error'}`, { status: 403 });
       }
-      console.error('   Error code:', signedUrlError?.statusCode || signedUrlError?.error);
-      console.error('   Error message:', signedUrlError?.message);
-      console.error('   Full error:', JSON.stringify(signedUrlError, null, 2));
       
-      // If file not found, return 404 with helpful message
-      if (signedUrlError?.message?.includes('not found') || 
-          signedUrlError?.statusCode === 404 ||
-          signedUrlError?.statusCode === '404' ||
-          signedUrlError?.error === 'not_found') {
-        console.error(`❌ File not found in storage: ${filename} in bucket ${bucket}`);
-        console.error(`💡 This usually means:`);
-        console.error(`   1. The file was never uploaded to Supabase storage`);
-        console.error(`   2. The file was deleted from storage`);
-        console.error(`   3. The URL in the database doesn't match the actual filename in storage`);
-        console.error(`   4. The file exists but with a different name (check for typos or naming changes)`);
-        return new NextResponse(`Image not found: ${filename} in bucket ${bucket}`, { status: 404 });
-      }
-      return new NextResponse(`Access denied or error: ${signedUrlError?.message || 'Unknown error'}`, { status: 403 });
+      imageUrl = signedUrlData.signedUrl;
+      console.log('✅ Using signed URL for bucket:', bucket);
     }
 
-    // Fetch the image using the signed URL
-    const response = await fetch(signedUrlData.signedUrl, {
+    // Fetch the image using the URL (public or signed)
+    const response = await fetch(imageUrl, {
       headers: {
         'Accept': 'image/*',
       },
