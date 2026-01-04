@@ -92,14 +92,15 @@ export default function ConsultationBanner() {
                 position: relative;
                 overflow: hidden;
               }
-              .main-container > div[class*="absolute"] {
+              /* Override the default 180px !important rule for the background image on mobile */
+              .main-container > div[class*="absolute"][class*="bg-cover"] {
                 z-index: 0;
                 background-size: cover;
                 background-position: center;
                 background-repeat: no-repeat;
                 width: 100%;
-                height: 180px;
-                max-height: 180px;
+                height: 170px !important;
+                max-height: 170px !important;
                 top: 0;
                 left: 0;
                 right: 0;
@@ -107,8 +108,8 @@ export default function ConsultationBanner() {
                 border-radius: 10px !important;
               }
               .mobile-container {
-                padding: 8px;
-                min-height: 180px;
+                padding: 8px 8px 0px 8px;
+                min-height: 200px;
                 gap: 0px;
               }
               .mobile-container[style] {
@@ -129,8 +130,8 @@ export default function ConsultationBanner() {
                 row-gap: 0px;
               }
               .mobile-container > div:last-child {
-                min-height: 180px;
-                height: 180px;
+                min-height: 200px;
+                height: 200px;
               }
               .mobile-text {
                 padding: 0px 4px 0px 4px !important;
@@ -169,12 +170,12 @@ export default function ConsultationBanner() {
                 margin-left: 0;
               }
               .mobile-text .flex.items-center.gap-1 {
-                margin-top: 24px !important;
+                margin-top: 12px !important;
               }
               .main-container {
-                min-height: 180px;
-                height: 180px;
-                max-height: 180px;
+                min-height: 200px;
+                height: 200px;
+                max-height: 200px;
                 padding: 0;
                 margin-top: 0;
                 margin-bottom: 0;

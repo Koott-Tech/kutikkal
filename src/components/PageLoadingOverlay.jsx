@@ -19,6 +19,8 @@ function PageLoadingOverlayContent() {
   const timeoutRef = useRef(null);
   const isInitialMount = useRef(true);
   const hasHydrated = useRef(false);
+  const showTimeRef = useRef(null); // Track when loader was shown
+  const MIN_DISPLAY_TIME = 700; // Minimum 0.7 second display time
 
   const navigationKey = useMemo(() => {
     const search = searchParams?.toString();
@@ -60,6 +62,7 @@ function PageLoadingOverlayContent() {
       }
       setIsVisible(true);
       setShouldRender(true);
+      showTimeRef.current = Date.now(); // Record when loader was shown
     };
     
     checkAndShow();
@@ -120,19 +123,30 @@ function PageLoadingOverlayContent() {
       clearTimeout(timeoutRef.current);
     }
 
-    // Hide when DOM is ready - no minimum time, adapt to actual load speed
+    // Hide when DOM is ready, but ensure minimum display time of 1 second
     const hideLoaderWhenReady = () => {
-      hideLoader();
+      if (showTimeRef.current) {
+        const elapsed = Date.now() - showTimeRef.current;
+        const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+        timeoutRef.current = setTimeout(() => {
+          hideLoader();
+        }, remaining);
+      } else {
+        // Fallback: wait full minimum time if showTime wasn't recorded
+        timeoutRef.current = setTimeout(() => {
+          hideLoader();
+        }, MIN_DISPLAY_TIME);
+      }
     };
 
     // Check if DOM is already ready
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      // Small delay to ensure smooth transition (just for animation, not blocking)
-      timeoutRef.current = setTimeout(hideLoaderWhenReady, 50);
+      // Ensure minimum display time
+      hideLoaderWhenReady();
     } else {
       // Wait for DOMContentLoaded
       const handleDOMReady = () => {
-        timeoutRef.current = setTimeout(hideLoaderWhenReady, 50);
+        hideLoaderWhenReady();
       };
       document.addEventListener('DOMContentLoaded', handleDOMReady, { once: true });
       

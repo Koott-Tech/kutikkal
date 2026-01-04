@@ -122,6 +122,8 @@ export default function RootLayout({ children }) {
                 const LOADER_ID = 'initial-loader';
                 const body = document.body;
                 const loader = document.getElementById(LOADER_ID);
+                const MIN_DISPLAY_TIME = 700; // Minimum 0.7 second display time
+                let showTime = null; // Track when loader was shown
                 
                 // Show loader immediately on every page load/refresh with smooth fade in
                 function showLoader() {
@@ -137,31 +139,44 @@ export default function RootLayout({ children }) {
                         loader.style.opacity = '1';
                       }
                     });
+                    showTime = Date.now(); // Record when loader was shown
                   }
                 }
                 
-                // Function to hide loader with smooth fade out
+                // Function to hide loader with smooth fade out (respects minimum display time)
                 function hideLoader() {
-                  if (loader && body && body.classList) {
-                    // Start fade out
-                    loader.style.opacity = '0';
-                    // Wait for transition to complete before hiding
-                    setTimeout(() => {
-                      if (loader && body && body.classList) {
-                        loader.style.pointerEvents = 'none';
-                        loader.style.visibility = 'hidden';
-                        body.classList.add('loaded');
-                      }
-                    }, 600); // Match the CSS transition duration
+                  if (!showTime) {
+                    // If showTime wasn't set, wait full minimum time
+                    showTime = Date.now();
+                    setTimeout(hideLoader, MIN_DISPLAY_TIME);
+                    return;
                   }
+                  
+                  const elapsed = Date.now() - showTime;
+                  const remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+                  
+                  setTimeout(function() {
+                    if (loader && body && body.classList) {
+                      // Start fade out
+                      loader.style.opacity = '0';
+                      // Wait for transition to complete before hiding
+                      setTimeout(() => {
+                        if (loader && body && body.classList) {
+                          loader.style.pointerEvents = 'none';
+                          loader.style.visibility = 'hidden';
+                          body.classList.add('loaded');
+                        }
+                      }, 600); // Match the CSS transition duration
+                    }
+                  }, remaining);
                 }
                 
                 // Show loader immediately
                 showLoader();
                 
-                // Wait for page to be fully loaded - no minimum time, adapt to actual load speed
+                // Wait for page to be fully loaded, but ensure minimum display time
                 if (document.readyState === 'complete') {
-                  // Page already loaded, hide immediately with smooth fade
+                  // Page already loaded, but ensure minimum display time
                   hideLoader();
                 } else if (document.readyState === 'interactive') {
                   // DOM is ready, wait for all resources
@@ -183,7 +198,7 @@ export default function RootLayout({ children }) {
                   // If page was loaded from cache (back/forward), show loader briefly
                   if (event.persisted) {
                     showLoader();
-                    // Hide as soon as page is ready, no fixed delay
+                    // Hide when ready, but ensure minimum display time
                     if (document.readyState === 'complete') {
                       hideLoader();
                     } else {
