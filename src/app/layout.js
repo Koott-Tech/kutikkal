@@ -1,5 +1,5 @@
 import "./globals.css";
-// Suspense removed - no longer needed without PageLoadingOverlay
+import { Suspense } from "react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
@@ -8,8 +8,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidgetWrapper from "@/components/WhatsAppWidgetWrapper";
-// REMOVED: PageLoadingOverlay - causes CLS on navigation
-// Next.js loading.js handles route transitions automatically
+import PageLoadingOverlay from "@/components/PageLoadingOverlay";
 import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -120,49 +119,78 @@ export default function RootLayout({ children }) {
                 // Only run on client side (not during SSR)
                 if (typeof window === 'undefined') return;
                 
-                // Track if this is the initial page load
-                const isInitialLoad = !sessionStorage.getItem('pageLoaded');
-                let minDisplayTime = 0;
+                const LOADER_ID = 'initial-loader';
+                const body = document.body;
+                const loader = document.getElementById(LOADER_ID);
                 
-                // On initial page visit, show loader for minimum time
-                if (isInitialLoad) {
-                  minDisplayTime = 800; // Minimum 800ms display time on first visit
-                  sessionStorage.setItem('pageLoaded', 'true');
+                // Show loader immediately on every page load/refresh with smooth fade in
+                function showLoader() {
+                  if (loader && body && body.classList) {
+                    // Reset opacity to 0 first for smooth fade in
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'visible';
+                    loader.style.pointerEvents = 'auto';
+                    body.classList.remove('loaded');
+                    // Trigger fade in by setting opacity to 1 after a brief moment
+                    requestAnimationFrame(() => {
+                      if (loader) {
+                        loader.style.opacity = '1';
+                      }
+                    });
+                  }
                 }
                 
-                const startTime = Date.now();
-                
-                // Function to hide loader
+                // Function to hide loader with smooth fade out
                 function hideLoader() {
-                  const elapsed = Date.now() - startTime;
-                  const remainingTime = Math.max(0, minDisplayTime - elapsed);
-                  
-                  setTimeout(function() {
-                    if (document.body) {
-                      document.body.classList.add('loaded');
-                    } else {
-                      // Body not ready yet, try again on next tick
-                      requestAnimationFrame(hideLoader);
-                    }
-                  }, remainingTime);
+                  if (loader && body && body.classList) {
+                    // Start fade out
+                    loader.style.opacity = '0';
+                    // Wait for transition to complete before hiding
+                    setTimeout(() => {
+                      if (loader && body && body.classList) {
+                        loader.style.pointerEvents = 'none';
+                        loader.style.visibility = 'hidden';
+                        body.classList.add('loaded');
+                      }
+                    }, 600); // Match the CSS transition duration
+                  }
                 }
                 
-                // Wait for page to be fully loaded on initial visit
-                if (isInitialLoad) {
-                  // On initial load, wait for window load event (all resources loaded)
-                  if (document.readyState === 'complete') {
-                    hideLoader();
-                  } else {
-                    window.addEventListener('load', hideLoader, { once: true });
-                  }
+                // Show loader immediately
+                showLoader();
+                
+                // Wait for page to be fully loaded - no minimum time, adapt to actual load speed
+                if (document.readyState === 'complete') {
+                  // Page already loaded, hide immediately with smooth fade
+                  hideLoader();
+                } else if (document.readyState === 'interactive') {
+                  // DOM is ready, wait for all resources
+                  window.addEventListener('load', hideLoader, { once: true });
                 } else {
-                  // On subsequent navigations, hide faster
-                  if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', hideLoader, { once: true });
-                  } else {
-                    hideLoader();
-                  }
+                  // Still loading, wait for window load event
+                  window.addEventListener('load', hideLoader, { once: true });
+                  
+                  // Fallback: hide after 5 seconds if load event doesn't fire
+                  setTimeout(function() {
+                    if (body && body.classList && !body.classList.contains('loaded')) {
+                      hideLoader();
+                    }
+                  }, 5000);
                 }
+                
+                // Handle browser back/forward navigation
+                window.addEventListener('pageshow', function(event) {
+                  // If page was loaded from cache (back/forward), show loader briefly
+                  if (event.persisted) {
+                    showLoader();
+                    // Hide as soon as page is ready, no fixed delay
+                    if (document.readyState === 'complete') {
+                      hideLoader();
+                    } else {
+                      window.addEventListener('load', hideLoader, { once: true });
+                    }
+                  }
+                });
               })();
             `,
           }}
@@ -219,7 +247,7 @@ export default function RootLayout({ children }) {
               overflow: hidden !important;
               margin: 0 !important;
               padding: 0 !important;
-              transition: opacity 300ms ease-in-out !important;
+              transition: opacity 800ms ease-in-out !important;
               pointer-events: auto !important;
               opacity: 1 !important;
               visibility: visible !important;
@@ -228,7 +256,7 @@ export default function RootLayout({ children }) {
               opacity: 0 !important;
               pointer-events: none !important;
               visibility: hidden !important;
-              transition: opacity 200ms ease-out !important;
+              transition: opacity 600ms ease-out !important;
             }
             #initial-loader .loading-logo {
               width: 240px;
@@ -290,8 +318,10 @@ export default function RootLayout({ children }) {
         <div id="initial-loader">
           <div className="loading-logo"></div>
         </div>
-        {/* REMOVED: Client-side PageLoadingOverlay - caused CLS on navigation */}
-        {/* Next.js loading.js (app/loading.js) handles route transitions automatically */}
+        {/* Client-side PageLoadingOverlay - handles navigation transitions */}
+        <Suspense fallback={null}>
+          <PageLoadingOverlay />
+        </Suspense>
         <ClickBurst />
         <ErrorBoundary>
           <ConditionalProviders>

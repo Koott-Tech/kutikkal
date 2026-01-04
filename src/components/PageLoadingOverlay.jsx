@@ -2,25 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import LoadingScreen from './LoadingScreen';
 
 const FADE_DURATION = 300; // Duration for fade out animation
 
 /**
  * PageLoadingOverlay - Client-side loader for navigation transitions
  * 
- * NOTE: This is ONLY for client-side navigation transitions.
- * Initial page load is handled by server-rendered #initial-loader in layout.js
- * 
- * This component:
- * - Only shows AFTER React hydration (for client navigation)
- * - Hides when DOMContentLoaded fires (not window.load)
- * - No fixed delays - adapts to actual page readiness
+ * This component shows the loading screen on ALL client-side navigations
+ * and works together with the server-rendered #initial-loader in layout.js
  */
 function PageLoadingOverlayContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isVisible, setIsVisible] = useState(false); // Start hidden (initial load handled by server loader)
+  const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const timeoutRef = useRef(null);
   const isInitialMount = useRef(true);
@@ -31,14 +25,77 @@ function PageLoadingOverlayContent() {
     return search ? `${pathname}?${search}` : pathname;
   }, [pathname, searchParams]);
 
-  // On initial mount, hide immediately (server loader handles initial load)
+  // Show/hide loader functions with smooth fade animations
+  const showLoader = () => {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
+    // Wait for body to be available
+    const checkAndShow = () => {
+      const loader = document.getElementById('initial-loader');
+      const body = document?.body;
+      
+      if (!body || !body.classList) {
+        // Body not ready yet, try again in next frame
+        requestAnimationFrame(checkAndShow);
+        return;
+      }
+      
+      if (loader && body && body.classList) {
+        try {
+          // Reset opacity to 0 first for smooth fade in
+          loader.style.opacity = '0';
+          loader.style.visibility = 'visible';
+          loader.style.pointerEvents = 'auto';
+          body.classList.remove('loaded');
+          // Trigger fade in by setting opacity to 1 after a brief moment
+          requestAnimationFrame(() => {
+            if (loader) {
+              loader.style.opacity = '1';
+            }
+          });
+        } catch (error) {
+          console.error('Error showing loader:', error);
+        }
+      }
+      setIsVisible(true);
+      setShouldRender(true);
+    };
+    
+    checkAndShow();
+  };
+
+  const hideLoader = () => {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    
+    const loader = document.getElementById('initial-loader');
+    const body = document?.body;
+    if (loader && body && body.classList) {
+      // Start fade out
+      loader.style.opacity = '0';
+      // Wait for transition to complete before hiding
+      setTimeout(() => {
+        if (loader && body && body.classList) {
+          loader.style.pointerEvents = 'none';
+          loader.style.visibility = 'hidden';
+          body.classList.add('loaded');
+        }
+      }, 600); // Match the CSS transition duration
+    }
+    setIsVisible(false);
+    // Remove from DOM after fade out completes
+    setTimeout(() => {
+      setShouldRender(false);
+    }, 600);
+  };
+
+  // On initial mount, mark as hydrated
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      // Mark as hydrated, but don't show (server loader is handling initial load)
       hasHydrated.current = true;
-          setIsVisible(false);
-            setShouldRender(false);
+      // Initial load is handled by server loader, so don't show here
       return;
     }
   }, []);
@@ -46,36 +103,36 @@ function PageLoadingOverlayContent() {
   // Handle navigation transitions (only after hydration)
   useEffect(() => {
     // Don't show on initial mount (server loader handles that)
-    if (!hasHydrated.current) {
+    if (!hasHydrated.current || isInitialMount.current) {
       return;
     }
 
-    // Show loading screen for navigation
-    setIsVisible(true);
-    setShouldRender(true);
+    // Ensure we're in browser environment before proceeding
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    // Show loading screen for navigation (showLoader will handle body check internally)
+    showLoader();
 
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Hide when DOM is ready (interactive state, not window.load)
-    const hideLoader = () => {
-      setIsVisible(false);
-      // Remove from DOM after fade out completes
-      setTimeout(() => {
-        setShouldRender(false);
-      }, FADE_DURATION);
+    // Hide when DOM is ready - no minimum time, adapt to actual load speed
+    const hideLoaderWhenReady = () => {
+      hideLoader();
     };
 
     // Check if DOM is already ready
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      // Small delay to ensure smooth transition
-      timeoutRef.current = setTimeout(hideLoader, 100);
+      // Small delay to ensure smooth transition (just for animation, not blocking)
+      timeoutRef.current = setTimeout(hideLoaderWhenReady, 50);
     } else {
-      // Wait for DOMContentLoaded (fires when HTML is parsed, CSS applied)
+      // Wait for DOMContentLoaded
       const handleDOMReady = () => {
-        timeoutRef.current = setTimeout(hideLoader, 100);
+        timeoutRef.current = setTimeout(hideLoaderWhenReady, 50);
       };
       document.addEventListener('DOMContentLoaded', handleDOMReady, { once: true });
       
@@ -83,7 +140,9 @@ function PageLoadingOverlayContent() {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
-        document.removeEventListener('DOMContentLoaded', handleDOMReady);
+        if (typeof document !== 'undefined') {
+          document.removeEventListener('DOMContentLoaded', handleDOMReady);
+        }
       };
     }
 
@@ -94,11 +153,8 @@ function PageLoadingOverlayContent() {
     };
   }, [navigationKey]);
 
-  if (!shouldRender) {
-    return null;
-  }
-
-  return <LoadingScreen isVisible={isVisible} />;
+  // This component doesn't render anything - it just controls the #initial-loader
+  return null;
 }
 
 /**

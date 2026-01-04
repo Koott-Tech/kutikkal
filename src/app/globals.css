@@ -232,7 +232,14 @@ html {
   height: 100%; /* Ensure html takes full height */
   overflow-x: hidden; /* Prevent horizontal scrolling */
   scroll-behavior: smooth; /* Enable smooth scrolling */
-  scroll-padding-top: 0.25rem; /* Small delay feel when snapping back to top */
+  scroll-padding-top: 0.25rem; /* Small offset for anchor links */
+}
+
+/* Respect user's motion preferences for accessibility (WCAG compliance) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Ensure increased letter-spacing for body text */

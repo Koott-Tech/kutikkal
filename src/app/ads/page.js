@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { publicApi } from '@/lib/backendApi';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import HowItWorks from '@/components/HowItWorks';
+import ChooseOptions from '@/components/ChooseOptions';
 
 // Metadata configuration
 const pageMetadata = {
@@ -178,45 +179,14 @@ const FAQ_DATA = [
   }
 ];
 
-// Services Data
-const SERVICES = [
-  {
-    id: 1,
-    tags: ['Counseling', 'Emotions'],
-    title: 'Child\nCounseling',
-    description: 'A safe space for your kids to express & grow.',
-    image: '/letusguide1.webp',
-    gradient: 'from-[#DEEFDC] to-white',
-    infoTitle: 'Connect with Licensed Child Psychologists Online',
-    infoDescription: 'With online child counseling, parents can connect with a caring child psychologist who helps children talk through their feelings, handle anxiety or behaviour concerns, and develop healthy coping skills—right from home.',
-  },
-  {
-    id: 2,
-    tags: ['Assessments', 'Tests'],
-    title: 'Child\nAssessment',
-    description: "Find your child's needs & strengths to grow.",
-    image: '/boy1.png',
-    gradient: 'from-[#f1e7f9] to-white',
-    infoTitle: 'Understand Your Child\'s Needs with Assessments',
-    infoDescription: "With child counseling online, families gain a clearer understanding of their child's strengths and challenges, including attention, learning, or emotional concerns, making it easier to choose the right next steps.",
-  },
-  {
-    id: 3,
-    tags: ['Parents', 'Workshops'],
-    title: 'Better\nParenting',
-    description: 'Learn, Connect & Build a wonderful home.',
-    image: '/fam1.png',
-    gradient: 'from-[#fff4e2] to-white',
-    infoTitle: 'Learn Practical Parenting Strategies Online',
-    infoDescription: 'With online parenting counseling, parents receive thoughtful guidance to manage behaviour, improve communication, and support their child\'s emotional growth with confidence, clarity, and consistency.',
-  },
-];
 
 export default function AdsLandingPage() {
   const router = useRouter();
   const [openFAQ, setOpenFAQ] = useState(null);
   const [psychologists, setPsychologists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [doctorAvailability, setDoctorAvailability] = useState({}); // Store availability for each doctor
+  const [loadingAvailability, setLoadingAvailability] = useState(new Set()); // Track which doctors are loading
 
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
@@ -245,6 +215,207 @@ export default function AdsLandingPage() {
     };
     fetchPsychologists();
   }, []);
+
+  // Helper functions for time slot filtering
+  const parseTimeStringToMinutes = (timeStr) => {
+    if (!timeStr) return null;
+    const trimmed = timeStr.trim();
+    
+    // Handle 12-hour format (e.g., "2:30 PM", "10:00 AM")
+    const pmMatch = trimmed.match(/(\d{1,2}):(\d{2})\s*(PM|pm)/i);
+    const amMatch = trimmed.match(/(\d{1,2}):(\d{2})\s*(AM|am)/i);
+    
+    if (pmMatch) {
+      let hours = parseInt(pmMatch[1], 10);
+      const minutes = parseInt(pmMatch[2], 10);
+      if (hours !== 12) hours += 12;
+      return hours * 60 + minutes;
+    }
+    
+    if (amMatch) {
+      let hours = parseInt(amMatch[1], 10);
+      const minutes = parseInt(amMatch[2], 10);
+      if (hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    }
+    
+    // Handle 24-hour format (e.g., "14:30", "10:00")
+    const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1], 10);
+      const minutes = parseInt(timeMatch[2], 10);
+      return hours * 60 + minutes;
+    }
+
+    return null;
+  };
+
+  const getSlotMinutes = (slot) => {
+    if (!slot) return null;
+    if (typeof slot === 'string') {
+      return parseTimeStringToMinutes(slot);
+    }
+    const possibleKeys = ['time', 'time_slot', 'startTime', 'start_time', 'displayTime'];
+    for (const key of possibleKeys) {
+      if (slot[key]) {
+        const minutes = parseTimeStringToMinutes(slot[key]);
+        if (minutes !== null) return minutes;
+      }
+    }
+    return null;
+  };
+
+  const isSlotInPast = (slot, date) => {
+    if (!slot || !date) return false;
+    const now = new Date();
+    const isSameDay =
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    if (!isSameDay) return false;
+    const slotMinutes = getSlotMinutes(slot);
+    if (slotMinutes === null) return false;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    return slotMinutes <= nowMinutes;
+  };
+
+  // Fetch availability for a single doctor
+  const fetchDoctorAvailability = async (doctorId, withSync = false) => {
+    try {
+      // Mark as loading
+      setLoadingAvailability(prev => new Set(prev).add(doctorId));
+
+      const today = new Date();
+      const startDate = today.toISOString().split('T')[0]; // Today
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 7); // Next 7 days
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      // Timeout after 5 seconds
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const fetchPromise = publicApi.getPsychologistAvailabilityRange(doctorId, startDate, endDateStr, withSync);
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      if (response.success && response.data && response.data.data) {
+        const availabilityArray = response.data.data;
+        const collectedSlots = []; // Array of {date, time} objects
+        let firstDateWithSlots = null;
+        
+        // Loop through dates until we have 3 slots
+        for (const day of availabilityArray) {
+          const [year, month, dayNum] = day.date.split('-');
+          const dayDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
+          
+          // Filter available slots and exclude past time slots if it's today
+          const availableSlots = day.timeSlots?.filter(slot => {
+            if (!slot.available) return false;
+            return !isSlotInPast(slot, dayDate);
+          }) || [];
+
+          // Sort available slots by time
+          const sortedAvailableSlots = [...availableSlots].sort((a, b) => {
+            const aMinutes = getSlotMinutes(a);
+            const bMinutes = getSlotMinutes(b);
+            if (aMinutes === null && bMinutes === null) return 0;
+            if (aMinutes === null) return 1;
+            if (bMinutes === null) return -1;
+            return aMinutes - bMinutes;
+          });
+          
+          if (sortedAvailableSlots.length > 0) {
+            if (!firstDateWithSlots) {
+              firstDateWithSlots = day.date;
+            }
+            
+            const slotsNeeded = 3 - collectedSlots.length;
+            const slotsToAdd = sortedAvailableSlots
+              .slice(0, slotsNeeded)
+              .map(slot => ({
+                date: day.date,
+                time: slot.displayTime || slot.time
+              }));
+            
+            collectedSlots.push(...slotsToAdd);
+            
+            if (collectedSlots.length >= 3) {
+              break;
+            }
+          }
+        }
+
+        if (collectedSlots.length > 0 && firstDateWithSlots) {
+          const result = {
+            nextDate: firstDateWithSlots,
+            timeSlots: collectedSlots.slice(0, 3),
+            slotsByDate: collectedSlots
+          };
+          
+          return result;
+        }
+      }
+      
+      return { timeSlots: [], nextDate: null };
+    } catch (err) {
+      if (err.message !== 'Timeout') {
+        console.error(`Error fetching availability for doctor ${doctorId}:`, err);
+      }
+      return { timeSlots: [], nextDate: null };
+    } finally {
+      setLoadingAvailability(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(doctorId);
+        return newSet;
+      });
+    }
+  };
+
+  // Fetch availability for all doctors
+  const fetchAllDoctorsAvailability = async (doctorsList) => {
+    if (doctorsList.length === 0) return;
+    
+    const availabilityPromises = doctorsList.map(async (doctor) => {
+      try {
+        const availability = await fetchDoctorAvailability(doctor.id);
+        return { doctorId: doctor.id, availability, success: true };
+      } catch (error) {
+        console.error(`Failed to fetch availability for doctor ${doctor.id}:`, error);
+        return { doctorId: doctor.id, availability: null, success: false };
+      }
+    });
+
+    const results = await Promise.allSettled(availabilityPromises);
+    
+    const updatedAvailability = {};
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        const { doctorId, availability } = result.value;
+        if (availability) {
+          updatedAvailability[doctorId] = availability;
+        }
+      }
+    });
+
+    setDoctorAvailability(prev => ({
+      ...prev,
+      ...updatedAvailability
+    }));
+  };
+
+  // Fetch availability when psychologists are loaded
+  useEffect(() => {
+    if (psychologists.length > 0) {
+      const timeoutId = setTimeout(() => {
+        fetchAllDoctorsAvailability(psychologists).catch(err => {
+          console.error('Error fetching doctors availability:', err);
+        });
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [psychologists.length]);
 
   // No JavaScript scroll needed - using CSS animation like Reviews component
 
@@ -287,7 +458,7 @@ export default function AdsLandingPage() {
         __html: `
           .ads-page h1 {
             font-size: 1.75rem !important;
-            line-height: 1.3 !important;
+            line-height: 1.1 !important;
           }
           .ads-page h2 {
             font-size: 1.5rem !important;
@@ -454,7 +625,7 @@ export default function AdsLandingPage() {
 
       <main className="min-h-screen bg-white ads-page">
         {/* Achievements Section */}
-        <section className="py-20 sm:py-16 md:py-20 lg:py-28" style={{ background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)' }}>
+        <section className="pt-40 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-16 md:pb-20 lg:pb-28" style={{ background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)' }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
             <div className="text-center mb-6 md:mb-8">
               <img
@@ -465,13 +636,11 @@ export default function AdsLandingPage() {
                 className="mx-auto mb-6 md:mb-8"
                 style={{ width: 'clamp(120px, 50vw, 200px)', height: 'auto', objectFit: 'contain' }}
               />
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4 px-4">
-                Trusted by Families Across India
-              </h2>
-              <p className="text-sm sm:text-base text-gray-700 max-w-3xl mx-auto px-4">
-                Little Care is the sister brand of <a href="https://www.koott.in/" target="_blank" rel="noopener noreferrer" className="text-[#3f2e73] font-semibold hover:underline">Koott - Online Malayali Counselling</a>, 
-                bringing the same commitment to quality mental health care to children and families nationwide. 
-                Together, we're redefining care and hope for a better tomorrow.
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 px-4">
+                Trusted by Families Across India for Quality Care
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl text-gray-700 max-w-5xl mx-auto px-4" style={{ lineHeight: '1.4' }}>
+                Little Care is the sister brand of <a href="https://www.koott.in/" target="_blank" rel="noopener noreferrer" className="text-[#3f2e73] font-semibold md:hover:underline">Koott - Online Malayali Counselling</a>, bringing the same commitment to quality mental health care to children and families nationwide. Together, we're redefining care and hope for a better tomorrow.
               </p>
             </div>
           </div>
@@ -484,6 +653,9 @@ export default function AdsLandingPage() {
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                 Experienced mental health professionals for you.
               </h2>
+              <p className="text-sm sm:text-base text-gray-600 mt-2 md:mt-3 max-w-2xl mx-auto">
+                Connect with qualified child psychologists who understand your child's unique needs
+              </p>
             </div>
             
             {loading ? (
@@ -522,11 +694,12 @@ export default function AdsLandingPage() {
                     }
                     
                     return (
-                      <div key={psych.id || idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                        <div
-                          className="guide-video-card"
-                          onClick={() => handlePsychologistClick(psych)}
-                        >
+                      <React.Fragment key={psych.id || idx}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                          <div
+                            className="guide-video-card"
+                            onClick={() => handlePsychologistClick(psych)}
+                          >
                         <div style={{ 
                           position: "absolute",
                           top: 0,
@@ -682,7 +855,152 @@ export default function AdsLandingPage() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                      {/* Availability information - below card */}
+                      <div className="availability-container" style={{
+                        marginTop: 8,
+                        marginBottom: 20
+                      }}>
+                        <div style={{
+                          background: 'rgba(255,255,255,0.25)',
+                          color: '#000000',
+                          borderRadius: 12,
+                          padding: '8px 12px',
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
+                          backdropFilter: 'blur(0.5px)',
+                          WebkitBackdropFilter: 'blur(0.5px)',
+                          border: '1px solid #ffffff',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'flex-start',
+                          width: '100%',
+                          lineHeight: '1.4', // Better line spacing
+                          overflow: 'hidden' // Hide overflow if content is too long
+                        }}>
+                          {(() => {
+                            const isLoading = loadingAvailability.has(psych.id);
+                            const availability = doctorAvailability[psych.id];
+                            
+                            // Show loading state first
+                            if (isLoading) {
+                              return 'Loading next availability...';
+                            }
+                            
+                            // Show availability if it exists
+                            if (availability && availability.timeSlots && availability.timeSlots.length > 0) {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              
+                              // Group slots by date
+                              // Handle both old format (strings) and new format (objects with date/time)
+                              const slotsByDate = {};
+                              availability.timeSlots.forEach(slot => {
+                                let slotDate, slotTime;
+                                
+                                if (typeof slot === 'string') {
+                                  // Old format: just a time string, use nextDate
+                                  slotDate = availability.nextDate;
+                                  slotTime = slot;
+                                } else if (slot && slot.date && slot.time) {
+                                  // New format: object with date and time
+                                  slotDate = slot.date;
+                                  slotTime = slot.time;
+                                } else {
+                                  // Fallback
+                                  slotDate = availability.nextDate;
+                                  slotTime = slot.time || slot;
+                                }
+                                
+                                if (!slotsByDate[slotDate]) {
+                                  slotsByDate[slotDate] = [];
+                                }
+                                slotsByDate[slotDate].push(slotTime);
+                              });
+                              
+                              // Format and display slots grouped by date
+                              const formattedSlots = Object.entries(slotsByDate).map(([dateStr, times]) => {
+                                const [year, month, day] = dateStr.split('-');
+                                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                                const isToday = dateObj.getTime() === today.getTime();
+                                const isTomorrow = dateObj.getTime() === today.getTime() + 86400000;
+                                
+                                let dateLabel;
+                                if (isToday) {
+                                  dateLabel = 'Today';
+                                } else if (isTomorrow) {
+                                  dateLabel = 'Tomorrow';
+                                } else {
+                                  dateLabel = dateObj.toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                                  });
+                                }
+                                
+                                return `${dateLabel}: ${times.join(' • ')}`;
+                              });
+                              
+                              return (
+                                <>
+                                  Next available:
+                                  <br />
+                                  {formattedSlots.map((slotGroup, index) => (
+                                    <React.Fragment key={index}>
+                                      {slotGroup}
+                                      {index < formattedSlots.length - 1 && <br />}
+                                    </React.Fragment>
+                                  ))}
+                                </>
+                              );
+                            }
+                            
+                            // Only show "No availability" if not loading and no slots found
+                            return 'No availability';
+                          })()}
+                        </div>
+                        {/* Book Now Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePsychologistClick(psych);
+                          }}
+                          style={{
+                            marginTop: '8px',
+                            width: '100%',
+                            padding: '8px 16px',
+                            backgroundColor: '#3f2e73',
+                            color: '#ffffff',
+                            border: '2px solid #3f2e73',
+                            borderRadius: '8px',
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(63, 46, 115, 0.2)'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                              e.target.style.backgroundColor = '#2d1f52';
+                              e.target.style.borderColor = '#2d1f52';
+                              e.target.style.transform = 'translateY(-1px)';
+                              e.target.style.boxShadow = '0 4px 8px rgba(63, 46, 115, 0.3)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                              e.target.style.backgroundColor = '#3f2e73';
+                              e.target.style.borderColor = '#3f2e73';
+                              e.target.style.transform = 'translateY(0)';
+                              e.target.style.boxShadow = '0 2px 4px rgba(63, 46, 115, 0.2)';
+                            }
+                          }}
+                        >
+                          Book Now
+                        </button>
+                      </div>
+                        </div>
+                      </React.Fragment>
                     );
                   })}
               </div>
@@ -691,28 +1009,14 @@ export default function AdsLandingPage() {
         </section>
 
         {/* Services Section */}
-        <section className="py-12 md:py-16 lg:py-20 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
-              Our Services
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-              {SERVICES.map((service) => (
-                <div key={service.id} className="border border-gray-200 rounded-lg py-6 md:py-8 lg:py-10 px-4 sm:px-5 md:px-6 transition-shadow flex flex-col" style={{ background: 'linear-gradient(to bottom, #fefbff, #faf7ff, #f7f4fa)' }}>
-                  <h3 className="service-card-heading text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-3 md:mb-4">
-                    {service.infoTitle}
-                  </h3>
-                  <p className="text-sm sm:text-base text-gray-700 mb-0 flex-grow" style={{ lineHeight: '1.4' }}>
-                    {service.infoDescription}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+        <section className="py-12 md:py-16 lg:py-20 bg-white pb-4 md:pb-6">
+          <ChooseOptions />
         </section>
 
         {/* How It Works Section */}
-        <HowItWorks />
+        <div className="-mt-8 md:-mt-12">
+          <HowItWorks />
+        </div>
 
         {/* Reviews Section */}
         <section className="w-screen py-12 md:py-16 lg:py-20 bg-white mt-6 md:mt-8 lg:mt-12">
@@ -741,6 +1045,11 @@ export default function AdsLandingPage() {
             }
             .reviews-marquee:hover { 
               animation-play-state: paused; 
+            }
+            @media (max-width: 767px) {
+              .reviews-marquee:hover {
+                animation-play-state: running !important;
+              }
             }
             @keyframes scroll-reviews {
               0% { transform: translateX(0); }
@@ -839,7 +1148,7 @@ export default function AdsLandingPage() {
                     <button
                       type="button"
                       onClick={() => toggleFAQ(index)}
-                      className="flex w-full items-center justify-between py-3 md:py-4 text-left hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
+                      className="flex w-full items-center justify-between py-3 md:py-4 text-left md:hover:bg-white transition-colors px-2 md:px-0 cursor-pointer"
                       aria-expanded={isOpen}
                     >
                       <span className="faq-heading text-xs md:text-sm lg:text-base text-gray-900 w-full md:w-auto pr-2 md:pr-3 lg:pr-0">
