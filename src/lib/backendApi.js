@@ -1688,6 +1688,13 @@ export const financeApi = {
     });
   },
 
+  async markPayoutAsPaid(data) {
+    return apiRequest('/finance/payouts/mark-paid', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   // Free Assessments
   async getFreeAssessments(params = {}) {
     const queryString = new URLSearchParams(params).toString();

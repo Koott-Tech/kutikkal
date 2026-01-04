@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Eye, Check, Clock, Calendar, User } from 'lucide-react';
+import { CreditCard, Eye, Check, Clock, Calendar, User, Loader2 } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,13 +18,17 @@ export default function FinancePayouts() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [monthName, setMonthName] = useState('');
+  const [markingAsPaid, setMarkingAsPaid] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [payoutToMark, setPayoutToMark] = useState(null);
 
-  const loadPayouts = async () => {
+  const loadPayouts = async (status = null) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await financeApi.getPayouts();
+      const params = status ? { status } : {};
+      const response = await financeApi.getPayouts(params);
       
       if (response.success) {
         setPayouts(response.data.payouts || []);
@@ -41,6 +45,7 @@ export default function FinancePayouts() {
 
   const loadPendingPayouts = async () => {
     try {
+      setIsLoading(true);
       const response = await financeApi.getPendingPayouts({ month: selectedMonth, year: selectedYear });
       if (response.success) {
         setPendingPayouts(response.data.payouts || []);
@@ -50,6 +55,9 @@ export default function FinancePayouts() {
       }
     } catch (err) {
       console.error('Failed to load pending payouts:', err);
+      setError('Failed to load pending payouts. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -65,10 +73,20 @@ export default function FinancePayouts() {
         return;
       }
       
-      loadPayouts();
+      // Initial load
       loadPendingPayouts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, hasRole, router]);
+
+  useEffect(() => {
+    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
+      if (activeTab === 'completed') {
+        loadPayouts('paid');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   useEffect(() => {
     if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
@@ -95,6 +113,46 @@ export default function FinancePayouts() {
     }
   };
 
+  const handleMarkAsPaidClick = (payout) => {
+    setPayoutToMark(payout);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmMarkAsPaid = async () => {
+    if (!payoutToMark) return;
+
+    try {
+      setShowConfirmModal(false);
+      setMarkingAsPaid(payoutToMark.psychologist_id);
+      const response = await financeApi.markPayoutAsPaid({
+        psychologist_id: payoutToMark.psychologist_id,
+        month: selectedMonth,
+        year: selectedYear
+      });
+
+      if (response.success) {
+        // Reload pending payouts and completed payouts
+        await loadPendingPayouts();
+        await loadPayouts('paid');
+        // Switch to completed tab
+        setActiveTab('completed');
+      } else {
+        alert(response.message || 'Failed to mark payout as paid');
+      }
+    } catch (err) {
+      console.error('Failed to mark payout as paid:', err);
+      alert('Failed to mark payout as paid. Please try again.');
+    } finally {
+      setMarkingAsPaid(null);
+      setPayoutToMark(null);
+    }
+  };
+
+  const handleCancelMarkAsPaid = () => {
+    setShowConfirmModal(false);
+    setPayoutToMark(null);
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -103,7 +161,7 @@ export default function FinancePayouts() {
     );
   }
 
-  const displayPayouts = activeTab === 'pending' ? pendingPayouts : payouts;
+  const displayPayouts = activeTab === 'pending' ? pendingPayouts : payouts.filter(p => p.status === 'paid');
   const totalPending = pendingPayouts.reduce((sum, p) => sum + (parseFloat(p.total_company_commission || p.total_commission) || 0), 0);
   const totalDoctorWallet = pendingPayouts.reduce((sum, p) => sum + (parseFloat(p.total_doctor_wallet || p.net_payout) || 0), 0);
 
@@ -130,14 +188,17 @@ export default function FinancePayouts() {
                 Pending Payouts ({pendingPayouts.length})
               </button>
               <button
-                onClick={() => setActiveTab('all')}
+                onClick={() => {
+                  setActiveTab('completed');
+                  loadPayouts('paid');
+                }}
                 className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
-                  activeTab === 'all'
+                  activeTab === 'completed'
                     ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                All Payouts
+                Completed Payouts
               </button>
             </div>
             {activeTab === 'pending' && (
@@ -226,12 +287,31 @@ export default function FinancePayouts() {
                         <div className="text-sm text-gray-600">{payout.psychologist?.email}</div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setSelectedPayout(payout)}
-                      className="text-[#3f2e73] hover:text-[#2d1f52]"
-                    >
-                      <Eye className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleMarkAsPaidClick(payout)}
+                        disabled={markingAsPaid === payout.psychologist_id}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {markingAsPaid === payout.psychologist_id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Marking...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-4 w-4" />
+                            <span>Mark as Paid</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setSelectedPayout(payout)}
+                        className="text-[#3f2e73] hover:text-[#2d1f52]"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -339,6 +419,55 @@ export default function FinancePayouts() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Mark as Paid Modal */}
+        {showConfirmModal && payoutToMark && (
+          <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+              <div className="p-6 border-b border-gray-200">
+                <div role="heading" aria-level="2" className="text-lg font-semibold text-gray-900">Confirm Mark as Paid</div>
+              </div>
+              <div className="p-6">
+                <p className="text-gray-700 mb-4">
+                  Are you sure you want to mark the payout as paid for{' '}
+                  <span className="font-semibold">
+                    {payoutToMark.psychologist?.first_name} {payoutToMark.psychologist?.last_name}
+                  </span>
+                  {' '}for {monthName || `${selectedMonth}/${selectedYear}`}?
+                </p>
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Total Sessions:</span>
+                      <span className="ml-2 font-semibold text-gray-900">{payoutToMark.total_sessions || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Doctor Wallet:</span>
+                      <span className="ml-2 font-semibold text-green-600">
+                        ₹{(payoutToMark.total_doctor_wallet || payoutToMark.net_payout || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={handleCancelMarkAsPaid}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConfirmMarkAsPaid}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  >
+                    <Check className="h-4 w-4" />
+                    Mark as Paid
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
