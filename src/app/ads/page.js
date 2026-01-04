@@ -9,6 +9,7 @@ import { publicApi } from '@/lib/backendApi';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import HowItWorks from '@/components/HowItWorks';
 import ChooseOptions from '@/components/ChooseOptions';
+import VideosShowcase from '@/components/VideosShowcase';
 
 // Metadata configuration
 const pageMetadata = {
@@ -187,6 +188,8 @@ export default function AdsLandingPage() {
   const [loading, setLoading] = useState(true);
   const [doctorAvailability, setDoctorAvailability] = useState({}); // Store availability for each doctor
   const [loadingAvailability, setLoadingAvailability] = useState(new Set()); // Track which doctors are loading
+  const [videos, setVideos] = useState([]); // Store random videos
+  const [videosLoading, setVideosLoading] = useState(true); // Track if videos are being loaded
 
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
@@ -417,6 +420,116 @@ export default function AdsLandingPage() {
     }
   }, [psychologists.length]);
 
+  // Fetch random videos from database
+  useEffect(() => {
+    const fetchRandomVideos = async () => {
+      try {
+        setVideosLoading(true);
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+        const allVideos = [];
+
+        // Fetch videos from counselling pages
+        try {
+          const counsellingResponse = await fetch(`${baseUrl}/counselling?status=published&limit=50`);
+          if (counsellingResponse.ok) {
+            const counsellingData = await counsellingResponse.json();
+            if (counsellingData.success && counsellingData.data?.pages) {
+              counsellingData.data.pages.forEach(page => {
+                if (page.videos && Array.isArray(page.videos)) {
+                  page.videos.forEach(video => {
+                    if (video.url || video.src) {
+                      allVideos.push({
+                        url: video.url || video.src,
+                        src: video.url || video.src,
+                        thumbnailUrl: video.thumbnailUrl || video.poster || '',
+                        poster: video.thumbnailUrl || video.poster || '',
+                        title: video.title || ''
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching counselling videos:', err);
+        }
+
+        // Fetch videos from assessments pages
+        try {
+          const assessmentsResponse = await fetch(`${baseUrl}/assessments?status=published&limit=50`);
+          if (assessmentsResponse.ok) {
+            const assessmentsData = await assessmentsResponse.json();
+            if (assessmentsData.success && assessmentsData.data?.assessments) {
+              assessmentsData.data.assessments.forEach(page => {
+                if (page.videos && Array.isArray(page.videos)) {
+                  page.videos.forEach(video => {
+                    if (video.url || video.src) {
+                      allVideos.push({
+                        url: video.url || video.src,
+                        src: video.url || video.src,
+                        thumbnailUrl: video.thumbnailUrl || video.poster || '',
+                        poster: video.thumbnailUrl || video.poster || '',
+                        title: video.title || ''
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching assessments videos:', err);
+        }
+
+        // Fetch videos from better-parenting pages
+        try {
+          const betterParentingResponse = await fetch(`${baseUrl}/better-parenting?status=published&limit=50`);
+          if (betterParentingResponse.ok) {
+            const betterParentingData = await betterParentingResponse.json();
+            if (betterParentingData.success && betterParentingData.data?.pages) {
+              betterParentingData.data.pages.forEach(page => {
+                if (page.videos && Array.isArray(page.videos)) {
+                  page.videos.forEach(video => {
+                    if (video.url || video.src) {
+                      allVideos.push({
+                        url: video.url || video.src,
+                        src: video.url || video.src,
+                        thumbnailUrl: video.thumbnailUrl || video.poster || '',
+                        poster: video.thumbnailUrl || video.poster || '',
+                        title: video.title || ''
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching better-parenting videos:', err);
+        }
+
+        // Remove duplicates based on URL
+        const uniqueVideos = Array.from(
+          new Map(allVideos.map(v => [v.url || v.src, v])).values()
+        );
+
+        // Shuffle and select up to 5 random videos
+        const shuffled = uniqueVideos.sort(() => 0.5 - Math.random());
+        const selectedVideos = shuffled.slice(0, 5);
+
+        setVideos(selectedVideos);
+      } catch (error) {
+        console.error('Error fetching random videos:', error);
+        setVideos([]); // Set empty array on error to prevent showing default videos
+      } finally {
+        setVideosLoading(false);
+      }
+    };
+
+    fetchRandomVideos();
+  }, []);
+
   // No JavaScript scroll needed - using CSS animation like Reviews component
 
   // Create psychologist slug
@@ -457,7 +570,7 @@ export default function AdsLandingPage() {
       <style dangerouslySetInnerHTML={{
         __html: `
           .ads-page h1 {
-            font-size: 1.75rem !important;
+            font-size: 2rem !important;
             line-height: 1.1 !important;
           }
           .ads-page h2 {
@@ -470,7 +583,7 @@ export default function AdsLandingPage() {
           }
           @media (min-width: 640px) {
             .ads-page h1 {
-              font-size: 2rem !important;
+              font-size: 2.5rem !important;
             }
             .ads-page h2 {
               font-size: 1.75rem !important;
@@ -481,7 +594,7 @@ export default function AdsLandingPage() {
           }
           @media (min-width: 768px) {
             .ads-page h1 {
-              font-size: 2.5rem !important;
+              font-size: 3rem !important;
             }
             .ads-page h2 {
               font-size: 2rem !important;
@@ -981,10 +1094,10 @@ export default function AdsLandingPage() {
                           }}
                           onMouseEnter={(e) => {
                             if (typeof window !== 'undefined' && window.innerWidth > 767) {
-                              e.target.style.backgroundColor = '#2d1f52';
-                              e.target.style.borderColor = '#2d1f52';
+                              e.target.style.backgroundColor = '#6b5299';
+                              e.target.style.borderColor = '#6b5299';
                               e.target.style.transform = 'translateY(-1px)';
-                              e.target.style.boxShadow = '0 4px 8px rgba(63, 46, 115, 0.3)';
+                              e.target.style.boxShadow = '0 4px 8px rgba(107, 82, 153, 0.3)';
                             }
                           }}
                           onMouseLeave={(e) => {
@@ -1017,6 +1130,19 @@ export default function AdsLandingPage() {
         <div className="-mt-8 md:-mt-12">
           <HowItWorks />
         </div>
+
+        {/* Videos Showcase Section */}
+        {!videosLoading && videos.length > 0 && (
+          <VideosShowcase cmsData={{ 
+            videos: videos.map(video => ({
+              url: video.url || video.src,
+              src: video.url || video.src,
+              thumbnailUrl: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
+              poster: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
+              title: video.title
+            }))
+          }} />
+        )}
 
         {/* Reviews Section */}
         <section className="w-screen py-12 md:py-16 lg:py-20 bg-white mt-6 md:mt-8 lg:mt-12">

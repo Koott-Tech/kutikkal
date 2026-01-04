@@ -145,25 +145,35 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
         <footer className={`w-full ${isTherapistProfile ? 'mt-0' : 'mt-14'}`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <style jsx>{`
                 /* Override h2 main menu items (footer) - h5 text-white */
+                /* Ensure these override global h2 styles from globals.css */
+                h2.footer-main-menu-item,
                 .footer-main-menu-item {
                     font-size: 22px !important;
                     font-weight: 400 !important;
                     line-height: 1.2 !important;
+                    letter-spacing: normal !important;
                     margin: 0 0 1.5rem 0 !important; /* Add bottom margin to increase space below heading */
+                    font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
                 }
                 /* Override h2 submenu items (footer) - text-base font-normal */
+                h2.footer-submenu-item,
                 .footer-submenu-item {
                     font-size: 16px !important;
                     font-weight: 400 !important;
                     line-height: 1.2 !important;
+                    letter-spacing: normal !important;
                     margin: 0 !important;
+                    font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
                 }
                 /* Override h2 individual menu items (footer) - text-sm */
+                h2.footer-individual-menu-item,
                 .footer-individual-menu-item {
                     font-size: 14px !important;
                     font-weight: 400 !important;
                     line-height: 1.2 !important;
+                    letter-spacing: normal !important;
                     margin: 0 0 0.75rem 0 !important; /* Increased bottom margin for more spacing between items */
+                    font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
                 }
                 .footer-individual-menu-item:last-child {
                     margin-bottom: 0 !important; /* Remove margin from last item */
@@ -291,12 +301,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('counselling')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h2 className="footer-main-menu-item text-white text-left">Counseling</h2>
+                                <h2 className="footer-main-menu-item text-white text-left" suppressHydrationWarning>Counseling</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.counselling ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Counseling</h2>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left" suppressHydrationWarning>Counseling</h2>
                             <div className={`${openSections.counselling ? 'block' : 'hidden md:block'} space-y-1 md:space-y-3 text-left`}>
                                 {/* Category: Emotional & Mental Health */}
                                 <div className="space-y-1 text-left">
@@ -392,12 +402,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('assessments')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h2 className="footer-main-menu-item text-white text-left">Assessments</h2>
+                                <h2 className="footer-main-menu-item text-white text-left" suppressHydrationWarning>Assessments</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.assessments ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Assessments</h2>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left" suppressHydrationWarning>Assessments</h2>
                             <div className={`${openSections.assessments ? 'block' : 'hidden md:block'} space-y-1 md:space-y-3 text-left`}>
                                 {/* ADHD Assessments */}
                                 <div className="space-y-1 text-left">
@@ -488,12 +498,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('better_parenting')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h2 className="footer-main-menu-item text-white text-left">Better Parenting</h2>
+                                <h2 className="footer-main-menu-item text-white text-left" suppressHydrationWarning>Better Parenting</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.better_parenting ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">Better Parenting</h2>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left" suppressHydrationWarning>Better Parenting</h2>
                             <ul className={`space-y-1 md:space-y-3 text-base leading-relaxed text-left ${openSections.better_parenting ? 'block' : 'hidden md:block'}`}>
                                 {betterParentingMenu.map((item) => (
                                     <li key={item.url} className="text-left"><a href={item.url} className="text-white font-medium text-left block"><h2 className="footer-individual-menu-item" suppressHydrationWarning>{item.title}</h2></a></li>
@@ -506,12 +516,12 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 onClick={() => toggleSection('about')}
                                 className="md:hidden flex items-center justify-between w-full cursor-pointer text-white text-left"
                             >
-                                <h2 className="footer-main-menu-item text-white text-left">About Us</h2>
+                                <h2 className="footer-main-menu-item text-white text-left" suppressHydrationWarning>About Us</h2>
                                 <svg className={`w-5 h-5 transition-transform duration-200 ${openSections.about ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left">About Us</h2>
+                            <h2 className="footer-main-menu-item hidden md:block text-white mb-8 text-left" suppressHydrationWarning>About Us</h2>
                             <ul className={`space-y-1 text-base leading-relaxed text-left ${openSections.about ? 'block' : 'hidden md:block'}`}>
                                 <li className="text-left"><a href="/about" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Company</h2></a></li>
                                 <li className="text-left"><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Career</h2></a></li>

@@ -256,6 +256,7 @@ export default function VideosShowcase({ cmsData = null }) {
           .videos-showcase-mobile {
             margin-top: 1rem !important;
             padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
           }
         }
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
@@ -372,17 +373,17 @@ export default function VideosShowcase({ cmsData = null }) {
 
           <div
             ref={scrollerRef}
-            className="flex gap-5 lg:gap-8 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar lg:overflow-visible lg:snap-none lg:justify-center lg:items-center"
+            className="flex gap-4 sm:gap-5 lg:gap-8 videos-carousel-gap overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar lg:overflow-visible lg:snap-none lg:justify-center lg:items-center"
             style={{ paddingLeft: '0', paddingRight: '0' }}
           >
             {[0,1,2,3,4].map((i) => {
               const cardShadow = i === 2 ? '0 14px 38px rgba(63, 46, 115, 0.32)' : undefined;
               return (
-              <div key={i} className="flex-shrink-0 snap-center" style={{ paddingLeft: i === 0 ? 'clamp(18px, 7vw, 32px)' : '0', paddingRight: i === 4 ? 'clamp(18px, 7vw, 32px)' : '0' }}>
+              <div key={i} className="flex-shrink-0 snap-center" style={{ paddingLeft: i === 0 ? 'clamp(16px, 5vw, 32px)' : '0', paddingRight: i === 4 ? 'clamp(16px, 5vw, 32px)' : '0' }}>
                 <div
                   data-video-card
                   className={`video-card relative rounded-[14px] overflow-hidden bg-white cursor-pointer group
-                    ${'w-[200px] h-[320px]'}
+                    ${'w-[180px] h-[280px] sm:w-[200px] sm:h-[320px]'}
                     ${i === 2 
                       ? 'lg:w-[300px] lg:h-[460px] lg:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
                       : (i === 0 || i === 4) 
