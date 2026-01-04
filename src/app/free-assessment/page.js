@@ -1082,14 +1082,14 @@ export default function FreeAssessmentPage() {
                             : // Only highlight if: isConfigured is true AND slots > 0 AND actually available
                             (isConfigured && availableSlotsCount > 0 && isActuallyAvailable)
                               ? (isToday 
-                                  ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
+                              ? 'bg-[#6d5ba8] text-white font-semibold shadow-md cursor-pointer border border-[#6d5ba8]'
                                   : 'bg-[#f0edff] text-[#3f2e73] font-semibold cursor-pointer border border-[#3f2e73] hover:bg-[#e3dcff]')
                               : // Today without config or slots - just show it's today, not highlighted
                             isToday
-                              ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
+                                ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold cursor-pointer border border-[#d8ccff]'
                               : // Future date without config or slots - clickable but not highlighted
                             isAvailable
-                              ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
+                                ? 'text-[#3f2e73] cursor-pointer border border-transparent hover:bg-[#f6f3ff]'
                               : // Past date
                             'text-gray-300 cursor-not-allowed'
                         }`}

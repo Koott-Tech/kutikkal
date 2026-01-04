@@ -92,8 +92,12 @@ async function fetchAssessment(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
     const previewSuffix = preview ? '?preview=1' : '';
+    const url = `${baseUrl}/api/assessments/${slug}${previewSuffix}`;
+    
+    console.log(`[Assessment] Fetching: ${url}`);
+    
     // Use no-store to match counselling/better-parenting (backend has caching)
-    const response = await fetch(`${baseUrl}/api/assessments/${slug}${previewSuffix}`, {
+    const response = await fetch(url, {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -102,9 +106,19 @@ async function fetchAssessment(slug, { preview = false } = {}) {
       }
     });
 
+    console.log(`[Assessment] Response status: ${response.status} for slug: ${slug}`);
+
     if (response.ok) {
       const json = await response.json();
-      if (json?.success) {
+      console.log(`[Assessment] Response data structure:`, {
+        hasSuccess: !!json?.success,
+        hasData: !!json?.data,
+        hasMessage: !!json?.message,
+        keys: Object.keys(json || {})
+      });
+      
+      // Handle both success: true and success: false responses
+      if (json?.success === true) {
         const payload = json.data ?? json.message ?? json.assessment ?? json.result ?? json;
         if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
           if (payload.assessment && typeof payload.assessment === 'object' && !Array.isArray(payload.assessment)) {
@@ -112,10 +126,33 @@ async function fetchAssessment(slug, { preview = false } = {}) {
           }
           return payload;
         }
+      } else if (json?.success === false) {
+        // Backend returned error response
+        console.warn(`[Assessment] Backend error for slug: ${slug}:`, json.message || json.error || json);
+        return null;
+      } else {
+        // No success field - try to extract data anyway (backward compatibility)
+        const payload = json.data ?? json.message ?? json.assessment ?? json.result ?? json;
+        if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+          if (payload.assessment && typeof payload.assessment === 'object' && !Array.isArray(payload.assessment)) {
+            return payload.assessment;
+          }
+          return payload;
+        }
+        console.warn(`[Assessment] Unexpected response structure for slug: ${slug}`, json);
       }
+    } else {
+      const errorText = await response.text();
+      let errorJson = null;
+      try {
+        errorJson = JSON.parse(errorText);
+      } catch (e) {
+        // Not JSON, use text as is
+      }
+      console.error(`[Assessment] API error ${response.status} for slug: ${slug}`, errorJson || errorText);
     }
   } catch (error) {
-    console.error('Error fetching assessment:', error);
+    console.error(`[Assessment] Fetch error for slug: ${slug}:`, error);
   }
 
   return null;

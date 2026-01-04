@@ -120,23 +120,48 @@ export default function RootLayout({ children }) {
                 // Only run on client side (not during SSR)
                 if (typeof window === 'undefined') return;
                 
-                // CRITICAL: No fixed delays - hide immediately when DOM is ready
-                // This prevents CLS by allowing content to render immediately
-                function hideLoader() {
-                  if (document.body) {
-                    document.body.classList.add('loaded');
-                  } else {
-                    // Body not ready yet, try again on next tick
-                    requestAnimationFrame(hideLoader);
-                  }
+                // Track if this is the initial page load
+                const isInitialLoad = !sessionStorage.getItem('pageLoaded');
+                let minDisplayTime = 0;
+                
+                // On initial page visit, show loader for minimum time
+                if (isInitialLoad) {
+                  minDisplayTime = 800; // Minimum 800ms display time on first visit
+                  sessionStorage.setItem('pageLoaded', 'true');
                 }
                 
-                // Hide loader as soon as DOM is interactive (not complete - too late)
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', hideLoader, { once: true });
+                const startTime = Date.now();
+                
+                // Function to hide loader
+                function hideLoader() {
+                  const elapsed = Date.now() - startTime;
+                  const remainingTime = Math.max(0, minDisplayTime - elapsed);
+                  
+                  setTimeout(function() {
+                    if (document.body) {
+                      document.body.classList.add('loaded');
+                    } else {
+                      // Body not ready yet, try again on next tick
+                      requestAnimationFrame(hideLoader);
+                    }
+                  }, remainingTime);
+                }
+                
+                // Wait for page to be fully loaded on initial visit
+                if (isInitialLoad) {
+                  // On initial load, wait for window load event (all resources loaded)
+                  if (document.readyState === 'complete') {
+                    hideLoader();
+                  } else {
+                    window.addEventListener('load', hideLoader, { once: true });
+                  }
                 } else {
-                  // Already interactive or complete - hide immediately
-                  hideLoader();
+                  // On subsequent navigations, hide faster
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', hideLoader, { once: true });
+                  } else {
+                    hideLoader();
+                  }
                 }
               })();
             `,

@@ -510,13 +510,13 @@ export default function FreeAssessmentsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => handleViewAssessment(assessment)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </button>
+                      <button
+                        onClick={() => handleViewAssessment(assessment)}
+                        className="text-blue-600 hover:text-blue-900 flex items-center"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </button>
                         {assessment.meetLink && (
                           <button
                             onClick={() => handleCopyMeetLink(assessment.meetLink)}
