@@ -12,6 +12,8 @@
  * Also converts Supabase storage URLs to proxy URLs:
  * https://PROJECT.supabase.co/storage/v1/object/public/BUCKET/FILE → /api/images/BUCKET/FILE
  * /storage/v1/object/public/BUCKET/FILE → /api/images/BUCKET/FILE
+ * Also handles signed URLs by extracting the file path:
+ * https://PROJECT.supabase.co/storage/v1/object/sign/BUCKET/FILE?token=... → /api/images/BUCKET/FILE
  * @param {string} url - Absolute or relative URL
  * @returns {string} Relative URL
  */
@@ -21,6 +23,20 @@ export function normalizeImageUrl(url) {
   // If it's already a relative proxy URL, return as-is
   if (url.startsWith('/api/images/')) return url;
   
+  // Handle signed URLs (they have /object/sign/ instead of /object/public/)
+  // Pattern: https://PROJECT.supabase.co/storage/v1/object/sign/BUCKET/FILENAME?token=...
+  const signedUrlMatch = url.match(/\/storage\/v1\/object\/sign\/([^\/\?]+)\/([^\?]+)/);
+  if (signedUrlMatch) {
+    const bucket = signedUrlMatch[1];
+    let filename = signedUrlMatch[2];
+    try {
+      filename = decodeURIComponent(filename);
+    } catch (e) {
+      // If decoding fails, use original filename
+    }
+    return `/api/images/${bucket}/${filename}`;
+  }
+  
   // Convert Supabase storage URLs to proxy URLs
   // Pattern: /storage/v1/object/public/BUCKET/FILENAME
   // Or: https://PROJECT.supabase.co/storage/v1/object/public/BUCKET/FILENAME
@@ -28,6 +44,8 @@ export function normalizeImageUrl(url) {
   if (supabaseStorageMatch) {
     const bucket = supabaseStorageMatch[1];
     let filename = supabaseStorageMatch[2];
+    // Remove query parameters if present (e.g., ?token=...)
+    filename = filename.split('?')[0];
     // Decode URL-encoded characters (e.g., %20 -> space) to get the actual filename
     // The filename will be re-encoded by the browser when making the request
     try {
@@ -49,15 +67,35 @@ export function normalizeImageUrl(url) {
     if (urlObj.pathname.startsWith('/api/images/')) {
       return urlObj.pathname;
     }
-    // If it's a Supabase URL, convert it
-    if (urlObj.hostname.includes('supabase.co') && urlObj.pathname.includes('/storage/v1/object/public/')) {
-      const supabaseMatch = urlObj.pathname.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
-      if (supabaseMatch) {
-        const bucket = supabaseMatch[1];
-        // pathname is already decoded by URL constructor, so use it directly
-        const filename = supabaseMatch[2];
-        // Return with filename (will be encoded by browser automatically in URL)
+    // If it's a Supabase URL (signed or public), convert it
+    if (urlObj.hostname.includes('supabase.co')) {
+      // Handle signed URLs
+      const signedMatch = urlObj.pathname.match(/\/storage\/v1\/object\/sign\/([^\/]+)\/(.+)$/);
+      if (signedMatch) {
+        const bucket = signedMatch[1];
+        let filename = signedMatch[2].split('?')[0]; // Remove query params
+        try {
+          filename = decodeURIComponent(filename);
+        } catch (e) {
+          // If decoding fails, use original filename
+        }
         return `/api/images/${bucket}/${filename}`;
+      }
+      // Handle public URLs
+      if (urlObj.pathname.includes('/storage/v1/object/public/')) {
+        const supabaseMatch = urlObj.pathname.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
+        if (supabaseMatch) {
+          const bucket = supabaseMatch[1];
+          // pathname is already decoded by URL constructor, but remove query params
+          let filename = supabaseMatch[2].split('?')[0];
+          try {
+            filename = decodeURIComponent(filename);
+          } catch (e) {
+            // If decoding fails, use original filename
+          }
+          // Return with filename (will be encoded by browser automatically in URL)
+          return `/api/images/${bucket}/${filename}`;
+        }
       }
     }
     return urlObj.pathname;
@@ -66,6 +104,18 @@ export function normalizeImageUrl(url) {
     const match = url.match(/\/api\/images\/.+/);
     if (match) {
       return match[0];
+    }
+    // Try to extract Supabase storage path even if URL parsing failed
+    const supabaseMatch = url.match(/\/storage\/v1\/object\/(?:public|sign)\/([^\/]+)\/([^\?]+)/);
+    if (supabaseMatch) {
+      const bucket = supabaseMatch[1];
+      let filename = supabaseMatch[2];
+      try {
+        filename = decodeURIComponent(filename);
+      } catch (e) {
+        // If decoding fails, use original filename
+      }
+      return `/api/images/${bucket}/${filename}`;
     }
     // If no match, return original (might be external URL or already relative)
     return url;
