@@ -16,10 +16,13 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  Wallet
+  Wallet,
+  User
 } from 'lucide-react';
+import Image from 'next/image';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function FinanceDashboard() {
@@ -28,6 +31,8 @@ export default function FinanceDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pendingPayouts, setPendingPayouts] = useState([]);
+  const [isLoadingPayouts, setIsLoadingPayouts] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -42,6 +47,7 @@ export default function FinanceDashboard() {
       }
       
       loadDashboardData();
+      loadPendingPayouts();
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
 
@@ -62,6 +68,25 @@ export default function FinanceDashboard() {
       setError('Failed to load dashboard data. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadPendingPayouts = async () => {
+    try {
+      setIsLoadingPayouts(true);
+      const today = new Date();
+      const response = await financeApi.getPendingPayouts({ 
+        month: today.getMonth() + 1, 
+        year: today.getFullYear() 
+      });
+      
+      if (response.success) {
+        setPendingPayouts(response.data.payouts || []);
+      }
+    } catch (err) {
+      console.error('Failed to load pending payouts:', err);
+    } finally {
+      setIsLoadingPayouts(false);
     }
   };
 
@@ -366,6 +391,82 @@ export default function FinanceDashboard() {
               <p className="text-gray-500 text-center py-8">No data available</p>
             )}
           </div>
+        </div>
+
+        {/* Pending Payouts - Doctors with Completed Sessions */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-1">Pending Payouts</div>
+              <p className="text-xs text-gray-600">Doctors with completed sessions awaiting payout</p>
+            </div>
+            <a
+              href="/finance/payouts"
+              className="text-sm text-[#3f2e73] hover:underline font-medium"
+            >
+              View All →
+            </a>
+          </div>
+          {isLoadingPayouts ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
+            </div>
+          ) : pendingPayouts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingPayouts.map((payout) => (
+                <div
+                  key={payout.psychologist_id}
+                  className="bg-gray-50 rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {payout.psychologist?.cover_image_url ? (
+                          <Image
+                            src={normalizeImageUrl(payout.psychologist.cover_image_url)}
+                            alt={`${payout.psychologist.first_name} ${payout.psychologist.last_name}`}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-[#3f2e73] text-white flex items-center justify-center font-semibold text-lg">
+                            {payout.psychologist?.first_name?.[0] || <User className="h-6 w-6" />}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {payout.psychologist?.first_name} {payout.psychologist?.last_name}
+                        </p>
+                        <p className="text-xs text-gray-600">{payout.psychologist?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Total Sessions</div>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {payout.total_sessions || 0}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                        <Wallet className="h-3 w-3" />
+                        Doctor Wallet
+                      </div>
+                      <div className="text-lg font-semibold text-green-700">
+                        ₹{(payout.total_doctor_wallet || payout.net_payout || 0).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">No pending payouts</p>
+          )}
         </div>
 
         {/* Top Doctors */}

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Search, Filter, Eye, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { financeApi } from '@/lib/backendApi';
+import { Calendar, Search, Filter, Eye, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
+import { financeApi, publicApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function FinanceSessions() {
@@ -14,9 +14,19 @@ export default function FinanceSessions() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalSessions, setTotalSessions] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSession, setSelectedSession] = useState(null);
   const [loadingSessionId, setLoadingSessionId] = useState(null);
+  
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState('');
+  const [psychologistFilter, setPsychologistFilter] = useState('');
+  const [sessionTypeFilter, setSessionTypeFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [psychologists, setPsychologists] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -30,9 +40,43 @@ export default function FinanceSessions() {
         return;
       }
       
-      loadSessions();
+      loadPsychologists();
     }
-  }, [authLoading, isAuthenticated, hasRole, router, page]);
+  }, [authLoading, isAuthenticated, hasRole, router]);
+
+  // Track previous filter values to detect changes
+  const prevFiltersRef = useRef({ statusFilter, psychologistFilter, sessionTypeFilter, dateFrom, dateTo, searchTerm });
+  
+  useEffect(() => {
+    if (!authLoading && isAuthenticated() && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
+      const filtersChanged = 
+        prevFiltersRef.current.statusFilter !== statusFilter ||
+        prevFiltersRef.current.psychologistFilter !== psychologistFilter ||
+        prevFiltersRef.current.sessionTypeFilter !== sessionTypeFilter ||
+        prevFiltersRef.current.dateFrom !== dateFrom ||
+        prevFiltersRef.current.dateTo !== dateTo ||
+        prevFiltersRef.current.searchTerm !== searchTerm;
+      
+      if (filtersChanged && page !== 1) {
+        setPage(1);
+      } else {
+        loadSessions();
+      }
+      
+      prevFiltersRef.current = { statusFilter, psychologistFilter, sessionTypeFilter, dateFrom, dateTo, searchTerm };
+    }
+  }, [page, statusFilter, psychologistFilter, sessionTypeFilter, dateFrom, dateTo, searchTerm]);
+
+  const loadPsychologists = async () => {
+    try {
+      const response = await publicApi.getPsychologists();
+      if (response.success && response.data) {
+        setPsychologists(response.data.psychologists || response.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to load psychologists:', err);
+    }
+  };
 
   const loadSessions = async () => {
     try {
@@ -42,7 +86,12 @@ export default function FinanceSessions() {
       const params = {
         page,
         limit: 20,
-        ...(searchTerm && { search: searchTerm })
+        ...(searchTerm && { search: searchTerm }),
+        ...(statusFilter && { status: statusFilter }),
+        ...(psychologistFilter && { psychologistId: psychologistFilter }),
+        ...(sessionTypeFilter && { sessionType: sessionTypeFilter }),
+        ...(dateFrom && { dateFrom }),
+        ...(dateTo && { dateTo })
       };
 
       const response = await financeApi.getSessions(params);
@@ -50,6 +99,7 @@ export default function FinanceSessions() {
       if (response.success) {
         setSessions(response.data.sessions || []);
         setTotalPages(response.data.pagination?.totalPages || 1);
+        setTotalSessions(response.data.pagination?.total || 0);
       } else {
         setError(response.message || 'Failed to load sessions');
       }
@@ -60,6 +110,18 @@ export default function FinanceSessions() {
       setIsLoading(false);
     }
   };
+
+  const clearFilters = () => {
+    setStatusFilter('');
+    setPsychologistFilter('');
+    setSessionTypeFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const hasActiveFilters = statusFilter || psychologistFilter || sessionTypeFilter || dateFrom || dateTo || searchTerm;
 
   const handleViewDetails = async (sessionId) => {
     try {
@@ -93,24 +155,126 @@ export default function FinanceSessions() {
 
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by doctor, client, or session ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && loadSessions()}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-              />
+          <div className="flex flex-col gap-4">
+            {/* Search Bar */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by doctor, client, or session ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && setPage(1)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-6 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                  showFilters || hasActiveFilters
+                    ? 'bg-[#3f2e73] text-white hover:bg-[#2d1f52]'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+                {hasActiveFilters && (
+                  <span className="bg-white text-[#3f2e73] rounded-full px-2 py-0.5 text-xs font-semibold">
+                    {[statusFilter, psychologistFilter, sessionTypeFilter, dateFrom, dateTo, searchTerm].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Clear
+                </button>
+              )}
             </div>
-            <button
-              onClick={loadSessions}
-              className="px-6 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
-            >
-              Search
-            </button>
+
+            {/* Filter Panel */}
+            {showFilters && (
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="completed">Completed</option>
+                      <option value="booked">Booked</option>
+                      <option value="pending">Pending</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="rescheduled">Rescheduled</option>
+                      <option value="no_show">No Show</option>
+                    </select>
+                  </div>
+
+                  {/* Doctor Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Doctor</label>
+                    <select
+                      value={psychologistFilter}
+                      onChange={(e) => setPsychologistFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                    >
+                      <option value="">All Doctors</option>
+                      {psychologists.map((psych) => (
+                        <option key={psych.id} value={psych.id}>
+                          {psych.first_name} {psych.last_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Session Type Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Session Type</label>
+                    <select
+                      value={sessionTypeFilter}
+                      onChange={(e) => setSessionTypeFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                    >
+                      <option value="">All Types</option>
+                      <option value="individual">Individual</option>
+                      <option value="couples">Couples</option>
+                      <option value="family">Family</option>
+                      <option value="group">Group</option>
+                    </select>
+                  </div>
+
+                  {/* Date From */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Date To */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -197,22 +361,55 @@ export default function FinanceSessions() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+              <div className="bg-gray-50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Page {page} of {totalPages}
+                  Showing {((page - 1) * 20) + 1} to {Math.min(page * 20, totalSessions)} of {totalSessions} sessions
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                    aria-label="Previous page"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
+                  
+                  {/* Page Numbers */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (page <= 3) {
+                        pageNum = i + 1;
+                      } else if (page >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = page - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={`px-3 py-2 min-w-[2.5rem] border rounded-lg transition-colors ${
+                            page === pageNum
+                              ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
                   <button
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                    className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                    aria-label="Next page"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
