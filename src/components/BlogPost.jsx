@@ -21,6 +21,35 @@ const StructuredContentRenderer = ({ content }) => {
                    return (
                      <p key={index} className="leading-relaxed">
                        {(() => {
+                         const normalizeUrl = (url) => {
+                           if (!url || !url.trim()) return url;
+                           
+                           const trimmedUrl = url.trim();
+                           
+                           // If it already has a protocol, return as is
+                           if (trimmedUrl.match(/^https?:\/\//i)) {
+                             return trimmedUrl;
+                           }
+                           
+                           // If it starts with //, add https:
+                           if (trimmedUrl.startsWith('//')) {
+                             return `https:${trimmedUrl}`;
+                           }
+                           
+                           // If it's a relative path, return as is
+                           if (trimmedUrl.startsWith('/') || trimmedUrl.startsWith('./') || trimmedUrl.startsWith('../')) {
+                             return trimmedUrl;
+                           }
+                           
+                           // If it looks like a domain (contains a dot and no spaces), add https://
+                           if (trimmedUrl.includes('.') && !trimmedUrl.includes(' ')) {
+                             return `https://${trimmedUrl}`;
+                           }
+                           
+                           // Otherwise, return as is
+                           return trimmedUrl;
+                         };
+
                          const parseInlineLinks = (text) => {
                            if (!text) return [{ type: 'text', content: text }];
                            
@@ -37,10 +66,13 @@ const StructuredContentRenderer = ({ content }) => {
                                });
                              }
                              
+                             // Normalize the URL to ensure it has a protocol
+                             const normalizedUrl = normalizeUrl(match[2]);
+                             
                              parts.push({
                                type: 'link',
                                text: match[1],
-                               url: match[2]
+                               url: normalizedUrl
                              });
                              
                              lastIndex = match.index + match[0].length;
@@ -65,7 +97,10 @@ const StructuredContentRenderer = ({ content }) => {
                                  href={part.url}
                                  target="_blank"
                                  rel="noopener noreferrer"
-                                 className="text-indigo-600 hover:text-indigo-800 underline font-medium"
+                                 className="underline font-medium"
+                                 style={{ textDecoration: 'underline', color: '#3f2e73' }}
+                                 onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+                                 onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
                                >
                                  {part.text}
                                </a>
@@ -78,12 +113,97 @@ const StructuredContentRenderer = ({ content }) => {
                    );
           
           case 'heading':
-            // Use H6 for all blog content headings to avoid large sizes
-            // H6 is 24px which is appropriate for blog content
+            // Render heading based on the level (1-6)
+            const HeadingTag = `h${Math.min(Math.max(block.level || 2, 1), 6)}`;
+            const normalizeUrl = (url) => {
+              if (!url || !url.trim()) return url;
+              
+              const trimmedUrl = url.trim();
+              
+              // If it already has a protocol, return as is
+              if (trimmedUrl.match(/^https?:\/\//i)) {
+                return trimmedUrl;
+              }
+              
+              // If it starts with //, add https:
+              if (trimmedUrl.startsWith('//')) {
+                return `https:${trimmedUrl}`;
+              }
+              
+              // If it's a relative path, return as is
+              if (trimmedUrl.startsWith('/') || trimmedUrl.startsWith('./') || trimmedUrl.startsWith('../')) {
+                return trimmedUrl;
+              }
+              
+              // If it looks like a domain (contains a dot and no spaces), add https://
+              if (trimmedUrl.includes('.') && !trimmedUrl.includes(' ')) {
+                return `https://${trimmedUrl}`;
+              }
+              
+              // Otherwise, return as is
+              return trimmedUrl;
+            };
+
+            const parseInlineLinks = (text) => {
+              if (!text) return [{ type: 'text', content: text }];
+              
+              const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+              const parts = [];
+              let lastIndex = 0;
+              let match;
+              
+              while ((match = linkRegex.exec(text)) !== null) {
+                if (match.index > lastIndex) {
+                  parts.push({
+                    type: 'text',
+                    content: text.slice(lastIndex, match.index)
+                  });
+                }
+                
+                // Normalize the URL to ensure it has a protocol
+                const normalizedUrl = normalizeUrl(match[2]);
+                
+                parts.push({
+                  type: 'link',
+                  text: match[1],
+                  url: normalizedUrl
+                });
+                
+                lastIndex = match.index + match[0].length;
+              }
+              
+              if (lastIndex < text.length) {
+                parts.push({
+                  type: 'text',
+                  content: text.slice(lastIndex)
+                });
+              }
+              
+              return parts.length > 0 ? parts : [{ type: 'text', content: text }];
+            };
+            const headingParts = parseInlineLinks(block.content);
             return (
-              <h6 key={index} className="mb-4 mt-8 font-semibold text-gray-900">
-                {block.content}
-              </h6>
+              <HeadingTag key={index} className="mb-4 mt-8 font-semibold text-gray-900">
+                {headingParts.map((part, partIndex) => {
+                  if (part.type === 'link') {
+                    return (
+                      <a
+                        key={partIndex}
+                        href={part.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline font-medium"
+                        style={{ textDecoration: 'underline', color: '#3f2e73' }}
+                        onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+                        onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
+                      >
+                        {part.text}
+                      </a>
+                    );
+                  }
+                  return <span key={partIndex}>{part.content}</span>;
+                })}
+              </HeadingTag>
             );
           
           case 'image':
@@ -125,17 +245,9 @@ const StructuredContentRenderer = ({ content }) => {
               </ol>
             );
           
-          case 'link':
+          case 'spacer':
             return (
-              <a 
-                key={index} 
-                href={block.href}
-                target={block.target || '_self'}
-                rel={block.target === '_blank' ? 'noopener noreferrer' : ''}
-                className="text-indigo-600 hover:text-indigo-800 underline font-medium"
-              >
-                {block.text}
-              </a>
+              <div key={index} className="h-6"></div>
             );
           
           case 'quote':
@@ -175,43 +287,37 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
           You might also like
         </h6>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogs.map((blog) => (
             <Link 
               key={blog.id} 
               href={`/blog/${blog.slug}`}
-              className="group block bg-white rounded-lg border border-gray-200"
+              className="group block w-full max-w-[340px] mx-auto md:mx-0"
             >
-              <div className="space-y-4">
-                {/* Featured Image */}
+              <article className="w-full cursor-pointer">
+                {/* Image Container */}
                 {blog.featured_image_url && (
-                  <div className="h-36 bg-gray-100">
+                  <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
                     <img
                       src={normalizeImageUrl(blog.featured_image_url || '')}
                       alt={blog.title}
-                      className="w-full h-full object-contain rounded-t-lg"
+                      className="w-full h-full object-contain object-left"
                     />
                   </div>
                 )}
                 
-                {/* Content */}
-                <div className="px-6 pb-6">
-                  {/* Title */}
-                  <h6 className="text-lg font-medium text-gray-900 transition-colors line-clamp-2 mb-3 min-h-[3.5rem]">
-                    {blog.title}
-                  </h6>
-                  
-                  {/* Meta */}
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{blog.author_name}</span>
-                    <div className="flex items-center space-x-2">
-                      <span>{blog.read_time_minutes || 5} min read</span>
-                      <span>•</span>
-                      <span>{formatDate(blog.published_at || blog.created_at)}</span>
-                    </div>
-                  </div>
+                {/* Meta Info */}
+                <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
+                  <span>{blog.author_name || "Little Care Team"}</span>
+                  <span className="px-1 md:px-2">•</span>
+                  <span>{formatDate(blog.published_at || blog.created_at)}</span>
                 </div>
-              </div>
+                
+                {/* Title */}
+                <h6 className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900">
+                  {blog.title}
+                </h6>
+              </article>
             </Link>
           ))}
         </div>
@@ -402,10 +508,47 @@ export default function BlogPost({ slug }) {
         <div className="blog-content">
           <style dangerouslySetInnerHTML={{
             __html: `
-              .blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4, .blog-content h5 {
-                font-size: 24px !important;
-                line-height: 1.5rem !important;
-                letter-spacing: -0.65px !important;
+              .blog-content h1 {
+                font-size: 2.5rem !important;
+                line-height: 1.2 !important;
+                font-weight: 700 !important;
+                margin-top: 2rem !important;
+                margin-bottom: 1rem !important;
+              }
+              .blog-content h2 {
+                font-size: 2rem !important;
+                line-height: 1.3 !important;
+                font-weight: 700 !important;
+                margin-top: 1.75rem !important;
+                margin-bottom: 0.875rem !important;
+              }
+              .blog-content h3 {
+                font-size: 1.75rem !important;
+                line-height: 1.4 !important;
+                font-weight: 600 !important;
+                margin-top: 1.5rem !important;
+                margin-bottom: 0.75rem !important;
+              }
+              .blog-content h4 {
+                font-size: 1.5rem !important;
+                line-height: 1.4 !important;
+                font-weight: 600 !important;
+                margin-top: 1.25rem !important;
+                margin-bottom: 0.625rem !important;
+              }
+              .blog-content h5 {
+                font-size: 1.25rem !important;
+                line-height: 1.5 !important;
+                font-weight: 600 !important;
+                margin-top: 1rem !important;
+                margin-bottom: 0.5rem !important;
+              }
+              .blog-content h6 {
+                font-size: 1.125rem !important;
+                line-height: 1.5 !important;
+                font-weight: 600 !important;
+                margin-top: 0.875rem !important;
+                margin-bottom: 0.5rem !important;
               }
             `
           }} />

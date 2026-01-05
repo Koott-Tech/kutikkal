@@ -84,13 +84,13 @@ function PageLoadingOverlayContent() {
           loader.style.visibility = 'hidden';
           body.classList.add('loaded');
         }
-      }, 600); // Match the CSS transition duration
+      }, 300); // Match the CSS transition duration
     }
     setIsVisible(false);
     // Remove from DOM after fade out completes
     setTimeout(() => {
       setShouldRender(false);
-    }, 600);
+    }, 300);
   };
 
   // On initial mount, mark as hydrated

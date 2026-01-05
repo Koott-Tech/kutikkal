@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { 
   Plus, 
   Trash2, 
@@ -15,8 +15,39 @@ import {
   EyeOff,
   Upload,
   X,
-  FileText
+  FileText,
+  Minus
 } from 'lucide-react';
+
+// Normalize URL to ensure it has a protocol
+const normalizeUrl = (url) => {
+  if (!url || !url.trim()) return url;
+  
+  const trimmedUrl = url.trim();
+  
+  // If it already has a protocol, return as is
+  if (trimmedUrl.match(/^https?:\/\//i)) {
+    return trimmedUrl;
+  }
+  
+  // If it starts with //, add https:
+  if (trimmedUrl.startsWith('//')) {
+    return `https:${trimmedUrl}`;
+  }
+  
+  // If it's a relative path, return as is
+  if (trimmedUrl.startsWith('/') || trimmedUrl.startsWith('./') || trimmedUrl.startsWith('../')) {
+    return trimmedUrl;
+  }
+  
+  // If it looks like a domain (contains a dot and no spaces), add https://
+  if (trimmedUrl.includes('.') && !trimmedUrl.includes(' ')) {
+    return `https://${trimmedUrl}`;
+  }
+  
+  // Otherwise, return as is
+  return trimmedUrl;
+};
 
 // Utility function to parse markdown-style links in text
 const parseInlineLinks = (text) => {
@@ -38,11 +69,14 @@ const parseInlineLinks = (text) => {
       });
     }
     
+    // Normalize the URL to ensure it has a protocol
+    const normalizedUrl = normalizeUrl(match[2]);
+    
     // Add the link
     parts.push({
       type: 'link',
       text: match[1],
-      url: match[2]
+      url: normalizedUrl
     });
     
     lastIndex = match.index + match[0].length;
@@ -58,6 +92,67 @@ const parseInlineLinks = (text) => {
   
   return parts.length > 0 ? parts : [{ type: 'text', content: text }];
 };
+
+// ContentEditable Block Component
+const ContentEditableBlock = forwardRef(({ blockIndex, block, onUpdate, onSelect, onContextMenu, markdownToHtml, htmlToMarkdown, className, placeholder }, ref) => {
+  const contentRef = useRef(null);
+  const isUpdatingRef = useRef(false);
+
+  useImperativeHandle(ref, () => contentRef.current);
+
+  // Update HTML when block content changes externally
+  useEffect(() => {
+    if (contentRef.current && !isUpdatingRef.current) {
+      const currentHtml = markdownToHtml(block.content);
+      const existingHtml = contentRef.current.innerHTML;
+      if (existingHtml !== currentHtml) {
+        isUpdatingRef.current = true;
+        contentRef.current.innerHTML = currentHtml;
+        setTimeout(() => {
+          isUpdatingRef.current = false;
+        }, 0);
+      }
+    }
+  }, [block.content, markdownToHtml]);
+
+  const handleInput = (e) => {
+    if (isUpdatingRef.current) return;
+    const htmlContent = e.target.innerHTML;
+    const markdownContent = htmlToMarkdown(htmlContent);
+    onUpdate(markdownContent);
+  };
+
+  const handleBlur = (e) => {
+    if (isUpdatingRef.current) return;
+    const htmlContent = e.target.innerHTML;
+    const markdownContent = htmlToMarkdown(htmlContent);
+    onUpdate(markdownContent);
+  };
+
+  // Initialize content on mount
+  useEffect(() => {
+    if (contentRef.current && !contentRef.current.innerHTML) {
+      contentRef.current.innerHTML = markdownToHtml(block.content);
+    }
+  }, []);
+
+  return (
+    <div
+      ref={contentRef}
+      contentEditable
+      suppressContentEditableWarning
+      onInput={handleInput}
+      onBlur={handleBlur}
+      onSelect={(e) => onSelect && onSelect(e, blockIndex)}
+      onContextMenu={(e) => onContextMenu && onContextMenu(e, blockIndex)}
+      className={className}
+      style={{ whiteSpace: 'pre-wrap' }}
+      data-placeholder={placeholder}
+    />
+  );
+});
+
+ContentEditableBlock.displayName = 'ContentEditableBlock';
 
 const DEFAULT_TEXT_STYLE = () => ({
   bold: false,
@@ -89,6 +184,10 @@ const getTextStyleClasses = (style = {}) => {
 
 const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
   const [showPreview, setShowPreview] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [selectedText, setSelectedText] = useState({ blockIndex: null, text: '', start: 0, end: 0 });
+  const [linkDialog, setLinkDialog] = useState({ isOpen: false, url: '', isEdit: false, linkText: '' });
+  const contentEditableRefs = useRef({});
 
   const toggleStyle = (index, styleKey, targetKey = 'style') => {
     const block = content[index];
@@ -170,6 +269,9 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
       case 'quote':
         newBlock = { type: 'quote', content: '', author: '' };
         break;
+      case 'spacer':
+        newBlock = { type: 'spacer' };
+        break;
       default:
         newBlock = { type: 'paragraph', content: '' };
     }
@@ -177,30 +279,6 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
     onChange([...content, newBlock]);
   };
 
-  const insertInlineLink = () => {
-    const linkText = prompt('Enter link text:');
-    const linkUrl = prompt('Enter URL:');
-    
-    if (linkText && linkUrl) {
-      const linkMarkdown = `[${linkText}](${linkUrl})`;
-      
-      // Insert at cursor position in the last paragraph block
-      const lastParagraphIndex = content.findLastIndex(block => block.type === 'paragraph');
-      
-      if (lastParagraphIndex !== -1) {
-        const updatedContent = [...content];
-        const currentContent = updatedContent[lastParagraphIndex].content;
-        updatedContent[lastParagraphIndex] = {
-          ...updatedContent[lastParagraphIndex],
-          content: currentContent + (currentContent ? ' ' : '') + linkMarkdown
-        };
-        onChange(updatedContent);
-      } else {
-        // If no paragraph exists, create one with the link
-        onChange([...content, { type: 'paragraph', content: linkMarkdown }]);
-      }
-    }
-  };
 
   const updateBlock = (index, updatedBlock) => {
     const newContent = [...content];
@@ -240,6 +318,298 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
       console.error('Image upload failed:', error);
     }
   };
+
+  // Convert markdown content to HTML for contentEditable display
+  const markdownToHtml = (text) => {
+    if (!text) return '';
+    
+    // Escape HTML to prevent XSS, then replace markdown links
+    const escapeHtml = (str) => {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    };
+    
+    // Replace markdown links [text](url) with HTML links
+    let html = escapeHtml(text);
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+      const normalizedUrl = normalizeUrl(url);
+      const escapedText = escapeHtml(linkText);
+      return `<a href="${normalizedUrl}" data-link-url="${normalizedUrl}" data-link-text="${escapedText}" class="underline cursor-pointer" contenteditable="false" onclick="return false;" style="text-decoration: underline; color: #3f2e73;">${escapedText}</a>`;
+    });
+    
+    // Convert newlines to <br>
+    html = html.replace(/\n/g, '<br>');
+    
+    return html;
+  };
+
+  // Convert HTML content back to markdown format
+  const htmlToMarkdown = (html) => {
+    if (!html) return '';
+    
+    // Create a temporary div to parse HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Replace HTML links with markdown format
+    const links = tempDiv.querySelectorAll('a[data-link-url]');
+    links.forEach(link => {
+      const url = link.getAttribute('data-link-url') || link.getAttribute('href') || '';
+      const text = link.textContent || link.innerText || '';
+      const markdown = `[${text}](${url})`;
+      
+      // Create a text node with the markdown
+      const textNode = document.createTextNode(markdown);
+      link.parentNode.replaceChild(textNode, link);
+    });
+    
+    // Get the text content which now has markdown links
+    return tempDiv.textContent || tempDiv.innerText || '';
+  };
+
+  // Handle text selection in contentEditable
+  const handleContentEditableSelection = (e, blockIndex) => {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const selectedText = selection.toString().trim();
+      
+      if (selectedText && !range.collapsed) {
+        setSelectedText({
+          blockIndex,
+          text: selectedText,
+          start: 0, // Will be recalculated when saving
+          end: 0
+        });
+      }
+    }
+  };
+
+  // Handle context menu for adding/editing links
+  const handleContextMenu = (e, blockIndex) => {
+    const target = e.target;
+    
+    // Check if clicking on an existing link
+    const linkElement = target.closest('a[data-link-url]');
+    if (linkElement) {
+      e.preventDefault();
+      const url = linkElement.getAttribute('data-link-url') || linkElement.href;
+      const text = linkElement.textContent;
+      
+      setLinkDialog({
+        isOpen: true,
+        url: url,
+        isEdit: true,
+        linkText: text
+      });
+      
+      // Store reference to the link element for editing
+      setSelectedText({
+        blockIndex,
+        text: text,
+        start: 0,
+        end: 0,
+        linkElement: linkElement
+      });
+      
+      return;
+    }
+    
+    // Check if it's a contentEditable div with selection
+    if (target.contentEditable === 'true' || target.closest('[contenteditable="true"]')) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText && !range.collapsed && (content[blockIndex].type === 'paragraph' || content[blockIndex].type === 'heading')) {
+          e.preventDefault();
+          
+          setSelectedText({
+            blockIndex,
+            text: selectedText,
+            start: 0,
+            end: 0
+          });
+          
+          setContextMenu({
+            x: e.clientX,
+            y: e.clientY
+          });
+        }
+      }
+    }
+  };
+
+  const handleAddLink = () => {
+    if (selectedText.blockIndex !== null && selectedText.text) {
+      setLinkDialog({ isOpen: true, url: '', isEdit: false, linkText: selectedText.text });
+      setContextMenu(null);
+    }
+  };
+
+  // Normalize URL to ensure it has a protocol
+  const normalizeUrl = (url) => {
+    if (!url || !url.trim()) return url;
+    
+    const trimmedUrl = url.trim();
+    
+    // If it already has a protocol, return as is
+    if (trimmedUrl.match(/^https?:\/\//i)) {
+      return trimmedUrl;
+    }
+    
+    // If it starts with //, add https:
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+    
+    // If it looks like a domain (contains a dot and no spaces), add https://
+    if (trimmedUrl.includes('.') && !trimmedUrl.includes(' ')) {
+      return `https://${trimmedUrl}`;
+    }
+    
+    // Otherwise, assume it's a relative URL and return as is
+    return trimmedUrl;
+  };
+
+  const handleSaveLink = () => {
+    if (!linkDialog.url.trim()) {
+      alert('Please enter a URL');
+      return;
+    }
+
+    const { blockIndex, text, linkElement } = selectedText;
+    const block = content[blockIndex];
+    const editableDiv = contentEditableRefs.current[`${block.type}-${blockIndex}`];
+    
+    if (!editableDiv) return;
+    
+    // Normalize the URL to ensure it has a protocol
+    const normalizedUrl = normalizeUrl(linkDialog.url);
+    const linkText = linkDialog.linkText || text;
+    
+    if (linkDialog.isEdit && linkElement) {
+      // Editing existing link
+      linkElement.setAttribute('data-link-url', normalizedUrl);
+      linkElement.setAttribute('href', normalizedUrl);
+      linkElement.textContent = linkText;
+    } else {
+      // Adding new link
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Check if range is within the editable div
+        if (editableDiv.contains(range.commonAncestorContainer) || editableDiv === range.commonAncestorContainer) {
+          range.deleteContents();
+          
+          const link = document.createElement('a');
+          link.href = normalizedUrl;
+          link.setAttribute('data-link-url', normalizedUrl);
+          link.setAttribute('data-link-text', linkText);
+          link.className = 'underline cursor-pointer';
+          link.style.textDecoration = 'underline';
+          link.style.color = '#3f2e73';
+          link.contentEditable = 'false';
+          link.textContent = linkText;
+          link.onclick = (e) => {
+            e.preventDefault();
+            return false;
+          };
+          
+          range.insertNode(link);
+          
+          // Move cursor after the link
+          range.setStartAfter(link);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+    }
+    
+    // Convert HTML back to markdown and update block
+    const htmlContent = editableDiv.innerHTML;
+    const markdownContent = htmlToMarkdown(htmlContent);
+    
+    updateBlock(blockIndex, {
+      ...block,
+      content: markdownContent
+    });
+    
+    setLinkDialog({ isOpen: false, url: '', isEdit: false, linkText: '' });
+    setSelectedText({ blockIndex: null, text: '', start: 0, end: 0 });
+  };
+
+  const handleRemoveLink = () => {
+    const { blockIndex, linkElement } = selectedText;
+    const block = content[blockIndex];
+    const editableDiv = contentEditableRefs.current[`${block.type}-${blockIndex}`];
+    
+    if (!editableDiv) return;
+    
+    // If we have the link element reference, use it
+    if (linkElement && linkElement.parentNode) {
+      // Replace the link element with just its text content
+      const linkText = linkElement.textContent || linkElement.innerText;
+      const textNode = document.createTextNode(linkText);
+      linkElement.parentNode.replaceChild(textNode, linkElement);
+    } else {
+      // Fallback: find the link by URL in the editable div
+      const linkUrl = normalizeUrl(linkDialog.url);
+      const links = editableDiv.querySelectorAll('a[data-link-url]');
+      links.forEach(link => {
+        const linkDataUrl = link.getAttribute('data-link-url');
+        const linkHref = link.href;
+        if (linkDataUrl === linkUrl || linkHref === linkUrl || linkHref.includes(linkUrl) || linkUrl.includes(linkHref)) {
+          const linkText = link.textContent || link.innerText;
+          const textNode = document.createTextNode(linkText);
+          if (link.parentNode) {
+            link.parentNode.replaceChild(textNode, link);
+          }
+        }
+      });
+    }
+    
+    // Convert HTML back to markdown and update block
+    const htmlContent = editableDiv.innerHTML;
+    const markdownContent = htmlToMarkdown(htmlContent);
+    
+    updateBlock(blockIndex, {
+      ...block,
+      content: markdownContent
+    });
+    
+    setLinkDialog({ isOpen: false, url: '', isEdit: false, linkText: '' });
+    setSelectedText({ blockIndex: null, text: '', start: 0, end: 0 });
+  };
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setContextMenu(null);
+    };
+    
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [contextMenu]);
+
+  // Close context menu on escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+        setLinkDialog({ isOpen: false, url: '' });
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
 
   const renderBlockEditor = (block, index) => {
     return (
@@ -296,31 +666,44 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
         {/* Block Content Editor */}
         {block.type === 'paragraph' && (
           <div className="space-y-3">
-            <textarea
-              value={block.content}
-              onChange={(e) => updateBlock(index, { ...block, content: e.target.value })}
+            <ContentEditableBlock
+              ref={(el) => { contentEditableRefs.current[`paragraph-${index}`] = el; }}
+              blockIndex={index}
+              block={block}
+              onUpdate={(markdownContent) => updateBlock(index, { ...block, content: markdownContent })}
+              onSelect={handleContentEditableSelection}
+              onContextMenu={handleContextMenu}
+              markdownToHtml={markdownToHtml}
+              htmlToMarkdown={htmlToMarkdown}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[80px] outline-none"
               placeholder="Enter paragraph content..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows="3"
             />
             {renderStyleControls(block.style, index)}
             <div className="text-xs text-gray-500">
-              <p className="mb-2">💡 <strong>Tip:</strong> To add links within text, use this format:</p>
-              <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                This is a paragraph with a [link text](https://example.com) inside it.
-              </code>
+              <p className="mb-2">💡 <strong>Tip:</strong> Select text and right-click to add/edit a link. Links appear underlined.</p>
             </div>
           </div>
         )}
 
         {block.type === 'heading' && (
-          <input
-            type="text"
-            value={block.content}
-            onChange={(e) => updateBlock(index, { ...block, content: e.target.value })}
-            placeholder={`Enter H${block.level} heading...`}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold"
-          />
+          <div className="space-y-2">
+            <ContentEditableBlock
+              ref={(el) => { contentEditableRefs.current[`heading-${index}`] = el; }}
+              blockIndex={index}
+              block={block}
+              onUpdate={(markdownContent) => updateBlock(index, { ...block, content: markdownContent })}
+              onSelect={handleContentEditableSelection}
+              onContextMenu={handleContextMenu}
+              markdownToHtml={markdownToHtml}
+              htmlToMarkdown={htmlToMarkdown}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-semibold outline-none"
+              placeholder={`Enter H${block.level} heading...`}
+            />
+            {renderStyleControls(block.style, index)}
+            <div className="text-xs text-gray-500">
+              <p>💡 <strong>Tip:</strong> Select text and right-click to add/edit a link. Right-click on a link to edit it.</p>
+            </div>
+          </div>
         )}
         {block.type === 'heading' && (
           <div className="mt-2">
@@ -441,7 +824,10 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
               onClick={() => {
                 updateBlock(index, { ...block, items: [...block.items, ''] });
               }}
-              className="text-blue-600 hover:text-blue-800 text-sm"
+              className="text-sm"
+              style={{ color: '#3f2e73' }}
+              onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+              onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
             >
               + Add item
             </button>
@@ -481,37 +867,13 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
               onClick={() => {
                 updateBlock(index, { ...block, items: [...block.items, ''] });
               }}
-              className="text-blue-600 hover:text-blue-800 text-sm"
+              className="text-sm"
+              style={{ color: '#3f2e73' }}
+              onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+              onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
             >
               + Add item
             </button>
-          </div>
-        )}
-
-        {block.type === 'link' && (
-          <div className="space-y-2">
-            <input
-              type="url"
-              value={block.href}
-              onChange={(e) => updateBlock(index, { ...block, href: e.target.value })}
-              placeholder="Link URL..."
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <input
-              type="text"
-              value={block.text}
-              onChange={(e) => updateBlock(index, { ...block, text: e.target.value })}
-              placeholder="Link text..."
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <select
-              value={block.target}
-              onChange={(e) => updateBlock(index, { ...block, target: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="_self">Same window</option>
-              <option value="_blank">New window</option>
-            </select>
           </div>
         )}
 
@@ -531,6 +893,13 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
               placeholder="Quote author (optional)"
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+          </div>
+        )}
+
+        {block.type === 'spacer' && (
+          <div className="py-4 text-center text-gray-400 text-sm border-2 border-dashed border-gray-300 rounded-lg">
+            <Minus className="h-4 w-4 mx-auto mb-1" />
+            <p>Spacer (1 line gap)</p>
           </div>
         )}
       </div>
@@ -554,7 +923,10 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
                           href={part.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline font-medium"
+                          className="underline font-medium"
+                          style={{ color: '#3f2e73' }}
+                          onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+                          onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
                         >
                           {part.text}
                         </a>
@@ -568,9 +940,28 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
             
             {block.type === 'heading' && (() => {
               const HeadingTag = `h${block.level}`;
+              const parts = parseInlineLinks(block.content);
               return (
                 <HeadingTag className={`text-gray-900 font-semibold ${getTextStyleClasses(block.style)}`}>
-                  {block.content}
+                  {parts.map((part, partIndex) => {
+                    if (part.type === 'link') {
+                      return (
+                        <a
+                          key={partIndex}
+                          href={part.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline font-medium"
+                          style={{ color: '#3f2e73' }}
+                          onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+                          onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
+                        >
+                          {part.text}
+                        </a>
+                      );
+                    }
+                    return <span key={partIndex}>{part.content}</span>;
+                  })}
                 </HeadingTag>
               );
             })()}
@@ -604,17 +995,6 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
               </ol>
             )}
             
-            {block.type === 'link' && (
-              <a
-                href={block.href}
-                target={block.target}
-                rel={block.target === '_blank' ? 'noopener noreferrer' : ''}
-                className="text-blue-600 hover:text-blue-800 underline"
-              >
-                {block.text}
-              </a>
-            )}
-            
             {block.type === 'quote' && (
               <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-700">
                 <p>"{block.content}"</p>
@@ -646,7 +1026,10 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
                             href={part.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 underline font-medium"
+                            className="underline font-medium"
+                            style={{ color: '#3f2e73' }}
+                            onMouseEnter={(e) => e.target.style.color = '#2d1f52'}
+                            onMouseLeave={(e) => e.target.style.color = '#3f2e73'}
                           >
                             {part.text}
                           </a>
@@ -658,6 +1041,10 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
                 </div>
               );
             })()}
+
+            {block.type === 'spacer' && (
+              <div className="h-6"></div>
+            )}
           </div>
         ))}
       </div>
@@ -665,7 +1052,132 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
   };
 
   return (
-    <div className="space-y-4 lg:flex lg:items-start lg:gap-6">
+    <div className="space-y-4 lg:flex lg:items-start lg:gap-6 relative">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          [contenteditable][data-placeholder]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+          }
+          [contenteditable] a[data-link-url] {
+            text-decoration: underline !important;
+            color: #3f2e73 !important;
+            cursor: pointer;
+          }
+          [contenteditable] a[data-link-url]:hover {
+            color: #2d1f52 !important;
+          }
+        `
+      }} />
+      {/* Context Menu */}
+      {contextMenu && (
+        <div
+          className="fixed bg-white border border-gray-300 rounded-lg shadow-lg z-50 py-1"
+          style={{
+            left: `${contextMenu.x}px`,
+            top: `${contextMenu.y}px`
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={handleAddLink}
+            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+          >
+            <Link className="h-4 w-4" />
+            Add Link
+          </button>
+        </div>
+      )}
+
+      {/* Link Dialog */}
+      {linkDialog.isOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {linkDialog.isEdit ? 'Edit Link' : 'Add Link'}
+            </h3>
+            <div className="space-y-4">
+              {!linkDialog.isEdit && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Selected Text
+                  </label>
+                  <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded border">
+                    {selectedText.text}
+                  </p>
+                </div>
+              )}
+              {linkDialog.isEdit && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link Text
+                  </label>
+                  <input
+                    type="text"
+                    value={linkDialog.linkText}
+                    onChange={(e) => setLinkDialog({ ...linkDialog, linkText: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL
+                </label>
+                <input
+                  type="text"
+                  value={linkDialog.url}
+                  onChange={(e) => setLinkDialog({ ...linkDialog, url: e.target.value })}
+                  placeholder="https://example.com or example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveLink();
+                    }
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter full URL (e.g., https://google.com) or domain (e.g., google.com)
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-6">
+              {linkDialog.isEdit && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLink}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                >
+                  Remove Link
+                </button>
+              )}
+              <div className="flex justify-end gap-3 ml-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLinkDialog({ isOpen: false, url: '', isEdit: false, linkText: '' });
+                    setSelectedText({ blockIndex: null, text: '', start: 0, end: 0 });
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveLink}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                >
+                  {linkDialog.isEdit ? 'Update Link' : 'Add Link'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="lg:sticky lg:top-24 lg:self-start w-full lg:w-[72px] flex flex-col items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
         <div className="flex flex-col items-center gap-2 w-full">
@@ -716,15 +1228,6 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
           
           <button
             type="button"
-            onClick={() => addBlock('link')}
-            className={TOOLBAR_BUTTON_BASE}
-            title="Link"
-          >
-            <Link className="h-5 w-5" aria-hidden />
-          </button>
-          
-          <button
-            type="button"
             onClick={() => addBlock('quote')}
             className={TOOLBAR_BUTTON_BASE}
             title="Quote"
@@ -743,11 +1246,11 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
           
           <button
             type="button"
-            onClick={insertInlineLink}
-            className={TOOLBAR_BUTTON_ACCENT}
-            title="Quick link"
+            onClick={() => addBlock('spacer')}
+            className={TOOLBAR_BUTTON_BASE}
+            title="Add space (1 line gap)"
           >
-            <Link className="h-5 w-5" aria-hidden />
+            <Minus className="h-5 w-5" aria-hidden />
           </button>
         </div>
         

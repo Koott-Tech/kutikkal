@@ -1005,6 +1005,27 @@ export default function SessionsPage() {
                             </span>
                               );
                             }
+                            // Show feedback button for completed sessions
+                            if (session.status === 'completed') {
+                              const hasFeedback = session.feedback || session.rating;
+                              if (hasFeedback) {
+                                return (
+                                  <span className="flex-1 text-green-600 bg-green-50 border border-green-200 px-2 py-1 rounded text-xs text-center">
+                                    Feedback Submitted
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <button
+                                    onClick={() => openFeedbackModal(session)}
+                                    className="flex-1 text-purple-600 border border-purple-300 px-2 py-1 rounded text-xs font-medium lg:hover:bg-purple-50 transition-colors flex items-center justify-center gap-1"
+                                  >
+                                    <MessageSquare className="h-3 w-3" />
+                                    Give Feedback
+                                  </button>
+                                );
+                              }
+                            }
                             // Show "Book Next Session" button ONLY for completed package sessions with remaining sessions
                             // AND only if there are NO booked/pending sessions in the package
                             // Must check actual session.status === 'completed' (not display status)
@@ -1245,6 +1266,27 @@ export default function SessionsPage() {
                                       No Show
                                 </span>
                                   );
+                                }
+                                // Show feedback button for completed sessions
+                                if (session.status === 'completed') {
+                                  const hasFeedback = session.feedback || session.rating;
+                                  if (hasFeedback) {
+                                    return (
+                                      <span className="text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-md text-xs sm:text-sm text-center">
+                                        Feedback Submitted
+                                      </span>
+                                    );
+                                  } else {
+                                    return (
+                                      <button
+                                        onClick={() => openFeedbackModal(session)}
+                                        className="text-purple-600 border border-purple-300 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium lg:hover:bg-purple-50 transition-colors flex items-center gap-2 cursor-pointer"
+                                      >
+                                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+                                        Give Feedback
+                                      </button>
+                                    );
+                                  }
                                 }
                                 // Show "Book Next Session" button ONLY for completed package sessions with remaining sessions
                                 // AND only if there are NO booked/pending sessions in the package

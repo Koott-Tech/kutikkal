@@ -15,7 +15,11 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Copy
+  Copy,
+  Loader2,
+  Star,
+  MessageSquare,
+  Trash2
 } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -30,10 +34,24 @@ export default function FreeAssessmentsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [assessmentToComplete, setAssessmentToComplete] = useState(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [feedbackToView, setFeedbackToView] = useState(null);
+  const [assessmentToDelete, setAssessmentToDelete] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isTimeslotModalOpen, setIsTimeslotModalOpen] = useState(false);
+  const [selectedDateForTimeslots, setSelectedDateForTimeslots] = useState(null);
+  const [timeslots, setTimeslots] = useState([]);
+  const [isLoadingTimeslots, setIsLoadingTimeslots] = useState(false);
+  const [isSavingTimeslots, setIsSavingTimeslots] = useState(false);
+  const [newTimeSlot, setNewTimeSlot] = useState('');
   
   // Calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState({});
+  const [availabilityData, setAvailabilityData] = useState({});
 
   useEffect(() => {
     loadAssessments();
@@ -54,14 +72,51 @@ export default function FreeAssessmentsPage() {
     setCalendarData(calendar);
   }, [assessments]);
 
+  // Load availability data for the current month
+  useEffect(() => {
+    loadAvailabilityForMonth();
+  }, [currentMonth]);
+
+  const loadAvailabilityForMonth = async () => {
+    try {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0);
+      
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      const response = await adminApi.getDateConfigsRange(startDateStr, endDateStr);
+      if (response && response.success) {
+        // Response format: { data: { "2026-01-15": { timeSlots: [...], isConfigured: true }, ... } }
+        const configsByDate = response.data || {};
+        const availability = {};
+        Object.keys(configsByDate).forEach(date => {
+          const config = configsByDate[date];
+          if (config.timeSlots && config.timeSlots.length > 0) {
+            availability[date] = config.timeSlots.length;
+          }
+        });
+        setAvailabilityData(availability);
+      }
+    } catch (error) {
+      console.error('Error loading availability data:', error);
+    }
+  };
+
   const loadAssessments = async () => {
     try {
       setIsLoading(true);
       
       const params = {};
+      // Only pass status if it's explicitly set and not 'all'
+      // When 'all' is selected, don't pass status so backend excludes completed by default
+      // If user wants to see completed, they can select 'completed' from dropdown
       if (filterStatus && filterStatus !== 'all') {
         params.status = filterStatus;
       }
+      // If filterStatus is 'all' or not set, backend will exclude completed assessments
       if (filterDate) {
         params.date = filterDate;
       }
@@ -79,6 +134,9 @@ export default function FreeAssessmentsPage() {
           scheduledDate: a.scheduledDate,
           scheduledTime: a.scheduledTime,
           status: a.status,
+          session_id: a.session_id || a.sessionId || null, // Include session_id for completion
+          feedback: a.feedback || null, // Include feedback
+          rating: a.rating || null, // Include rating
           client: a.client ? {
             first_name: a.client.first_name,
             last_name: a.client.last_name,
@@ -123,6 +181,104 @@ export default function FreeAssessmentsPage() {
       console.error('Failed to copy meet link:', error);
       showError('Failed to copy meet link', 'Copy Error');
     }
+  };
+
+  const handleMarkAsCompleteClick = (assessment) => {
+    if (!assessment.session_id) {
+      showError('Session ID not found. Cannot mark as complete.', 'Error');
+      return;
+    }
+
+    if (assessment.status === 'completed') {
+      showError('Assessment is already completed', 'Error');
+      return;
+    }
+
+    setAssessmentToComplete(assessment);
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!assessmentToComplete || !assessmentToComplete.session_id) {
+      showError('Session ID not found. Cannot mark as complete.', 'Error');
+      setIsCompleteModalOpen(false);
+      return;
+    }
+
+    setIsCompleting(true);
+
+    try {
+      // For free assessments, we only need summary and summary_notes (no report)
+      const completionData = {
+        summary: `Free Assessment completed for ${assessmentToComplete.client?.child_name || assessmentToComplete.client?.first_name || 'client'}`,
+        summary_notes: 'Free assessment session completed by admin.',
+        report: '' // Empty for free assessments
+      };
+
+      const response = await adminApi.completeSession(assessmentToComplete.session_id, completionData);
+      
+      if (response && response.success) {
+        showSuccess('Free assessment marked as complete successfully!', 'Success');
+        setIsCompleteModalOpen(false);
+        setAssessmentToComplete(null);
+        // Reload assessments to reflect the updated status
+        await loadAssessments();
+      } else {
+        showError(response?.message || 'Failed to mark assessment as complete', 'Error');
+      }
+    } catch (error) {
+      console.error('Error marking assessment as complete:', error);
+      showError('Failed to mark assessment as complete', 'Error');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleCancelComplete = () => {
+    setIsCompleteModalOpen(false);
+    setAssessmentToComplete(null);
+  };
+
+  const handleViewFeedback = (assessment) => {
+    // Map assessment data to match feedback modal format
+    setFeedbackToView({
+      client: assessment.client,
+      feedback: assessment.feedback,
+      rating: assessment.rating
+    });
+  };
+
+  const handleDeleteClick = (assessment) => {
+    setAssessmentToDelete(assessment);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!assessmentToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await adminApi.deleteFreeAssessment(assessmentToDelete.id);
+      
+      if (response && response.success) {
+        showSuccess('Free assessment deleted successfully');
+        setIsDeleteModalOpen(false);
+        setAssessmentToDelete(null);
+        loadAssessments(); // Reload the list
+      } else {
+        showError(response?.message || 'Failed to delete free assessment');
+      }
+    } catch (error) {
+      console.error('Error deleting free assessment:', error);
+      showError('Failed to delete free assessment');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setAssessmentToDelete(null);
   };
 
   const formatTime = (time) => {
@@ -248,6 +404,129 @@ export default function FreeAssessmentsPage() {
     const dateKey = getDateKey(day);
     setSelectedDate(dateKey);
     setFilterDate(dateKey);
+    // Open timeslot management modal
+    setSelectedDateForTimeslots(dateKey);
+    setIsTimeslotModalOpen(true);
+    loadTimeslotsForDate(dateKey);
+  };
+
+  const loadTimeslotsForDate = async (date) => {
+    try {
+      setIsLoadingTimeslots(true);
+      const response = await adminApi.getDateConfig(date);
+      if (response && response.success && response.data) {
+        // time_slots is an array of time strings like "09:00:00"
+        setTimeslots(response.data.time_slots || []);
+      } else {
+        setTimeslots([]);
+      }
+    } catch (error) {
+      console.error('Error loading timeslots:', error);
+      showError('Failed to load timeslots for this date');
+      setTimeslots([]);
+    } finally {
+      setIsLoadingTimeslots(false);
+    }
+  };
+
+  const handleAddTimeSlot = () => {
+    if (!newTimeSlot.trim()) return;
+    
+    // Convert to HH:MM:SS format
+    let timeStr = newTimeSlot.trim();
+    // Handle formats: "9:00 AM", "09:00", "9:00:00"
+    const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+    if (!timeMatch) {
+      showError('Invalid time format. Use HH:MM (e.g., 09:00 or 9:00 AM)');
+      return;
+    }
+
+    let hours = parseInt(timeMatch[1], 10);
+    const minutes = timeMatch[2];
+    const period = timeMatch[4]?.toUpperCase();
+
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+
+    const formattedTime = `${String(hours).padStart(2, '0')}:${minutes}:00`;
+    
+    if (timeslots.includes(formattedTime)) {
+      showError('This time slot already exists');
+      return;
+    }
+
+    setTimeslots([...timeslots, formattedTime].sort());
+    setNewTimeSlot('');
+  };
+
+  const handleRemoveTimeSlot = (timeToRemove) => {
+    setTimeslots(timeslots.filter(t => t !== timeToRemove));
+  };
+
+  const handleSaveTimeslots = async () => {
+    if (!selectedDateForTimeslots) return;
+
+    try {
+      setIsSavingTimeslots(true);
+      const response = await adminApi.createDateConfig({
+        date: selectedDateForTimeslots,
+        timeSlots: timeslots
+      });
+
+      if (response && response.success) {
+        showSuccess('Timeslots saved successfully');
+        setIsTimeslotModalOpen(false);
+        setSelectedDateForTimeslots(null);
+        setTimeslots([]);
+        setNewTimeSlot('');
+        // Reload availability data to update calendar
+        loadAvailabilityForMonth();
+      } else {
+        showError(response?.message || 'Failed to save timeslots');
+      }
+    } catch (error) {
+      console.error('Error saving timeslots:', error);
+      showError('Failed to save timeslots');
+    } finally {
+      setIsSavingTimeslots(false);
+    }
+  };
+
+  const handleCloseTimeslotModal = () => {
+    setIsTimeslotModalOpen(false);
+    setSelectedDateForTimeslots(null);
+    setTimeslots([]);
+    setNewTimeSlot('');
+  };
+
+  const handleDeleteAllTimeslots = async () => {
+    if (!selectedDateForTimeslots) return;
+    if (!confirm('Are you sure you want to delete all timeslots for this date?')) return;
+
+    try {
+      setIsSavingTimeslots(true);
+      const response = await adminApi.deleteDateConfig(selectedDateForTimeslots);
+      
+      if (response && response.success) {
+        showSuccess('Timeslots deleted successfully');
+        setIsTimeslotModalOpen(false);
+        setSelectedDateForTimeslots(null);
+        setTimeslots([]);
+        setNewTimeSlot('');
+        // Reload availability data to update calendar
+        loadAvailabilityForMonth();
+      } else {
+        showError(response?.message || 'Failed to delete timeslots');
+      }
+    } catch (error) {
+      console.error('Error deleting timeslots:', error);
+      showError('Failed to delete timeslots');
+    } finally {
+      setIsSavingTimeslots(false);
+    }
   };
 
   // Filter assessments by search term
@@ -326,6 +605,7 @@ export default function FreeAssessmentsPage() {
               const dateKey = getDateKey(day);
               const dayAssessments = day ? (calendarData[dateKey] || []) : [];
               const hasAssessments = dayAssessments.length > 0;
+              const hasTimeslots = day ? (availabilityData[dateKey] > 0) : false;
               
               return (
                 <div
@@ -338,11 +618,17 @@ export default function FreeAssessmentsPage() {
                     ${isSelected(day) ? 'bg-[#3f2e73] text-white border-[#3f2e73]' : 'hover:bg-gray-50'}
                     ${hasAssessments && !isSelected(day) ? 'bg-green-50 border-green-300' : ''}
                   `}
+                  title={day && hasTimeslots ? `${availabilityData[dateKey]} timeslot(s) configured` : ''}
                 >
                   {day && (
                     <>
-                      <div className={`text-xs font-medium ${isSelected(day) ? 'text-white' : 'text-gray-900'}`}>
-                        {day}
+                      <div className="flex items-center justify-between">
+                        <div className={`text-xs font-medium ${isSelected(day) ? 'text-white' : 'text-gray-900'}`}>
+                          {day}
+                        </div>
+                        {hasTimeslots && !isSelected(day) && (
+                          <Clock className="h-3 w-3 text-purple-600" title={`${availabilityData[dateKey]} timeslot(s)`} />
+                        )}
                       </div>
                       {hasAssessments && (
                         <div className="mt-1 flex flex-wrap gap-0.5">
@@ -527,6 +813,32 @@ export default function FreeAssessmentsPage() {
                             Meet Link
                           </button>
                         )}
+                        {assessment.status === 'completed' && (assessment.feedback || assessment.rating) && (
+                          <button
+                            onClick={() => handleViewFeedback(assessment)}
+                            className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            View Feedback
+                          </button>
+                        )}
+                        {assessment.status !== 'completed' && assessment.session_id && (
+                          <button
+                            onClick={() => handleMarkAsCompleteClick(assessment)}
+                            className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Mark as Complete"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Mark Complete
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteClick(assessment)}
+                          className="text-red-600 hover:text-red-900 flex items-center"
+                          title="Delete Assessment"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -535,6 +847,269 @@ export default function FreeAssessmentsPage() {
             </table>
           </div>
         </div>
+
+        {/* Feedback Modal */}
+        {feedbackToView && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h6 className="text-sm font-semibold text-gray-900">Client Feedback</h6>
+                <button
+                  onClick={() => setFeedbackToView(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">Client</p>
+                  <p className="text-sm text-gray-800">
+                    {feedbackToView.client?.first_name} {feedbackToView.client?.last_name}
+                  </p>
+                </div>
+                {feedbackToView.rating && (
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Rating</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-5 w-5 ${
+                            star <= feedbackToView.rating
+                              ? 'text-yellow-400 fill-yellow-400'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm text-gray-600">
+                        ({feedbackToView.rating} out of 5)
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide">Submitted Feedback</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-line mt-1">
+                    {feedbackToView.feedback || 'No feedback provided.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end px-5 py-4 border-t border-gray-200">
+                <button
+                  onClick={() => setFeedbackToView(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {isDeleteModalOpen && assessmentToDelete && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                <h6 className="text-sm font-semibold text-gray-900">Delete Free Assessment</h6>
+                <button
+                  onClick={handleCancelDelete}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={isDeleting}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="px-5 py-4">
+                <p className="text-sm text-gray-700 mb-4">
+                  Are you sure you want to delete this free assessment? This action cannot be undone.
+                </p>
+                <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Assessment Details</p>
+                  <p className="text-sm text-gray-900">
+                    Assessment #{assessmentToDelete.assessmentNumber}
+                  </p>
+                  {assessmentToDelete.client && (
+                    <p className="text-sm text-gray-700">
+                      Client: {assessmentToDelete.client.first_name} {assessmentToDelete.client.last_name}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-700">
+                    Date: {formatDate(assessmentToDelete.scheduledDate)} at {formatTime(assessmentToDelete.scheduledTime)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 px-5 py-4 border-t border-gray-200">
+                <button
+                  onClick={handleCancelDelete}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-red-700 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Timeslot Management Modal */}
+        {isTimeslotModalOpen && selectedDateForTimeslots && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 sticky top-0 bg-white">
+                <h6 className="text-sm font-semibold text-gray-900">
+                  Manage Timeslots - {new Date(selectedDateForTimeslots).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </h6>
+                <button
+                  onClick={handleCloseTimeslotModal}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={isSavingTimeslots}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="px-5 py-4">
+                {isLoadingTimeslots ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+                  </div>
+                ) : (
+                  <>
+                    {/* Add New Timeslot */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Add Time Slot
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newTimeSlot}
+                          onChange={(e) => setNewTimeSlot(e.target.value)}
+                          placeholder="e.g., 09:00 or 9:00 AM"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleAddTimeSlot();
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={handleAddTimeSlot}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Format: HH:MM (24-hour) or H:MM AM/PM (12-hour)
+                      </p>
+                    </div>
+
+                    {/* Existing Timeslots */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Available Time Slots ({timeslots.length})
+                      </label>
+                      {timeslots.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic py-4 text-center">
+                          No time slots configured for this date. Add slots above.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {timeslots.map((time, index) => {
+                            // Format time for display (HH:MM:SS -> H:MM AM/PM)
+                            const [hours, minutes] = time.split(':');
+                            const hour24 = parseInt(hours, 10);
+                            const period = hour24 >= 12 ? 'PM' : 'AM';
+                            const displayHour = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+                            const displayTime = `${displayHour}:${minutes} ${period}`;
+
+                            return (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-lg px-3 py-2"
+                              >
+                                <span className="text-sm font-medium text-purple-900">
+                                  {displayTime}
+                                </span>
+                                <button
+                                  onClick={() => handleRemoveTimeSlot(time)}
+                                  className="text-red-600 hover:text-red-800 ml-2"
+                                  disabled={isSavingTimeslots}
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="flex justify-between items-center px-5 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
+                <button
+                  onClick={handleDeleteAllTimeslots}
+                  className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-300 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  disabled={isSavingTimeslots || isLoadingTimeslots || timeslots.length === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete All
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleCloseTimeslotModal}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                    disabled={isSavingTimeslots || isLoadingTimeslots}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveTimeslots}
+                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-purple-700 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    disabled={isSavingTimeslots || isLoadingTimeslots}
+                  >
+                    {isSavingTimeslots ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 mr-2" />
+                        Save Timeslots
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {filteredAssessments.length === 0 && !isLoading && (
@@ -547,6 +1122,80 @@ export default function FreeAssessmentsPage() {
                 : 'No free assessment sessions have been booked yet.'
               }
             </p>
+          </div>
+        )}
+
+        {/* Mark Complete Confirmation Modal */}
+        {isCompleteModalOpen && assessmentToComplete && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Mark Assessment as Complete</h3>
+                <button
+                  onClick={handleCancelComplete}
+                  disabled={isCompleting}
+                  className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-4">
+                  Are you sure you want to mark this free assessment as complete?
+                </p>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div>
+                    <span className="text-xs font-medium text-gray-500">Assessment:</span>
+                    <p className="text-sm text-gray-900">
+                      #{assessmentToComplete.assessmentNumber}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-gray-500">Client:</span>
+                    <p className="text-sm text-gray-900">
+                      {assessmentToComplete.client?.first_name} {assessmentToComplete.client?.last_name}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-gray-500">Date & Time:</span>
+                    <p className="text-sm text-gray-900">
+                      {formatDate(assessmentToComplete.scheduled_date)} at {formatTime(assessmentToComplete.scheduled_time)}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-4">
+                  This will send a notification to the client and mark the session as completed.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={handleCancelComplete}
+                  disabled={isCompleting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmComplete}
+                  disabled={isCompleting}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCompleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Completing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark Complete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -635,6 +1284,46 @@ export default function FreeAssessmentsPage() {
                     <p className="text-sm text-gray-600">Not assigned</p>
                   )}
                 </div>
+
+                {selectedAssessment.status === 'completed' && (selectedAssessment.feedback || selectedAssessment.rating) && (
+                  <div className="bg-indigo-50 p-3 rounded-lg">
+                    <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
+                      <MessageSquare className="h-4 w-4 mr-2 text-indigo-600" />
+                      Client Feedback
+                    </div>
+                    {selectedAssessment.rating && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-gray-700 mb-1">Rating</p>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-5 w-5 ${
+                                star <= selectedAssessment.rating
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600">
+                            ({selectedAssessment.rating} out of 5)
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {selectedAssessment.feedback && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Feedback</p>
+                        <p className="text-sm text-gray-900 bg-white p-3 rounded border border-gray-200">
+                          {selectedAssessment.feedback}
+                        </p>
+                      </div>
+                    )}
+                    {!selectedAssessment.feedback && !selectedAssessment.rating && (
+                      <p className="text-sm text-gray-500 italic">No feedback provided yet.</p>
+                    )}
+                  </div>
+                )}
 
                 {selectedAssessment.meetLink && (
                   <div className="bg-yellow-50 p-3 rounded-lg">

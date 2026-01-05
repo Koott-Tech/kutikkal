@@ -20,7 +20,7 @@ export default function LoadingScreen({ message = "", isVisible = true }) {
         margin: 0,
         padding: 0,
         opacity: isVisible ? 1 : 0,
-        transition: "opacity 300ms ease-in-out",
+        transition: "opacity 150ms ease-in-out",
         pointerEvents: isVisible ? "auto" : "none",
       }}
     >

@@ -353,7 +353,7 @@ export default function VideosShowcase({ cmsData = null }) {
             </p>
           )}
           <div className="mt-3 text-center md:text-center px-4">
-            <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+            <h2 className="how-it-works-heading text-center text-lg sm:text-xl md:text-2xl lg:text-3xl" style={{ fontWeight: 600, lineHeight: '1.1' }}>
               {cmsData?.videosHeading || 'See More of What We Do'}
             </h2>
           </div>

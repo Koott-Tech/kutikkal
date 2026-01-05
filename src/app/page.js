@@ -1,5 +1,5 @@
-"use client";
-
+// Server Component - No "use client" directive
+// Individual components handle their own client-side needs
 import Header from "../components/Header";
 import Hero from "../components/Hero";
 import ChooseOptions from "../components/ChooseOptions";
@@ -19,92 +19,94 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="pt-8">
-      <style jsx>{`
-        @media (max-width: 767px) {
-          .sister-brands-text {
-            text-align: left !important;
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (max-width: 767px) {
+            .sister-brands-text {
+              text-align: left !important;
+            }
+            .sister-brands-container {
+              align-items: flex-start !important;
+              justify-content: flex-start !important;
+            }
+            .sister-brands-content {
+              flex-direction: row !important;
+              align-items: flex-start !important;
+            }
+            .sister-brands-nav {
+              justify-content: flex-start !important;
+              width: 100% !important;
+              margin-top: 16px !important;
+            }
+            .sister-brands-container {
+              justify-content: flex-start !important;
+            }
           }
-          .sister-brands-container {
-            align-items: flex-start !important;
-            justify-content: flex-start !important;
-          }
-          .sister-brands-content {
-            flex-direction: row !important;
-            align-items: flex-start !important;
-          }
-          .sister-brands-nav {
-            justify-content: flex-start !important;
-            width: 100% !important;
-            margin-top: 16px !important;
-          }
-          .sister-brands-container {
-            justify-content: flex-start !important;
-          }
-        }
-        .sister-brands-nav a,
-        .sister-brands-nav span,
-        .sister-brands-nav a[href] {
-          cursor: pointer !important;
-        }
-        .tooltip-container {
-          position: relative;
-          display: inline-block;
-        }
-        .tooltip-popup {
-          position: absolute;
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          margin-bottom: 8px;
-          padding: 6px 12px;
-          background-color: white;
-          color: #1f2937;
-          font-size: 12px;
-          border-radius: 6px;
-          white-space: nowrap;
-          z-index: 1000;
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-          transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          border: 1px solid #e5e7eb;
-          min-width: max-content;
-          max-width: calc(100vw - 32px);
-        }
-        .tooltip-popup::after {
-          content: '';
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          border: 5px solid transparent;
-          border-top-color: white;
-        }
-        .tooltip-container:hover .tooltip-popup,
-        .tooltip-container:active .tooltip-popup {
-          opacity: 1;
-          visibility: visible;
-        }
-        @media (max-width: 767px) {
-          .tooltip-popup {
-            font-size: 11px;
-            padding: 5px 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            right: auto;
-            margin-left: 0;
-            margin-right: 0;
-            width: max-content;
-            max-width: calc(100vw - 32px);
-            white-space: normal;
-            word-wrap: break-word;
+          .sister-brands-nav a,
+          .sister-brands-nav span,
+          .sister-brands-nav a[href] {
+            cursor: pointer !important;
           }
           .tooltip-container {
             position: relative;
+            display: inline-block;
           }
-        }
-      `}</style>
+          .tooltip-popup {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background-color: white;
+            color: #1f2937;
+            font-size: 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            min-width: max-content;
+            max-width: calc(100vw - 32px);
+          }
+          .tooltip-popup::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: white;
+          }
+          .tooltip-container:hover .tooltip-popup,
+          .tooltip-container:active .tooltip-popup {
+            opacity: 1;
+            visibility: visible;
+          }
+          @media (max-width: 767px) {
+            .tooltip-popup {
+              font-size: 11px;
+              padding: 5px 10px;
+              left: 50%;
+              transform: translateX(-50%);
+              right: auto;
+              margin-left: 0;
+              margin-right: 0;
+              width: max-content;
+              max-width: calc(100vw - 32px);
+              white-space: normal;
+              word-wrap: break-word;
+            }
+            .tooltip-container {
+              position: relative;
+            }
+          }
+        `
+      }} />
      
       <Hero />
       

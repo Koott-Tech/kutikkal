@@ -942,6 +942,14 @@ export const adminApi = {
     });
   },
 
+  // Complete session (admin - for free assessments and regular sessions)
+  async completeSession(sessionId, sessionData) {
+    return apiRequest(`/admin/sessions/${sessionId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(sessionData),
+    });
+  },
+
   // Get psychologist availability for reschedule
   async getPsychologistAvailabilityForReschedule(psychologistId, startDate, endDate) {
     return apiRequest(`/admin/psychologists/${psychologistId}/availability?startDate=${startDate}&endDate=${endDate}`);
@@ -1053,6 +1061,10 @@ export const adminApi = {
       method: 'POST',
       body: JSON.stringify(dateConfigData),
     });
+  },
+
+  async getDateConfig(date) {
+    return apiRequest(`/free-assessment-timeslots/date-config/${date}`);
   },
 
   async deleteDateConfig(date) {
@@ -1182,6 +1194,13 @@ export const adminApi = {
     });
     
     return apiRequest(`/free-assessments/admin/list${queryParams.toString() ? `?${queryParams}` : ''}`);
+  },
+
+  // Delete free assessment (admin only)
+  async deleteFreeAssessment(assessmentId) {
+    return apiRequest(`/free-assessments/admin/${assessmentId}`, {
+      method: 'DELETE',
+    });
   },
 };
 

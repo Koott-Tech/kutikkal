@@ -21,19 +21,10 @@ export const metadata = {
     "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
   icons: {
     icon: [
-      {
-        url: '/favicon.png',
-        type: 'image/png',
-        sizes: '32x32',
-      },
-      {
-        url: '/favicon.png',
-        type: 'image/png',
-        sizes: '16x16',
-      },
+      { url: '/favicon.ico', type: 'image/x-icon' },
     ],
     apple: '/favicon.png',
-    shortcut: '/favicon.png',
+    shortcut: '/favicon.ico',
   },
   openGraph: {
     title: "India's Trusted Child Psychologist | Online Child Counseling",
@@ -97,10 +88,9 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
-        {/* Explicit favicon links for Google search results - ensures favicon appears in SERP */}
-        <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
-        <link rel="icon" type="image/png" href="/favicon.png" sizes="16x16" />
-        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+        {/* Explicit favicon links for Google search results - Google strongly prefers favicon.ico */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/favicon.png" />
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -136,7 +126,7 @@ export default function RootLayout({ children }) {
                     // Trigger fade in by setting opacity to 1 after a brief moment
                     requestAnimationFrame(() => {
                       if (loader) {
-                        loader.style.opacity = '1';
+                      loader.style.opacity = '1';
                       }
                     });
                     showTime = Date.now(); // Record when loader was shown
@@ -157,17 +147,17 @@ export default function RootLayout({ children }) {
                   
                   setTimeout(function() {
                     if (loader && body && body.classList) {
-                      // Start fade out
-                      loader.style.opacity = '0';
-                      // Wait for transition to complete before hiding
-                      setTimeout(() => {
+                    // Start fade out
+                    loader.style.opacity = '0';
+                    // Wait for transition to complete before hiding
+                    setTimeout(() => {
                         if (loader && body && body.classList) {
-                          loader.style.pointerEvents = 'none';
-                          loader.style.visibility = 'hidden';
-                          body.classList.add('loaded');
+                      loader.style.pointerEvents = 'none';
+                      loader.style.visibility = 'hidden';
+                      body.classList.add('loaded');
                         }
-                      }, 600); // Match the CSS transition duration
-                    }
+                      }, 300); // Match the CSS transition duration
+                  }
                   }, remaining);
                 }
                 
@@ -262,7 +252,7 @@ export default function RootLayout({ children }) {
               overflow: hidden !important;
               margin: 0 !important;
               padding: 0 !important;
-              transition: opacity 800ms ease-in-out !important;
+              transition: opacity 150ms ease-in-out !important;
               pointer-events: auto !important;
               opacity: 1 !important;
               visibility: visible !important;
@@ -271,7 +261,7 @@ export default function RootLayout({ children }) {
               opacity: 0 !important;
               pointer-events: none !important;
               visibility: hidden !important;
-              transition: opacity 600ms ease-out !important;
+              transition: opacity 300ms ease-out !important;
             }
             #initial-loader .loading-logo {
               width: 240px;
@@ -306,9 +296,9 @@ export default function RootLayout({ children }) {
               "@type": "MedicalBusiness",
               name: "Little Care",
               description:
-                "Online child psychotherapy and counseling services for children and parents.",
+                "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
               url: "https://www.little.care",
-              logo: "https://www.little.care/favicon.png",
+              logo: "https://www.little.care/favicon.ico",
               image: "https://www.little.care/mainlogo.webp",
               telephone: "+91 95390 07766",
               email: "hey@little.care",

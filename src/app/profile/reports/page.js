@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi } from "../../../lib/backendApi";
-import { FileText, X, BarChart3 } from "lucide-react";
+import { FileText, X, BarChart3, MessageSquare } from "lucide-react";
 import WheelPagination from "../../../components/ui/wheel-pagination";
+import SessionFeedbackModal from "../../../components/SessionFeedbackModal";
 import { normalizeImageUrl } from "@/utils/urlNormalizer";
 
 export default function ReportsPage() {
@@ -17,6 +18,8 @@ export default function ReportsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalSessions, setTotalSessions] = useState(0);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [sessionToFeedback, setSessionToFeedback] = useState(null);
 
   // Helper function to conditionally apply hover handlers only on desktop
   const getHoverHandlers = () => {
@@ -56,16 +59,28 @@ export default function ReportsPage() {
     try {
       setIsLoading(true);
       // Fetch only completed sessions for reports page with pagination
+      // Filter out free assessment sessions as they don't have reports
       const sessionsData = await clientApi.getSessions({ 
         status: 'completed',
         page: currentPage,
         limit: 5
       });
       const sessionsList = sessionsData.data?.sessions || [];
+      // Filter out free assessment sessions (they don't have reports)
+      const sessionsWithReports = sessionsList.filter(session => 
+        session.session_type !== 'free_assessment'
+      );
       const pagination = sessionsData.data?.pagination || {};
-      setSessions(sessionsList);
-      setTotalPages(Math.max(1, Math.ceil((pagination.total || 0) / 5)));
-      setTotalSessions(pagination.total || 0);
+      setSessions(sessionsWithReports);
+      
+      // For pagination, we need to account for filtered sessions
+      // Since we're filtering on frontend, we'll use the filtered count
+      // If we have fewer sessions than expected, we might need to load more
+      // For now, use the filtered count and adjust pagination accordingly
+      const freeAssessmentCount = sessionsList.filter(s => s.session_type === 'free_assessment').length;
+      const totalFiltered = Math.max(0, (pagination.total || 0) - freeAssessmentCount);
+      setTotalPages(Math.max(1, Math.ceil(totalFiltered / 5)));
+      setTotalSessions(totalFiltered);
     } catch (err) {
       console.error('Error loading sessions:', err);
     } finally {
@@ -138,6 +153,23 @@ export default function ReportsPage() {
     setShowReportModal(true);
   };
 
+  const openFeedbackModal = (session) => {
+    setSessionToFeedback(session);
+    setShowFeedbackModal(true);
+  };
+
+  const handleSubmitFeedback = async (sessionId, feedbackData) => {
+    try {
+      await clientApi.submitSessionFeedback(sessionId, feedbackData);
+      await loadSessions();
+      setShowFeedbackModal(false);
+      setSessionToFeedback(null);
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+      throw err;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="absolute inset-0 w-full flex items-center justify-center z-10" style={{ minHeight: 'calc(100vh - 8rem)' }}>
@@ -200,16 +232,29 @@ export default function ReportsPage() {
                       </div>
                     </div>
                     
-                    {/* View Report Button - Full width below on mobile */}
-                    <div className="mt-4">
+                    {/* View Report and Feedback Buttons - Full width below on mobile */}
+                    <div className="mt-4 flex gap-2">
                       <button
                         onClick={() => handleViewFullReport(session)}
-                        className="w-full text-xs font-medium cursor-pointer transition-colors px-3 py-2 rounded-lg border text-center"
+                        className="flex-1 text-xs font-medium cursor-pointer transition-colors px-3 py-2 rounded-lg border text-center"
                         style={{ color: '#3f2e73', borderColor: '#3f2e73' }}
                         {...getButtonHoverHandlers()}
                       >
                         View Complete Report
                       </button>
+                      {session.feedback || session.rating ? (
+                        <span className="flex-1 text-green-600 bg-green-50 border border-green-200 px-3 py-2 rounded-lg text-xs text-center">
+                          Feedback Submitted
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => openFeedbackModal(session)}
+                          className="flex-1 text-purple-600 border border-purple-300 px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          Give Feedback
+                        </button>
+                      )}
                     </div>
                   </div>
                   
@@ -240,8 +285,8 @@ export default function ReportsPage() {
                       </p>
                     </div>
                     
-                    {/* View Report Button - Right side */}
-                    <div className="flex-shrink-0">
+                    {/* View Report and Feedback Buttons - Right side */}
+                    <div className="flex-shrink-0 flex gap-2">
                       <button
                         onClick={() => handleViewFullReport(session)}
                         className="text-sm font-medium cursor-pointer transition-colors px-3 py-1.5 rounded-lg border"
@@ -250,6 +295,19 @@ export default function ReportsPage() {
                       >
                         View Complete Report
                       </button>
+                      {session.feedback || session.rating ? (
+                        <span className="text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg text-sm text-center">
+                          Feedback Submitted
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => openFeedbackModal(session)}
+                          className="text-purple-600 border border-purple-300 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          Give Feedback
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -356,6 +414,19 @@ export default function ReportsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <SessionFeedbackModal
+          isOpen={showFeedbackModal}
+          session={sessionToFeedback}
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setSessionToFeedback(null);
+          }}
+          onSubmit={handleSubmitFeedback}
+        />
       )}
     </>
   );
