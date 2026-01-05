@@ -30,6 +30,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
 import AdminManualBookingModal from '@/components/AdminManualBookingModal';
 import AdminEditSessionModal from '@/components/AdminEditSessionModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { cache } from '@/lib/cache';
 import WheelPagination from '@/components/ui/wheel-pagination';
 
@@ -48,6 +49,8 @@ export default function BookingsPage() {
   const [feedbackToView, setFeedbackToView] = useState(null);
   const [showNoShowConfirm, setShowNoShowConfirm] = useState(false);
   const [sessionToMarkNoShow, setSessionToMarkNoShow] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -136,34 +139,48 @@ export default function BookingsPage() {
     loadBookings(); // Reload bookings after successful edit
   };
 
-  const handleDeleteSession = async (session) => {
-    if (!confirm(`Are you sure you want to delete this session? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDeleteSessionClick = (session) => {
+    setSessionToDelete(session);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
 
     try {
       // Check if it's an assessment session or regular session
-      if (session.session_type === 'assessment' || session.type === 'assessment') {
+      if (sessionToDelete.session_type === 'assessment' || sessionToDelete.type === 'assessment') {
         // Delete assessment session via admin API
-        await adminApi.deleteAssessmentSession(session.id);
+        await adminApi.deleteAssessmentSession(sessionToDelete.id);
       } else {
         // Delete regular session
-        await sessionsApi.deleteSession(session.id);
+        await sessionsApi.deleteSession(sessionToDelete.id);
       }
 
       // Remove from list
-      setBookings(prevBookings => prevBookings.filter(booking => booking.id !== session.id));
+      setBookings(prevBookings => prevBookings.filter(booking => booking.id !== sessionToDelete.id));
       showSuccess('Session deleted successfully!', 'Delete Success');
       
       // Close details modal if it's open for this session
-      if (selectedSession && selectedSession.id === session.id) {
+      if (selectedSession && selectedSession.id === sessionToDelete.id) {
         setIsSessionDetailsOpen(false);
         setSelectedSession(null);
       }
+
+      // Close confirmation modal
+      setShowDeleteConfirm(false);
+      setSessionToDelete(null);
     } catch (error) {
       console.error('Error deleting session:', error);
       showError(`Failed to delete session: ${error.message}`, 'Delete Error');
+      setShowDeleteConfirm(false);
+      setSessionToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setSessionToDelete(null);
   };
 
   const handleMarkAsNoShowClick = (session) => {
@@ -612,7 +629,7 @@ export default function BookingsPage() {
                       )}
                       {booking.status !== 'completed' && (
                         <button
-                          onClick={() => handleDeleteSession(booking)}
+                          onClick={() => handleDeleteSessionClick(booking)}
                           className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           title="Delete session"
                         >
@@ -1000,6 +1017,18 @@ export default function BookingsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteSession}
+        title="Delete Session"
+        message="Are you sure you want to delete this session? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
 
       </div>
     </div>

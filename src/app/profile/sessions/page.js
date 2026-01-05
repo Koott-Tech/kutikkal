@@ -604,6 +604,9 @@ export default function SessionsPage() {
                       : (Number.isFinite(pkg.remaining_sessions) && pkg.remaining_sessions >= 0
                         ? pkg.remaining_sessions
                         : Math.max(totalSessions - 1, 0));
+                    // Calculate displayed count: total - remaining_for_booking (includes completed + booked sessions)
+                    // This matches the count shown in the upcoming tab
+                    const displayedCount = Math.max(totalSessions - remainingSessionsForBooking, completedSessions);
                     
                     return (
                       <div key={pkg.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm transition-colors" {...getHoverHandlers()}>
@@ -611,7 +614,7 @@ export default function SessionsPage() {
                         <div className={`flex ${remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? 'justify-between' : 'justify-between'} items-center mb-3 gap-2`}>
                           <div className="flex gap-2">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              Package ({completedSessions}/{totalSessions})
+                              Package ({displayedCount}/{totalSessions})
                             </span>
                             <span 
                               className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white"
@@ -691,8 +694,8 @@ export default function SessionsPage() {
                             </button>
                           ) : (
                             remainingSessions > 0 && hasUpcomingSessionsForPackage(pkg.package_id) ? (
-                              <span className="flex-1 text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded text-center">
-                                Complete booked sessions first
+                              <span className="flex-1 text-gray-500 text-xs px-2 py-1 bg-gray-100 rounded text-center inline-flex items-center justify-center">
+                                Complete the session
                               </span>
                             ) : pkg.status === 'completed' ? (
                               <span className="flex-1 text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded text-center">
@@ -725,6 +728,9 @@ export default function SessionsPage() {
                       : (Number.isFinite(pkg.remaining_sessions) && pkg.remaining_sessions >= 0
                         ? pkg.remaining_sessions
                         : Math.max(totalSessions - 1, 0));
+                    // Calculate displayed count: total - remaining_for_booking (includes completed + booked sessions)
+                    // This matches the count shown in the upcoming tab
+                    const displayedCount = Math.max(totalSessions - remainingSessionsForBooking, completedSessions);
                     
                     return (
                       <div key={pkg.id} className="border border-gray-200 rounded-lg p-5 sm:p-6 lg:hover:shadow-md transition-all bg-blue-50/30" {...getHoverHandlers()}>
@@ -752,7 +758,7 @@ export default function SessionsPage() {
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 mb-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                                   <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    Package ({completedSessions}/{totalSessions})
+                                    Package ({displayedCount}/{totalSessions})
                                   </span>
                                   <span 
                                     className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium text-white"
@@ -782,7 +788,7 @@ export default function SessionsPage() {
                               </div>
                             </div>
                             
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 items-start sm:items-end sm:ml-4">
                               {/* Show button only if: remaining sessions to book > 0, package is active, at least one session completed, AND no booked sessions exist */}
                               {remainingSessionsForBooking > 0 && pkg.status === 'active' && completedSessions > 0 && !hasUpcomingSessionsForPackage(pkg.package_id) ? (
                                 <button
@@ -810,8 +816,8 @@ export default function SessionsPage() {
                                 </button>
                               ) : (
                                 remainingSessions > 0 && hasUpcomingSessionsForPackage(pkg.package_id) ? (
-                                  <span className="text-gray-500 text-sm px-3 py-2 bg-gray-100 rounded-lg">
-                                    Complete booked sessions first
+                                  <span className="text-gray-500 text-sm px-4 py-2 bg-gray-100 rounded-lg inline-flex items-center justify-center">
+                                    Complete the session
                                   </span>
                                 ) : pkg.status === 'completed' ? (
                                   <span className="text-gray-500 text-sm px-3 py-2 bg-gray-100 rounded-lg">
@@ -891,7 +897,18 @@ export default function SessionsPage() {
                               {((session.package && session.package.package_type) || session.package_id) && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                   {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                    <span>Package ({(() => {
+                                      // For completed sessions, show completed count
+                                      // For booked/upcoming sessions, show completed + 1 (this booked session)
+                                      const completed = session.package.completed_sessions || 0;
+                                      const total = session.package.total_sessions || 0;
+                                      if (session.status === 'completed') {
+                                        return `${completed}/${total}`;
+                                      } else {
+                                        // For booked/scheduled/rescheduled sessions, show booked count (completed + 1)
+                                        return `${Math.min(total, completed + 1)}/${total}`;
+                                      }
+                                    })()})</span>
                                   ) : (
                                 session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                   )}
@@ -1160,7 +1177,18 @@ export default function SessionsPage() {
                                     {((session.package && session.package.package_type) || session.package_id) && (
                                       <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                         {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                      <span>Package ({session.package.completed_sessions}/{session.package.total_sessions})</span>
+                                      <span>Package ({(() => {
+                                        // For completed sessions, show completed count
+                                        // For booked/upcoming sessions, show completed + 1 (this booked session)
+                                        const completed = session.package.completed_sessions || 0;
+                                        const total = session.package.total_sessions || 0;
+                                        if (session.status === 'completed') {
+                                          return `${completed}/${total}`;
+                                        } else {
+                                          // For booked/scheduled/rescheduled sessions, show booked count (completed + 1)
+                                          return `${Math.min(total, completed + 1)}/${total}`;
+                                        }
+                                      })()})</span>
                                         ) : (
                                       session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                         )}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../../lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
-import { CheckCircle, XCircle, Clock, Calendar, AlertCircle, Phone, MessageCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Calendar, AlertCircle, Phone, MessageCircle, Eye, X } from 'lucide-react';
 
 export default function AdminReschedulingPage() {
   const { showSuccess, showError, showConfirmDialog } = useNotification();
@@ -15,6 +15,8 @@ export default function AdminReschedulingPage() {
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [declineReason, setDeclineReason] = useState('');
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   useEffect(() => {
     loadRescheduleRequests();
@@ -174,6 +176,11 @@ export default function AdminReschedulingPage() {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  const handleViewDetails = (request) => {
+    setSelectedRequest(request);
+    setShowDetailsModal(true);
+  };
+
   const handleApprove = async (notification) => {
     showConfirmDialog({
       title: 'Approve Reschedule Request',
@@ -187,6 +194,8 @@ export default function AdminReschedulingPage() {
           await adminApi.handleRescheduleRequest(notification.id, 'approve', '');
           await loadRescheduleRequests();
           showSuccess('Reschedule request approved successfully!');
+          setShowDetailsModal(false);
+          setSelectedRequest(null);
         } catch (err) {
           console.error('Error approving reschedule:', err);
           const errorMsg = err.response?.data?.message || err.message || 'Failed to approve reschedule';
@@ -213,7 +222,9 @@ export default function AdminReschedulingPage() {
       await loadRescheduleRequests();
       showSuccess('Reschedule request declined successfully!');
       setShowDeclineModal(false);
+      setShowDetailsModal(false);
       setSelectedNotification(null);
+      setSelectedRequest(null);
       setDeclineReason('');
     } catch (err) {
       console.error('Error declining reschedule:', err);
@@ -296,184 +307,240 @@ export default function AdminReschedulingPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {rescheduleRequests.map((request) => {
-              const session = request.session;
-              const info = parseRescheduleInfo(request.message || '', session);
-              const client = request.client || session?.client;
-              const psychologist = request.psychologist || session?.psychologist;
-              const isProcessed = request.is_read;
-              const requestType = getRescheduleRequestType(session);
-              
-              // Get client email from user relationship if available
-              const clientEmail = client?.user?.email || client?.email || 'N/A';
-              const clientPhone = client?.phone_number || 'N/A';
-              const clientName = client?.child_name || `${client?.first_name || ''} ${client?.last_name || ''}`.trim() || 'N/A';
-              const psychologistName = psychologist ? `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim() : 'N/A';
-              const psychologistEmail = psychologist?.email || 'N/A';
-              const psychologistPhone = psychologist?.phone || 'N/A';
-              
-              // Session details
-              const sessionType = session?.session_type === 'free_assessment' ? 'Free Assessment' : 
-                                 session?.package_id ? 'Package Session' : 'Individual Session';
-              const sessionId = session?.id || 'N/A';
-              
-              return (
-                <div
-                  key={request.id}
-                  className={`bg-white rounded-lg shadow border ${
-                    isProcessed ? 'border-gray-200' : 'border-orange-200'
-                  } p-4 hover:shadow-md transition-shadow`}
-                >
-                  <div className="flex flex-col gap-3">
-                    {/* Header Row - Client Name, Buttons, Status */}
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      {/* Left: Client Name */}
-                      <h3 className="text-base font-semibold text-gray-900">{clientName}</h3>
-                      
-                      {/* Right: Buttons and Status Badges */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {!isProcessed && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleApprove(request)}
-                              disabled={processingId === request.id}
-                              className="flex items-center justify-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {processingId === request.id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                  Processing...
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="h-4 w-4" />
-                                  Approve
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handleDecline(request)}
-                              disabled={processingId === request.id}
-                              className="flex items-center justify-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {processingId === request.id ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                  Processing...
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="h-4 w-4" />
-                                  Decline
-                                </>
-                              )}
-                            </button>
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Old Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {rescheduleRequests.map((request) => {
+                  const session = request.session;
+                  const info = parseRescheduleInfo(request.message || '', session);
+                  const client = request.client || session?.client;
+                  const psychologist = request.psychologist || session?.psychologist;
+                  const isProcessed = request.is_read;
+                  const requestType = getRescheduleRequestType(session);
+                  
+                  const clientName = client?.child_name || `${client?.first_name || ''} ${client?.last_name || ''}`.trim() || 'N/A';
+                  const psychologistName = psychologist ? `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim() : 'N/A';
+                  
+                  return (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{clientName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{psychologistName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {info.originalDate ? (
+                          <div>
+                            <div>{formatDate(info.originalDate)}</div>
+                            {info.originalTime && <div className="text-xs text-gray-500">{formatTime(info.originalTime)}</div>}
                           </div>
-                        )}
-                        {!isProcessed && (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Pending</span>
-                        )}
-                        {isProcessed && (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Processed</span>
-                        )}
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{requestType}</span>
-                      </div>
-                    </div>
-                    
-                    {/* All Details */}
-                    <div className="flex-1 space-y-2">
-
-                      {/* All Details in Grid */}
-                      <div className="space-y-2">
-                        {/* Client Info */}
-                        <div className="bg-gray-50 rounded p-3">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1.5 text-sm">
-                            <div><span className="text-gray-600">Client ID:</span> <span className="font-medium text-gray-900 font-mono text-xs">{client?.id || 'N/A'}</span></div>
-                            <div><span className="text-gray-600">Client:</span> <span className="font-medium text-gray-900">{clientName}</span></div>
-                            {client?.schedule_name && <div><span className="text-gray-600">Schedule:</span> <span className="font-medium text-gray-900">{client.schedule_name}</span></div>}
-                            {client?.child_name && <div><span className="text-gray-600">Child:</span> <span className="font-medium text-gray-900">{client.child_name}</span></div>}
-                            {client?.child_age && <div><span className="text-gray-600">Age:</span> <span className="font-medium text-gray-900">{client.child_age} yrs</span></div>}
-                            <div><span className="text-gray-600">Phone:</span> <span className="font-medium text-gray-900">{clientPhone}</span></div>
-                            <div className="sm:col-span-2"><span className="text-gray-600">Email:</span> <span className="font-medium text-gray-900 break-all">{clientEmail}</span></div>
+                        ) : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {info.newDate ? (
+                          <div>
+                            <div>{formatDate(info.newDate)}</div>
+                            {info.newTime && <div className="text-xs text-gray-500">{formatTime(info.newTime)}</div>}
                           </div>
+                        ) : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {!isProcessed ? (
+                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Pending</span>
+                        ) : (
+                          <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Processed</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewDetails(request)}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </button>
+                          {!isProcessed && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(request)}
+                                disabled={processingId === request.id}
+                                className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md text-xs font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {processingId === request.id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Approve
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleDecline(request)}
+                                disabled={processingId === request.id}
+                                className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Decline
+                              </button>
+                            </>
+                          )}
                         </div>
-                        
-                        {/* Psychologist Info */}
-                        {psychologist && (
-                          <div className="bg-blue-50 rounded p-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1.5 text-sm">
-                              <div><span className="text-gray-600">Psychologist:</span> <span className="font-medium text-gray-900">{psychologistName}</span></div>
-                              <div className="sm:col-span-2"><span className="text-gray-600">P. Email:</span> <span className="font-medium text-gray-900 break-all">{psychologistEmail}</span></div>
-                              {psychologistPhone !== 'N/A' && <div><span className="text-gray-600">P. Phone:</span> <span className="font-medium text-gray-900">{psychologistPhone}</span></div>}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Session Info */}
-                        <div className="bg-purple-50 rounded p-3">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1.5 text-sm">
-                            <div><span className="text-gray-600">Session ID:</span> <span className="font-medium text-gray-900 font-mono text-xs">{sessionId}</span></div>
-                            <div><span className="text-gray-600">Type:</span> <span className="font-medium text-gray-900">{sessionType}</span></div>
-                          </div>
-                        </div>
-                        
-                        {/* Client Reason (if provided) */}
-                        {info.reason && (
-                          <div className="bg-amber-50 rounded p-3 border border-amber-200">
-                            <div className="text-sm">
-                              <p className="font-medium text-gray-900 mb-1">Client's Reason for Reschedule:</p>
-                              <p className="text-gray-700 italic">"{info.reason}"</p>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Schedule Info */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-gray-100 rounded p-2">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <Calendar className="h-3.5 w-3.5 text-gray-500" />
-                              <span className="text-xs font-medium text-gray-600">Current</span>
-                            </div>
-                            {info.originalDate && info.originalTime ? (
-                              <div className="text-xs">
-                                <p className="font-medium text-gray-900">{formatDate(info.originalDate)}</p>
-                                <p className="text-gray-600">{formatTime(info.originalTime)}</p>
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-500">N/A</p>
-                            )}
-                          </div>
-                          <div className="bg-green-100 rounded p-2">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <Clock className="h-3.5 w-3.5 text-green-600" />
-                              <span className="text-xs font-medium text-gray-600">Requested</span>
-                            </div>
-                            {info.newDate && info.newTime ? (
-                              <div className="text-xs">
-                                <p className="font-medium text-gray-900">{formatDate(info.newDate)}</p>
-                                <p className="text-gray-600">{formatTime(info.newTime)}</p>
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-500">N/A</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <p className="text-xs text-gray-500 pt-1">Requested: {new Date(request.created_at).toLocaleString('en-IN')}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
 
+      {/* Details Modal */}
+      {showDetailsModal && selectedRequest && (() => {
+        const session = selectedRequest.session;
+        const info = parseRescheduleInfo(selectedRequest.message || '', session);
+        const client = selectedRequest.client || session?.client;
+        const psychologist = selectedRequest.psychologist || session?.psychologist;
+        const isProcessed = selectedRequest.is_read;
+        const requestType = getRescheduleRequestType(session);
+        
+        // Get client email from user relationship if available
+        const clientEmail = client?.user?.email || client?.email || 'N/A';
+        const clientPhone = client?.phone_number || 'N/A';
+        const clientName = client?.child_name || `${client?.first_name || ''} ${client?.last_name || ''}`.trim() || 'N/A';
+        const psychologistName = psychologist ? `${psychologist.first_name || ''} ${psychologist.last_name || ''}`.trim() : 'N/A';
+        const psychologistEmail = psychologist?.email || 'N/A';
+        const psychologistPhone = psychologist?.phone || 'N/A';
+        
+        // Session details
+        const sessionType = session?.session_type === 'free_assessment' ? 'Free Assessment' : 
+                           session?.package_id ? 'Package Session' : 'Individual Session';
+        const sessionId = session?.id || 'N/A';
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full my-8">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 className="text-base font-semibold text-gray-900" style={{ fontSize: '0.75rem', fontWeight: '600' }}>Reschedule Request Details</h2>
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setSelectedRequest(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <div className="space-y-4">
+                  {/* Client Info */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Client Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                      <div><span className="text-gray-600">Client ID:</span> <span className="font-medium text-gray-900 font-mono text-xs">{client?.id || 'N/A'}</span></div>
+                      <div><span className="text-gray-600">Client:</span> <span className="font-medium text-gray-900">{clientName}</span></div>
+                      {client?.schedule_name && <div><span className="text-gray-600">Schedule:</span> <span className="font-medium text-gray-900">{client.schedule_name}</span></div>}
+                      {client?.child_name && <div><span className="text-gray-600">Child:</span> <span className="font-medium text-gray-900">{client.child_name}</span></div>}
+                      {client?.child_age && <div><span className="text-gray-600">Age:</span> <span className="font-medium text-gray-900">{client.child_age} yrs</span></div>}
+                      <div><span className="text-gray-600">Phone:</span> <span className="font-medium text-gray-900">{clientPhone}</span></div>
+                      <div className="sm:col-span-2"><span className="text-gray-600">Email:</span> <span className="font-medium text-gray-900 break-all">{clientEmail}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Psychologist Info */}
+                  {psychologist && (
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <h3 className="text-xs font-semibold text-gray-900 mb-2" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Psychologist Information</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                        <div><span className="text-gray-600">Psychologist:</span> <span className="font-medium text-gray-900">{psychologistName}</span></div>
+                        <div className="sm:col-span-2"><span className="text-gray-600">Email:</span> <span className="font-medium text-gray-900 break-all">{psychologistEmail}</span></div>
+                        {psychologistPhone !== 'N/A' && <div><span className="text-gray-600">Phone:</span> <span className="font-medium text-gray-900">{psychologistPhone}</span></div>}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Session Info */}
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Session Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                      <div><span className="text-gray-600">Session ID:</span> <span className="font-medium text-gray-900 font-mono text-xs">{sessionId}</span></div>
+                      <div><span className="text-gray-600">Type:</span> <span className="font-medium text-gray-900">{sessionType}</span></div>
+                      <div><span className="text-gray-600">Request Type:</span> <span className="font-medium text-gray-900">{requestType}</span></div>
+                    </div>
+                  </div>
+                  
+                  {/* Request Reason/Message */}
+                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Client's Request Message</h3>
+                    {info.reason ? (
+                      <p className="text-sm text-gray-700 italic">"{info.reason}"</p>
+                    ) : (
+                      <p className="text-sm text-gray-500">No reason provided by the client.</p>
+                    )}
+                  </div>
+                  
+                  {/* Schedule Info */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-100 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Current Schedule</span>
+                      </div>
+                      {info.originalDate && info.originalTime ? (
+                        <div className="text-sm">
+                          <p className="font-medium text-gray-900">{formatDate(info.originalDate)}</p>
+                          <p className="text-gray-600">{formatTime(info.originalTime)}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">N/A</p>
+                      )}
+                    </div>
+                    <div className="bg-green-100 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-green-600" />
+                        <span className="text-xs font-semibold text-gray-900" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Requested Schedule</span>
+                      </div>
+                      {info.newDate && info.newTime ? (
+                        <div className="text-sm">
+                          <p className="font-medium text-gray-900">{formatDate(info.newDate)}</p>
+                          <p className="text-gray-600">{formatTime(info.newTime)}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">N/A</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 pt-2">
+                    Requested: {new Date(selectedRequest.created_at).toLocaleString('en-IN')}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Decline Reason Modal */}
       {showDeclineModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Decline Reschedule Request
@@ -513,4 +580,3 @@ export default function AdminReschedulingPage() {
     </div>
   );
 }
-

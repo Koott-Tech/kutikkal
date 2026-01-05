@@ -43,6 +43,40 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
     return `${hour12}:${mins} ${ampm}`;
   };
 
+  // Helper function to convert 12-hour time to 24-hour for sorting
+  const convertTo24HourForSort = (timeStr) => {
+    if (!timeStr) return 0;
+    const time = String(timeStr).trim();
+    
+    // If already in 24-hour format (no AM/PM), parse directly
+    if (!time.includes('AM') && !time.includes('PM')) {
+      const [hours, minutes] = time.split(':');
+      return parseInt(hours || '0', 10) * 60 + parseInt(minutes || '0', 10);
+    }
+    
+    // Parse 12-hour format
+    const [timePart, period] = time.split(/\s+/);
+    const [hours, minutes] = timePart.split(':');
+    let hour24 = parseInt(hours || '0', 10);
+    
+    if (period && period.toUpperCase() === 'PM' && hour24 !== 12) {
+      hour24 += 12;
+    } else if (period && period.toUpperCase() === 'AM' && hour24 === 12) {
+      hour24 = 0;
+    }
+    
+    return hour24 * 60 + parseInt(minutes || '0', 10);
+  };
+
+  // Helper function to sort time slots chronologically
+  const sortTimeSlots = (slots) => {
+    return [...slots].sort((a, b) => {
+      const timeA = convertTo24HourForSort(a);
+      const timeB = convertTo24HourForSort(b);
+      return timeA - timeB;
+    });
+  };
+
   // EXACT same helper functions as therapist profile
   const getMonthName = (date) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -723,7 +757,10 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   const allTimeSlots = dateAvailability.timeSlots || [];
                   const availableSlots = allTimeSlots.filter(slot => slot.available).map(slot => slot.displayTime);
                   
-                  if (availableSlots.length === 0) {
+                  // Sort time slots chronologically
+                  const sortedAvailableSlots = sortTimeSlots(availableSlots);
+                  
+                  if (sortedAvailableSlots.length === 0) {
                     return (
                       <div className="text-center py-8">
                         <div className="text-gray-500 text-sm">
@@ -738,7 +775,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
                   
                   return (
                           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
-                            {availableSlots.map((time) => (
+                            {sortedAvailableSlots.map((time) => (
                               <button
                                 key={time}
                                 onClick={() => handleTimeSelect(time)}

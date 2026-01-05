@@ -459,7 +459,15 @@ function PaymentSuccessContent() {
       const statusResponse = await paymentApi.getBookingStatusByOrderId(orderId);
 
       if (statusResponse.success && statusResponse.data) {
-        const { status, session, message } = statusResponse.data;
+        const { status, session, message, payment } = statusResponse.data;
+        
+        // Update paymentData with amount if available
+        if (payment && payment.amount) {
+          setPaymentData(prev => ({
+            ...prev,
+            amount: payment.amount
+          }));
+        }
 
         console.log('📊 Booking status:', { status, hasSession: !!session, message });
 
@@ -1275,6 +1283,9 @@ function PaymentSuccessContent() {
                 )}
                 <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Order ID:</strong> {paymentData.orderId}</p>
                 <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Payment ID:</strong> {paymentData.paymentId}</p>
+                {paymentData.amount && (
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
+                )}
                 <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
               </div>
               
