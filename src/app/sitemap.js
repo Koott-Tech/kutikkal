@@ -1,11 +1,24 @@
 export default async function sitemap() {
   const baseUrl = "https://www.little.care";
 
-  const staticRoutes = ["", "/about", "/psychologists", "/therapy-agreement", "/privacy-policy", "/terms-and-conditions", "/refund-policy"].map(
+  const staticRoutes = [
+    "", 
+    "/about", 
+    "/psychologists", 
+    "/blog",
+    "/faq",
+    "/free-assessment",
+    "/career",
+    "/therapy-agreement", 
+    "/privacy-policy", 
+    "/terms-and-conditions", 
+    "/refund-policy"
+  ].map(
     (route) => ({
       url: `${baseUrl}${route}`,
       changeFrequency: "monthly",
-      priority: route === "" ? 1.0 : 0.7,
+      priority: route === "" ? 1.0 : route === "/blog" || route === "/psychologists" ? 0.9 : 0.7,
+      lastModified: new Date(),
     })
   );
 
@@ -80,26 +93,31 @@ export default async function sitemap() {
       url: `${baseUrl}/counselling/${slug}`,
       changeFrequency: "weekly",
       priority: 0.8,
+      lastModified: new Date(),
     })),
     ...assessmentSlugs.map((slug) => ({
       url: `${baseUrl}/assessments/${slug}`,
       changeFrequency: "weekly",
       priority: 0.8,
+      lastModified: new Date(),
     })),
     ...parentingSlugs.map((slug) => ({
       url: `${baseUrl}/better-parenting/${slug}`,
       changeFrequency: "weekly",
       priority: 0.8,
+      lastModified: new Date(),
     })),
     ...blogSlugs.map((slug) => ({
       url: `${baseUrl}/blog/${slug}`,
       changeFrequency: "weekly",
       priority: 0.7,
+      lastModified: new Date(),
     })),
     ...psychologistSlugs.map((slug) => ({
       url: `${baseUrl}/online-child-psycologist/${slug}`,
       changeFrequency: "monthly",
       priority: 0.9,
+      lastModified: new Date(),
     })),
   ];
 
