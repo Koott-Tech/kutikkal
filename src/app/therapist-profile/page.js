@@ -1768,7 +1768,7 @@ const TherapistProfileContent = () => {
                              const name = selectedDoctor.name?.toLowerCase() || '';
                              if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
                              if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                             if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                             if (name.includes('ashley') || name.includes('ash')) return '/mainlogo.webp';
                              if (name.includes('child') || name.includes('teen')) return '/kids.png';
                              return null;
                            })()}
@@ -1855,7 +1855,7 @@ const TherapistProfileContent = () => {
                            const name = selectedDoctor.name?.toLowerCase() || '';
                            if (name.includes('irene') || name.includes('marium')) return '/irene.jpeg';
                            if (name.includes('doug') || name.includes('douglas')) return '/doug.png';
-                           if (name.includes('ashley') || name.includes('ash')) return '/hero.png';
+                           if (name.includes('ashley') || name.includes('ash')) return '/mainlogo.webp';
                            if (name.includes('child') || name.includes('teen')) return '/kids.png';
                            return null;
                          })()}

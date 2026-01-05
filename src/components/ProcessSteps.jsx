@@ -172,9 +172,9 @@ export default function ProcessSteps({ therapyType = "individual" }) {
   ];
 
   const avatars = [
-    "/hero.png",
+    "/mainlogo.webp",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    "/hero.png",
+    "/mainlogo.webp",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
   ];
 
@@ -331,7 +331,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                             </div>
                             <div className="relative h-28 w-40 overflow-hidden rounded-md">
                               <Image
-                                src="/hero.png"
+                                src="/mainlogo.webp"
                                 alt="provider"
                                 fill
                                 className="object-cover"

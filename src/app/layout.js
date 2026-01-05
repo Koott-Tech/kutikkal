@@ -44,10 +44,10 @@ export const metadata = {
     url: "https://www.little.care",
     images: [
       {
-        url: "https://www.little.care/hero.png",
+        url: "https://www.little.care/mainlogo.webp",
         width: 1200,
         height: 630,
-        alt: "Little Care child counseling and parent support hero image",
+        alt: "Little Care logo",
       },
     ],
   },
@@ -56,7 +56,7 @@ export const metadata = {
     title: "India's Trusted Child Psychologist | Online Child Counseling",
     description:
       "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
-    images: ["https://www.little.care/hero.png"],
+    images: ["https://www.little.care/mainlogo.webp"],
   },
   robots: {
     index: true,
@@ -309,7 +309,7 @@ export default function RootLayout({ children }) {
                 "Online child psychotherapy and counseling services for children and parents.",
               url: "https://www.little.care",
               logo: "https://www.little.care/favicon.png",
-              image: "https://www.little.care/hero.png",
+              image: "https://www.little.care/mainlogo.webp",
               telephone: "+91 95390 07766",
               email: "hey@little.care",
               address: {

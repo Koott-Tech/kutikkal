@@ -41,10 +41,10 @@ const pageMetadata = {
     description: 'Discover professional child psychology services and online counseling for children and families. Expert child psychologists help with anxiety, behavior, ADHD, and emotional support.',
     images: [
       {
-        url: 'https://www.little.care/hero.png',
+        url: 'https://www.little.care/mainlogo.webp',
         width: 1200,
         height: 630,
-        alt: 'Little Care - Child Psychology Services and Online Counseling',
+        alt: 'Little Care logo',
       },
     ],
   },
@@ -52,7 +52,7 @@ const pageMetadata = {
     card: 'summary_large_image',
     title: 'Child Psychology Services & Online Counseling | Little Care',
     description: 'Discover professional child psychology services and online counseling for children and families. Expert child psychologists help with anxiety, behavior, ADHD, and emotional support.',
-    images: ['https://www.little.care/hero.png'],
+    images: ['https://www.little.care/mainlogo.webp'],
     creator: '@littlecare',
   },
   alternates: {
@@ -68,7 +68,7 @@ const structuredData = {
   description: 'Professional child psychology services and online counseling for children and families. Expert child psychologists providing therapy for anxiety, behavior, ADHD, and emotional support.',
   url: 'https://www.little.care',
   logo: 'https://www.little.care/mainlogo.webp',
-  image: 'https://www.little.care/hero.png',
+  image: 'https://www.little.care/mainlogo.webp',
   telephone: '+91-XXXXXXXXXX',
   address: {
     '@type': 'PostalAddress',
@@ -803,11 +803,11 @@ export default function AdsLandingPage() {
                       } else if (nameLower.includes('doug') || nameLower.includes('douglas')) {
                         imageSrc = '/doug.png';
                       } else if (nameLower.includes('ashley') || nameLower.includes('ash') || nameLower.includes('sarah')) {
-                        imageSrc = '/hero.png';
+                        imageSrc = '/mainlogo.webp';
                       } else if (nameLower.includes('child') || nameLower.includes('teen') || nameLower.includes('liana')) {
                         imageSrc = '/kids.png';
                       } else {
-                        imageSrc = '/hero.png';
+                        imageSrc = '/mainlogo.webp';
                       }
                     }
                     

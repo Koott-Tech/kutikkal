@@ -10,11 +10,11 @@ export default function HowItWorks() {
   const trackRef = useRef(null);
   const isAdjustingRef = useRef(false);
   const avatars = [
-    "/hero.png",
+    "/mainlogo.webp",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    "/hero.png",
+    "/mainlogo.webp",
     "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    "/hero.png",
+    "/mainlogo.webp",
   ];
 
   const carouselData = [

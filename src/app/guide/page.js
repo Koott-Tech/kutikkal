@@ -407,7 +407,7 @@ const Guide = () => {
                       } else if (name.includes('doug') || name.includes('douglas')) {
                         imageSrc = '/doug.png';
                       } else if (name.includes('ashley') || name.includes('ash') || name.includes('sarah')) {
-                        imageSrc = '/hero.png';
+                        imageSrc = '/mainlogo.webp';
                       } else if (name.includes('child') || name.includes('teen') || name.includes('liana')) {
                         imageSrc = '/kids.png';
                       }

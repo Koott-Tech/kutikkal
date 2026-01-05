@@ -123,7 +123,7 @@ export default function TherapistCarousel({ therapists = [] }) {
         className="therapist-cards-stack"
       >
         {therapists.map((doc, idx) => {
-          const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
+          const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
           const name = doc.name || doc.first_name || 'Therapist';
           // Create slug from doctor name
           const nameSlug = name

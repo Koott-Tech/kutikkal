@@ -37,7 +37,7 @@ export async function generateMetadata({ params, searchParams }) {
         data.hero_subtext ||
         'Professional assessments to better understand children’s needs and strengths.';
       const ogImage =
-        data.og_image || data.hero_image_url || '/hero.png';
+        data.og_image || data.hero_image_url || '/mainlogo.webp';
       const normalizedOgImage = ogImage.startsWith('http')
         ? ogImage
         : `https://www.little.care${ogImage}`;

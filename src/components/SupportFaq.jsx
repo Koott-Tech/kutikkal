@@ -8,7 +8,7 @@ export default function SupportFaq() {
       title: "Care that feels safe",
       body:
         "Every child deserves a space where their feelings are seen and understood. Our child psychologists create a gentle, non-judgmental environment where kids can open up freely and feel supported.",
-      image: "/hero.png",
+      image: "/mainlogo.webp",
     },
     {
       title: "Guidance parents can trust",
@@ -20,7 +20,7 @@ export default function SupportFaq() {
       title: "Expertise made simple",
       body:
         "Our licensed child psychologists bring evidence-based care right to your home. Sessions are easy to access, child-friendly, and tailored to match your child's unique needs.",
-      image: "/hero.png",
+      image: "/mainlogo.webp",
     },
     {
       title: "Support at every stage",

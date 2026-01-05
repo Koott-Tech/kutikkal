@@ -65,7 +65,7 @@ export async function generateMetadata({ params, searchParams }) {
             service.hero_subtext ||
             'Specialized counseling services for children and families.';
           const ogImage =
-            service.og_image || service.hero_image_url || '/hero.png';
+            service.og_image || service.hero_image_url || '/mainlogo.webp';
 
           return {
             title,
@@ -240,7 +240,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
+            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
             const name = doc.name || doc.first_name || 'Therapist';
             // Create slug from doctor name
             const nameSlug = name

@@ -938,7 +938,7 @@ export default function Testimonials() {
                 <>
                   <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
                     <img
-                      src={getYouTubeThumbnailUrl(desktopYouTubeUrl) || '/hero.png'}
+                      src={getYouTubeThumbnailUrl(desktopYouTubeUrl) || '/mainlogo.webp'}
                       alt="Testimonial video thumbnail"
                       className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
                       style={{ transform: 'scale(1.22)', transformOrigin: 'center center' }}
@@ -1082,7 +1082,7 @@ export default function Testimonials() {
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
                                   <img
-                                    src={getYouTubeThumbnailUrl(photo.src) || '/hero.png'}
+                                    src={getYouTubeThumbnailUrl(photo.src) || '/mainlogo.webp'}
                                     alt={photo.alt || "Testimonial video"}
                                     className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
                                     onError={(e) => {
@@ -1241,7 +1241,7 @@ export default function Testimonials() {
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black rounded-[10px]">
                                   <img
-                                    src={getYouTubeThumbnailUrl(photo.src) || '/hero.png'}
+                                    src={getYouTubeThumbnailUrl(photo.src) || '/mainlogo.webp'}
                                     alt={photo.alt || "Testimonial video"}
                                     className="absolute inset-0 w-full h-full object-cover rounded-[10px]"
                                     onError={(e) => {

@@ -41,7 +41,7 @@ export async function generateMetadata({ params, searchParams }) {
         data.hero_subtext ||
         'Gentle, practical coaching to help parents support their child’s emotional and behavioural needs.';
       const ogImage =
-        data.og_image || data.hero_image_url || '/hero.png';
+        data.og_image || data.hero_image_url || '/mainlogo.webp';
 
       return {
         title,
@@ -218,7 +218,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch mt-8" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/hero.png');
+            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
             const name = doc.name || doc.first_name || 'Therapist';
             // Create slug from doctor name
             const nameSlug = name
