@@ -192,8 +192,8 @@ export default function DoctorModal({
         
         console.log('📦 Multi-session packages:', multiSessionPackages);
         
-        // Store original packages (only multi-session packages with valid IDs)
-        const originalMultiSessionPackages = multiSessionPackages.filter(pkg => pkg.id && !isNaN(parseInt(pkg.id)) && parseInt(pkg.id) > 0);
+        // Store original packages (only multi-session packages with valid IDs - can be UUID or integer)
+        const originalMultiSessionPackages = multiSessionPackages.filter(pkg => pkg.id && !pkg.id.toString().startsWith('pkg-'));
         setOriginalPackages(originalMultiSessionPackages);
         
         // Update form data with fetched packages
@@ -380,14 +380,12 @@ export default function DoctorModal({
                     // Load existing availability if editing AND user hasn't modified it
       // This prevents overwriting user changes when they've already modified availability
       if (doctor.availability && Array.isArray(doctor.availability) && !hasUserModifiedAvailability) {
-          console.log('Processing array-based availability:', doctor.availability);
           // Convert existing availability to new format
           const convertedAvailability = {};
           doctor.availability.forEach((item, index) => {
             // Handle new structure: {date, time_slots, is_available}
             if (item && item.date && item.time_slots && Array.isArray(item.time_slots)) {
               const dateStr = item.date;
-              console.log(`Processing new structure for date ${dateStr}:`, item.time_slots);
               
               // Helper function to normalize time format for comparison
               const normalizeTime = (time) => {
@@ -476,15 +474,12 @@ export default function DoctorModal({
                 available: item.is_available || true,
                 timeSlots: categorizedSlots
               };
-              
-              console.log(`Categorized slots for ${dateStr}:`, categorizedSlots);
             }
             // Handle legacy structure: {day, slots}
             else if (item && item.day && item.slots && Array.isArray(item.slots)) {
               const nextOccurrence = getNextDayOccurrence(item.day);
               if (nextOccurrence) {
                 const dateStr = nextOccurrence.toISOString().split('T')[0];
-                console.log(`Processing legacy structure for day ${item.day}:`, item.slots);
                 
                 // Helper function to normalize time format for comparison
                 const normalizeTime = (time) => {
@@ -573,8 +568,6 @@ export default function DoctorModal({
                   available: true,
                   timeSlots: categorizedSlots
                 };
-                
-                console.log(`Categorized legacy slots for ${dateStr}:`, categorizedSlots);
               }
             }
             // Skip if item is invalid
@@ -583,16 +576,13 @@ export default function DoctorModal({
               return;
             }
           });
-          console.log('Converted availability:', convertedAvailability);
           setAvailabilityData(convertedAvailability);
       } else if (doctor.availability && typeof doctor.availability === 'object') {
         // Handle case where availability might be in a different format
-        console.log('Doctor availability structure (object):', doctor.availability);
         // Try to convert or set empty availability
         setAvailabilityData({});
       } else {
         // No availability data, set empty
-        console.log('No availability data found for doctor');
         setAvailabilityData({});
       }
     }
@@ -1036,13 +1026,6 @@ export default function DoctorModal({
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('🚀 Form submission started');
-    console.log('🚀 Form data:', formData);
-    console.log('🚀 Display order value:', formData.display_order);
-    console.log('🚀 Display order type:', typeof formData.display_order);
-    console.log('🚀 Availability data:', availabilityData);
-    console.log('🚀 Availability keys:', Object.keys(availabilityData));
-    console.log('🚀 Price value:', formData.price);
-    console.log('🚀 Price type:', typeof formData.price);
     console.log('📦 Packages being sent:', formData.packages);
     console.log('📦 Filtered packages:', formData.packages.filter(pkg => pkg.name && pkg.price && pkg.sessions));
     
@@ -1113,22 +1096,21 @@ export default function DoctorModal({
           .filter(pkg => pkg.name && pkg.price && pkg.sessions)
           .map(pkg => ({
             ...pkg,
-            // Ensure ID is preserved - if it's a temp ID, remove it so backend knows it's new
-            id: (pkg.id && !isNaN(parseInt(pkg.id)) && parseInt(pkg.id) > 0) ? parseInt(pkg.id) : undefined
+            // Preserve ID as-is (could be UUID or integer) - only remove temp IDs
+            id: (pkg.id && !pkg.id.toString().startsWith('pkg-')) ? pkg.id : undefined
           })),
         // Check if any packages were removed (only in edit mode)
         deletePackages: (() => {
           if (mode !== 'edit' || originalPackages.length === 0) return false;
           
-          // Get current package IDs (only valid numeric IDs)
+          // Get current package IDs (can be UUID or integer, but not temp IDs)
           const currentPackageIds = formData.packages
             .filter(pkg => pkg.name && pkg.price && pkg.sessions)
             .map(pkg => pkg.id)
-            .filter(id => id && !isNaN(parseInt(id)) && parseInt(id) > 0)
-            .map(id => parseInt(id));
+            .filter(id => id && !id.toString().startsWith('pkg-'));
           
-          // Get original package IDs
-          const originalPackageIds = originalPackages.map(pkg => parseInt(pkg.id));
+          // Get original package IDs (keep as-is, can be UUID or integer)
+          const originalPackageIds = originalPackages.map(pkg => pkg.id);
           
           // Check if any original packages are missing from current packages
           const hasRemovedPackages = originalPackageIds.some(originalId => !currentPackageIds.includes(originalId));
@@ -2143,9 +2125,6 @@ export default function DoctorModal({
                       return null;
                     }
                     
-                    console.log(`Processing date ${dateStr}:`, data);
-                    console.log(`Time slots for ${dateStr}:`, data.timeSlots);
-                    
                     const date = new Date(dateStr);
                     const allSlots = [
                       ...(data.timeSlots.morning || []),
@@ -2154,8 +2133,6 @@ export default function DoctorModal({
                       ...(data.timeSlots.night || [])
                     ];
                     const sortedSlots = sortAndFormatTimeSlots(allSlots);
-                    
-                    console.log(`All slots for ${dateStr}:`, allSlots);
                     
                     return (
                       <div key={dateStr} className="bg-green-50 border border-green-200 rounded-lg p-3">

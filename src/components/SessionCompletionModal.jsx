@@ -132,7 +132,13 @@ export default function SessionCompletionModal({
               <div>
                 <label className="text-sm font-medium text-gray-700">Session Date</label>
                 <p className="text-sm text-gray-900">
-                  {new Date(session.scheduled_date).toLocaleDateString()} at {session.scheduled_time}
+                  {new Date(session.scheduled_date).toLocaleDateString()} at {(() => {
+                    const [hours, minutes] = session.scheduled_time.split(':');
+                    const hour = parseInt(hours);
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                    return `${displayHour}:${minutes} ${ampm}`;
+                  })()}
                 </p>
               </div>
             </div>

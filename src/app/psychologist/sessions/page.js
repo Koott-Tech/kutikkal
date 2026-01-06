@@ -47,6 +47,7 @@ export default function PsychologistSessions() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleSession, setSelectedScheduleSession] = useState(null);
   const [feedbackToView, setFeedbackToView] = useState(null);
+  const [activeTab, setActiveTab] = useState('upcoming'); // 'upcoming' or 'completed'
   const [currentPage, setCurrentPage] = useState(1);
   const sessionsPerPage = 10;
   // Removed reschedule notification state - notifications are only handled on rescheduling page
@@ -301,22 +302,50 @@ export default function PsychologistSessions() {
     return dateA - dateB; // Ascending order (nearest first)
   });
 
-  // Calculate pagination
-  const totalPages = Math.max(1, Math.ceil(sortedUpcomingSessions.length / sessionsPerPage));
-  const startIndex = (currentPage - 1) * sessionsPerPage;
-  const endIndex = startIndex + sessionsPerPage;
-  const upcomingSessions = sortedUpcomingSessions.slice(startIndex, endIndex);
+  // Calculate pagination for upcoming sessions
+  const totalUpcomingPages = Math.max(1, Math.ceil(sortedUpcomingSessions.length / sessionsPerPage));
+  const upcomingStartIndex = (currentPage - 1) * sessionsPerPage;
+  const upcomingEndIndex = upcomingStartIndex + sessionsPerPage;
+  const paginatedUpcomingSessions = sortedUpcomingSessions.slice(upcomingStartIndex, upcomingEndIndex);
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage + 1); // WheelPagination uses 0-indexed, we use 1-indexed
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when switching tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const completedSessions = sessions.filter(s => s.status === 'completed' && excludeFreeAssessment(s));
   const pastSessions = sessions.filter(s => 
     (s.status === 'completed' || s.status === 'cancelled' || s.status === 'no_show') && 
     excludeFreeAssessment(s) && 
     isAssignedToCurrentPsychologist(s)
   );
+
+  // Sort past sessions by date/time (most recent first)
+  const sortedPastSessions = [...pastSessions].sort((a, b) => {
+    if (!a.scheduled_date || !a.scheduled_time) return 1;
+    if (!b.scheduled_date || !b.scheduled_time) return -1;
+    
+    const dateA = new Date(`${a.scheduled_date}T${a.scheduled_time}`);
+    const dateB = new Date(`${b.scheduled_date}T${b.scheduled_time}`);
+    return dateB - dateA; // Descending order (most recent first)
+  });
+
+  // Calculate pagination for completed sessions
+  const totalCompletedPages = Math.max(1, Math.ceil(sortedPastSessions.length / sessionsPerPage));
+  const completedStartIndex = (currentPage - 1) * sessionsPerPage;
+  const completedEndIndex = completedStartIndex + sessionsPerPage;
+  const paginatedPastSessions = sortedPastSessions.slice(completedStartIndex, completedEndIndex);
+  
+  // Get current sessions based on active tab
+  const currentSessions = activeTab === 'upcoming' ? paginatedUpcomingSessions : paginatedPastSessions;
+  const totalPages = activeTab === 'upcoming' ? totalUpcomingPages : totalCompletedPages;
+  const totalSessions = activeTab === 'upcoming' ? sortedUpcomingSessions.length : sortedPastSessions.length;
 
 
   return (
@@ -362,26 +391,81 @@ export default function PsychologistSessions() {
         </div>
       )}
 
-      {/* Upcoming Sessions */}
+      {/* Tabs */}
       <div className="mt-8">
-        <p className="font-medium text-gray-900 mb-4">
-          Upcoming Sessions ({sortedUpcomingSessions.length})
-        </p>
-        <div className="bg-white shadow rounded-lg">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => handleTabChange('upcoming')}
+              className={`${
+                activeTab === 'upcoming'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Upcoming
+              {sortedUpcomingSessions.length > 0 && (
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs ${
+                  activeTab === 'upcoming'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {sortedUpcomingSessions.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => handleTabChange('completed')}
+              className={`${
+                activeTab === 'completed'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Completed
+              {sortedPastSessions.length > 0 && (
+                <span className={`ml-2 py-0.5 px-2.5 rounded-full text-xs ${
+                  activeTab === 'completed'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {sortedPastSessions.length}
+                </span>
+              )}
+            </button>
+          </nav>
+        </div>
+
+        {/* Sessions List */}
+        <div className="bg-white shadow rounded-lg mt-4">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-            <p className="font-medium text-gray-900 text-sm sm:text-base">Scheduled Appointments</p>
+            <p className="font-medium text-gray-900 text-sm sm:text-base">
+              {activeTab === 'upcoming' ? 'Scheduled Appointments' : 'Completed & Past Sessions'}
+            </p>
           </div>
           <div className="divide-y divide-gray-200">
-            {upcomingSessions.length === 0 ? (
+            {currentSessions.length === 0 ? (
               <div className="px-4 sm:px-6 py-8 text-center">
-                <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  You don&apos;t have any scheduled sessions at the moment.
-                </p>
+                {activeTab === 'upcoming' ? (
+                  <>
+                    <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm font-medium text-gray-900">No upcoming sessions</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      You don&apos;t have any scheduled sessions at the moment.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
+                    <p className="mt-2 text-sm font-medium text-gray-900">No past sessions</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Completed, cancelled, and no-show sessions will appear here.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
-              upcomingSessions.map((session) => (
+              currentSessions.map((session) => (
                 <div key={session.id} className="px-4 sm:px-6 py-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4">
@@ -578,7 +662,7 @@ export default function PsychologistSessions() {
           </div>
           
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalSessions > sessionsPerPage && (
             <div className="flex items-center justify-center mt-6 pt-6 border-t border-gray-200 px-4 sm:px-6">
               <WheelPagination
                 totalPages={totalPages}
@@ -589,145 +673,6 @@ export default function PsychologistSessions() {
               />
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Completed Sessions */}
-      <div className="mt-8">
-        <p className="font-medium text-gray-900 mb-4">
-          Past Sessions ({pastSessions.length})
-        </p>
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-            <p className="font-medium text-gray-900 text-sm sm:text-base">Completed & Past Sessions</p>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {pastSessions.length === 0 ? (
-              <div className="px-4 sm:px-6 py-8 text-center">
-                <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm font-medium text-gray-900">No past sessions</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Completed, cancelled, and no-show sessions will appear here.
-                </p>
-              </div>
-            ) : (
-              pastSessions.map((session) => (
-                <div key={session.id} className="px-4 sm:px-6 py-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0">
-                    <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                          <User className="h-5 w-5 text-green-600" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {session.client?.first_name} {session.client?.last_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Child: {session.client?.child_name} ({session.client?.child_age} years)
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-1">
-                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
-                            <Calendar className="h-4 w-4 mr-1" />
-                            {new Date(session.scheduled_date).toLocaleDateString()}
-                          </span>
-                          <span className="flex items-center text-xs sm:text-sm text-gray-500">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {formatTime(session.scheduled_time)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 sm:mt-0 flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
-                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        session.status === 'no_show' ? 'bg-orange-100 text-orange-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {session.status === 'no_show' ? 'No Show' : 
-                         session.status?.charAt(0).toUpperCase() + session.status?.slice(1) || 'Unknown'}
-                      </span>
-                      <button
-                        onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        View Details
-                      </button>
-                      {/* Only show Finish button for non-completed sessions */}
-                      {session.status !== 'completed' && session.status !== 'no_show' && session.status !== 'noshow' && (
-                        <>
-                          <button
-                            onClick={() => handleCompleteSession(session.id, {})}
-                            disabled={completingSessions.has(session.id)}
-                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                              completingSessions.has(session.id)
-                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-                            }`}
-                            title="Mark session as completed"
-                          >
-                            {completingSessions.has(session.id) ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                                Finishing...
-                              </>
-                            ) : (
-                              <>
-                                Finish
-                              </>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleMarkAsNoShow(session.id)}
-                            disabled={markingNoShowSessions.has(session.id)}
-                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                              markingNoShowSessions.has(session.id)
-                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                : 'text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                            }`}
-                            title="Mark session as no-show"
-                          >
-                            {markingNoShowSessions.has(session.id) ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                                Marking...
-                              </>
-                            ) : (
-                              <>
-                                Mark as No Show
-                              </>
-                            )}
-                          </button>
-                        </>
-                      )}
-                      
-                      {/* Completed session actions */}
-                      {session.status === 'completed' && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openSessionNotesModal(session)}
-                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            title="View session notes"
-                          >
-                            <FileText className="h-3 w-3 mr-1" />
-                            View Notes
-                          </button>
-                          <button
-                            onClick={() => setFeedbackToView(session)}
-                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-purple-300 text-[11px] sm:text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                          >
-                            View Feedback
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
         </div>
       </div>
 
