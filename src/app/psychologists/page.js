@@ -1359,8 +1359,7 @@ const Guide = () => {
                 {/* Availability information - below card */}
                 <div className="availability-container" style={{
                   marginTop: 8,
-                  marginBottom: 20,
-                  height: '72px' // Fixed height for 3 lines to keep all cards same size
+                  marginBottom: 20
                 }}>
                   <div style={{
                     background: 'rgba(255,255,255,0.25)',
@@ -1377,7 +1376,6 @@ const Guide = () => {
                     flexDirection: 'column',
                     justifyContent: 'flex-start',
                     width: '100%',
-                    height: '100%', // Fill parent container
                     lineHeight: '1.4', // Better line spacing
                     overflow: 'hidden' // Hide overflow if content is too long
                   }}>
@@ -1462,6 +1460,53 @@ const Guide = () => {
                       return 'No availability';
                     })()}
                     </div>
+                    {/* Book Now Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const name = doc.name || `${doc.first_name || ''} ${doc.last_name || ''}`.trim();
+                        const slug = name
+                          .toLowerCase()
+                          .trim()
+                          .replace(/[^a-z0-9]+/g, '-')
+                          .replace(/^-+|-+$/g, '');
+                        if (slug) {
+                          router.push(`/online-child-psycologist/${slug}`);
+                        }
+                      }}
+                      style={{
+                        marginTop: '8px',
+                        width: '100%',
+                        padding: '8px 16px',
+                        backgroundColor: '#3f2e73',
+                        color: '#ffffff',
+                        border: '2px solid #3f2e73',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 4px rgba(63, 46, 115, 0.2)'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                          e.target.style.backgroundColor = '#6b5299';
+                          e.target.style.borderColor = '#6b5299';
+                          e.target.style.transform = 'translateY(-1px)';
+                          e.target.style.boxShadow = '0 4px 8px rgba(107, 82, 153, 0.3)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                          e.target.style.backgroundColor = '#3f2e73';
+                          e.target.style.borderColor = '#3f2e73';
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 2px 4px rgba(63, 46, 115, 0.2)';
+                        }
+                      }}
+                    >
+                      Book Now
+                    </button>
                   </div>
                 </div>
               );

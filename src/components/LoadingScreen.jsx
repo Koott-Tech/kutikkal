@@ -1,8 +1,49 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 export default function LoadingScreen({ message = "", isVisible = true }) {
+  const prevVisibleRef = useRef(isVisible);
+  const overlayRef = useRef(null);
+
+  useEffect(() => {
+    if (!overlayRef.current) return;
+
+    // Initialize opacity on mount
+    if (prevVisibleRef.current === undefined) {
+      overlayRef.current.style.opacity = isVisible ? "1" : "0";
+      overlayRef.current.style.transition = "none";
+      prevVisibleRef.current = isVisible;
+      return;
+    }
+
+    if (prevVisibleRef.current && !isVisible) {
+      // Fade out: set transition first, then change opacity
+      overlayRef.current.style.transition = "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)";
+      // Force a reflow to ensure transition is applied before opacity change
+      void overlayRef.current.offsetHeight;
+      // Change opacity in next frame for smooth fade-out
+      requestAnimationFrame(() => {
+        if (overlayRef.current) {
+          overlayRef.current.style.opacity = "0";
+        }
+      });
+    } else if (isVisible && !prevVisibleRef.current) {
+      // Fade in: no transition, appear instantly
+      overlayRef.current.style.transition = "none";
+      overlayRef.current.style.opacity = "1";
+    } else if (isVisible) {
+      // When visible, always have transition ready for smooth fade-out
+      overlayRef.current.style.transition = "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)";
+      overlayRef.current.style.opacity = "1";
+    }
+    
+    prevVisibleRef.current = isVisible;
+  }, [isVisible]);
+
   return (
     <div
+      ref={overlayRef}
       data-nextjs-scroll-focus-boundary
       className="loading-screen-overlay"
       style={{
@@ -19,8 +60,7 @@ export default function LoadingScreen({ message = "", isVisible = true }) {
         overflow: "hidden",
         margin: 0,
         padding: 0,
-        opacity: isVisible ? 1 : 0,
-        transition: "opacity 150ms ease-in-out",
+        // Opacity and transition are controlled dynamically via useEffect
         pointerEvents: isVisible ? "auto" : "none",
       }}
     >
