@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Edit, Save, X, DollarSign, TrendingUp, Calendar, Wallet, Eye, User } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const getDoctorImageUrl = (doctor) => {
   if (!doctor) return null;
-  return doctor.psychologist?.cover_image_url || null;
+  const imageUrl = doctor.psychologist?.cover_image_url || null;
+  // Normalize the image URL (converts Supabase URLs to proxy URLs with signed signatures)
+  return imageUrl ? normalizeImageUrl(imageUrl) : null;
 };
 
 export default function FinanceDoctors() {

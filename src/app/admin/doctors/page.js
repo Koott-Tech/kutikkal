@@ -476,18 +476,70 @@ export default function DoctorsPage() {
                     {doctor.name || 'No Name'}
                   </h6>
                   <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
-                  <div className="mt-3 text-sm">
-              {doctor.availability && doctor.availability.length > 0 ? (
-                      <span className="flex items-center text-green-600">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Available for sessions
+                  <div className="mt-3 flex items-center gap-4">
+                    <div className="text-sm">
+                      {doctor.active === false ? (
+                        <span className="flex items-center text-red-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Inactive - Not available for sessions
+                        </span>
+                      ) : doctor.availability && doctor.availability.length > 0 ? (
+                        <span className="flex items-center text-green-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Available for sessions
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-gray-500">
+                          <Clock className="h-4 w-4 mr-2" />
+                          No availability schedule set
+                        </span>
+                      )}
+                    </div>
+                    {/* Active Toggle */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600">Active:</span>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const doctorId = doctor.psychologist_id || doctor.id;
+                          const newActiveStatus = !(doctor.active !== false); // Default to true if undefined
+                          
+                          // Save previous state for potential revert
+                          const previousDoctors = [...doctors];
+                          
+                          // Optimistically update UI immediately
+                          setDoctors(prevDoctors => 
+                            prevDoctors.map(d => 
+                              d.id === doctor.id ? { ...d, active: newActiveStatus } : d
+                            )
+                          );
+                          
+                          try {
+                            await adminApi.updatePsychologist(doctorId, { active: newActiveStatus });
+                            // No success popup - just update silently
+                          } catch (error) {
+                            console.error('Error updating active status:', error);
+                            // Revert on error
+                            setDoctors(previousDoctors);
+                            showError('Failed to update active status', 'Update Error');
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          doctor.active !== false ? 'bg-green-600' : 'bg-gray-300'
+                        }`}
+                        role="switch"
+                        aria-checked={doctor.active !== false}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            doctor.active !== false ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                      <span className={`text-xs ${doctor.active !== false ? 'text-green-600' : 'text-gray-500'}`}>
+                        {doctor.active !== false ? 'On' : 'Off'}
                       </span>
-              ) : (
-                      <span className="flex items-center text-gray-500">
-                  <Clock className="h-4 w-4 mr-2" />
-                  No availability schedule set
-                      </span>
-                    )}
+                    </div>
                   </div>
                 </div>
             </div>

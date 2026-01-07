@@ -1377,7 +1377,8 @@ const Guide = () => {
                     justifyContent: 'flex-start',
                     width: '100%',
                     lineHeight: '1.4', // Better line spacing
-                    overflow: 'hidden' // Hide overflow if content is too long
+                    overflow: 'hidden', // Hide overflow if content is too long
+                    minHeight: '4.2rem' // Fixed minimum height for 3 lines (Next available: + 2 date lines) to match first card
                   }}>
                     {(() => {
                       const isLoading = loadingAvailability.has(doc.id);

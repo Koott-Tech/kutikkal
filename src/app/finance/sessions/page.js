@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Search, Filter, Eye, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
-import { financeApi, publicApi } from '@/lib/backendApi';
+import { financeApi, publicApi, adminApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function FinanceSessions() {
@@ -69,9 +69,12 @@ export default function FinanceSessions() {
 
   const loadPsychologists = async () => {
     try {
-      const response = await publicApi.getPsychologists();
+      // Use adminApi to get all psychologists (including inactive ones) for finance role
+      const response = await adminApi.getPsychologists();
       if (response.success && response.data) {
-        setPsychologists(response.data.psychologists || response.data || []);
+        // Admin API returns data in users array format
+        const psychologists = response.data.users || response.data.psychologists || response.data || [];
+        setPsychologists(psychologists);
       }
     } catch (err) {
       console.error('Failed to load psychologists:', err);
