@@ -49,8 +49,18 @@ jobs:
         run: |
           # Use npm install (not npm ci) to ensure optional dependencies are installed
           # npm ci skips optional dependencies, but Tailwind CSS v4 requires lightningcss platform binaries
-          # npm install respects package-lock.json and installs optional dependencies for the platform
-          npm install --prefer-offline --no-audit
+          # First, install main dependencies (this should install optional dependencies automatically)
+          npm install --no-audit
+          # Get the lightningcss version to match the optional dependency version
+          LIGHTNINGCSS_VERSION=$(node -p "require('./node_modules/lightningcss/package.json').version" 2>/dev/null || echo "1.30.1")
+          echo "Detected lightningcss version: $LIGHTNINGCSS_VERSION"
+          # Explicitly install lightningcss optional dependency for Linux x64 GNU (ubuntu-latest runner)
+          # This is a safety net in case npm skipped optional dependencies
+          echo "Installing lightningcss platform binary (lightningcss-linux-x64-gnu@$LIGHTNINGCSS_VERSION)..."
+          npm install "lightningcss-linux-x64-gnu@$LIGHTNINGCSS_VERSION" --legacy-peer-deps --no-audit 2>&1 || echo "⚠️ Note: Installation attempt completed (may already be installed)"
+          # Verify the package is available (this will fail the build if not found, which is what we want)
+          echo "Verifying lightningcss native binary..."
+          node -e "try { const pkg = require('lightningcss-linux-x64-gnu'); console.log('✅ lightningcss native binary found and loaded successfully'); } catch(e) { console.error('❌ ERROR: lightningcss native binary not found!'); console.error('Error details:', e.message); console.error('The build will fail. Trying to diagnose...'); console.error('Checking node_modules/lightningcss-linux-x64-gnu...'); const fs = require('fs'); try { const files = fs.readdirSync('node_modules'); console.log('Available packages:', files.filter(f => f.includes('lightningcss')).join(', ')); } catch(e2) { console.error('Could not list node_modules'); } process.exit(1); }"
 
       - name: Run linter
         env:
@@ -101,8 +111,18 @@ jobs:
         run: |
           # Use npm install (not npm ci) to ensure optional dependencies are installed
           # npm ci skips optional dependencies, but Tailwind CSS v4 requires lightningcss platform binaries
-          # npm install respects package-lock.json and installs optional dependencies for the platform
-          npm install --prefer-offline --no-audit
+          # First, install main dependencies (this should install optional dependencies automatically)
+          npm install --no-audit
+          # Get the lightningcss version to match the optional dependency version
+          LIGHTNINGCSS_VERSION=$(node -p "require('./node_modules/lightningcss/package.json').version" 2>/dev/null || echo "1.30.1")
+          echo "Detected lightningcss version: $LIGHTNINGCSS_VERSION"
+          # Explicitly install lightningcss optional dependency for Linux x64 GNU (ubuntu-latest runner)
+          # This is a safety net in case npm skipped optional dependencies
+          echo "Installing lightningcss platform binary (lightningcss-linux-x64-gnu@$LIGHTNINGCSS_VERSION)..."
+          npm install "lightningcss-linux-x64-gnu@$LIGHTNINGCSS_VERSION" --legacy-peer-deps --no-audit 2>&1 || echo "⚠️ Note: Installation attempt completed (may already be installed)"
+          # Verify the package is available (this will fail the build if not found, which is what we want)
+          echo "Verifying lightningcss native binary..."
+          node -e "try { const pkg = require('lightningcss-linux-x64-gnu'); console.log('✅ lightningcss native binary found and loaded successfully'); } catch(e) { console.error('❌ ERROR: lightningcss native binary not found!'); console.error('Error details:', e.message); console.error('The build will fail. Trying to diagnose...'); console.error('Checking node_modules/lightningcss-linux-x64-gnu...'); const fs = require('fs'); try { const files = fs.readdirSync('node_modules'); console.log('Available packages:', files.filter(f => f.includes('lightningcss')).join(', ')); } catch(e2) { console.error('Could not list node_modules'); } process.exit(1); }"
 
       - name: Build Next.js app
         env:
@@ -127,7 +147,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install --prefer-offline --no-audit
+        run: npm install --no-audit
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate || true
