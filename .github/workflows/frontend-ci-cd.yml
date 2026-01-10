@@ -27,7 +27,7 @@ on:
       - production
       - roles
       - working
-  workflow_dispatch: # Allows manual triggering from Actions tab
+  workflow_dispatch: # Allows manual triggering from Actions tab ggood
 
 jobs:
   frontend-tests:
