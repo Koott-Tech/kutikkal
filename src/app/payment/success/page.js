@@ -1258,44 +1258,42 @@ function PaymentSuccessContent() {
           }}
         >
         <div className="details-container">
-        {/* Transaction Details - Left Column */}
-      {paymentData && (
-          <div className="transaction-details-column">
-            <div style={{ textAlign: 'left', paddingLeft: '0' }}>
-              <div style={{ 
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '12px',
-                marginTop: '0',
-                lineHeight: '1.4'
-              }}>
-                Transaction Details
+          {/* Transaction Details - Left Column */}
+          {paymentData && (
+            <div className="transaction-details-column">
+              <div style={{ textAlign: 'left', paddingLeft: '0' }}>
+                <div style={{ 
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '12px',
+                  marginTop: '0',
+                  lineHeight: '1.4'
+                }}>
+                  Transaction Details
+                </div>
+                <div style={{ 
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  lineHeight: '1.8',
+                  marginBottom: '20px'
+                }}>
+                  {paymentData.transactionId && (
+                    <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Transaction ID:</strong> {paymentData.transactionId}</p>
+                  )}
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Order ID:</strong> {paymentData.orderId}</p>
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Payment ID:</strong> {paymentData.paymentId}</p>
+                  {paymentData.amount && (
+                    <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
+                  )}
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
+                </div>
               </div>
-              <div style={{ 
-                fontSize: '14px',
-                color: '#6b7280',
-                lineHeight: '1.8',
-                marginBottom: '20px'
-              }}>
-                {paymentData.transactionId && (
-                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Transaction ID:</strong> {paymentData.transactionId}</p>
-                )}
-                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Order ID:</strong> {paymentData.orderId}</p>
-                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Payment ID:</strong> {paymentData.paymentId}</p>
-                {paymentData.amount && (
-                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
-                )}
-                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
-              </div>
-              
-              {/* Receipt is sent automatically via email and WhatsApp; no manual download button. */}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Vertical Divider */}
-        <div className="vertical-divider"></div>
+          {/* Vertical Divider - Only show on desktop when paymentData exists */}
+          {paymentData && <div className="vertical-divider"></div>}
 
         {/* Session Details - Right Column */}
         <div className="session-details-column" style={{ minHeight: '200px' }}>
@@ -1545,66 +1543,34 @@ function PaymentSuccessContent() {
         .transaction-details-column,
         .session-details-column {
           width: 100%;
-          display: block;
-          visibility: visible;
-        }
-        
-        .transaction-details-column {
-          padding-left: 0;
         }
         
         .vertical-divider {
           display: none;
         }
         
-        /* Tablet view: Center containers horizontally, keep text left-aligned */
-        @media (min-width: 768px) and (max-width: 1199px) {
-          .details-container {
-            max-width: 600px;
-            margin: 0 auto;
-          }
-          
-          .transaction-details-column,
-          .session-details-column {
-            text-align: left;
-          }
-        }
-        
-        /* Desktop/Laptop only: Two column layout (tablets use mobile/stacked layout) */
-        @media (min-width: 1200px) {
+        @media (min-width: 1024px) {
           .details-container {
             flex-direction: row;
-            gap: 40px;
-            align-items: flex-start;
-            display: flex !important;
+            align-items: stretch;
           }
           
           .transaction-details-column {
             flex: 1;
-            max-width: 50%;
-            padding-left: 0;
-            width: auto;
-            display: block !important;
-            visibility: visible !important;
+            padding-right: 40px;
           }
           
           .vertical-divider {
             display: block;
             width: 2px;
-            height: 100%;
             background-color: #3f2e73;
-            border-radius: 2px;
             flex-shrink: 0;
-            min-height: 200px;
+            align-self: stretch;
           }
           
           .session-details-column {
             flex: 1;
-            max-width: 50%;
-            width: auto;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+            padding-left: 40px;
           }
         }
       `}</style>
