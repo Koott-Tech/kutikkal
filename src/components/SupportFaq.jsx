@@ -257,7 +257,7 @@ export default function SupportFaq() {
                       <div
                         className="absolute inset-0 bg-no-repeat rounded-2xl"
                         style={{ 
-                          backgroundImage: "url('/faq1.png')",
+                          backgroundImage: "url('/Our promise bg1.webp')",
                           backgroundSize: '200%',
                           backgroundPosition: 'center',
                           backgroundRepeat: 'no-repeat',
@@ -276,7 +276,7 @@ export default function SupportFaq() {
                       <div
                         className="absolute inset-0 bg-no-repeat rounded-2xl"
                         style={{ 
-                          backgroundImage: "url('/6.png')",
+                          backgroundImage: "url('/Our promise bg2.webp')",
                           backgroundSize: '140%',
                           backgroundPosition: 'center',
                           backgroundRepeat: 'no-repeat',
@@ -295,7 +295,7 @@ export default function SupportFaq() {
                       <div
                         className="absolute inset-0 bg-no-repeat rounded-2xl"
                         style={{ 
-                          backgroundImage: "url('/7.png')",
+                          backgroundImage: "url('/Our promise bg3.webp')",
                           backgroundSize: '140%',
                           backgroundPosition: 'center',
                           backgroundRepeat: 'no-repeat',
@@ -314,7 +314,7 @@ export default function SupportFaq() {
                       <div
                         className="absolute inset-0 bg-no-repeat rounded-2xl"
                         style={{ 
-                          backgroundImage: "url('/8.png')",
+                          backgroundImage: "url('/Our promise bg4.webp')",
                           backgroundSize: '140%',
                           backgroundPosition: 'center',
                           backgroundRepeat: 'no-repeat',

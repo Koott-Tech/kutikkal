@@ -88,7 +88,7 @@ export default function Testimonials() {
     { 
       text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
       author: "Father of a 10-year-old",
-      bgImage: "/faq1.png",
+      bgImage: "/Our promise bg1.webp",
       gradient: "linear-gradient(135deg, #E6F5EC 0%, #D4EDE0 50%, #C8E8D5 100%)",
       type: "text" 
     },
@@ -96,7 +96,7 @@ export default function Testimonials() {
     { 
       text: "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident.", 
       author: "12-year-old girl",
-      bgImage: "/6.png",
+      bgImage: "/Our promise bg2.webp",
       gradient: "linear-gradient(135deg, #ECEBFF 0%, #E0DEFF 50%, #D4D2FF 100%)",
       type: "text" 
     },
@@ -104,7 +104,7 @@ export default function Testimonials() {
     { 
       text: "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person.", 
       author: "Parent of an 8-year-old",
-      bgImage: "/7.png",
+      bgImage: "/Our promise bg3.webp",
       gradient: "linear-gradient(135deg, #FFF5E6 0%, #FFEED6 50%, #FFE7C8 100%)",
       type: "text" 
     },
@@ -112,7 +112,7 @@ export default function Testimonials() {
     { 
       text: "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children.", 
       author: "Parent of a 9-year-old",
-      bgImage: "/8.png",
+      bgImage: "/Our promise bg4.webp",
       gradient: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #D1E9FF 100%)",
       type: "text" 
     },
@@ -860,7 +860,7 @@ export default function Testimonials() {
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/faq1.png')" }}
+                style={{ backgroundImage: "url('/Our promise bg1.webp')" }}
               />
               <div className="relative z-10">
                 <p className="p1">
@@ -875,7 +875,7 @@ export default function Testimonials() {
             <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/6.png')" }}
+                style={{ backgroundImage: "url('/Our promise bg2.webp')" }}
               />
               <div className="relative z-10">
                 <p>
@@ -978,7 +978,7 @@ export default function Testimonials() {
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '260px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/7.png')" }}
+                style={{ backgroundImage: "url('/Our promise bg3.webp')" }}
               />
               <div className="relative z-10">
                 <p>
@@ -1003,7 +1003,7 @@ export default function Testimonials() {
             <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/8.png')" }}
+                style={{ backgroundImage: "url('/Our promise bg4.webp')" }}
               />
               <div className="relative z-10">
                 <p>
