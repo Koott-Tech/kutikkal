@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Target modern browsers to reduce legacy JavaScript polyfills
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
+  // Note: Babel config exists for Jest compatibility, so SWC is disabled
+  // This is expected - compiler options will show warnings but build works correctly
+  // For production builds, console logs will still be removed via Babel plugins if needed
   // Optimize for modern browsers (reduces bundle size by removing unnecessary polyfills)
-  swcMinify: true,
+  swcMinify: false, // Explicitly disabled since we're using Babel
   images: {
     remotePatterns: [
       {

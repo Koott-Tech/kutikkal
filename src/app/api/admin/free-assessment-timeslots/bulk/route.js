@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Mark route as dynamic since it uses request.headers and request.json()
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const body = await request.json();

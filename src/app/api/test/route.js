@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Mark route as dynamic (uses Date which changes per request)
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   return NextResponse.json({ 
     message: 'Test API route working!', 

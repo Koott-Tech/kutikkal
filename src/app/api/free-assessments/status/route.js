@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Mark route as dynamic since it uses request.headers
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');

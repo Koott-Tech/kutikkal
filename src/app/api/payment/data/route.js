@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Mark route as dynamic (uses in-memory storage that changes)
+export const dynamic = 'force-dynamic';
+
 // Temporary storage for payment data (in production, use Redis or database)
 let paymentData = null;
 let failureData = null;
