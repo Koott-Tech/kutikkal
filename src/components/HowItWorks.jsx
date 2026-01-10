@@ -390,7 +390,7 @@ export default function HowItWorks() {
                     <div
                       className="how-it-works-card p-4 h-[320px] w-full flex flex-col justify-between card-bg-mobile rounded-[10px]"
                       style={{ 
-                        backgroundImage: card.id === 1 ? "url('/howitworks1.png')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/howitworks3.png')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
+                        backgroundImage: card.id === 1 ? "url('/How it works bg 1.webp')" : card.id === 2 ? "url('/howitworks2.webp')" : card.id === 3 ? "url('/How it works bg 3.webp')" : card.id === 4 ? "url('/howitworks4.webp')" : card.gradient,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
@@ -432,7 +432,7 @@ export default function HowItWorks() {
                           <div className="flex flex-col items-center justify-center card-2-inner-image" style={{ padding: 0, margin: '-70px auto 0 auto' }}>
                             <div className="relative" style={{ width: '200px', height: '200px', padding: 0, margin: 0 }}>
                               <Image
-                                src="/howitworks2inner.png"
+                                src="/How it works 2 Inner.webp"
                                 alt="Child psychologist profile card used to match families with therapists"
                                 fill
                                 className="object-contain"
@@ -475,7 +475,7 @@ export default function HowItWorks() {
                           <div className="flex justify-center items-center" style={{ margin: '-45px 0', padding: 0 }}>
                             <div className="relative" style={{ width: '170px', height: '170px', padding: 0, margin: 0 }}>
                               <Image
-                                src="/howitworks4inner.svg"
+                                src="/How it works 4 Inner.webp"
                                 alt="Online child counseling session illustration on a laptop"
                                 fill
                                 className="object-contain"
@@ -546,7 +546,7 @@ export default function HowItWorks() {
             <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks1.png')",
+                backgroundImage: "url('/How it works bg 1.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">01</div>
@@ -609,7 +609,7 @@ export default function HowItWorks() {
               <div className="flex flex-col items-center" style={{ padding: 0, margin: '-55px 0 -10px 0' }}>
                 <div className="relative" style={{ width: '220px', height: '220px', padding: 0, margin: 0, marginBottom: 0 }}>
                   <Image
-                    src="/howitworks2inner.png"
+                    src="/How it works 2 Inner.webp"
                     alt="Child psychologist profile card used to match families with therapists"
                     fill
                     className="object-contain"
@@ -635,7 +635,7 @@ export default function HowItWorks() {
           <div
               className="rounded-2xl p-6 h-[350px] w-[290px] flex-shrink-0 flex flex-col bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: "url('/howitworks3.png')",
+                backgroundImage: "url('/How it works bg 3.webp')",
               }}
             >
             <div className="text-3xl md:text-4xl font-medium text-gray-900 text-center mb-4">03</div>
@@ -685,7 +685,7 @@ export default function HowItWorks() {
             <div className="flex flex-col items-center" style={{ padding: 0, margin: '-15px 0 -10px 0' }}>
               <div className="relative" style={{ width: '190px', height: '190px', padding: 0, margin: 0, marginBottom: 0 }}>
                 <Image
-                  src="/howitworks4inner.svg"
+                  src="/How it works 4 Inner.webp"
                   alt="Online child counseling session illustration on a laptop"
                   fill
                   className="object-contain"

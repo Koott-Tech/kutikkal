@@ -13,7 +13,7 @@ export default function ChooseOptions() {
       tags: ["Counseling", "Emotions"],
       title: "Child\nCounseling",
       description: "A safe space for your kids to express & grow.",
-      image: "/letusguide1.webp",
+      image: "/Child Counseling.webp",
       gradient: "from-[#DEEFDC] to-white",
       tagColors: {
         primary: "bg-white text-black",
@@ -26,7 +26,7 @@ export default function ChooseOptions() {
       tags: ["Assessments", "Tests"],
       title: "Child\nAssessment", 
       description: "Find your child's needs & strengths to grow.",
-      image: "/boy1.png",
+      image: "/Child Assessment.webp",
       gradient: "from-[#f1e7f9] to-white",
       tagColors: {
         primary: "bg-white text-black",
@@ -39,7 +39,7 @@ export default function ChooseOptions() {
       tags: ["Parents", "Workshops"],
       title: "Better\nParenting",
       description: "Learn, Connect & Build a wonderful home.", 
-      image: "/fam1.png",
+      image: "/Better parenting.webp",
       gradient: "from-[#fff4e2] to-white",
       tagColors: {
         primary: "bg-white text-black",
@@ -254,7 +254,7 @@ export default function ChooseOptions() {
                   fill
                   className={`${card.imageClass ? `${card.imageClass.replace('object-[50%_100%]', 'object-center')}` : "object-cover object-center md:object-[50%_100%]"}`}
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  priority={card.image === "/boy1.png"}
+                  priority={card.image === "/Child Assessment.webp"}
                 />
                 
                 {/* Read More Button */}

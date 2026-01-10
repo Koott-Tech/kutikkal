@@ -2185,7 +2185,7 @@ const TherapistProfileContent = () => {
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 ? (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium text-[#3f2e73]">Available Times:</p>
+                            <p className="text-sm font-medium text-[#3f2e73]">Available Times (IST):</p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button

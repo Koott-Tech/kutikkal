@@ -631,7 +631,7 @@ export default function RescheduleModal({ isOpen, onClose, session, onReschedule
               <div>
                 <div className="mb-3 sm:mb-4 flex items-center justify-between">
                   <h6 className="text-xs sm:text-sm font-semibold text-gray-900">
-                  Select New Time
+                  Select New Time (IST)
                   </h6>
                   {selectedDate && (
                     <p className="text-[10px] sm:text-xs text-gray-500">

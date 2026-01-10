@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
@@ -28,9 +31,45 @@
     "tailwindcss": "^4"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "babel-jest": "^29.7.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.35",
+    "identity-obj-proxy": "^3.0.0",
     "imagemin": "^9.0.1",
-    "imagemin-webp": "^8.0.0"
+    "imagemin-webp": "^8.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-transform-stub": "^2.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^.+\\.(css|sass|scss)$": "identity-obj-proxy",
+      "^.+\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/__tests__/**/*.jsx",
+      "**/?(*.)+(spec|test).js",
+      "**/?(*.)+(spec|test).jsx"
+    ],
+    "transform": {
+      "^.+\\.(js|jsx)$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(next|@next)/)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/**/*.stories.{js,jsx}",
+      "!src/**/__tests__/**"
+    ]
   }
 }

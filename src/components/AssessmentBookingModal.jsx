@@ -561,7 +561,7 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
             {selectedDate ? (
               <>
                 <div className="text-sm font-medium text-gray-900 mb-4">
-                  Available times for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  Available times (IST) for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </div>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2">

@@ -1072,7 +1072,7 @@ export default function AdsLandingPage() {
                       <div className="mobile-image md:hidden">
                         <div className="w-[70px] h-[100px] rounded-[10px] overflow-hidden" style={{ padding: 0, margin: 0 }}>
                           <img
-                            src="/consultation.png"
+                            src="/consultation.webp"
                             alt="Consultation"
                             className="w-full h-full object-cover"
                             style={{ padding: 0, margin: 0 }}
@@ -1088,7 +1088,7 @@ export default function AdsLandingPage() {
                   <div className="relative h-full col-span-1 hidden md:flex justify-center items-center p-8 desktop-image-container">
                     <div className="desktop-image overflow-hidden" style={{ width: '112px', height: '160px', borderRadius: '10px', padding: 0, margin: 0 }}>
                       <img
-                        src="/consultation.png"
+                        src="/consultation.webp"
                         alt="Consultation"
                         width={112}
                         height={160}

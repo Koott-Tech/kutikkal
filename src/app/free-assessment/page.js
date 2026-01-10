@@ -1121,7 +1121,7 @@ export default function FreeAssessmentPage() {
               {/* Available Time Slots */}
               {selectedDate && (
                 <div className="flex flex-col flex-grow mb-2">
-                  <h6 className="font-semibold text-gray-800 mb-3">Time Slots</h6>
+                  <h6 className="font-semibold text-gray-800 mb-3">Available Time Slots (IST)</h6>
                   {loadingTimeslots ? (
                     <div className="flex items-center justify-center py-4 min-h-[200px]">
                       <div className="flex flex-col items-center justify-center">

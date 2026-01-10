@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Calendar, Clock, X, AlertCircle, Package } from "lucide-react";
 import { psychologistApi, publicApi } from "../lib/backendApi";
 import { useNotification } from "../contexts/NotificationContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function ScheduleAssessmentSessionModal({ 
   isOpen, 
@@ -11,6 +12,7 @@ export default function ScheduleAssessmentSessionModal({
   onScheduleSuccess
 }) {
   const { showError, showSuccess } = useNotification();
+  const { hasRole } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -356,7 +358,7 @@ export default function ScheduleAssessmentSessionModal({
               {selectedDate ? (
                 <>
                   <div className="text-sm font-medium text-gray-900 mb-4">
-                    Available times for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    Available times{hasRole && hasRole('client') ? ' (IST)' : ''} for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                   </div>
                   <div className="space-y-2 max-h-[400px] overflow-y-auto">
                     <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
