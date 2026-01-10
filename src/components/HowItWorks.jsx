@@ -434,10 +434,18 @@ export default function HowItWorks() {
                               <Image
                                 src="/How it works 2 Inner.webp"
                                 alt="Child psychologist profile card used to match families with therapists"
-                                fill
+                                width={200}
+                                height={200}
                                 className="object-contain"
-                                sizes="200px"
-                                style={{ padding: '0', margin: '0', display: 'block' }}
+                                unoptimized
+                                style={{ padding: '0', margin: '0', display: 'block', width: '200px', height: '200px' }}
+                                onError={(e) => {
+                                  console.error('Image failed to load: /How it works 2 Inner.webp');
+                                  console.error('Error target:', e.target);
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully: /How it works 2 Inner.webp');
+                                }}
                               />
                             </div>
                             {/* Doctor Information */}
@@ -477,10 +485,18 @@ export default function HowItWorks() {
                               <Image
                                 src="/How it works 4 Inner.webp"
                                 alt="Online child counseling session illustration on a laptop"
-                                fill
+                                width={170}
+                                height={170}
                                 className="object-contain"
-                                sizes="170px"
-                                style={{ padding: '0', margin: '0', display: 'block' }}
+                                unoptimized
+                                style={{ padding: '0', margin: '0', display: 'block', width: '170px', height: '170px' }}
+                                onError={(e) => {
+                                  console.error('Image failed to load: /How it works 4 Inner.webp');
+                                  console.error('Error target:', e.target);
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully: /How it works 4 Inner.webp');
+                                }}
                               />
                             </div>
                           </div>
@@ -611,10 +627,18 @@ export default function HowItWorks() {
                   <Image
                     src="/How it works 2 Inner.webp"
                     alt="Child psychologist profile card used to match families with therapists"
-                    fill
+                    width={220}
+                    height={220}
                     className="object-contain"
-                    sizes="220px"
-                    style={{ padding: '0', margin: '0', display: 'block' }}
+                    unoptimized
+                    style={{ padding: '0', margin: '0', display: 'block', width: '220px', height: '220px' }}
+                    onError={(e) => {
+                      console.error('Image failed to load (desktop): /How it works 2 Inner.webp');
+                      console.error('Error target:', e.target);
+                    }}
+                    onLoad={() => {
+                      console.log('Image loaded successfully (desktop): /How it works 2 Inner.webp');
+                    }}
                   />
                 </div>
                 {/* Doctor Information */}
@@ -687,10 +711,18 @@ export default function HowItWorks() {
                 <Image
                   src="/How it works 4 Inner.webp"
                   alt="Online child counseling session illustration on a laptop"
-                  fill
+                  width={190}
+                  height={190}
                   className="object-contain"
-                  sizes="190px"
-                  style={{ padding: '0', margin: '0', display: 'block' }}
+                  unoptimized
+                  style={{ padding: '0', margin: '0', display: 'block', width: '190px', height: '190px' }}
+                  onError={(e) => {
+                    console.error('Image failed to load (desktop): /How it works 4 Inner.webp');
+                    console.error('Error target:', e.target);
+                  }}
+                  onLoad={() => {
+                    console.log('Image loaded successfully (desktop): /How it works 4 Inner.webp');
+                  }}
                 />
               </div>
             </div>

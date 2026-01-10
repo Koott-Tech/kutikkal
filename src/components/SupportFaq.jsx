@@ -49,9 +49,9 @@ export default function SupportFaq() {
 
   const resolvedSrcByIndex = useMemo(() => ({
     0: '/ourpromise1.webp',
-    1: '/ourpromise2.png',
-    2: '/ourpromise3.png',
-    3: '/ourpromise4.png',
+    1: '/Our promise 2.webp',
+    2: '/Our promise 3.webp',
+    3: '/Our promise 4.webp',
   }), []);
 
   useEffect(() => {
@@ -411,9 +411,9 @@ export default function SupportFaq() {
                         <div className="relative aspect-[4/3] w-full mx-auto overflow-hidden rounded-xl bg-gray-100 -mx-6">
                           <Image
                             src={
-                              idx === 3 ? '/ourpromise4.png' :
-                              idx === 2 ? '/ourpromise3.png' :
-                              idx === 1 ? '/ourpromise2.png' :
+                              idx === 3 ? '/Our promise 4.webp' :
+                              idx === 2 ? '/Our promise 3.webp' :
+                              idx === 1 ? '/Our promise 2.webp' :
                               idx === 0 ? '/ourpromise1.webp' :
                               item.image
                             }
