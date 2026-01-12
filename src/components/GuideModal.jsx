@@ -54,19 +54,19 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
       key: 'counselling',
       title: "Child Counseling",
       description: "A safe space for your kids to express & grow.",
-      image: "/letusguide1.webp",
+      image: "/Child Counseling.webp",
     },
     {
       key: 'assessments',
       title: "Child Assessment",
       description: "Find your child's needs & strengths to grow.",
-      image: "/boy1.png",
+      image: "/Child Assessment.webp",
     },
     {
       key: 'better-parenting',
       title: "Better Parenting",
       description: "Learn, Connect & Build a wonderful home.",
-      image: "/fam1.png",
+      image: "/Better parenting.webp",
     },
   ];
 
@@ -211,7 +211,14 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                   style={{ transitionDelay: `${idx * 220}ms` }}
                 >
                   <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image src={opt.image} alt={opt.title} fill className="object-cover" />
+                    <Image 
+                      src={opt.image} 
+                      alt={opt.title} 
+                      fill 
+                      className="object-cover" 
+                      sizes="(max-width: 768px) 80px, 96px"
+                      unoptimized={false}
+                    />
                   </div>
                   <div className="flex-1">
                     <div className="text-base md:text-lg font-semibold text-gray-900">{opt.title}</div>
