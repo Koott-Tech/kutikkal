@@ -1704,13 +1704,26 @@ export default function AdsLandingPage() {
                 max-width: 300px !important;
               }
             }
-            .reviews-marquee:hover { 
+            .reviews-marquee:hover,
+            .reviews-marquee:active { 
               animation-play-state: paused; 
             }
             @media (max-width: 767px) {
-              .reviews-marquee:hover {
-                animation-play-state: running !important;
+              .reviews-marquee:hover,
+              .reviews-marquee:active {
+                animation-play-state: paused;
               }
+            }
+            .reviews-container:active .reviews-marquee,
+            .reviews-container:hover .reviews-marquee {
+              animation-play-state: paused;
+            }
+            .reviews-container {
+              scrollbar-width: none;
+              -ms-overflow-style: none;
+            }
+            .reviews-container::-webkit-scrollbar {
+              display: none;
             }
             @keyframes scroll-reviews {
               0% { transform: translateX(0); }
@@ -1724,7 +1737,7 @@ export default function AdsLandingPage() {
               </h3>
             </div>
 
-            <div className="relative overflow-hidden" style={{ marginBottom: '0px' }}>
+            <div className="relative overflow-x-auto reviews-container" style={{ marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               <div className="reviews-marquee">
                 {(() => {
                   const reviews = [
@@ -1740,7 +1753,7 @@ export default function AdsLandingPage() {
                     const fullStars = Math.floor(review.rating);
                     const hasHalfStar = review.rating % 1 !== 0;
                     return (
-                      <div key={idx} className="review-card min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+                      <div key={idx} className="review-card min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6">
                         <div className="mb-3">
                           <div className="font-semibold text-gray-900 text-sm md:text-base mb-1">{review.name}</div>
                           <div className="flex items-center gap-1">
