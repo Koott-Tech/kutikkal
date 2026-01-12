@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import Head from 'next/head';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '@/lib/backendApi';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import HowItWorks from '@/components/HowItWorks';
-import ChooseOptions from '@/components/ChooseOptions';
 import VideosShowcase from '@/components/VideosShowcase';
+import GuideModal from '@/components/GuideModal';
 
 // Metadata configuration
 const pageMetadata = {
@@ -190,9 +191,176 @@ export default function AdsLandingPage() {
   const [loadingAvailability, setLoadingAvailability] = useState(new Set()); // Track which doctors are loading
   const [videos, setVideos] = useState([]); // Store random videos
   const [videosLoading, setVideosLoading] = useState(true); // Track if videos are being loaded
+  const [showGuide, setShowGuide] = useState(false);
+  const [chooseOptionsShowGuide, setChooseOptionsShowGuide] = useState(false);
+  const [defaultCategory, setDefaultCategory] = useState(null);
+  const [sessionCount, setSessionCount] = useState(0);
+  const [displayCount, setDisplayCount] = useState(0);
+  const [isCounterVisible, setIsCounterVisible] = useState(false);
+  const counterRef = useRef(null);
+
+  // Calculate current session count based on IST time
+  // Increments every minute by a random value between 1-3
+  const calculateSessionCount = () => {
+    // Get current IST time
+    const now = new Date();
+    const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const hours = istTime.getHours();
+    const minutes = istTime.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+    
+    // At midnight (12:00 AM), count is 0
+    if (totalMinutes === 0) {
+      return 0;
+    }
+    
+    // Calculate count: each minute adds a random value between 1-3
+    // Use a deterministic random based on minute to ensure consistency
+    let totalCount = 0;
+    
+    // For each minute that has passed since midnight
+    for (let m = 1; m <= totalMinutes; m++) {
+      // Use minute as seed for pseudo-random (consistent for same minute)
+      const seed = m * 7919; // Prime number for better distribution
+      const randomValue = (seed % 3) + 1; // Value between 1-3
+      totalCount += randomValue;
+    }
+    
+    // No cap - can grow beyond 100
+    return totalCount;
+  };
+
+  // Intersection Observer for counter animation
+  useEffect(() => {
+    if (!counterRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Reset and animate from 0 to current count
+            setDisplayCount(0);
+            setIsCounterVisible(true);
+            
+            // Animate from 0 to current count
+            const targetCount = sessionCount;
+            if (targetCount === 0) {
+              setDisplayCount(0);
+              return;
+            }
+            
+            const duration = 2000; // 2 seconds
+            const steps = 60;
+            const increment = targetCount / steps;
+            let current = 0;
+            
+            const timer = setInterval(() => {
+              current += increment;
+              if (current >= targetCount) {
+                setDisplayCount(targetCount);
+                clearInterval(timer);
+              } else {
+                setDisplayCount(Math.floor(current));
+              }
+            }, duration / steps);
+            
+            return () => clearInterval(timer);
+          } else {
+            // Reset when out of view
+            setIsCounterVisible(false);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(counterRef.current);
+    return () => observer.disconnect();
+  }, [sessionCount]);
+
+  // Initialize and update session count
+  useEffect(() => {
+    const updateCount = () => {
+      const count = calculateSessionCount();
+      setSessionCount(count);
+      // Reset display count when count changes (new day)
+      if (count === 0) {
+        setDisplayCount(0);
+        setIsCounterVisible(false);
+      }
+    };
+    
+    // Initial calculation
+    updateCount();
+    
+    // Update every minute to increment the count
+    const minuteInterval = setInterval(updateCount, 60000); // 60 seconds = 1 minute
+    
+    return () => {
+      clearInterval(minuteInterval);
+    };
+  }, []);
+
+  const openGuide = (categoryKey) => {
+    setDefaultCategory(categoryKey);
+    setChooseOptionsShowGuide(true);
+  };
+
+  const chooseOptionsCards = [
+    {
+      id: 1,
+      tags: ["Counseling", "Emotions"],
+      title: "Child\nCounseling",
+      description: "A safe space for your kids to express & grow.",
+      image: "/Child Counseling.webp",
+      gradient: "from-[#DEEFDC] to-white",
+      tagColors: {
+        primary: "bg-white text-black",
+        secondary: "bg-white text-black"
+      },
+      imageClass: "object-cover object-[50%_100%]"
+    },
+    {
+      id: 2,
+      tags: ["Assessments", "Tests"],
+      title: "Child\nAssessment", 
+      description: "Find your child's needs & strengths to grow.",
+      image: "/Child Assessment.webp",
+      gradient: "from-[#f1e7f9] to-white",
+      tagColors: {
+        primary: "bg-white text-black",
+        secondary: "bg-white text-black"
+      },
+      imageClass: "object-cover object-[50%_100%]"
+    },
+    {
+      id: 3,
+      tags: ["Parents", "Workshops"],
+      title: "Better\nParenting",
+      description: "Learn, Connect & Build a wonderful home.", 
+      image: "/Better parenting.webp",
+      gradient: "from-[#fff4e2] to-white",
+      tagColors: {
+        primary: "bg-white text-black",
+        secondary: "bg-white text-black"
+      },
+      imageClass: "object-cover object-[50%_100%] scale-110"
+    }
+  ];
 
   const toggleFAQ = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
+  };
+
+  const handleGetStartedClick = () => {
+    router.push('/free-assessment');
+  };
+
+  const handleHowItWorksClick = () => {
+    const howItWorksSection = document.getElementById('how-it-works');
+    if (howItWorksSection) {
+      howItWorksSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Fetch psychologists
@@ -737,390 +905,390 @@ export default function AdsLandingPage() {
       />
 
       <main className="min-h-screen bg-white ads-page">
-        {/* Achievements Section */}
-        <section className="pt-40 sm:pt-32 md:pt-36 lg:pt-44 pb-8 md:pb-10 lg:pb-12" style={{ background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)' }}>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-            <div className="text-center mb-6 md:mb-8">
-              <img
-                src="/mainlogo.webp"
-                alt="Little Care Logo"
-                width={300}
-                height={99}
-                className="mx-auto mb-6 md:mb-8"
-                style={{ width: 'clamp(120px, 50vw, 200px)', height: 'auto', objectFit: 'contain' }}
-              />
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 px-4">
-                Trusted by Families Across India for Quality Care
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gray-700 max-w-5xl mx-auto px-4" style={{ lineHeight: '1.4' }}>
-                Little Care is the sister brand of <a href="https://www.koott.in/" target="_blank" rel="noopener noreferrer" className="text-[#3f2e73] font-semibold md:hover:underline">Koott - Online Malayali Counselling</a>, bringing the same commitment to quality mental health care to children and families nationwide. Together, we're redefining care and hope for a better tomorrow.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Free Consultation Banner */}
-        <div className="section-mobile mt-0 pt-16 md:pt-20 lg:pt-24">
-          <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-6 lg:px-0">
-            <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
-              <div className="overflow-hidden relative rounded-[10px] main-container min-h-[280px] md:min-h-[200px]" style={{ borderRadius: "10px", minHeight: "200px" }}>
-                <div className="absolute top-0 left-0 right-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/Free Consultation.webp')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px', height: '180px', maxHeight: '180px', width: '100%' }}></div>
-                <style dangerouslySetInnerHTML={{__html: `
-                  .main-container {
-                    border-radius: 10px;
-                    overflow: hidden;
-                  }
-                  .main-container > div[class*="absolute"][class*="bg-cover"] {
-                    height: 180px !important;
-                    max-height: 180px !important;
-                  }
-                  @media (min-width: 768px) {
-                    .main-container > div[class*="absolute"][class*="bg-cover"] {
-                      height: 200px !important;
-                      max-height: 200px !important;
-                    }
-                  }
-                  .mobile-container {
-                    border-radius: 10px;
-                    overflow: hidden;
-                  }
-                  @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
-                    .main-container {
-                      min-height: 180px;
-                    }
-                    .mobile-text {
-                      padding-top: 0 !important;
-                    }
-                    .mobile-text h4 {
-                      font-size: 18px;
-                      line-height: 1.35;
-                      margin-top: -12px !important;
-                      padding-top: 0 !important;
-                      margin-bottom: 4px !important;
-                    }
-                    .mobile-text p {
-                      font-size: 13px;
-                      line-height: 1.45;
-                      margin-top: 0px !important;
-                      margin-bottom: 20px !important;
-                    }
-                    .mobile-text .flex.items-center.gap-1 {
-                      margin-top: 16px !important;
-                    }
-                    .mobile-text button {
-                      font-size: 12px;
-                      padding: 8px 16px;
-                    }
-                    .mobile-image {
-                      overflow: visible !important;
-                    }
-                    .desktop-image-container {
-                      display: flex !important;
-                      visibility: visible !important;
-                      opacity: 1 !important;
-                    }
-                    .desktop-image {
-                      overflow: visible !important;
-                      width: 130px !important;
-                      height: 180px !important;
-                      display: block !important;
-                      visibility: visible !important;
-                    }
-                    .desktop-image img {
-                      object-fit: contain !important;
-                      object-position: center !important;
-                      width: 100% !important;
-                      height: 100% !important;
-                      display: block !important;
-                      visibility: visible !important;
-                    }
-                  }
-                  @media (max-width: 767px) {
-                    .section-mobile > div,
-                    .section-mobile > div > div {
-                      margin-top: 0;
-                      margin-bottom: 0;
-                      padding-top: 0;
-                      padding-bottom: 0;
-                    }
-                    .main-container {
-                      position: relative;
-                      overflow: hidden;
-                    }
-                    .main-container > div[class*="absolute"] {
-                      z-index: 0;
-                      background-size: cover;
-                      background-position: center;
-                      background-repeat: no-repeat;
-                      width: 100%;
-                      height: 180px;
-                      max-height: 180px;
-                      top: 0;
-                      left: 0;
-                      right: 0;
-                      bottom: 0;
-                      border-radius: 10px !important;
-                    }
-                    .mobile-container {
-                      padding: 8px;
-                      min-height: 180px;
-                      gap: 0px;
-                    }
-                    .mobile-container[style] {
-                      gap: 0px;
-                    }
-                    .grid {
-                      gap: 0px;
-                    }
-                    .grid.grid-cols-2 {
-                      gap: 0px;
-                    }
-                    div[class*="grid"] {
-                      gap: 0px;
-                    }
-                    .no-gap {
-                      gap: 0px;
-                      column-gap: 0px;
-                      row-gap: 0px;
-                    }
-                    .mobile-container > div:last-child {
-                      min-height: 180px;
-                      height: 180px;
-                    }
-                    .mobile-text {
-                      padding: 0px 4px 0px 4px !important;
-                      padding-top: 0px !important;
-                      max-width: 280px;
-                    }
-                    div[class*="p-4"].mobile-text {
-                      padding: 0px 4px 0px 4px !important;
-                      padding-top: 0px !important;
-                      max-width: 280px;
-                    }
-                    .mobile-text h4 {
-                      font-size: 16px;
-                      line-height: 1.3;
-                      margin-bottom: 4px !important;
-                      margin-top: -12px !important;
-                      text-align: left;
-                    }
-                    .mobile-text p.text-xs {
-                      font-size: 12px !important;
-                      line-height: 1.2 !important;
-                      margin-bottom: 8px;
-                      margin-top: 0px !important;
-                      text-align: left;
-                    }
-                    .mobile-text p {
-                      font-size: 9px !important;
-                      line-height: 1.2 !important;
-                      margin-bottom: 8px;
-                      margin-top: 0px !important;
-                      text-align: left;
-                    }
-                    .mobile-text button {
-                      font-size: 11px !important;
-                      padding: 7px 14px !important;
-                      margin-left: 0;
-                    }
-                    .mobile-text .flex.items-center.gap-1 {
-                      margin-top: 24px !important;
-                    }
-                    .main-container {
-                      min-height: 180px;
-                      height: 180px;
-                      max-height: 180px;
-                      padding: 0;
-                      margin-top: 0;
-                      margin-bottom: 0;
-                    }
-                    .section-mobile {
-                      padding-top: 7rem !important;
-                      padding-left: 0;
-                      padding-right: 0;
-                      padding-bottom: 0;
-                    }
-                    .section-mobile > div {
-                      padding-top: 0;
-                      padding-bottom: 0;
-                      margin-top: 0;
-                      margin-bottom: 0;
-                    }
-                    .mobile-image {
-                      justify-content: center;
-                      margin: 0;
-                      padding: 0;
-                    }
-                    .mobile-image > div {
-                      margin: 0;
-                      margin-top: -80px !important;
-                      padding: 0 !important;
-                      width: 70px;
-                      height: 100px;
-                    }
-                    .mobile-image > div img {
-                      padding: 0 !important;
-                      margin: 0 !important;
-                    }
-                    .flex.items-center.gap-1 {
-                      gap: 0px;
-                      margin-bottom: 0;
-                      padding-bottom: 0;
-                    }
-                    .mobile-text > div:last-child {
-                      margin-bottom: 0;
-                      padding-bottom: 0;
-                    }
-                  }
-                  @media (min-width: 768px) {
-                    .main-container {
-                      min-height: 200px;
-                    }
-                    .mobile-container {
-                      min-height: 200px;
-                      gap: 0px;
-                      align-items: center;
-                    }
-                    .desktop-banner {
-                      gap: 0px;
-                    }
-                    .section-mobile {
-                      margin-top: 0;
-                      margin-bottom: 0;
-                    }
-                    .mobile-text {
-                      padding: 0px 8px 16px 8px !important;
-                      padding-top: 0 !important;
-                      max-width: none;
-                    }
-                    .mobile-text h4 {
-                      margin-top: -12px !important;
-                      padding-top: 0 !important;
-                      margin-bottom: 4px !important;
-                    }
-                    .mobile-text p {
-                      margin-top: 0px !important;
-                    }
-                    .mobile-text .flex.items-center.gap-1 {
-                      margin-top: 16px !important;
-                    }
-                    .mobile-image {
-                      align-items: center;
-                      justify-content: flex-end;
-                      padding-right: 40px;
-                    }
-                    .mobile-image > div {
-                      top: 40%;
-                      transform: translateY(-50%);
-                    }
-                    div[class*="w-24"] {
-                      top: 40%;
-                      transform: translateY(-50%);
-                    }
-                    div[class*="w-32"] {
-                      top: 40%;
-                      transform: translateY(-50%);
-                    }
-                    .desktop-image-container {
-                      display: flex !important;
-                      visibility: visible !important;
-                      opacity: 1 !important;
-                    }
-                    .desktop-image {
-                      position: relative;
-                      top: 40%;
-                      transform: translateY(-50%);
-                      padding: 0;
-                      margin: 0;
-                      display: block !important;
-                      visibility: visible !important;
-                    }
-                    .desktop-image img {
-                      padding: 0;
-                      margin: 0;
-                      display: block !important;
-                      visibility: visible !important;
-                    }
-                  }
-                `}}></style>
-                <div className="grid grid-cols-1 md:grid-cols-[8fr_2fr] items-center min-h-[280px] md:min-h-[240px] mobile-container no-gap rounded-[10px] overflow-hidden relative z-10 desktop-banner">
-                  {/* Left: Text and Button */}
-                  <div className="px-4 pb-4 pt-0 md:px-6 md:pb-6 md:pt-0 md:pl-14 lg:pl-6 md:ml-6 lg:ml-8 col-span-1 flex flex-col justify-center mobile-text" style={{ maxWidth: 'none', paddingTop: 0 }}>
-                    <h4 className="text-left font-semibold text-lg md:text-xl" style={{ marginTop: '-12px', paddingTop: 0, marginBottom: '4px' }}>
-                      Confused where to start?
-                    </h4>
-                    
-                    <p className="text-xs md:text-base mb-4 md:mb-8 text-left" style={{ marginBottom: '8px', marginTop: '0px' }}>
-                      Book a free 20 minutes  session<br className="md:hidden" /> with our child psychologist.
-                    </p>
-                    
-                    <div className="flex items-center gap-1" style={{ marginTop: '16px' }}>
-                      <button 
-                        onClick={() => router.push('/free-assessment')}
-                        className="text-gray-900 px-4 py-2 md:px-3 md:py-2 rounded-lg md:rounded-2xl text-xs md:text-sm font-medium transition-all duration-200 hover:opacity-90 flex items-center gap-2 md:gap-2 w-fit mx-auto md:mx-0" 
-                        style={{ backgroundColor: 'white' }}
-                      >
-                        <span>Book Your Slot Now</span>
-                        <div className="w-4 h-4 md:w-7 md:h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: '#bed39c' }}>
-                          <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </div>
-                      </button>
-                      
-                      {/* Image next to button */}
-                      <div className="mobile-image md:hidden">
-                        <div className="w-[70px] h-[100px] rounded-[10px] overflow-hidden" style={{ padding: 0, margin: 0 }}>
-                          <img
-                            src="/consultation.webp"
-                            alt="Consultation"
-                            className="w-full h-full object-cover"
-                            style={{ padding: 0, margin: 0 }}
-                            loading="eager"
-                            decoding="async"
-                          />
-                        </div>
-                      </div>
-                    </div>
+        {/* Hero Section - Rebuilt from home page */}
+        <div className="w-full overflow-hidden mt-12">
+          <div className="hero-wrapper mx-auto max-w-[1400px] px-0 md:px-0">
+            <section 
+              className="hero-section hero-home text-black p-4 sm:px-8 sm:py-8 md:px-[50px] md:py-[50px] overflow-hidden relative"
+              style={{ 
+                backgroundColor: '#E4E4F9',
+                border: 'none',
+                outline: 'none',
+                margin: 0,
+                borderRadius: '10px',
+                '--hero-desktop-min-height': 'clamp(540px, 60vh, 780px)',
+                '--hero-desktop-image-min-height': '480px'
+              }}
+            >
+              <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
+                {/* Mobile / Tablet / Small-laptop Image - Top on Mobile */}
+                <div className="hero-mobile-wrapper block xl:hidden" style={{ order: 1, width: '100vw', position: 'relative', left: '50%', right: '50%', transform: 'translateX(-50%)', marginBottom: '1.5rem' }}>
+                  <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none', height: '300px' }}>
+                    <Image
+                      src="/hee.webp"
+                      alt="Hero illustration of a child with a parent during online counseling"
+                      fill
+                      className="hero-mobile-image object-bottom w-full h-full"
+                      sizes="100vw"
+                      priority
+                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                    />
                   </div>
+                </div>
 
-                  {/* Right: Image - Desktop and Tablet */}
-                  <div className="relative h-full col-span-1 hidden md:flex justify-center items-center p-8 desktop-image-container">
-                    <div className="desktop-image overflow-hidden" style={{ width: '112px', height: '160px', borderRadius: '10px', padding: 0, margin: 0 }}>
-                      <img
-                        src="/consultation.webp"
-                        alt="Consultation"
-                        width={112}
-                        height={160}
-                        className="object-cover"
-                        style={{ borderRadius: '10px', width: '100%', height: '100%', padding: 0, margin: 0 }}
-                        loading="eager"
-                        decoding="async"
-                      />
-                    </div>
+                {/* Text Section - Below Image on Mobile */}
+                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0" style={{ order: 2 }}>
+                  {/* Badge */}
+                  <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-auto xl:mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    <span className="hero-badge-text text-xs sm:text-sm">Convenient, proven online care for brighter future</span>
+                  </div>
+                  
+                  <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
+                    Your Partner in <br /> Child Counseling <br /> & Parenting Support
+                  </h1>
+                  <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
+                     Connect with a trusted child psychologist online for gentle, child-friendly counselling from the comfort of your home, helping your child feel safe, supported, and understood without the stress of travel.
+                  </p>
+                  <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
+                    <style dangerouslySetInnerHTML={{__html: `
+                      @media (max-width: 767px) {
+                        .hero-book-button {
+                          width: 100% !important;
+                          max-width: 100% !important;
+                          min-width: 280px !important;
+                        }
+                      }
+                    `}} />
+                    <button
+                      onClick={handleGetStartedClick}
+                      className="hero-book-button inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
+                      style={{ backgroundColor: '#3f2e73' }}
+                      type="button"
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
+                    >
+                      <span style={{ fontWeight: 500 }}>Book a Free Assessment</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleHowItWorksClick}
+                      className="inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative cursor-pointer"
+                    >
+                      <span className="relative">
+                        How does it work?
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
+                      </span>
+                      <div className="w-5 h-5 border border-gray-800 rounded-full flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-2.5 w-2.5 text-gray-800"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 5v14M19 12l-7 7-7-7"/>
+                        </svg>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Desktop Image (large laptop and above, aligned with header desktop nav breakpoint) */}
+                <div className="desktop-hero-image hidden xl:block xl:w-[55%] xl:h-full xl:order-2 relative overflow-hidden" style={{ border: 'none', outline: 'none', minHeight: 'var(--hero-desktop-image-min-height)', marginRight: '-15px', marginTop: '0px', marginBottom: '-50px', width: 'calc(55% + 15px)', position: 'absolute', right: 0, top: 0, bottom: 0 }}>
+                  {/* Responsive image box aligned to bottom of column */}
+                  <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
+                    <Image
+                      src="/hee.webp"
+                      alt="Hero illustration showing Little Care's child counseling and parent support"
+                      fill
+                      className="object-contain object-bottom"
+                      sizes="55vw"
+                      loading="eager"
+                      style={{ border: 'none', outline: 'none', boxShadow: 'none', objectPosition: 'center bottom', transform: 'scale(1.0)', transformOrigin: 'bottom center' }}
+                    />
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         </div>
+        {showGuide && (
+          <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
+        )}
 
-        {/* Services Section */}
+        {/* Session Counter Section */}
+        <div ref={counterRef} className="w-full py-4 md:py-6 mt-8 md:mt-12 lg:mt-16 text-center">
+          <p className="text-xs sm:text-sm text-gray-800" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
+            <span className="font-semibold" style={{ fontWeight: 600, color: '#3f2e73' }}>{displayCount}</span><span style={{ color: '#3f2e73' }}>+</span> free sessions booked today
+          </p>
+        </div>
+
+        {/* Services Section - Choose Options (Rebuilt from component) */}
         <section className="pt-0 pb-0 bg-white">
-          <ChooseOptions />
+          <section
+            id="choose-your-guide"
+            className="w-full py-2 px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
+          >
+            <style jsx>{`
+              @media (max-width: 479px) {
+                .cards-grid {
+                  gap: 20px !important;
+                  max-width: 100% !important;
+                  width: 100% !important;
+                  padding: 0 16px !important;
+                }
+                .card-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  height: 450px !important;
+                  min-height: 450px !important;
+                  max-height: 450px !important;
+                }
+                .card-image {
+                  height: 310px !important;
+                  top: 160px !important;
+                }
+                .read-more-button {
+                  bottom: 75px !important;
+                  left: 20px !important;
+                }
+                h2.choose-options-heading {
+                  font-size: 24px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.1 !important;
+                  text-align: center;
+                  padding-left: 0;
+                  padding-right: 0;
+                }
+              }
+              @media (min-width: 480px) and (max-width: 599px) {
+                .cards-grid {
+                  gap: 22px !important;
+                  max-width: 100% !important;
+                  width: 100% !important;
+                  padding: 0 20px !important;
+                }
+                .card-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  height: 480px !important;
+                  min-height: 480px !important;
+                  max-height: 480px !important;
+                }
+                .card-image {
+                  height: 370px !important;
+                  top: 165px !important;
+                }
+                .read-more-button {
+                  bottom: 85px !important;
+                  left: 22px !important;
+                }
+                h2.choose-options-heading {
+                  font-size: 24px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.1 !important;
+                  text-align: center;
+                  padding-left: 0;
+                  padding-right: 0;
+                }
+              }
+              @media (min-width: 600px) and (max-width: 767px) {
+                .cards-grid {
+                  gap: 24px !important;
+                  max-width: 100% !important;
+                  width: 100% !important;
+                  padding: 0 24px !important;
+                }
+                .card-container {
+                  width: 100% !important;
+                  max-width: 100% !important;
+                  height: 500px !important;
+                  min-height: 500px !important;
+                  max-height: 500px !important;
+                }
+                .card-image {
+                  height: 410px !important;
+                  top: 170px !important;
+                }
+                .read-more-button {
+                  bottom: 95px !important;
+                  left: 24px !important;
+                }
+                h2.choose-options-heading {
+                  font-size: 24px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.1 !important;
+                  text-align: center;
+                  padding-left: 0;
+                  padding-right: 0;
+                }
+              }
+              @media (max-width: 767px) {
+                .choose-options-heading {
+                  max-width: 100% !important;
+                }
+                .card-content {
+                  padding: 20px !important;
+                  padding-bottom: 0 !important;
+                }
+                .card-title {
+                  font-size: 24px !important;
+                  margin-bottom: 8px !important;
+                  line-height: 1.1 !important;
+                  max-width: none !important;
+                  width: 100% !important;
+                  white-space: nowrap !important;
+                  overflow: hidden !important;
+                  text-overflow: ellipsis !important;
+                }
+                .card-description {
+                  font-size: 14px !important;
+                }
+                .card-image img {
+                  transform: scale(0.9) !important;
+                  object-position: center center !important;
+                }
+              }
+                @media (min-width: 768px) {
+                  .card-container {
+                    height: 500px !important;
+                    min-height: 500px !important;
+                    max-height: 500px !important;
+                    align-self: stretch !important;
+                  }
+                  .cards-grid {
+                    grid-template-rows: 500px !important;
+                    align-items: stretch !important;
+                  }
+                  .card-image {
+                    top: 180px !important;
+                  }
+                }
+                /* Override h3 tag font size to match original span size */
+                .card-tag-pill {
+                  font-size: 12px !important;
+                  line-height: 1 !important;
+                  margin: 0 !important;
+                  font-weight: 300 !important; /* lighter weight to reduce boldness */
+                  padding: 2px 8px !important;
+                }
+            `}</style>
+            <div className="mx-auto max-w-[1400px]">
+              {/* Header */}
+              <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4">
+                <p className="p1 text-base md:text-lg mb-2">Let us guide you.</p>
+                <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+                  Choose the Right Child Counseling Option to Get Started
+                </h2>
+              </div>
+
+              {/* Cards Grid */}
+              <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-20 max-w-md md:max-w-4xl mx-auto justify-items-center md:justify-items-stretch items-stretch rounded-[37.8px]">
+                {chooseOptionsCards.map((card) => (
+                  <div
+                    key={card.id}
+                    className={`card-container relative bg-white rounded-[20px] overflow-hidden flex flex-col h-[500px] md:h-[500px] min-h-[500px] md:min-h-[500px] max-h-[500px] md:max-h-[500px] flex-shrink-0 cursor-pointer`}
+                    onClick={() => {
+                      const mapping = { 1: 'counselling', 2: 'assessments', 3: 'better-parenting' };
+                      openGuide(mapping[card.id]);
+                    }}
+                    style={{ height: '500px' }}
+                  >
+                    {/* Colored background that matches image width */}
+                    <div className={`absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b ${card.gradient} pointer-events-none z-0 rounded-[10px]`} />
+                    {/* White gradient overlay from half to bottom - matches image width on mobile */}
+                    <div className="absolute top-1/2 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-0 rounded-b-[10px]" />
+                    {/* Card Content */}
+                    <div className="card-content p-6 pb-0 mb-0 px-6 md:px-8 relative z-10">
+                      {/* Tags */}
+                      <div className="flex gap-2 mb-4">
+                        <h3
+                          className={`card-tag-pill rounded-full ${card.tagColors.primary}`}
+                          style={{ fontFamily: 'inherit' }}
+                        >
+                          {card.tags[0]}
+                        </h3>
+                        <h3
+                          className={`card-tag-pill rounded-full ${card.tagColors.secondary}`}
+                          style={{ fontFamily: 'inherit' }}
+                        >
+                          {card.tags[1]}
+                        </h3>
+                      </div>
+
+                      {/* Title */}
+                      <h5 className="card-title text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 whitespace-pre-line" style={{ fontWeight: 'bold' }}>
+                        {card.title}
+                      </h5>
+
+                      {/* Description */}
+                      <p className="card-description p1 text-sm md:text-sm mb-0" style={{ lineHeight: '1.3' }}>
+                        {card.description}
+                      </p>
+                    </div>
+
+                    {/* Image Section */}
+                    <div className="card-image absolute left-0 right-0 z-10 h-[320px] md:h-64 min-h-[320px] md:min-h-64 max-h-[320px] md:max-h-64 overflow-hidden rounded-[20px]" style={{ top: '160px' }}>
+                      <Image
+                        src={card.image}
+                        alt={card.title}
+                        fill
+                        className={`${card.imageClass ? `${card.imageClass.replace('object-[50%_100%]', 'object-center')}` : "object-cover object-center md:object-[50%_100%]"}`}
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        priority={card.image === "/Child Assessment.webp"}
+                      />
+                      
+                      {/* Read More Button */}
+                      <div className="read-more-button absolute bottom-6 md:bottom-8 left-6">
+                        <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
+                          <span className="px-3">Find more</span>
+                           <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200">
+                            <svg
+                              className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"
+                              fill="none"
+                              stroke="#000000"
+                              strokeOpacity="0.6"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={3}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {chooseOptionsShowGuide && (
+                <GuideModal open={chooseOptionsShowGuide} onClose={() => setChooseOptionsShowGuide(false)} defaultCategory={defaultCategory} />
+              )}
+            </div>
+          </section>
         </section>
 
         {/* Psychologists Section */}
         <section className="pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
           <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-2 md:px-3 lg:px-3">
-            <div className="text-center mb-6 md:mb-8 px-2">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-                Experienced mental health professionals for you.
-              </h2>
-              <p className="text-sm sm:text-base text-gray-600 mt-2 md:mt-3 max-w-2xl mx-auto">
-                Connect with qualified child psychologists who understand your child's unique needs
-              </p>
-            </div>
+              <div className="text-center mb-6 md:mb-8 px-2">
+                <p className="text-sm sm:text-base text-gray-600 mb-2 md:mb-3 max-w-2xl mx-auto">
+                  Connect with qualified child psychologists
+                </p>
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+                  Experienced mental health professionals
+                </h2>
+              </div>
             
             {loading ? (
               <div className="text-center py-12">
@@ -1474,7 +1642,7 @@ export default function AdsLandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <div className="pt-4 md:pt-6 lg:pt-8 pb-0">
+        <div className="mt-12 md:mt-16 lg:mt-20 pt-4 md:pt-6 lg:pt-8 pb-12 md:pb-16 lg:pb-20" style={{ backgroundColor: '#E4E4F9' }}>
           <HowItWorks />
         </div>
 
@@ -1618,17 +1786,23 @@ export default function AdsLandingPage() {
         <section className="pt-8 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
-              Frequently Asked Questions
+              FAQ's
             </h2>
             <style dangerouslySetInnerHTML={{__html: `
               @media (max-width: 767px) {
                 .faq-heading {
                   font-size: 16px !important;
-                  font-weight: 600;
+                  font-weight: 400 !important;
                   line-height: 1.4;
                 }
                 .faq-answer {
-                  font-size: 14px !important;
+                  font-size: 13px !important;
+                  line-height: 1.5;
+                }
+              }
+              @media (min-width: 768px) {
+                .faq-answer {
+                  font-size: 13px !important;
                   line-height: 1.5;
                 }
               }
@@ -1667,7 +1841,7 @@ export default function AdsLandingPage() {
                       }`}
                     >
                       <div className="px-2 pb-3 md:px-0 md:pb-4">
-                        <p className="faq-answer md:text-sm leading-relaxed">
+                        <p className="faq-answer leading-relaxed">
                           {faq.answer}
                         </p>
                       </div>

@@ -250,19 +250,42 @@ export default function VideosShowcase({ cmsData = null }) {
   };
 
   return (
-    <section className="w-full pt-12 md:pt-16 pb-6 md:pb-8 videos-showcase-mobile" style={{ marginTop: '96px' }}>
+    <section className="w-full pb-6 md:pb-8 videos-showcase-mobile">
       <style jsx global>{`
         @media (max-width: 767px) {
-          .videos-showcase-mobile {
-            margin-top: 1rem !important;
-            padding-top: 2rem !important;
-            padding-bottom: 2rem !important;
+          section.videos-showcase-mobile {
+            margin-top: -0.75rem;
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+          }
+          .videos-carousel-container {
+            padding-left: 0;
+            padding-right: 0;
+          }
+          .videos-carousel-gap {
+            gap: 20px;
+            padding-left: 5vw;
+            padding-right: 0;
+          }
+          .video-card {
+            width: 85vw;
+            height: calc(85vw * 16 / 9);
+            max-width: 300px;
+            max-height: calc(300px * 16 / 9);
+            min-width: 280px;
+            min-height: calc(280px * 16 / 9);
+          }
+        }
+        @media (min-width: 768px) {
+          section.videos-showcase-mobile {
+            margin-top: 96px;
+            padding-top: 4rem;
           }
         }
         @media (min-width: 768px) and (max-width: 1180px) and (max-height: 1180px) {
-          .videos-showcase-mobile {
-            margin-top: 7rem !important;
-            padding-top: 2rem !important;
+          section.videos-showcase-mobile {
+            margin-top: 7rem;
+            padding-top: 2rem;
           }
         }
         /* Hide YouTube branding and UI elements */
@@ -274,20 +297,11 @@ export default function VideosShowcase({ cmsData = null }) {
         }
         .youtube-embed-wrapper iframe {
           position: absolute;
-          top: -80px;
-          left: -2%;
-          width: 104%;
-          height: calc(100% + 160px);
-          transform: scale(1.12);
-          transform-origin: center center;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
           pointer-events: none;
-        }
-        @media (max-width: 767px) {
-          .youtube-embed-wrapper iframe {
-            top: -110px;
-            height: calc(100% + 220px);
-            transform: scale(1.18);
-          }
         }
         /* Hide YouTube logo overlay using pseudo-element */
         .youtube-embed-wrapper::after,
@@ -320,29 +334,29 @@ export default function VideosShowcase({ cmsData = null }) {
         }
         @media (min-width: 1024px) and (max-width: 1279px) {
           .video-card-outer {
-            width: clamp(180px, 12vw, 240px) !important;
-            height: clamp(270px, 18vw, 360px) !important;
+            width: clamp(152px, 10.8vw, 191px) !important;
+            height: clamp(270px, 18vw, 340px) !important;
           }
           .video-card-middle {
-            width: clamp(200px, 14vw, 280px) !important;
-            height: clamp(300px, 21vw, 420px) !important;
+            width: clamp(169px, 12vw, 214px) !important;
+            height: clamp(300px, 21vw, 380px) !important;
           }
           .video-card-center {
-            width: clamp(240px, 18vw, 340px) !important;
-            height: clamp(360px, 27vw, 500px) !important;
+            width: clamp(203px, 14.4vw, 259px) !important;
+            height: clamp(360px, 27vw, 460px) !important;
           }
           .videos-carousel-gap {
             gap: clamp(12px, 1.5vw, 24px) !important;
           }
         }
         .video-overlay {
-          background-color: rgba(63, 46, 115, 0.08);
+          background-color: transparent;
           transition: background-color 0.2s ease;
         }
         .video-card:hover .video-overlay,
         .video-card:focus-within .video-overlay,
         .video-card:active .video-overlay {
-          background-color: rgba(63, 46, 115, 0.18);
+          background-color: transparent;
         }
       `}</style>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -377,20 +391,21 @@ export default function VideosShowcase({ cmsData = null }) {
             style={{ paddingLeft: '0', paddingRight: '0' }}
           >
             {[0,1,2,3,4].map((i) => {
-              const cardShadow = i === 2 ? '0 14px 38px rgba(63, 46, 115, 0.32)' : undefined;
               return (
-              <div key={i} className="flex-shrink-0 snap-center" style={{ paddingLeft: i === 0 ? 'clamp(16px, 5vw, 32px)' : '0', paddingRight: i === 4 ? 'clamp(16px, 5vw, 32px)' : '0' }}>
+              <div key={i} className="flex-shrink-0 snap-center" style={{ 
+                paddingLeft: i === 0 ? 'clamp(16px, 5vw, 32px)' : '0', 
+                paddingRight: i === 4 ? 'clamp(16px, 5vw, 32px)' : '0'
+              }}>
                 <div
                   data-video-card
                   className={`video-card relative rounded-[14px] overflow-hidden bg-white cursor-pointer group
-                    ${'w-[180px] h-[280px] sm:w-[200px] sm:h-[320px]'}
+                    ${'w-[158px] h-[280px] sm:w-[180px] sm:h-[320px]'}
                     ${i === 2 
-                      ? 'lg:w-[300px] lg:h-[460px] lg:shadow-[0_10px_28px_rgba(63,46,115,0.25)] video-card-center' 
+                      ? 'lg:w-[259px] lg:h-[460px] video-card-center' 
                       : (i === 0 || i === 4) 
-                        ? 'lg:w-[220px] lg:h-[340px] video-card-outer'
-                        : 'lg:w-[250px] lg:h-[380px] video-card-middle'}
+                        ? 'lg:w-[191px] lg:h-[340px] video-card-outer'
+                        : 'lg:w-[214px] lg:h-[380px] video-card-middle'}
                   `}
-                  style={cardShadow ? { boxShadow: cardShadow } : undefined}
                   onClick={() => handleVideoClick(i)}
                 >
                   {(() => {
@@ -408,19 +423,13 @@ export default function VideosShowcase({ cmsData = null }) {
                             key={`youtube-${i}-active`}
                               ref={(el) => { youtubeIframeRefs.current[i] = el; }}
                                 src={embedUrl}
-                            className="absolute"
+                            className="absolute inset-0 w-full h-full"
                             title={`video-review-${i}`}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen={false}
                                 frameBorder="0"
                             style={{ 
-                              pointerEvents: 'none',
-                              transform: 'scale(1.25)',
-                              transformOrigin: 'center center',
-                              width: '125%',
-                              height: '125%',
-                              left: '-12.5%',
-                              top: '-12.5%'
+                              pointerEvents: 'none'
                             }}
                               />
                               <button
@@ -446,14 +455,12 @@ export default function VideosShowcase({ cmsData = null }) {
                       ) : (
                             <div className="absolute inset-0 w-full h-full overflow-hidden">
                               <img
-                                src={youtubeThumb || thumbnailUrl || '/mainlogo.webp'}
+                                src={thumbnailUrl || youtubeThumb || '/mainlogo.webp'}
                                 alt={displayVideos[i]?.title ? `${displayVideos[i].title} - Video review thumbnail` : 'Child counseling video review thumbnail'}
                                 className="absolute inset-0 w-full h-full object-cover"
                                 style={{ 
                                   width: '100%', 
-                                  height: '100%',
-                                  transform: 'scale(1.25)',
-                                  transformOrigin: 'center center'
+                                  height: '100%'
                                 }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">
@@ -480,12 +487,6 @@ export default function VideosShowcase({ cmsData = null }) {
                             playsInline
                             className={`w-full h-full object-cover transition-opacity duration-200 ${playingVideo === i ? 'opacity-100' : 'opacity-0'}`}
                             style={playingVideo === i ? {
-                              transform: 'scale(1.25)',
-                              transformOrigin: 'center center',
-                              width: '125%',
-                              height: '125%',
-                              left: '-12.5%',
-                              top: '-12.5%',
                               position: 'absolute'
                             } : {}}
                           />
@@ -518,9 +519,7 @@ export default function VideosShowcase({ cmsData = null }) {
                                 className="absolute inset-0 w-full h-full object-cover"
                                 style={{ 
                                   width: '100%', 
-                                  height: '100%',
-                                  transform: 'scale(1.25)',
-                                  transformOrigin: 'center center'
+                                  height: '100%'
                                 }}
                               />
                               <div className="absolute inset-0 flex items-center justify-center video-overlay">
