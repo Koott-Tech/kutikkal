@@ -306,21 +306,7 @@ export default function VideosShowcase({ cmsData = null }) {
         /* Hide YouTube logo overlay using pseudo-element */
         .youtube-embed-wrapper::after,
         .youtube-embed-wrapper::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          width: 100%;
-          height: 72px;
-          z-index: 10;
-          pointer-events: none;
-        }
-        .youtube-embed-wrapper::after {
-          top: 0;
-          background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
-        }
-        .youtube-embed-wrapper::before {
-          bottom: 0;
-          background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+          display: none;
         }
         @media (max-width: 1180px) and (max-height: 1180px) {
           .videos-carousel-container {
