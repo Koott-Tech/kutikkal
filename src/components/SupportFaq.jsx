@@ -13,8 +13,8 @@ export default function SupportFaq() {
     {
       title: "Guidance parents can trust",
       body:
-        "We support parents with clear communication, practical tools, and expert guidance—so you never feel alone in understanding your child’s emotions or navigating their well-being.",
-      image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+        "We support parents with clear communication, practical tools, and expert guidance—so you never feel alone in understanding your child's emotions or navigating their well-being.",
+      image: "/mainlogo.webp",
     },
     {
       title: "Expertise made simple",
@@ -26,7 +26,7 @@ export default function SupportFaq() {
       title: "Support at every stage",
       body:
         "Whether it's early emotional struggles, learning challenges, behaviour changes, or big life transitions, our child counseling services are here to guide your family—one steady step at a time.",
-      image: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+      image: "/mainlogo.webp",
     },
   ];
 

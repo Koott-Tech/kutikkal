@@ -173,9 +173,9 @@ export default function ProcessSteps({ therapyType = "individual" }) {
 
   const avatars = [
     "/mainlogo.webp",
-    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.webp",
     "/mainlogo.webp",
-    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.webp",
   ];
 
   const nextSlide = () => {
@@ -322,7 +322,7 @@ export default function ProcessSteps({ therapyType = "individual" }) {
                           <div className="mt-6 flex items-center justify-center gap-4">
                             <div className="relative h-14 w-14 overflow-hidden rounded-full">
                               <Image
-                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png"
+                                src="/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.webp"
                                 alt="participant"
                                 fill
                                 className="object-cover"

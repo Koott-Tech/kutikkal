@@ -22,7 +22,7 @@ export default function Reviews({ cmsData = null }) {
     {
       name: "Sofia Rodriguez",
       handle: "@sofiaml",
-      avatar: "/testimonial4.PNG",
+      avatar: "/TESTIMONIALS 4.webp",
       text:
         "Therapists are kind and skilled. My child feels heard and safe during sessions.",
     },
@@ -79,7 +79,7 @@ export default function Reviews({ cmsData = null }) {
         <div className="relative overflow-hidden" style={{ marginBottom: '0px' }}>
           <div className="marquee">
             {loopReviews.map((r, idx) => {
-              const avatarSrc = normalizeImageUrl(r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/testimonial4.PNG'));
+              const avatarSrc = normalizeImageUrl(r.avatarUrl || r.avatar || (idx % 3 === 0 ? '/testimonialgirl.png' : idx % 3 === 1 ? '/testimonial5.PNG' : '/TESTIMONIALS 4.webp'));
               const rawName = r.author || r.name || 'Parent';
               const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
               const handle = r.handle;

@@ -19,7 +19,7 @@ export default function ResourcesTeaser() {
       highlight: false,
     },
     {
-      src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+      src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.webp",
       alt: "Mental health support",
       author: "Dr. Michael Chen",
       date: "Updated regularly",

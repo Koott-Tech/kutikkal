@@ -9,7 +9,7 @@ export default function FeatureCards() {
       description: "Connect with licensed experts from the comfort of your home.",
     },
     {
-      src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
+      src: "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.webp",
       title: "Simple Scheduling",
       description: "Book, reschedule, and manage sessions in just a few clicks.",
     },

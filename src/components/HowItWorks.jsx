@@ -9,13 +9,6 @@ export default function HowItWorks() {
   const scrollContainerRef = useRef(null);
   const trackRef = useRef(null);
   const isAdjustingRef = useRef(false);
-  const avatars = [
-    "/mainlogo.webp",
-    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    "/mainlogo.webp",
-    "/360_F_262015638_nxpC4t1wbe8cLiVX3eholwctgVItTqF6.png",
-    "/mainlogo.webp",
-  ];
 
   const carouselData = [
     {

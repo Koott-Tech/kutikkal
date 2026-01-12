@@ -61,7 +61,7 @@ export default function VideosShowcase({ cmsData = null }) {
   const defaultVideos = [
     { src: "/intro_2.mp4", poster: "/testimonialgirl.png" },
     { src: "/intro_2.mp4", poster: "/testimonial5.PNG" },
-    { src: "/intro_2.mp4", poster: "/testimonial4.PNG" },
+    { src: "/intro_2.mp4", poster: "/TESTIMONIALS 4.webp" },
   ];
   const videos = (cmsData?.videos && cmsData.videos.length) ? cmsData.videos : defaultVideos;
   
