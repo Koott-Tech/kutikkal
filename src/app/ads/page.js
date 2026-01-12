@@ -249,7 +249,7 @@ export default function AdsLandingPage() {
               return;
             }
             
-            const duration = 2000; // 2 seconds
+            const duration = 4000; // 4 seconds (slower animation)
             const steps = 60;
             const increment = targetCount / steps;
             let current = 0;
