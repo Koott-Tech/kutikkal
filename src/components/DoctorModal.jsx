@@ -287,16 +287,45 @@ export default function DoctorModal({
         let numberOnly = digitsOnly;
         
         if (digitsOnly.startsWith("+")) {
-          const match = digitsOnly.match(/^\+\d{1,4}/);
-          if (match) {
-            extractedCode = match[0];
-            numberOnly = digitsOnly.slice(match[0].length);
+          // List of known country codes (1-4 digits) - try longer codes first
+          const countryCodes = [
+            '+358', '+351', '+353', '+971', '+966', // 4-digit codes
+            '+44', '+49', '+33', '+39', '+34', '+31', '+32', '+41', '+46', '+47', '+45', '+48', '+27', '+61', '+65', '+60', '+64', '+81', '+86', '+91', '+92', // 2-digit codes
+            '+1' // 1-digit codes
+          ];
+          
+          // Try to match known country codes (longest first)
+          let matched = false;
+          for (const code of countryCodes) {
+            if (digitsOnly.startsWith(code)) {
+              extractedCode = code;
+              numberOnly = digitsOnly.slice(code.length);
+              matched = true;
+              break;
+            }
+          }
+          
+          // If no known country code matched, try to match 1-3 digits (most common pattern)
+          if (!matched) {
+            const match = digitsOnly.match(/^\+(\d{1,3})/);
+            if (match) {
+              extractedCode = `+${match[1]}`;
+              numberOnly = digitsOnly.slice(match[0].length);
+            }
           }
         } else if (digitsOnly.length > 10) {
-          const match = digitsOnly.match(/^(\d{1,4})/);
-          if (match) {
-            extractedCode = `+${match[1]}`;
-            numberOnly = digitsOnly.slice(match[1].length);
+          // For numbers without +, try to detect country code
+          // Indian numbers typically start with 91 and have 12 total digits
+          if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
+            extractedCode = '+91';
+            numberOnly = digitsOnly.slice(2);
+          } else {
+            // Try to match first 1-3 digits as country code
+            const match = digitsOnly.match(/^(\d{1,3})/);
+            if (match) {
+              extractedCode = `+${match[1]}`;
+              numberOnly = digitsOnly.slice(match[1].length);
+            }
           }
         }
         
@@ -1243,6 +1272,7 @@ export default function DoctorModal({
                   className="w-28 rounded-md border border-gray-300 px-3 py-2 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="+91">🇮🇳 +91</option>
+                  <option value="+92">🇵🇰 +92</option>
                   <option value="+1">🇺🇸 +1</option>
                   <option value="+44">🇬🇧 +44</option>
                   <option value="+33">🇫🇷 +33</option>
