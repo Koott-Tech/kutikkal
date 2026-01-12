@@ -738,7 +738,7 @@ export default function AdsLandingPage() {
 
       <main className="min-h-screen bg-white ads-page">
         {/* Achievements Section */}
-        <section className="pt-40 sm:pt-32 md:pt-36 lg:pt-44 pb-20 sm:pb-24 md:pb-28 lg:pb-32" style={{ background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)' }}>
+        <section className="pt-40 sm:pt-32 md:pt-36 lg:pt-44 pb-8 md:pb-10 lg:pb-12" style={{ background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)' }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
             <div className="text-center mb-6 md:mb-8">
               <img
@@ -760,11 +760,11 @@ export default function AdsLandingPage() {
         </section>
 
         {/* Free Consultation Banner */}
-        <div className="section-mobile mt-0 pt-28 md:pt-24 lg:pt-28">
+        <div className="section-mobile mt-0 pt-16 md:pt-20 lg:pt-24">
           <div className="mx-auto max-w-[400px] sm:max-w-[500px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] px-3 sm:px-6 md:px-6 lg:px-0">
             <div className="rounded-[10px] overflow-hidden inline-block w-full" style={{ borderRadius: "10px", overflow: "hidden", display: "block" }}>
               <div className="overflow-hidden relative rounded-[10px] main-container min-h-[280px] md:min-h-[200px]" style={{ borderRadius: "10px", minHeight: "200px" }}>
-                <div className="absolute top-0 left-0 right-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/consultationbanner.png')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px', height: '180px', maxHeight: '180px', width: '100%' }}></div>
+                <div className="absolute top-0 left-0 right-0 bg-cover bg-center bg-no-repeat rounded-[10px]" style={{ backgroundImage: "url('/Free Consultation.webp')", zIndex: 0, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', borderRadius: '10px', height: '180px', maxHeight: '180px', width: '100%' }}></div>
                 <style dangerouslySetInnerHTML={{__html: `
                   .main-container {
                     border-radius: 10px;
@@ -1111,7 +1111,7 @@ export default function AdsLandingPage() {
         </section>
 
         {/* Psychologists Section */}
-        <section className="pt-12 md:pt-16 lg:pt-20 pb-0 bg-white">
+        <section className="pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
           <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-2 md:px-3 lg:px-3">
             <div className="text-center mb-6 md:mb-8 px-2">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
@@ -1474,13 +1474,31 @@ export default function AdsLandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <div className="pt-12 md:pt-16 lg:pt-20">
+        <div className="pt-4 md:pt-6 lg:pt-8 pb-0">
           <HowItWorks />
         </div>
 
         {/* Videos Showcase Section */}
         {!videosLoading && videos.length > 0 && (
-          <div className="pt-12 md:pt-16 lg:pt-0">
+          <div className="pt-0" style={{ marginTop: '-16px' }}>
+            <style dangerouslySetInnerHTML={{__html: `
+              .ads-page .videos-showcase-mobile {
+                margin-top: 3rem !important;
+                padding-top: 3rem !important;
+              }
+              @media (max-width: 767px) {
+                .ads-page .videos-showcase-mobile {
+                  margin-top: 2rem !important;
+                  padding-top: 2.5rem !important;
+                }
+              }
+              @media (min-width: 768px) and (max-width: 1180px) {
+                .ads-page .videos-showcase-mobile {
+                  margin-top: 4.5rem !important;
+                  padding-top: 3rem !important;
+                }
+              }
+            `}} />
             <VideosShowcase cmsData={{ 
             videos: videos.map(video => ({
               url: video.url || video.src,
@@ -1494,7 +1512,7 @@ export default function AdsLandingPage() {
         )}
 
         {/* Reviews Section */}
-        <section className="w-screen pt-12 md:pt-16 lg:pt-20 pb-0 bg-white">
+        <section className="w-screen pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
           <style dangerouslySetInnerHTML={{__html: `
             .reviews-marquee {
               display: flex;
@@ -1597,7 +1615,7 @@ export default function AdsLandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="pt-12 md:pt-16 lg:pt-20 pb-12 md:pb-16 lg:pb-20 bg-white">
+        <section className="pt-8 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
               Frequently Asked Questions

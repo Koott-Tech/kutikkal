@@ -1258,39 +1258,39 @@ function PaymentSuccessContent() {
           }}
         >
         <div className="details-container">
-          {/* Transaction Details - Left Column */}
-          {paymentData && (
-            <div className="transaction-details-column">
-              <div style={{ textAlign: 'left', paddingLeft: '0' }}>
-                <div style={{ 
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '12px',
-                  marginTop: '0',
-                  lineHeight: '1.4'
-                }}>
-                  Transaction Details
-                </div>
-                <div style={{ 
-                  fontSize: '14px',
-                  color: '#6b7280',
-                  lineHeight: '1.8',
-                  marginBottom: '20px'
-                }}>
-                  {paymentData.transactionId && (
-                    <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Transaction ID:</strong> {paymentData.transactionId}</p>
-                  )}
-                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Order ID:</strong> {paymentData.orderId}</p>
-                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Payment ID:</strong> {paymentData.paymentId}</p>
-                  {paymentData.amount && (
-                    <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
-                  )}
-                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
-                </div>
+        {/* Transaction Details - Left Column */}
+      {paymentData && (
+          <div className="transaction-details-column">
+            <div style={{ textAlign: 'left', paddingLeft: '0' }}>
+              <div style={{ 
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '12px',
+                marginTop: '0',
+                lineHeight: '1.4'
+              }}>
+                Transaction Details
+              </div>
+              <div style={{ 
+                fontSize: '14px',
+                color: '#6b7280',
+                lineHeight: '1.8',
+                marginBottom: '20px'
+              }}>
+                {paymentData.transactionId && (
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Transaction ID:</strong> {paymentData.transactionId}</p>
+                )}
+                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Order ID:</strong> {paymentData.orderId}</p>
+                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Payment ID:</strong> {paymentData.paymentId}</p>
+                {paymentData.amount && (
+                  <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
+                )}
+                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* Vertical Divider - Only show on desktop when paymentData exists */}
           {paymentData && <div className="vertical-divider"></div>}
