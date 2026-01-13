@@ -853,10 +853,10 @@ export default function AdsLandingPage() {
           }
           @media (max-width: 767px) {
             .ads-page .hero-section.hero-home {
-              min-height: 80vh !important;
+              min-height: 87vh !important;
             }
             .ads-page .hero-mobile-wrapper {
-              margin-top: 2rem !important;
+              margin-top: 0.5rem !important;
             }
           }
           @media (min-width: 1024px) {
