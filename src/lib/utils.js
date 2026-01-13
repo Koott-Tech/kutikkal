@@ -1,19 +1,9 @@
-// Utility function to merge class names (similar to clsx)
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+// Utility function to merge class names with tailwind-merge
 const cn = (...classes) => {
-  return classes
-    .filter(Boolean)
-    .map(cls => {
-      if (typeof cls === 'string') return cls;
-      if (typeof cls === 'object' && cls !== null) {
-        return Object.entries(cls)
-          .filter(([_, value]) => Boolean(value))
-          .map(([key]) => key)
-          .join(' ');
-      }
-      return '';
-    })
-    .filter(Boolean)
-    .join(' ');
+  return twMerge(clsx(classes));
 };
 
 export const formatCurrencyINR = (value) => {

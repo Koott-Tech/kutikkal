@@ -11,6 +11,8 @@ import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import HowItWorks from '@/components/HowItWorks';
 import VideosShowcase from '@/components/VideosShowcase';
 import GuideModal from '@/components/GuideModal';
+import { Counter } from '@/components/ui/animated-counter';
+import { TrendingUp } from 'lucide-react';
 
 // Metadata configuration
 const pageMetadata = {
@@ -195,8 +197,7 @@ export default function AdsLandingPage() {
   const [chooseOptionsShowGuide, setChooseOptionsShowGuide] = useState(false);
   const [defaultCategory, setDefaultCategory] = useState(null);
   const [sessionCount, setSessionCount] = useState(16);
-  const [displayCount, setDisplayCount] = useState(0);
-  const [isCounterVisible, setIsCounterVisible] = useState(false);
+  const [shouldAnimateCounter, setShouldAnimateCounter] = useState(false);
   const counterRef = useRef(null);
 
   // Calculate current session count based on IST time
@@ -234,44 +235,11 @@ export default function AdsLandingPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Reset and animate from 0 to current count
-            setDisplayCount(0);
-            setIsCounterVisible(true);
-            
-            // Animate from 0 to current count
-            const targetCount = sessionCount;
-            if (targetCount === 0) {
-              setDisplayCount(0);
-              return;
-            }
-            
-            const duration = 8000; // 8 seconds (slower animation)
-            const steps = 80; // Fewer steps for less frequent updates
-            const increment = targetCount / steps;
-            let current = 0;
-            const startTime = Date.now();
-            const minUpdateInterval = 100; // Minimum 100ms between updates to prevent flickering
-            
-            const timer = setInterval(() => {
-              const elapsed = Date.now() - startTime;
-              const progress = Math.min(elapsed / duration, 1);
-              
-              // Use easing function for smoother animation (ease-out)
-              const easedProgress = 1 - Math.pow(1 - progress, 3);
-              current = targetCount * easedProgress;
-              
-              if (progress >= 1) {
-                setDisplayCount(targetCount);
-                clearInterval(timer);
-              } else {
-                setDisplayCount(Math.floor(current));
-              }
-            }, Math.max(duration / steps, minUpdateInterval));
-            
-            return () => clearInterval(timer);
+            // Trigger counter animation when it comes into view
+            setShouldAnimateCounter(true);
           } else {
             // Reset when out of view
-            setIsCounterVisible(false);
+            setShouldAnimateCounter(false);
           }
         });
       },
@@ -287,10 +255,9 @@ export default function AdsLandingPage() {
     const updateCount = () => {
       const count = calculateSessionCount();
       setSessionCount(count);
-      // Reset display count when count changes (new day)
+      // Reset animation when count changes (new day)
       if (count === 16) {
-        setDisplayCount(0);
-        setIsCounterVisible(false);
+        setShouldAnimateCounter(false);
       }
     };
     
@@ -740,11 +707,16 @@ export default function AdsLandingPage() {
           }
           .ads-page h2 {
             font-size: 1.75rem !important;
-            line-height: 1.4 !important;
+            line-height: 1.1 !important;
           }
           .ads-page h3 {
             font-size: 1.125rem !important;
-            line-height: 1.5 !important;
+            line-height: 1.1 !important;
+          }
+          .ads-page h4,
+          .ads-page h5,
+          .ads-page h6 {
+            line-height: 1.1 !important;
           }
           @media (min-width: 640px) {
             .ads-page h1 {
@@ -907,7 +879,19 @@ export default function AdsLandingPage() {
               gap: 0.25rem !important;
             }
             .ads-page .counter-container {
-              margin-top: -0.2rem !important;
+              margin-top: 0.1rem !important;
+            }
+            .ads-page h1,
+            .ads-page h2,
+            .ads-page h3,
+            .ads-page h4,
+            .ads-page h5,
+            .ads-page h6 {
+              line-height: 1.1 !important;
+            }
+            .ads-page .choose-guide-section {
+              padding-bottom: 3rem !important;
+              margin-bottom: 2rem !important;
             }
           }
         `
@@ -1011,8 +995,24 @@ export default function AdsLandingPage() {
                       <span style={{ fontWeight: 500 }}>Book a Free Session Now</span>
                     </button>
                     <div ref={counterRef} className="text-center flex-shrink-0 counter-container">
-                      <p className="text-gray-800 counter-sentence">
-                        Booked by <span className="font-semibold inline-block" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch', textAlign: 'left' }}>{displayCount}</span><span style={{ color: '#3f2e73' }}>+</span> parents Today, book yours.
+                      <p className="text-gray-800 counter-sentence flex items-center justify-center gap-1 flex-wrap">
+                        <TrendingUp size={14} style={{ color: '#3f2e73', strokeWidth: 2.5 }} />
+                        Booked by{' '}
+                        {shouldAnimateCounter ? (
+                          <span className="font-semibold inline-flex items-center" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch' }}>
+                            <Counter 
+                              key={`counter-${sessionCount}-${shouldAnimateCounter}`}
+                              start={0} 
+                              end={sessionCount} 
+                              duration={8}
+                              fontSize={14}
+                              className="inline-flex"
+                            />
+                          </span>
+                        ) : (
+                          <span className="font-semibold inline-block" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch' }}>0</span>
+                        )}
+                        <span style={{ color: '#3f2e73', marginLeft: '-2px' }}>+</span> parents Today, book yours.
                       </p>
                     </div>
                   </div>
@@ -1042,7 +1042,7 @@ export default function AdsLandingPage() {
         )}
 
         {/* Services Section - Choose Options (Rebuilt from component) */}
-        <section className="pt-0 pb-0" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
+        <section className="pt-0 pb-0 choose-guide-section" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
           <section
             id="choose-your-guide"
             className="w-full px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
