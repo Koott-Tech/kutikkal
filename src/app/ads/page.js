@@ -194,39 +194,35 @@ export default function AdsLandingPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [chooseOptionsShowGuide, setChooseOptionsShowGuide] = useState(false);
   const [defaultCategory, setDefaultCategory] = useState(null);
-  const [sessionCount, setSessionCount] = useState(0);
+  const [sessionCount, setSessionCount] = useState(16);
   const [displayCount, setDisplayCount] = useState(0);
   const [isCounterVisible, setIsCounterVisible] = useState(false);
   const counterRef = useRef(null);
 
   // Calculate current session count based on IST time
-  // Increments every minute by a random value between 1-3
+  // Starts at 16, increments every hour by a random value between 1-3
   const calculateSessionCount = () => {
     // Get current IST time
     const now = new Date();
     const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const hours = istTime.getHours();
-    const minutes = istTime.getMinutes();
-    const totalMinutes = hours * 60 + minutes;
     
-    // At midnight (12:00 AM), count is 0
-    if (totalMinutes === 0) {
-      return 0;
+    // At midnight (12:00 AM), count is 16 (starting value)
+    if (hours === 0) {
+      return 16;
     }
     
-    // Calculate count: each minute adds a random value between 1-3
-    // Use a deterministic random based on minute to ensure consistency
-    let totalCount = 0;
+    // Start with base value of 16
+    let totalCount = 16;
     
-    // For each minute that has passed since midnight
-    for (let m = 1; m <= totalMinutes; m++) {
-      // Use minute as seed for pseudo-random (consistent for same minute)
-      const seed = m * 7919; // Prime number for better distribution
+    // For each hour that has passed since midnight (excluding hour 0)
+    for (let h = 1; h <= hours; h++) {
+      // Use hour as seed for pseudo-random (consistent for same hour)
+      const seed = h * 7919; // Prime number for better distribution
       const randomValue = (seed % 3) + 1; // Value between 1-3
       totalCount += randomValue;
     }
     
-    // No cap - can grow beyond 100
     return totalCount;
   };
 
@@ -249,14 +245,21 @@ export default function AdsLandingPage() {
               return;
             }
             
-            const duration = 4000; // 4 seconds (slower animation)
-            const steps = 60;
+            const duration = 6000; // 6 seconds (slower, smoother animation)
+            const steps = 120; // More steps for smoother animation
             const increment = targetCount / steps;
             let current = 0;
+            const startTime = Date.now();
             
             const timer = setInterval(() => {
-              current += increment;
-              if (current >= targetCount) {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              
+              // Use easing function for smoother animation (ease-out)
+              const easedProgress = 1 - Math.pow(1 - progress, 3);
+              current = targetCount * easedProgress;
+              
+              if (progress >= 1) {
                 setDisplayCount(targetCount);
                 clearInterval(timer);
               } else {
@@ -284,7 +287,7 @@ export default function AdsLandingPage() {
       const count = calculateSessionCount();
       setSessionCount(count);
       // Reset display count when count changes (new day)
-      if (count === 0) {
+      if (count === 16) {
         setDisplayCount(0);
         setIsCounterVisible(false);
       }
@@ -293,11 +296,11 @@ export default function AdsLandingPage() {
     // Initial calculation
     updateCount();
     
-    // Update every minute to increment the count
-    const minuteInterval = setInterval(updateCount, 60000); // 60 seconds = 1 minute
+    // Update every hour to increment the count
+    const hourInterval = setInterval(updateCount, 3600000); // 3600 seconds = 1 hour
     
     return () => {
-      clearInterval(minuteInterval);
+      clearInterval(hourInterval);
     };
   }, []);
 
@@ -354,13 +357,6 @@ export default function AdsLandingPage() {
 
   const handleGetStartedClick = () => {
     router.push('/free-assessment');
-  };
-
-  const handleHowItWorksClick = () => {
-    const howItWorksSection = document.getElementById('how-it-works');
-    if (howItWorksSection) {
-      howItWorksSection.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   // Fetch psychologists
@@ -738,7 +734,7 @@ export default function AdsLandingPage() {
       <style dangerouslySetInnerHTML={{
         __html: `
           .ads-page h1 {
-            font-size: 2rem !important;
+            font-size: 28px !important;
             line-height: 1.1 !important;
           }
           .ads-page h2 {
@@ -879,6 +875,22 @@ export default function AdsLandingPage() {
           .service-card-heading {
             line-height: 1.2 !important;
           }
+          .counter-sentence {
+            font-size: 0.7rem !important;
+          }
+          @media (max-width: 767px) {
+            .ads-page .hero-section.hero-home {
+              min-height: 80vh !important;
+            }
+            .ads-page .hero-mobile-wrapper {
+              margin-top: 2rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            .ads-page .hero-section.hero-home {
+              margin-top: 3rem !important;
+            }
+          }
         `
       }} />
       {/* Structured Data */}
@@ -939,6 +951,13 @@ export default function AdsLandingPage() {
                 {/* Text Section - Below Image on Mobile */}
                 <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0" style={{ order: 2 }}>
                   {/* Badge */}
+                  <style dangerouslySetInnerHTML={{__html: `
+                    @media (max-width: 767px) {
+                      .hero-badge {
+                        margin-top: -1rem !important;
+                      }
+                    }
+                  `}} />
                   <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-auto xl:mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -947,10 +966,10 @@ export default function AdsLandingPage() {
                   </div>
                   
                   <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
-                    Your Partner in <br /> Child Counseling <br /> & Parenting Support
+                    Trusted by 840+ parents becoming family again.
                   </h1>
                   <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
-                     Connect with a trusted child psychologist online for gentle, child-friendly counselling from the comfort of your home, helping your child feel safe, supported, and understood without the stress of travel.
+                     Little care is led by Koott, helping parents who love deeply but struggle to connect, express and feel understood.
                   </p>
                   <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                     <style dangerouslySetInnerHTML={{__html: `
@@ -964,39 +983,19 @@ export default function AdsLandingPage() {
                     `}} />
                     <button
                       onClick={handleGetStartedClick}
-                      className="hero-book-button inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40"
+                      className="hero-book-button inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40 flex-shrink-0"
                       style={{ backgroundColor: '#3f2e73' }}
                       type="button"
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                     >
-                      <span style={{ fontWeight: 500 }}>Book a Free Assessment</span>
+                      <span style={{ fontWeight: 500 }}>Book a Free Session Now</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleHowItWorksClick}
-                      className="inline-flex items-center justify-center gap-3 text-base font-normal text-black hover:text-gray-800 group relative cursor-pointer"
-                    >
-                      <span className="relative">
-                        How does it work?
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-800 transition-all duration-300 ease-out group-hover:w-full"></span>
-                      </span>
-                      <div className="w-5 h-5 border border-gray-800 rounded-full flex items-center justify-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-2.5 w-2.5 text-gray-800"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 5v14M19 12l-7 7-7-7"/>
-                        </svg>
-                      </div>
-                    </button>
+                    <div ref={counterRef} className="text-center flex-shrink-0">
+                      <p className="text-gray-800 counter-sentence">
+                        Booked by <span className="font-semibold inline-block" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch', textAlign: 'left' }}>{displayCount}</span><span style={{ color: '#3f2e73' }}>+</span> parents Today, book yours.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -1023,18 +1022,12 @@ export default function AdsLandingPage() {
           <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
         )}
 
-        {/* Session Counter Section */}
-        <div ref={counterRef} className="w-full py-4 md:py-6 mt-8 md:mt-12 lg:mt-16 text-center">
-          <p className="text-xs sm:text-sm text-gray-800" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)' }}>
-            <span className="font-semibold" style={{ fontWeight: 600, color: '#3f2e73' }}>{displayCount}</span><span style={{ color: '#3f2e73' }}>+</span> free sessions booked today
-          </p>
-        </div>
-
         {/* Services Section - Choose Options (Rebuilt from component) */}
-        <section className="pt-0 pb-0 bg-white">
+        <section className="pt-0 pb-0" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
           <section
             id="choose-your-guide"
-            className="w-full py-2 px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
+            className="w-full px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
+            style={{ paddingTop: '2rem', paddingBottom: '0.5rem' }}
           >
             <style jsx>{`
               @media (max-width: 479px) {
@@ -1182,10 +1175,10 @@ export default function AdsLandingPage() {
             `}</style>
             <div className="mx-auto max-w-[1400px]">
               {/* Header */}
-              <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4">
-                <p className="p1 text-base md:text-lg mb-2">Let us guide you.</p>
+              <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4" style={{ marginTop: '2rem' }}>
+                <p className="p1 text-base md:text-lg mb-2">Still confused?</p>
                 <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
-                  Choose the Right Child Counseling Option to Get Started
+                  Together, lets choose the right care for your child to get started
                 </h2>
               </div>
 
@@ -1203,8 +1196,8 @@ export default function AdsLandingPage() {
                   >
                     {/* Colored background that matches image width */}
                     <div className={`absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b ${card.gradient} pointer-events-none z-0 rounded-[10px]`} />
-                    {/* White gradient overlay from half to bottom - matches image width on mobile */}
-                    <div className="absolute top-1/2 left-0 right-0 bottom-0 bg-gradient-to-b from-transparent to-white pointer-events-none z-0 rounded-b-[10px]" />
+                    {/* Gradient overlay from half to bottom - matches image width on mobile */}
+                    <div className="absolute top-1/2 left-0 right-0 bottom-0 pointer-events-none z-0 rounded-b-[10px]" style={{ background: 'linear-gradient(to bottom, transparent, rgb(250, 251, 254))' }} />
                     {/* Card Content */}
                     <div className="card-content p-6 pb-0 mb-0 px-6 md:px-8 relative z-10">
                       {/* Tags */}
@@ -1249,7 +1242,7 @@ export default function AdsLandingPage() {
                       <div className="read-more-button absolute bottom-6 md:bottom-8 left-6">
                         <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
                           <span className="px-3">Find more</span>
-                           <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200">
+                           <span className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
                             <svg
                               className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"
                               fill="none"
@@ -1283,10 +1276,10 @@ export default function AdsLandingPage() {
           <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-2 md:px-3 lg:px-3">
               <div className="text-center mb-6 md:mb-8 px-2">
                 <p className="text-sm sm:text-base text-gray-600 mb-2 md:mb-3 max-w-2xl mx-auto">
-                  Connect with qualified child psychologists
+                  Trusted, Certified child psychologists trained for online sessions.
                 </p>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-                  Experienced mental health professionals
+                  Connect with qualified child psychologists
                 </h2>
               </div>
             
@@ -1642,8 +1635,15 @@ export default function AdsLandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <div className="mt-12 md:mt-16 lg:mt-20 pt-4 md:pt-6 lg:pt-8 pb-12 md:pb-16 lg:pb-20" style={{ backgroundColor: '#E4E4F9' }}>
-          <HowItWorks />
+        <div className="mt-12 md:mt-16 lg:mt-20 pt-4 md:pt-6 lg:pt-8 pb-12 md:pb-16 lg:pb-20" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            .ads-page .how-it-works-heading {
+              line-height: 1.2 !important;
+            }
+          `}} />
+          <HowItWorks 
+            heading="Your child deserves care & support"
+          />
         </div>
 
         {/* Videos Showcase Section */}
@@ -1668,6 +1668,7 @@ export default function AdsLandingPage() {
               }
             `}} />
             <VideosShowcase cmsData={{ 
+            videosHeading: "Follow our journey to see how we help children and families.",
             videos: videos.map(video => ({
               url: video.url || video.src,
               src: video.url || video.src,
@@ -1732,8 +1733,11 @@ export default function AdsLandingPage() {
           `}} />
           <div className="w-full px-4 sm:px-0">
             <div className="text-center" style={{ marginBottom: '20px' }}>
-              <h3 className="text-xs sm:text-sm md:text-base text-gray-600 mt-2 mb-8 md:mb-14 px-4" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', fontWeight: 400, marginTop: '0.5rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: '1.5' }}>
-                Real experiences from families like yours
+              <p className="text-center md:text-center mt-2 text-sm md:text-base text-gray-600">
+                Reviews
+              </p>
+              <h3 className="text-xs sm:text-sm md:text-base text-gray-600 mt-3 mb-8 md:mb-14 px-4" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', fontWeight: 400, marginTop: '0.75rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: '1.5' }}>
+                Real families, real stories, real impact.
               </h3>
             </div>
 

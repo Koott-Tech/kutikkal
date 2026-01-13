@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function HowItWorks() {
+export default function HowItWorks({ heading, ctaText } = {}) {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
@@ -348,8 +348,13 @@ export default function HowItWorks() {
         {/* Inline CTA under the heading */}
         <div className="mt-3 mb-8 md:mb-6 text-center md:text-center max-w-full md:max-w-4xl mx-auto px-4">
           <h2 className="how-it-works-heading text-center text-base md:text-xl lg:text-2xl" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
-          Start Your Child's Therapy Journey Towards a Happier, Calmer Home
+            {heading || "Start Your Child's Therapy Journey Towards a Happier, Calmer Home"}
           </h2>
+          {ctaText && (
+            <p className="text-center mt-2 text-sm md:text-base" style={{ color: '#3f2e73', fontWeight: 500 }}>
+              {ctaText}
+            </p>
+          )}
           <button
             type="button"
             className="mt-4 md:mt-5 inline-flex items-center rounded-full px-6 md:px-8 py-2.5 text-sm md:text-sm font-medium text-white shadow-sm transition-colors duration-200"
