@@ -891,6 +891,10 @@ export default function AdsLandingPage() {
               margin-top: 3rem !important;
             }
           }
+          .ads-page .guide-video-card {
+            border-bottom-left-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+          }
         `
       }} />
       {/* Structured Data */}
@@ -1023,7 +1027,7 @@ export default function AdsLandingPage() {
         )}
 
         {/* Services Section - Choose Options (Rebuilt from component) */}
-        <section className="pt-0 pb-0" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
+        <section className="pt-0 pb-0" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
           <section
             id="choose-your-guide"
             className="w-full px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
@@ -1197,7 +1201,7 @@ export default function AdsLandingPage() {
                     {/* Colored background that matches image width */}
                     <div className={`absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b ${card.gradient} pointer-events-none z-0 rounded-[10px]`} />
                     {/* Gradient overlay from half to bottom - matches image width on mobile */}
-                    <div className="absolute top-1/2 left-0 right-0 bottom-0 pointer-events-none z-0 rounded-b-[10px]" style={{ background: 'linear-gradient(to bottom, transparent, rgb(250, 251, 254))' }} />
+                    <div className="absolute top-1/2 left-0 right-0 bottom-0 pointer-events-none z-0 rounded-b-[10px]" style={{ background: 'linear-gradient(to bottom, transparent, rgb(245, 246, 253))' }} />
                     {/* Card Content */}
                     <div className="card-content p-6 pb-0 mb-0 px-6 md:px-8 relative z-10">
                       {/* Tags */}
@@ -1242,7 +1246,7 @@ export default function AdsLandingPage() {
                       <div className="read-more-button absolute bottom-6 md:bottom-8 left-6">
                         <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
                           <span className="px-3">Find more</span>
-                           <span className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
+                           <span className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
                             <svg
                               className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"
                               fill="none"
@@ -1482,14 +1486,14 @@ export default function AdsLandingPage() {
                       </div>
                       {/* Availability information - below card */}
                       <div className="availability-container" style={{
-                        marginTop: 8,
+                        marginTop: 0,
                         marginBottom: 20
                       }}>
                         <div style={{
                           background: 'rgba(255,255,255,0.25)',
                           color: '#000000',
-                          borderRadius: 12,
-                          padding: '8px 12px',
+                          borderRadius: '0 0 12px 12px',
+                          padding: '8px 12px 12px 12px',
                           fontWeight: 500,
                           fontSize: '0.75rem',
                           boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
@@ -1498,11 +1502,11 @@ export default function AdsLandingPage() {
                           border: '1px solid #ffffff',
                           display: 'flex',
                           flexDirection: 'column',
-                          justifyContent: 'flex-start',
+                          justifyContent: 'space-between',
                           width: '100%',
                           lineHeight: '1.4', // Better line spacing
-                          overflow: 'hidden', // Hide overflow if content is too long
-                          minHeight: '4.2rem' // Fixed minimum height for 3 lines (Next available: + 2 date lines) to match first card
+                          overflow: 'visible', // Allow button to be visible
+                          minHeight: '7.5rem' // Fixed minimum height to always reserve space for Today + Tomorrow + button
                         }}>
                           {(() => {
                             const isLoading = loadingAvailability.has(psych.id);
@@ -1564,17 +1568,29 @@ export default function AdsLandingPage() {
                                   });
                                 }
                                 
-                                return `${dateLabel}: ${times.join(' • ')}`;
+                                return { dateLabel, text: `${dateLabel}: ${times.join(' • ')}`, isToday, isTomorrow };
                               });
+                              
+                              // Check if there's a Today slot but no Tomorrow slot
+                              const hasToday = formattedSlots.some(slot => slot.isToday);
+                              const hasTomorrow = formattedSlots.some(slot => slot.isTomorrow);
+                              const needsExtraLineBreak = hasToday && !hasTomorrow;
                               
                               return (
                                 <>
                                   Next available:
                                   <br />
-                                  {formattedSlots.map((slotGroup, index) => (
+                                  {formattedSlots.map((slot, index) => (
                                     <React.Fragment key={index}>
-                                      {slotGroup}
-                                      {index < formattedSlots.length - 1 && <br />}
+                                      {slot.text}
+                                      {slot.isToday && needsExtraLineBreak ? (
+                                        <>
+                                          <br />
+                                          <br />
+                                        </>
+                                      ) : (
+                                        index < formattedSlots.length - 1 && <br />
+                                      )}
                                     </React.Fragment>
                                   ))}
                                 </>
@@ -1584,46 +1600,46 @@ export default function AdsLandingPage() {
                             // Only show "No availability" if not loading and no slots found
                             return 'No availability';
                           })()}
+                          {/* Book Now Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePsychologistClick(psych);
+                            }}
+                            style={{
+                              marginTop: '12px',
+                              width: '100%',
+                              padding: '8px 16px',
+                              backgroundColor: '#3f2e73',
+                              color: '#ffffff',
+                              border: '2px solid #3f2e73',
+                              borderRadius: '8px',
+                              fontSize: '0.875rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 2px 4px rgba(63, 46, 115, 0.2)'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                                e.target.style.backgroundColor = '#6b5299';
+                                e.target.style.borderColor = '#6b5299';
+                              e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 4px 8px rgba(107, 82, 153, 0.3)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (typeof window !== 'undefined' && window.innerWidth > 767) {
+                              e.target.style.backgroundColor = '#3f2e73';
+                              e.target.style.borderColor = '#3f2e73';
+                              e.target.style.transform = 'translateY(0)';
+                              e.target.style.boxShadow = '0 2px 4px rgba(63, 46, 115, 0.2)';
+                              }
+                            }}
+                          >
+                            Book Now
+                          </button>
                         </div>
-                        {/* Book Now Button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePsychologistClick(psych);
-                          }}
-                          style={{
-                            marginTop: '8px',
-                            width: '100%',
-                            padding: '8px 16px',
-                            backgroundColor: '#3f2e73',
-                            color: '#ffffff',
-                            border: '2px solid #3f2e73',
-                            borderRadius: '8px',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 2px 4px rgba(63, 46, 115, 0.2)'
-                          }}
-                          onMouseEnter={(e) => {
-                            if (typeof window !== 'undefined' && window.innerWidth > 767) {
-                              e.target.style.backgroundColor = '#6b5299';
-                              e.target.style.borderColor = '#6b5299';
-                            e.target.style.transform = 'translateY(-1px)';
-                              e.target.style.boxShadow = '0 4px 8px rgba(107, 82, 153, 0.3)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (typeof window !== 'undefined' && window.innerWidth > 767) {
-                            e.target.style.backgroundColor = '#3f2e73';
-                            e.target.style.borderColor = '#3f2e73';
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 2px 4px rgba(63, 46, 115, 0.2)';
-                            }
-                          }}
-                        >
-                          Book Now
-                        </button>
                       </div>
                         </div>
                       </React.Fragment>
