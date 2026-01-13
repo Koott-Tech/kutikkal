@@ -245,11 +245,12 @@ export default function AdsLandingPage() {
               return;
             }
             
-            const duration = 6000; // 6 seconds (slower, smoother animation)
-            const steps = 120; // More steps for smoother animation
+            const duration = 8000; // 8 seconds (slower animation)
+            const steps = 80; // Fewer steps for less frequent updates
             const increment = targetCount / steps;
             let current = 0;
             const startTime = Date.now();
+            const minUpdateInterval = 100; // Minimum 100ms between updates to prevent flickering
             
             const timer = setInterval(() => {
               const elapsed = Date.now() - startTime;
@@ -265,7 +266,7 @@ export default function AdsLandingPage() {
               } else {
                 setDisplayCount(Math.floor(current));
               }
-            }, duration / steps);
+            }, Math.max(duration / steps, minUpdateInterval));
             
             return () => clearInterval(timer);
           } else {
@@ -895,6 +896,20 @@ export default function AdsLandingPage() {
             border-bottom-left-radius: 0 !important;
             border-bottom-right-radius: 0 !important;
           }
+          @media (max-width: 767px) {
+            .ads-page .hero-wrapper {
+              margin-bottom: 0 !important;
+            }
+            .ads-page .hero-section.hero-home {
+              border-radius: 0 !important;
+            }
+            .ads-page .hero-buttons {
+              gap: 0.25rem !important;
+            }
+            .ads-page .counter-container {
+              margin-top: -0.2rem !important;
+            }
+          }
         `
       }} />
       {/* Structured Data */}
@@ -995,7 +1010,7 @@ export default function AdsLandingPage() {
                     >
                       <span style={{ fontWeight: 500 }}>Book a Free Session Now</span>
                     </button>
-                    <div ref={counterRef} className="text-center flex-shrink-0">
+                    <div ref={counterRef} className="text-center flex-shrink-0 counter-container">
                       <p className="text-gray-800 counter-sentence">
                         Booked by <span className="font-semibold inline-block" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch', textAlign: 'left' }}>{displayCount}</span><span style={{ color: '#3f2e73' }}>+</span> parents Today, book yours.
                       </p>
@@ -1034,6 +1049,11 @@ export default function AdsLandingPage() {
             style={{ paddingTop: '2rem', paddingBottom: '0.5rem' }}
           >
             <style jsx>{`
+              @media (max-width: 767px) {
+                #choose-your-guide {
+                  margin-top: 0 !important;
+                }
+              }
               @media (max-width: 479px) {
                 .cards-grid {
                   gap: 20px !important;
