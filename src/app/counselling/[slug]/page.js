@@ -46,8 +46,9 @@ export async function generateMetadata({ params, searchParams }) {
     try {
     // Try to fetch from API for dynamic metadata
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    const previewSuffix = isPreview ? '?preview=1' : '';
-    const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
+    const timestamp = Date.now();
+    const previewSuffix = isPreview ? '&preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/counselling/${slug}?t=${timestamp}${previewSuffix}`, {
       cache: 'no-store'
     });
     
@@ -123,14 +124,10 @@ const removeAssessmentSpecialist = (docs = []) => {
 async function fetchCounsellingService(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    const previewSuffix = preview ? '?preview=1' : '';
-    const response = await fetch(`${baseUrl}/api/counselling/${slug}${previewSuffix}`, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+    const timestamp = Date.now();
+    const previewSuffix = preview ? '&preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/counselling/${slug}?t=${timestamp}${previewSuffix}`, {
+      cache: 'no-store'
     });
     
     if (response.ok) {

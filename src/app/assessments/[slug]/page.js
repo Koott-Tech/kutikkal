@@ -91,19 +91,15 @@ export async function generateMetadata({ params, searchParams }) {
 async function fetchAssessment(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    const previewSuffix = preview ? '?preview=1' : '';
-    const url = `${baseUrl}/api/assessments/${slug}${previewSuffix}`;
+    const timestamp = Date.now();
+    const previewSuffix = preview ? '&preview=1' : '';
+    const url = `${baseUrl}/api/assessments/${slug}?t=${timestamp}${previewSuffix}`;
     
     console.log(`[Assessment] Fetching: ${url}`);
     
     // Use no-store to match counselling/better-parenting (backend has caching)
     const response = await fetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
+      cache: 'no-store'
     });
 
     console.log(`[Assessment] Response status: ${response.status} for slug: ${slug}`);

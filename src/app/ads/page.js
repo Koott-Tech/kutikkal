@@ -585,11 +585,14 @@ export default function AdsLandingPage() {
 
         // Fetch videos from counselling pages
         try {
-          const counsellingResponse = await fetch(`${baseUrl}/counselling?status=published&limit=50`);
+          const counsellingResponse = await fetch(`${baseUrl}/counselling?status=published&limit=50`, {
+            cache: 'no-store'
+          });
           if (counsellingResponse.ok) {
             const counsellingData = await counsellingResponse.json();
-            if (counsellingData.success && counsellingData.data?.pages) {
-              counsellingData.data.pages.forEach(page => {
+            const pages = counsellingData.data?.pages || counsellingData.data?.services || [];
+            if (counsellingData.success && pages.length > 0) {
+              pages.forEach(page => {
                 if (page.videos && Array.isArray(page.videos)) {
                   page.videos.forEach(video => {
                     if (video.url || video.src) {
@@ -612,7 +615,9 @@ export default function AdsLandingPage() {
 
         // Fetch videos from assessments pages
         try {
-          const assessmentsResponse = await fetch(`${baseUrl}/assessments?status=published&limit=50`);
+          const assessmentsResponse = await fetch(`${baseUrl}/assessments?status=published&limit=50`, {
+            cache: 'no-store'
+          });
           if (assessmentsResponse.ok) {
             const assessmentsData = await assessmentsResponse.json();
             if (assessmentsData.success && assessmentsData.data?.assessments) {
@@ -639,11 +644,14 @@ export default function AdsLandingPage() {
 
         // Fetch videos from better-parenting pages
         try {
-          const betterParentingResponse = await fetch(`${baseUrl}/better-parenting?status=published&limit=50`);
+          const betterParentingResponse = await fetch(`${baseUrl}/better-parenting?status=published&limit=50`, {
+            cache: 'no-store'
+          });
           if (betterParentingResponse.ok) {
             const betterParentingData = await betterParentingResponse.json();
-            if (betterParentingData.success && betterParentingData.data?.pages) {
-              betterParentingData.data.pages.forEach(page => {
+            const pages = betterParentingData.data?.pages || betterParentingData.data?.services || [];
+            if (betterParentingData.success && pages.length > 0) {
+              pages.forEach(page => {
                 if (page.videos && Array.isArray(page.videos)) {
                   page.videos.forEach(video => {
                     if (video.url || video.src) {
@@ -672,6 +680,11 @@ export default function AdsLandingPage() {
         // Shuffle and select up to 5 random videos
         const shuffled = uniqueVideos.sort(() => 0.5 - Math.random());
         const selectedVideos = shuffled.slice(0, 5);
+
+        console.log('Total videos fetched:', allVideos.length);
+        console.log('Unique videos:', uniqueVideos.length);
+        console.log('Selected videos:', selectedVideos.length);
+        console.log('Video URLs:', selectedVideos.map(v => v.url || v.src));
 
         setVideos(selectedVideos);
       } catch (error) {

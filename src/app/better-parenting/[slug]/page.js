@@ -100,8 +100,9 @@ export async function generateMetadata({ params, searchParams }) {
 async function fetchBetterParentingPage(slug, { preview = false } = {}) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    const previewSuffix = preview ? '?preview=1' : '';
-    const response = await fetch(`${baseUrl}/api/better-parenting/${slug}${previewSuffix}`, {
+    const timestamp = Date.now();
+    const previewSuffix = preview ? '&preview=1' : '';
+    const response = await fetch(`${baseUrl}/api/better-parenting/${slug}?t=${timestamp}${previewSuffix}`, {
       cache: 'no-store'
     });
 
