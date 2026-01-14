@@ -272,6 +272,29 @@ export default function AdsLandingPage() {
     };
   }, []);
 
+  // Override How It Works button to scroll to psychologists section
+  useEffect(() => {
+    const handleButtonClick = (e) => {
+      const button = e.target.closest('#how-it-works button[type="button"]');
+      if (button && button.textContent.trim() === 'Get started') {
+        e.preventDefault();
+        e.stopPropagation();
+        const psychologistsSection = document.getElementById('psychologists-section');
+        if (psychologistsSection) {
+          psychologistsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    };
+
+    const howItWorksSection = document.getElementById('how-it-works');
+    if (howItWorksSection) {
+      howItWorksSection.addEventListener('click', handleButtonClick);
+      return () => {
+        howItWorksSection.removeEventListener('click', handleButtonClick);
+      };
+    }
+  }, []);
+
   const openGuide = (categoryKey) => {
     setDefaultCategory(categoryKey);
     setChooseOptionsShowGuide(true);
@@ -851,17 +874,121 @@ export default function AdsLandingPage() {
           .counter-sentence {
             font-size: 0.7rem !important;
           }
+          .counter-sentence .font-bold,
+          .counter-sentence [class*="font-bold"] {
+            font-weight: 400 !important;
+          }
+          .ads-page h2.text-xl {
+            font-size: 1.25rem !important;
+          }
+          .ads-page h2.text-2xl {
+            font-size: 1.5rem !important;
+          }
+          @media (min-width: 640px) {
+            .ads-page h2.text-2xl {
+              font-size: 1.5rem !important;
+            }
+            .ads-page h2.text-3xl {
+              font-size: 1.875rem !important;
+            }
+          }
+          @media (min-width: 768px) {
+            .ads-page h2.text-3xl {
+              font-size: 1.875rem !important;
+            }
+            .ads-page h2.text-4xl {
+              font-size: 2.25rem !important;
+            }
+          }
+          /* Override global h2 styles for reviews heading */
+          .ads-page .reviews-section-heading {
+            font-size: 1.125rem !important;
+            line-height: 1.1 !important;
+            letter-spacing: normal !important;
+          }
+          @media (min-width: 640px) {
+            .ads-page .reviews-section-heading {
+              font-size: 1.25rem !important;
+            }
+          }
+          @media (min-width: 768px) {
+            .ads-page .reviews-section-heading {
+              font-size: 1.5rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            .ads-page .reviews-section-heading {
+              font-size: 1.875rem !important;
+            }
+          }
+          /* Override global h2 styles for FAQ heading */
+          .ads-page .faq-section-heading {
+            font-size: 1.125rem !important;
+            line-height: 1.1 !important;
+            letter-spacing: normal !important;
+          }
+          @media (min-width: 640px) {
+            .ads-page .faq-section-heading {
+              font-size: 1.25rem !important;
+            }
+          }
+          @media (min-width: 768px) {
+            .ads-page .faq-section-heading {
+              font-size: 1.5rem !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            .ads-page .faq-section-heading {
+              font-size: 1.875rem !important;
+            }
+          }
+          @media (max-width: 767px) {
+            .ads-page .psychologists-description {
+              white-space: pre-line;
+            }
+          }
+          @media (min-width: 768px) {
+            .ads-page .psychologists-description {
+              white-space: normal;
+            }
+          }
           @media (max-width: 767px) {
             .ads-page .hero-section.hero-home {
-              min-height: 87vh !important;
+              padding-top: 16px !important;
+              padding-bottom: 0 !important;
+            }
+            .ads-page .hero-content-wrapper {
+              padding-bottom: 0 !important;
+              margin-bottom: 0 !important;
+            }
+            .ads-page .hero-text {
+              padding-top: 3rem !important;
+            }
+            .ads-page .hero-text .hero-description {
+              margin-top: 0.5rem !important;
             }
             .ads-page .hero-mobile-wrapper {
-              margin-top: 0.5rem !important;
+              margin-top: 1.5rem !important;
+              margin-bottom: -16px !important;
+              margin-left: -16px !important;
+              margin-right: -16px !important;
+              width: calc(100% + 32px) !important;
+            }
+            .ads-page .hero-image-box {
+              margin-bottom: 0 !important;
+              margin-top: 20px !important;
+              padding-bottom: 0 !important;
+            }
+            .ads-page .hero-mobile-image {
+              object-position: center bottom !important;
             }
           }
           @media (min-width: 1024px) {
             .ads-page .hero-section.hero-home {
               margin-top: 3rem !important;
+            }
+            .ads-page .hero-text .hero-description {
+              margin-top: 0.5rem !important;
             }
           }
           .ads-page .guide-video-card {
@@ -920,7 +1047,7 @@ export default function AdsLandingPage() {
       />
 
       <main className="min-h-screen bg-white ads-page">
-        {/* Hero Section - Rebuilt from home page */}
+        {/* Hero Section - Exact copy from homepage */}
         <div className="w-full overflow-hidden mt-12">
           <div className="hero-wrapper mx-auto max-w-[1400px] px-0 md:px-0">
             <section 
@@ -936,31 +1063,9 @@ export default function AdsLandingPage() {
               }}
             >
               <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
-                {/* Mobile / Tablet / Small-laptop Image - Top on Mobile */}
-                <div className="hero-mobile-wrapper block xl:hidden" style={{ order: 1, width: '100vw', position: 'relative', left: '50%', right: '50%', transform: 'translateX(-50%)', marginBottom: '1.5rem' }}>
-                  <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none', height: '300px' }}>
-                    <Image
-                      src="/hee.webp"
-                      alt="Hero illustration of a child with a parent during online counseling"
-                      fill
-                      className="hero-mobile-image object-bottom w-full h-full"
-                      sizes="100vw"
-                      priority
-                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                    />
-                  </div>
-                </div>
-
-                {/* Text Section - Below Image on Mobile */}
-                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0" style={{ order: 2 }}>
+                {/* Left: Text */}
+                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0 order-1">
                   {/* Badge */}
-                  <style dangerouslySetInnerHTML={{__html: `
-                    @media (max-width: 767px) {
-                      .hero-badge {
-                        margin-top: -1rem !important;
-                      }
-                    }
-                  `}} />
                   <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-auto xl:mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -971,7 +1076,7 @@ export default function AdsLandingPage() {
                   <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
                     Trusted by 840+ parents becoming family again.
                   </h1>
-                  <p className="hero-description p1 mt-6 md:mt-6 text-base md:text-lg">
+                  <p className="hero-description p1 mt-3 md:mt-3 text-base md:text-lg">
                      Little care is led by Koott, helping parents who love deeply but struggle to connect, express and feel understood.
                   </p>
                   <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
@@ -999,22 +1104,38 @@ export default function AdsLandingPage() {
                         <TrendingUp size={14} style={{ color: '#3f2e73', strokeWidth: 2.5 }} />
                         Booked by{' '}
                         {shouldAnimateCounter ? (
-                          <span className="font-semibold inline-flex items-center" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch' }}>
+                          <span className="inline-flex items-center" style={{  color: '#3f2e73', minWidth: '2.5ch' }}>
                             <Counter 
                               key={`counter-${sessionCount}-${shouldAnimateCounter}`}
                               start={0} 
                               end={sessionCount} 
                               duration={8}
                               fontSize={14}
-                              className="inline-flex"
+                              className="inline-flex font-normal"
+                              style={{ fontWeight: 400 }}
                             />
                           </span>
                         ) : (
-                          <span className="font-semibold inline-block" style={{ fontWeight: 600, color: '#3f2e73', minWidth: '2.5ch' }}>0</span>
+                          <span className="inline-block" style={{ fontWeight: 400, color: '#3f2e73', minWidth: '2.5ch' }}>0</span>
                         )}
-                        <span style={{ color: '#3f2e73', marginLeft: '-2px' }}>+</span> parents Today, book yours.
+                        <span style={{ color: '#3f2e73', marginLeft: '-2px' }}>+</span> parents Today,book yours.
                       </p>
                     </div>
+                  </div>
+                </div>
+
+                {/* Mobile / Tablet / Small-laptop Image */}
+                <div className="hero-mobile-wrapper block xl:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
+                  <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
+                    <Image
+                      src="/hee.webp"
+                      alt="Hero illustration of a child with a parent during online counseling"
+                      fill
+                      className="hero-mobile-image object-bottom w-full h-full"
+                      sizes="100vw"
+                      priority
+                      style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                    />
                   </div>
                 </div>
 
@@ -1042,7 +1163,7 @@ export default function AdsLandingPage() {
         )}
 
         {/* Services Section - Choose Options (Rebuilt from component) */}
-        <section className="pt-0 pb-0 choose-guide-section" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
+        <section className="pt-0 pb-0 choose-guide-section" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, rgb(245, 246, 253) 100%)' }}>
           <section
             id="choose-your-guide"
             className="w-full px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
@@ -1052,6 +1173,14 @@ export default function AdsLandingPage() {
               @media (max-width: 767px) {
                 #choose-your-guide {
                   margin-top: 0 !important;
+                }
+                .choose-options-heading {
+                  white-space: pre-line;
+                }
+              }
+              @media (min-width: 768px) {
+                .choose-options-heading {
+                  white-space: normal;
                 }
               }
               @media (max-width: 479px) {
@@ -1201,9 +1330,9 @@ export default function AdsLandingPage() {
               {/* Header */}
               <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4" style={{ marginTop: '2rem' }}>
                 <p className="p1 text-base md:text-lg mb-2">Still confused?</p>
-                <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
-                  Together, lets choose the right care for your child to get started
-                </h2>
+                  <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+                    Together, lets choose the right care for your child to{'\n'}get started
+                  </h2>
               </div>
 
               {/* Cards Grid */}
@@ -1296,11 +1425,11 @@ export default function AdsLandingPage() {
         </section>
 
         {/* Psychologists Section */}
-        <section className="pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
+        <section id="psychologists-section" className="pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
           <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-2 md:px-3 lg:px-3">
               <div className="text-center mb-6 md:mb-8 px-2">
-                <p className="text-sm sm:text-base text-gray-600 mb-2 md:mb-3 max-w-2xl mx-auto">
-                  Trusted, Certified child psychologists trained for online sessions.
+                <p className="text-sm sm:text-base text-gray-600 mb-2 md:mb-3 max-w-2xl mx-auto psychologists-description">
+                  Trusted, Certified child psychologists{'\n'}trained for online sessions.
                 </p>
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
                   Connect with qualified child psychologists
@@ -1676,9 +1805,30 @@ export default function AdsLandingPage() {
             .ads-page .how-it-works-heading {
               line-height: 1.2 !important;
             }
+            @media (max-width: 767px) {
+              .ads-page .how-it-works-heading {
+                white-space: pre-line;
+              }
+            }
+            @media (min-width: 768px) {
+              .ads-page .how-it-works-heading {
+                white-space: normal;
+              }
+            }
+            .ads-page #how-it-works button[type="button"] {
+              background-color: #6b7280 !important;
+            }
+            .ads-page #how-it-works button[type="button"]:hover {
+              background-color: #4b5563 !important;
+            }
           `}} />
           <HowItWorks 
-            heading="Your child deserves care & support"
+            heading={
+              <>
+                Your <span style={{ color: '#3f2e73', fontStyle: 'italic' }}>Little one</span> deserves{'\n'}
+                <span className="how-it-works-mobile-break">care</span> & support
+              </>
+            }
           />
         </div>
 
@@ -1695,6 +1845,14 @@ export default function AdsLandingPage() {
                   margin-top: 2rem !important;
                   padding-top: 2.5rem !important;
                 }
+                .ads-page .how-it-works-heading {
+                  white-space: pre-line;
+                }
+              }
+              @media (min-width: 768px) {
+                .ads-page .how-it-works-heading {
+                  white-space: normal;
+                }
               }
               @media (min-width: 768px) and (max-width: 1180px) {
                 .ads-page .videos-showcase-mobile {
@@ -1704,7 +1862,7 @@ export default function AdsLandingPage() {
               }
             `}} />
             <VideosShowcase cmsData={{ 
-            videosHeading: "Follow our journey to see how we help children and families.",
+            videosHeading: "Follow our journey\nto see how we help children and families.",
             videos: videos.map(video => ({
               url: video.url || video.src,
               src: video.url || video.src,
@@ -1766,15 +1924,31 @@ export default function AdsLandingPage() {
               0% { transform: translateX(0); }
               100% { transform: translateX(-50%); }
             }
+            .ads-page .review-card .font-semibold {
+              font-size: 1rem !important;
+            }
+            @media (min-width: 768px) {
+              .ads-page .review-card .font-semibold {
+                font-size: 1.125rem !important;
+              }
+            }
+            .ads-page .review-card p {
+              font-size: 1rem !important;
+            }
+            @media (min-width: 768px) {
+              .ads-page .review-card p {
+                font-size: 1.125rem !important;
+              }
+            }
           `}} />
           <div className="w-full px-4 sm:px-0">
             <div className="text-center" style={{ marginBottom: '20px' }}>
               <p className="text-center md:text-center mt-2 text-sm md:text-base text-gray-600">
                 Reviews
               </p>
-              <h3 className="text-xs sm:text-sm md:text-base text-gray-600 mt-3 mb-8 md:mb-14 px-4" style={{ fontSize: 'clamp(0.75rem, 2vw, 0.875rem)', fontWeight: 400, marginTop: '0.75rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: '1.5' }}>
+              <h2 className="reviews-section-heading text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-3 mb-8 md:mb-14 px-4" style={{ marginTop: '0.75rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Real families, real stories, real impact.
-              </h3>
+              </h2>
             </div>
 
             <div className="relative overflow-x-auto reviews-container" style={{ marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
@@ -1795,7 +1969,7 @@ export default function AdsLandingPage() {
                     return (
                       <div key={idx} className="review-card min-w-[280px] max-w-[320px] rounded-[10px] border border-gray-200 bg-white p-4 md:p-6">
                         <div className="mb-3">
-                          <div className="font-semibold text-gray-900 text-sm md:text-base mb-1">{review.name}</div>
+                          <div className="font-semibold text-gray-900 text-base md:text-lg mb-1">{review.name}</div>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((star) => {
                               if (star <= fullStars) {
@@ -1825,7 +1999,7 @@ export default function AdsLandingPage() {
                             })}
                           </div>
                         </div>
-                        <p className="text-gray-800 text-sm md:text-base leading-relaxed">{review.text}</p>
+                        <p className="text-gray-800 text-base md:text-lg leading-relaxed">{review.text}</p>
                       </div>
                     );
                   });
@@ -1836,9 +2010,9 @@ export default function AdsLandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="pt-8 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 bg-white">
+        <section className="pt-8 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 bg-white mt-8 md:mt-12">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">
+            <h2 className="faq-section-heading text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-left text-gray-900 mb-8 md:mb-12 px-2 md:px-0">
               FAQ's
             </h2>
             <style dangerouslySetInnerHTML={{__html: `
