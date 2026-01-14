@@ -78,6 +78,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        {/* Favicon */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
         {/* DNS Prefetch and Preconnect for faster API connections (especially for international users) */}
         {process.env.NEXT_PUBLIC_BACKEND_URL && (
           <>
@@ -296,7 +299,12 @@ export default function RootLayout({ children }) {
               description:
                 "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
               url: "https://www.little.care",
-              logo: "https://www.little.care/favicon.ico",
+              logo: {
+                "@type": "ImageObject",
+                "url": "https://www.little.care/mainlogo.webp",
+                "width": 1200,
+                "height": 400
+              },
               image: "https://www.little.care/mainlogo.webp",
               telephone: "+91 95390 07766",
               email: "hey@little.care",

@@ -247,7 +247,7 @@ export default function AdminLayout({ children }) {
             >
               <img 
                 src="/mainlogo.webp"
-                alt="Little Care - Child Psychotherapy Logo"
+                alt="Little Care"
                 width={120}
                 height={40}
                 className="object-contain"
