@@ -200,6 +200,14 @@ export default function AdsLandingPage() {
   const [shouldAnimateCounter, setShouldAnimateCounter] = useState(false);
   const counterRef = useRef(null);
 
+  // Add body class for ads page to target footer styles
+  useEffect(() => {
+    document.body.classList.add('ads-page-body');
+    return () => {
+      document.body.classList.remove('ads-page-body');
+    };
+  }, []);
+
   // Calculate current session count based on IST time
   // Starts at 16, increments every hour by a random value between 1-3
   const calculateSessionCount = () => {
@@ -737,6 +745,38 @@ export default function AdsLandingPage() {
       </Head>
       <style dangerouslySetInnerHTML={{
         __html: `
+          /* CRITICAL OVERRIDES - Must override global h2 styles from globals.css (48px on desktop) */
+          /* Place at top for maximum priority */
+          .ads-page main h2.psychologists-heading,
+          .ads-page main h2.reviews-section-heading,
+          .ads-page main h2.choose-options-heading,
+          .ads-page h2.psychologists-heading,
+          .ads-page h2.reviews-section-heading,
+          .ads-page h2.choose-options-heading {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+          @media (min-width: 1024px) {
+            .ads-page main h2.psychologists-heading,
+            .ads-page main h2.reviews-section-heading,
+            .ads-page main h2.choose-options-heading,
+            .ads-page h2.psychologists-heading,
+            .ads-page h2.reviews-section-heading,
+            .ads-page h2.choose-options-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 1280px) {
+            .ads-page main h2.psychologists-heading,
+            .ads-page main h2.reviews-section-heading,
+            .ads-page main h2.choose-options-heading,
+            .ads-page h2.psychologists-heading,
+            .ads-page h2.reviews-section-heading,
+            .ads-page h2.choose-options-heading {
+              font-size: 24px !important;
+            }
+          }
           .ads-page h1 {
             font-size: 28px !important;
             line-height: 1.1 !important;
@@ -913,25 +953,83 @@ export default function AdsLandingPage() {
               font-size: 2.25rem !important;
             }
           }
-          /* Override global h2 styles for reviews heading */
-          .ads-page .reviews-section-heading {
-            font-size: 1.125rem !important;
+          /* Override global h2 styles for reviews heading - use multiple classes for maximum specificity */
+          .ads-page h2.reviews-section-heading.text-base,
+          .ads-page h2.reviews-section-heading {
+            font-size: 24px !important; /* Match choose-options-heading */
+            font-weight: 600 !important;
             line-height: 1.1 !important;
             letter-spacing: normal !important;
           }
           @media (min-width: 640px) {
-            .ads-page .reviews-section-heading {
-              font-size: 1.25rem !important;
+            .ads-page h2.reviews-section-heading.text-base,
+            .ads-page h2.reviews-section-heading {
+              font-size: 24px !important;
             }
           }
           @media (min-width: 768px) {
-            .ads-page .reviews-section-heading {
-              font-size: 1.5rem !important;
+            .ads-page h2.reviews-section-heading.text-base,
+            .ads-page h2.reviews-section-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 768px) and (max-width: 1023px) {
+            /* Override global h2 tablet styles (32px) */
+            .ads-page h2.reviews-section-heading.text-base,
+            .ads-page h2.reviews-section-heading {
+              font-size: 24px !important;
             }
           }
           @media (min-width: 1024px) {
-            .ads-page .reviews-section-heading {
-              font-size: 1.875rem !important;
+            /* CRITICAL: Override global h2 laptop/desktop styles (48px) */
+            .ads-page h2.reviews-section-heading.text-base,
+            .ads-page h2.reviews-section-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 1280px) {
+            .ads-page h2.reviews-section-heading.text-base,
+            .ads-page h2.reviews-section-heading {
+              font-size: 24px !important;
+            }
+          }
+          /* Match psychologists heading to choose-options-heading - use multiple classes for maximum specificity */
+          .ads-page h2.psychologists-heading.text-base,
+          .ads-page h2.psychologists-heading {
+            font-size: 24px !important;
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+          @media (min-width: 640px) {
+            .ads-page h2.psychologists-heading.text-base,
+            .ads-page h2.psychologists-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 768px) {
+            .ads-page h2.psychologists-heading.text-base,
+            .ads-page h2.psychologists-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 768px) and (max-width: 1023px) {
+            /* Override global h2 tablet styles (32px) */
+            .ads-page h2.psychologists-heading.text-base,
+            .ads-page h2.psychologists-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 1024px) {
+            /* CRITICAL: Override global h2 laptop/desktop styles (48px) */
+            .ads-page h2.psychologists-heading.text-base,
+            .ads-page h2.psychologists-heading {
+              font-size: 24px !important;
+            }
+          }
+          @media (min-width: 1280px) {
+            .ads-page h2.psychologists-heading.text-base,
+            .ads-page h2.psychologists-heading {
+              font-size: 24px !important;
             }
           }
           /* Override global h2 styles for FAQ heading */
@@ -1029,9 +1127,49 @@ export default function AdsLandingPage() {
             .ads-page h6 {
               line-height: 1.1 !important;
             }
+            /* Override .ads-page h2 for specific headings - must come after general h2 rules */
+            .ads-page h2.psychologists-heading,
+            .ads-page h2.reviews-section-heading,
+            .ads-page h2.choose-options-heading {
+              font-size: 24px !important;
+              font-weight: 600 !important;
+              line-height: 1.1 !important;
+            }
             .ads-page .choose-guide-section {
               padding-bottom: 3rem !important;
               margin-bottom: 2rem !important;
+            }
+          }
+          /* Match footer heading and description font sizes to hero section */
+          body.ads-page-body .footer-heading {
+            font-size: 1.875rem !important; /* text-3xl - reduced from text-4xl */
+            font-weight: 600 !important;
+            line-height: 1.1 !important;
+          }
+          @media (max-width: 767px) {
+            body.ads-page-body .footer-heading {
+              white-space: pre-line;
+            }
+          }
+          @media (min-width: 768px) {
+            body.ads-page-body .footer-heading {
+              white-space: normal;
+            }
+          }
+          body.ads-page-body .footer-description {
+            font-size: 1rem !important; /* text-base */
+          }
+          @media (min-width: 768px) {
+            body.ads-page-body .footer-heading {
+              font-size: 2.25rem !important; /* text-4xl - reduced from text-5xl */
+            }
+            body.ads-page-body .footer-description {
+              font-size: 1.125rem !important; /* text-lg */
+            }
+          }
+          @media (min-width: 1024px) {
+            body.ads-page-body .footer-heading {
+              font-size: 2.5rem !important; /* text-5xl - reduced from text-6xl */
             }
           }
         `
@@ -1116,22 +1254,25 @@ export default function AdsLandingPage() {
                       <p className="text-gray-800 counter-sentence flex items-center justify-center gap-1 flex-wrap">
                         <TrendingUp size={14} style={{ color: '#3f2e73', strokeWidth: 2.5 }} />
                         Booked by{' '}
-                        {shouldAnimateCounter ? (
-                          <span className="inline-flex items-center" style={{  color: '#3f2e73', minWidth: '2.5ch' }}>
-                            <Counter 
-                              key={`counter-${sessionCount}-${shouldAnimateCounter}`}
-                              start={0} 
-                              end={sessionCount} 
-                              duration={8}
-                              fontSize={14}
-                              className="inline-flex font-normal"
-                              style={{ fontWeight: 400 }}
-                            />
-                          </span>
-                        ) : (
-                          <span className="inline-block" style={{ fontWeight: 400, color: '#3f2e73', minWidth: '2.5ch' }}>0</span>
-                        )}
-                        <span style={{ color: '#3f2e73', marginLeft: '-2px' }}>+</span> parents Today,book yours.
+                        <span className="inline-flex items-center" style={{ gap: 0 }}>
+                          {shouldAnimateCounter ? (
+                            <span className="inline-flex items-center" style={{  color: '#3f2e73', minWidth: '2.5ch' }}>
+                              <Counter 
+                                key={`counter-${sessionCount}-${shouldAnimateCounter}`}
+                                start={0} 
+                                end={sessionCount} 
+                                duration={8}
+                                fontSize={14}
+                                className="inline-flex font-normal"
+                                style={{ fontWeight: 400 }}
+                              />
+                            </span>
+                          ) : (
+                            <span className="inline-block" style={{ fontWeight: 400, color: '#3f2e73', minWidth: '2.5ch' }}>0</span>
+                          )}
+                          <span style={{ color: '#3f2e73', marginLeft: '-2px' }}>+</span>
+                        </span>
+                        {' '}parents Today, book yours.
                       </p>
                     </div>
                   </div>
@@ -1190,9 +1331,15 @@ export default function AdsLandingPage() {
                 .choose-options-heading {
                   white-space: pre-line;
                 }
+                .psychologists-heading {
+                  white-space: pre-line;
+                }
               }
               @media (min-width: 768px) {
                 .choose-options-heading {
+                  white-space: normal;
+                }
+                .psychologists-heading {
                   white-space: normal;
                 }
               }
@@ -1218,7 +1365,9 @@ export default function AdsLandingPage() {
                   bottom: 75px !important;
                   left: 20px !important;
                 }
-                h2.choose-options-heading {
+                h2.choose-options-heading,
+                h2.psychologists-heading,
+                h2.reviews-section-heading {
                   font-size: 24px !important;
                   font-weight: 600 !important;
                   line-height: 1.1 !important;
@@ -1249,7 +1398,9 @@ export default function AdsLandingPage() {
                   bottom: 85px !important;
                   left: 22px !important;
                 }
-                h2.choose-options-heading {
+                h2.choose-options-heading,
+                h2.psychologists-heading,
+                h2.reviews-section-heading {
                   font-size: 24px !important;
                   font-weight: 600 !important;
                   line-height: 1.1 !important;
@@ -1280,13 +1431,35 @@ export default function AdsLandingPage() {
                   bottom: 95px !important;
                   left: 24px !important;
                 }
-                h2.choose-options-heading {
+                h2.choose-options-heading,
+                h2.psychologists-heading,
+                h2.reviews-section-heading {
                   font-size: 24px !important;
                   font-weight: 600 !important;
                   line-height: 1.1 !important;
                   text-align: center;
                   padding-left: 0;
                   padding-right: 0;
+                }
+              }
+              @media (min-width: 768px) {
+                /* Desktop/laptop overrides - must override global h2 (48px) */
+                h2.choose-options-heading,
+                h2.psychologists-heading,
+                h2.reviews-section-heading {
+                  font-size: 24px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.1 !important;
+                }
+              }
+              @media (min-width: 1024px) {
+                /* Laptop/desktop overrides - must override global h2 (48px) */
+                h2.choose-options-heading,
+                h2.psychologists-heading,
+                h2.reviews-section-heading {
+                  font-size: 24px !important;
+                  font-weight: 600 !important;
+                  line-height: 1.1 !important;
                 }
               }
               @media (max-width: 767px) {
@@ -1344,7 +1517,7 @@ export default function AdsLandingPage() {
               <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4" style={{ marginTop: '2rem' }}>
                 <p className="p1 text-base md:text-lg mb-2">Still confused?</p>
                   <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
-                    Together, lets choose the right care for your child to{'\n'}get started
+                    Together, lets choose the right care for your child{'\n'}to get started
                   </h2>
               </div>
 
@@ -1444,8 +1617,8 @@ export default function AdsLandingPage() {
                 <p className="text-sm sm:text-base text-gray-600 mb-2 md:mb-3 max-w-2xl mx-auto psychologists-description">
                   Trusted, Certified child psychologists{'\n'}trained for online sessions.
                 </p>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-                  Connect with qualified child psychologists
+                <h2 className="psychologists-heading text-base md:text-xl lg:text-2xl font-semibold text-gray-900" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
+                  Connect with qualified{'\n'}child psychologists
                 </h2>
               </div>
             
@@ -1959,7 +2132,7 @@ export default function AdsLandingPage() {
               <p className="text-center md:text-center mt-2 text-sm md:text-base text-gray-600">
                 Reviews
               </p>
-              <h2 className="reviews-section-heading text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mt-3 mb-8 md:mb-14 px-4" style={{ marginTop: '0.75rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)' }}>
+              <h2 className="reviews-section-heading text-base md:text-xl lg:text-2xl font-semibold text-gray-900 mt-3 mb-8 md:mb-14 px-4" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1', marginTop: '0.75rem', marginBottom: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Real families, real stories, real impact.
               </h2>
             </div>

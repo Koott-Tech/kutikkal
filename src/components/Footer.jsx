@@ -250,7 +250,9 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                 }}>
                     <div className="text-center max-w-4xl mx-auto px-4">
                         <h4 className="footer-heading mb-2 font-semibold">
-                            {pathname === '/about' ? ' We’re  here to listen, guide, and support.' : 'Confused where to start?'}
+                            {pathname === '/about' 
+                                ? " We're  here to listen, guide, and support." 
+                                : "Confused where\nto start?"}
                         </h4>
                         <p className="footer-description text-sm md:text-base text-gray-700 mb-8">
                             {pathname === '/about'
