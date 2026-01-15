@@ -1,6 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+/**
+ * Therapist Profile Page
+ * 
+ * Performance Notes:
+ * - This page must remain a client component due to heavy interactivity (calendar, booking, modals)
+ * - Main performance improvements come from:
+ *   1. CLS fixes in child components (HeroSection, TherapyTypesSplit, etc.)
+ *   2. Image optimization with proper dimensions
+ *   3. Code splitting where possible
+ * - Consider splitting into smaller components for better code splitting in future
+ */
+
+import React, { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { publicApi } from '../../../lib/backendApi';

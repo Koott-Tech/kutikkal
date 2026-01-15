@@ -234,7 +234,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
 
             {/* Mobile Image - Inside the green background area */}
             <div className="therapy-types-image block lg:hidden mt-8 mx-0 relative" style={{ minHeight: '380px', height: '55vh', marginBottom: 0, paddingBottom: 0 }}>
-              <div className="absolute inset-0" style={{ borderRadius: 0 }}>
+              <div className="absolute inset-0" style={{ borderRadius: 0, minHeight: '380px' }}>
                 <Image
                   src={currentContent.rightImageUrl || "/rightside5th.png"}
                   alt={currentContent.title ? `${currentContent.title} - Therapy types illustration` : "Child counseling therapy types illustration"}
@@ -250,7 +250,7 @@ export default function TherapyTypesSplit({ therapyType = "individual", cmsData 
 
           {/* Image Area - Desktop Only */}
           <div className="hidden lg:block relative" style={{ minHeight: '400px' }}>
-            <div className="absolute inset-0">
+            <div className="absolute inset-0" style={{ minHeight: '400px' }}>
               <Image
                 src={currentContent.rightImageUrl || "/rightside5th.png"}
                 alt={currentContent.title ? `${currentContent.title} - Therapy types illustration` : "Child counseling therapy types illustration"}

@@ -205,6 +205,17 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
             overflow: hidden;
           }
         }
+        /* Desktop: Full height but with min-height to prevent CLS */
+        @media (min-width: 1280px) {
+          .cms-hero-image-container {
+            min-height: 500px;
+            height: 100%;
+          }
+          .cms-hero-image-container > div {
+            height: 100%;
+            min-height: 500px;
+          }
+        }
       `}</style>
       <section className="w-full">
         <div className="w-full overflow-hidden" style={{ backgroundColor: '#F3FAF0' }}>
@@ -269,7 +280,9 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
             </div>
             
                          {/* Image Area - Below content on mobile, right side on desktop */}
-             <div className="cms-hero-image-container relative h-96 md:h-full order-2 lg:order-2" style={{ minHeight: '300px' }}>
+             <div className="cms-hero-image-container relative h-96 xl:h-full order-2 lg:order-2" style={{ 
+               minHeight: '300px'
+             }}>
                <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
                  {currentContent.image ? (
                    <Image

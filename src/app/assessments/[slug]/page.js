@@ -12,12 +12,10 @@ import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
-// Use force-dynamic to match counselling/better-parenting pages
-// This ensures consistent performance and avoids ISR overhead
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Use ISR for better performance - revalidate every 60 seconds
+// This allows static generation with periodic updates, improving TTFB and reducing server load
+export const revalidate = 60; // Revalidate every 60 seconds
 export const dynamicParams = true;
-export const fetchCache = 'force-no-store';
 
 // Dynamic metadata for assessment pages
 export async function generateMetadata({ params, searchParams }) {
@@ -97,9 +95,9 @@ async function fetchAssessment(slug, { preview = false } = {}) {
     
     console.log(`[Assessment] Fetching: ${url}`);
     
-    // Use no-store to match counselling/better-parenting (backend has caching)
+    // Use ISR with revalidation - allows Next.js to cache and revalidate
     const response = await fetch(url, {
-      cache: 'no-store'
+      next: { revalidate: 60 } // Revalidate every 60 seconds
     });
 
     console.log(`[Assessment] Response status: ${response.status} for slug: ${slug}`);
@@ -157,9 +155,9 @@ async function fetchAssessment(slug, { preview = false } = {}) {
 async function fetchPublicTherapists(limit = 6) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-    // Use no-store to match counselling/better-parenting (backend has caching)
+    // Use ISR with revalidation for better performance
     const response = await fetch(`${baseUrl}/api/public/psychologists?limit=${limit}`, {
-      cache: 'no-store'
+      next: { revalidate: 300 } // Revalidate every 5 minutes (psychologists change less frequently)
     });
 
     if (response.ok) {
