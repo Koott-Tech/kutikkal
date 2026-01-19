@@ -11,8 +11,17 @@ import {
   Filter,
   User,
   Mail,
-  Calendar
+  Calendar,
+  MoreVertical,
+  Loader2
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { adminApi } from '@/lib/backendApi';
 import UserModal from '@/components/UserModal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -38,6 +47,7 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [deletingUserId, setDeletingUserId] = useState(null); // Track which user is being deleted
 
   useEffect(() => {
     // Check authentication and role
@@ -113,17 +123,21 @@ export default function UsersPage() {
   };
 
   const confirmDeleteUser = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || deletingUserId) return; // Prevent double deletion
 
     try {
+      setDeletingUserId(userToDelete.id); // Set loading state - keep modal open
       await adminApi.deleteUser(userToDelete.id);
       showSuccess('User deleted successfully');
-      loadUsers();
+      setIsConfirmModalOpen(false); // Close modal after success
       setUserToDelete(null);
+      await loadUsers(); // Reload users list
     } catch (error) {
       console.error('Error deleting user:', error);
       showError('Failed to delete user', 'Delete Error');
-      setUserToDelete(null);
+      // Keep modal open on error so user can try again
+    } finally {
+      setDeletingUserId(null); // Clear loading state
     }
   };
 
@@ -260,73 +274,108 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Users List */}
-      <div className="flex flex-col gap-4">
-        {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-          <div
-            key={user.id}
-            className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-6 w-full rounded-[10px]"
-          >
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h6 className="text-sm font-semibold text-gray-900" style={{ fontSize: '14px', fontWeight: 600 }}>
-                  {user.name || 'No Name'}
-                </h6>
-                <p className="text-sm text-gray-600 mt-1">{user.email}</p>
-                <div className="mt-3 space-y-2 text-sm text-gray-600">
-                  {user.profile?.first_name && user.profile?.last_name && (
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2" />
-                      <span>{user.profile.first_name} {user.profile.last_name}</span>
-                    </div>
-                  )}
-                  {user.profile?.phone_number && (
-                    <div className="flex items-center">
-                      <Mail className="h-4 w-4 mr-2" />
-                      <span>{user.profile.phone_number}</span>
-                    </div>
-                  )}
-                  {user.profile?.child_name && (
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2" />
-                      <span>Child: {user.profile.child_name} ({user.profile.child_age} years)</span>
-                    </div>
-                  )}
-                  {user.created_at && (
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>Joined {new Date(user.created_at).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap justify-start md:justify-end gap-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); openFullProfile(user); }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1 text-sm"
+      {/* Users List - Simplified (Name and Email only) */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                <tr 
+                  key={user.id} 
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <Eye className="w-4 h-4" />
-                  <span>View Profile</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleEditUser(user); }}
-                  className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center space-x-1 text-sm"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteUser(user); }}
-                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-1 text-sm"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )) : null}
+                  <td className="px-4 sm:px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">
+                      {user.name || (user.profile?.first_name && user.profile?.last_name 
+                        ? `${user.profile.first_name} ${user.profile.last_name}`
+                        : 'No Name')}
+                    </div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-4">
+                    <div className="text-sm text-gray-600">{user.email}</div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-4 text-right text-sm font-medium">
+                    <div className="flex items-center justify-end gap-2">
+                      {deletingUserId === user.id ? (
+                        <div className="flex items-center text-gray-500">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2 text-red-600" />
+                          <span className="text-xs">Deleting...</span>
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button 
+                              onClick={(e) => e.stopPropagation()}
+                              disabled={deletingUserId === user.id}
+                              className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                openFullProfile(user); 
+                              }} 
+                              className="cursor-pointer"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                handleEditUser(user); 
+                              }} 
+                              disabled={deletingUserId === user.id}
+                              className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                handleDeleteUser(user); 
+                              }} 
+                              disabled={deletingUserId === user.id}
+                              className="cursor-pointer text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan="3" className="px-4 sm:px-6 py-8 text-center text-gray-500">
+                    No users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
@@ -381,15 +430,24 @@ export default function UsersPage() {
       <ConfirmModal
         isOpen={isConfirmModalOpen}
         onClose={() => {
-          setIsConfirmModalOpen(false);
-          setUserToDelete(null);
+          if (!deletingUserId) { // Don't allow closing while deleting
+            setIsConfirmModalOpen(false);
+            setUserToDelete(null);
+          }
         }}
         onConfirm={confirmDeleteUser}
         title="Delete User"
         message={`Are you sure you want to delete ${userToDelete?.name || userToDelete?.email || 'this user'}? This action cannot be undone.`}
-        confirmText="Delete"
+        confirmText={deletingUserId ? (
+          <span className="flex items-center">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Deleting...
+          </span>
+        ) : "Delete"}
         cancelText="Cancel"
         variant="danger"
+        isLoading={!!deletingUserId}
+        disabled={!!deletingUserId}
       />
 
       {/* Full Profile Modal */}

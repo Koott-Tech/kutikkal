@@ -23,8 +23,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
-  MessageSquare
+  MessageSquare,
+  MoreVertical
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { adminApi, sessionsApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
@@ -584,58 +592,63 @@ export default function BookingsPage() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleViewSession(booking)}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        Details
-                      </button>
-                      <button
-                        onClick={() => handleEditSession(booking)}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </button>
-                      {['booked', 'rescheduled', 'confirmed'].includes(booking.status) && (
-                        <button
-                          onClick={() => handleReschedule(booking)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center"
-                        >
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          Reschedule
-                        </button>
-                      )}
-                      {booking.status === 'completed' && (
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {/* View Feedback Button - Outside 3 dots menu, only if feedback exists */}
+                      {booking.status === 'completed' && (booking.feedback || booking.rating || booking.client_feedback) && (
                         <button
                           onClick={() => setFeedbackToView(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                          className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           View Feedback
                         </button>
                       )}
-                      {booking.status !== 'completed' && booking.status !== 'no_show' && booking.status !== 'noshow' && (
-                        <button
-                          onClick={() => handleMarkAsNoShowClick(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                          title="Mark session as no-show"
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          No Show
-                        </button>
-                      )}
-                      {booking.status !== 'completed' && (
-                        <button
-                          onClick={() => handleDeleteSessionClick(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                          title="Delete session"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewSession(booking)} className="cursor-pointer">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleEditSession(booking)} className="cursor-pointer">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          {['booked', 'rescheduled', 'confirmed'].includes(booking.status) && (
+                            <>
+                              <DropdownMenuItem onClick={() => handleReschedule(booking)} className="cursor-pointer">
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Reschedule
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {booking.status !== 'completed' && booking.status !== 'no_show' && booking.status !== 'noshow' && (
+                            <>
+                              <DropdownMenuItem onClick={() => handleMarkAsNoShowClick(booking)} className="cursor-pointer text-orange-600">
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Mark No Show
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {booking.status !== 'completed' && (
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteSessionClick(booking)} 
+                              className="cursor-pointer text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </td>
                 </tr>

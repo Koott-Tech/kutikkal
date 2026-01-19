@@ -12,8 +12,16 @@ import {
   Filter,
   Clock,
   Calendar,
-  GripVertical
+  GripVertical,
+  MoreVertical
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
 import PsychologistCalendarView from '@/components/PsychologistCalendarView';
@@ -545,38 +553,39 @@ export default function DoctorsPage() {
             </div>
 
               <div className="flex flex-wrap justify-start md:justify-end gap-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); openFullProfile(doctor); }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center text-sm"
-                style={{ gap: '8px' }}
-              >
-                <Eye className="w-4 h-4" />
-                View
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }}
-                  className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center text-sm"
-                style={{ gap: '8px' }}
-              >
-                <Calendar className="w-4 h-4" />
-                Calendar
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }}
-                  className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center text-sm"
-                style={{ gap: '8px' }}
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDeleteDoctor(doctor); }}
-                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center text-sm"
-                style={{ gap: '8px' }}
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100"
+                  >
+                    <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openFullProfile(doctor); }} className="cursor-pointer">
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }} className="cursor-pointer">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Calendar
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }} className="cursor-pointer">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={(e) => { e.stopPropagation(); handleDeleteDoctor(doctor); }} 
+                    className="cursor-pointer text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               </div>
             </div>
           </div>

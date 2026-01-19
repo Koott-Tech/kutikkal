@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, Plus, Edit, Trash2 } from 'lucide-react';
+import { DollarSign, Plus, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function FinanceIncome() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -173,11 +180,11 @@ export default function FinanceIncome() {
   const totalIncome = income.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Income Management</div>
+            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">Income Management</div>
             <p className="text-xs sm:text-sm text-gray-600">Track and manage company income</p>
           </div>
           <button
@@ -241,22 +248,27 @@ export default function FinanceIncome() {
                           {item.payment_method?.replace('_', ' ') || 'N/A'}
                         </td>
                           <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
-                            <div className="flex items-center justify-center gap-1 sm:gap-2">
-                            <button
-                              onClick={() => handleEdit(item)}
-                                className="text-blue-600 hover:text-blue-700 p-1"
-                              title="Edit income entry"
-                            >
-                                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(item.id)}
-                                className="text-red-600 hover:text-red-700 p-1"
-                              title="Delete income entry"
-                            >
-                                <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                            </button>
-                          </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={() => handleEdit(item)} className="cursor-pointer">
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteClick(item.id)} 
+                                  className="cursor-pointer text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                         </td>
                       </tr>
                     ))

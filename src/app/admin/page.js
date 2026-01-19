@@ -21,6 +21,8 @@ import {
 import { adminApi, dashboardApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { cache, withCache } from '@/lib/cache';
+import DateRangePicker from '@/components/ui/date-range-picker';
+import { Filter } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -51,6 +53,50 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [recentBookings, setRecentBookings] = useState([]);
+  // Date range filter (default to current month in IST)
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      // Get current date in IST timezone
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      // Parse MM/DD/YYYY format from IST
+      const [month, day, year] = istString.split('/').map(Number);
+      
+      // Create dates for start and end of month in IST
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      // Get last day of month
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+        // Fallback to current month in local timezone
+        const today = new Date();
+        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        fallbackStart.setHours(0, 0, 0, 0);
+        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        fallbackEnd.setHours(23, 59, 59, 999);
+        return { from: fallbackStart, to: fallbackEnd };
+      }
+      return { from: startOfMonth, to: endOfMonth };
+    } catch (error) {
+      console.error('Error initializing date range:', error);
+      // Fallback to current month in local timezone
+      const today = new Date();
+      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      fallbackStart.setHours(0, 0, 0, 0);
+      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      fallbackEnd.setHours(23, 59, 59, 999);
+      return { from: fallbackStart, to: fallbackEnd };
+    }
+  });
 
   useEffect(() => {
     // Check authentication and role
@@ -71,6 +117,14 @@ export default function AdminDashboard() {
       loadDashboardData();
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
+
+  // Reload dashboard data when date range changes
+  useEffect(() => {
+    if (!authLoading && (hasRole('admin') || hasRole('superadmin')) && dateRange) {
+      loadDashboardData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, authLoading]);
 
   const loadDashboardData = async () => {
     try {
@@ -106,9 +160,38 @@ export default function AdminDashboard() {
 
   const loadFreshData = async () => {
     try {
+      // Format dates for API (YYYY-MM-DD format) using IST timezone
+      let start_date = null;
+      let end_date = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        // Convert dates to IST timezone and format as YYYY-MM-DD
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          
+          // Convert to IST timezone explicitly
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          
+          // Parse MM/DD/YYYY format from toLocaleString and convert to YYYY-MM-DD
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        start_date = formatDateToIST(dateRange.from);
+        end_date = formatDateToIST(dateRange.to);
+      }
+
       // Load only essential stats first (faster)
-      console.log('Fetching platform stats...');
-      const platformStats = await adminApi.getPlatformStats();
+      console.log('Fetching platform stats...', { start_date, end_date });
+      const platformStats = await adminApi.getPlatformStats({
+        start_date,
+        end_date
+      });
       console.log('Platform stats response:', platformStats);
       
       let newStats = {
@@ -417,6 +500,20 @@ export default function AdminDashboard() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="space-y-6">
+      {/* Date Range Filter */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">Date Range:</span>
+          </div>
+          <DateRangePicker
+            selectedRange={dateRange}
+            onSelect={setDateRange}
+          />
+        </div>
+      </div>
+
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
         <h6>Welcome to Admin Dashboard</h6>

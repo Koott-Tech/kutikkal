@@ -16,6 +16,7 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  ArrowRightLeft,
   Wallet,
   User
 } from 'lucide-react';
@@ -24,6 +25,8 @@ import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import DateRangePicker from '@/components/ui/date-range-picker';
+import { Filter } from 'lucide-react';
 
 export default function FinanceDashboard() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -33,6 +36,50 @@ export default function FinanceDashboard() {
   const [error, setError] = useState(null);
   const [pendingPayouts, setPendingPayouts] = useState([]);
   const [isLoadingPayouts, setIsLoadingPayouts] = useState(false);
+  // Date range filter (default to current month in IST)
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      // Get current date in IST timezone
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      // Parse MM/DD/YYYY format from IST
+      const [month, day, year] = istString.split('/').map(Number);
+      
+      // Create dates for start and end of month in IST
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      // Get last day of month
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+        // Fallback to current month in local timezone
+        const today = new Date();
+        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        fallbackStart.setHours(0, 0, 0, 0);
+        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        fallbackEnd.setHours(23, 59, 59, 999);
+        return { from: fallbackStart, to: fallbackEnd };
+      }
+      return { from: startOfMonth, to: endOfMonth };
+    } catch (error) {
+      console.error('Error initializing date range:', error);
+      // Fallback to current month in local timezone
+      const today = new Date();
+      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      fallbackStart.setHours(0, 0, 0, 0);
+      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      fallbackEnd.setHours(23, 59, 59, 999);
+      return { from: fallbackStart, to: fallbackEnd };
+    }
+  });
 
   useEffect(() => {
     if (!authLoading) {
@@ -46,17 +93,55 @@ export default function FinanceDashboard() {
         return;
       }
       
-      loadDashboardData();
+      // Load pending payouts (doesn't depend on date range)
       loadPendingPayouts();
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
+
+  // Load dashboard data when date range changes (includes initial load)
+  useEffect(() => {
+    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin')) && dateRange) {
+      loadDashboardData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, authLoading]);
 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await financeApi.getDashboard();
+      // Format dates for API (YYYY-MM-DD format)
+      // Use IST timezone (Asia/Kolkata) for date formatting
+      let dateFrom = null;
+      let dateTo = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        // Convert dates to IST timezone and format as YYYY-MM-DD
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          
+          // Convert to IST timezone explicitly
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          
+          // Parse MM/DD/YYYY format from toLocaleString and convert to YYYY-MM-DD
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+
+      const response = await financeApi.getDashboard({
+        dateFrom,
+        dateTo
+      });
       
       if (response.success) {
         setDashboardData(response.data);
@@ -185,16 +270,69 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 sm:mb-4">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">Date Range:</span>
+            </div>
+            <DateRangePicker
+              selectedRange={dateRange}
+              onSelect={setDateRange}
+            />
+          </div>
+        </div>
+
         {/* Header */}
-        <div className="mb-4 sm:mb-6 lg:mb-8">
+        <div className="mb-3 sm:mb-4">
           <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Finance Dashboard</div>
           <p className="text-xs sm:text-sm text-gray-600">Overview of financial performance and key metrics</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {/* Row 1: Session Status Counts */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Total Sessions</span>
+              <Calendar className="h-5 w-5 text-gray-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Pending Sessions</span>
+              <Clock className="h-5 w-5 text-yellow-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-yellow-700">{stats.pending_sessions || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Completed Sessions</span>
+              <CheckCircle className="h-5 w-5 text-green-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-green-700">{stats.completed_sessions || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Rescheduled</span>
+              <ArrowRightLeft className="h-5 w-5 text-purple-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-purple-700">{stats.rescheduled_sessions || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Reschedule Requested</span>
+              <Clock className="h-5 w-5 text-orange-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-orange-700">{stats.reschedule_requested_sessions || 0}</p>
+          </div>
+        </div>
+
+        {/* Row 2: Revenue, Profit, Doctor Wallet */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <StatCard
             title="Total Revenue"
             value={`₹${(stats.total_revenue || 0).toLocaleString('en-IN')}`}
@@ -211,51 +349,45 @@ export default function FinanceDashboard() {
             icon={TrendingUp}
             color="purple"
           />
-          <StatCard
-            title="Total Expenses"
-            value={`₹${(stats.total_expenses || 0).toLocaleString('en-IN')}`}
-            change={stats.expenses_change}
-            changeType={stats.expenses_change_type}
-            icon={Receipt}
-            color="orange"
-          />
-          <StatCard
-            title="Pending Payouts"
-            value={`₹${(stats.pending_payouts || 0).toLocaleString('en-IN')}`}
-            icon={CreditCard}
-            color="blue"
-          />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.total_doctor_wallet || 0).toLocaleString('en-IN')}</h3>
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                <Wallet className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">Doctor Total Wallet</p>
+          </div>
         </div>
 
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {/* Row 3: Payouts and Expenses */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Total Sessions</span>
-              <Calendar className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg sm:text-xl font-semibold text-orange-700">₹{(stats.pending_payouts || 0).toLocaleString('en-IN')}</h3>
+              <div className="p-2 rounded-lg bg-orange-50 text-orange-600">
+                <Clock className="h-5 w-5" />
+              </div>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
+            <p className="text-sm text-gray-600">Pending Payout</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Doctor Wallet</span>
-              <Wallet className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg sm:text-xl font-semibold text-green-700">₹{(stats.payout || 0).toLocaleString('en-IN')}</h3>
+              <div className="p-2 rounded-lg bg-green-50 text-green-600">
+                <CheckCircle className="h-5 w-5" />
+              </div>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.total_doctor_wallet || 0).toLocaleString('en-IN')}</p>
+            <p className="text-sm text-gray-600">Payout</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">GST Collected</span>
-              <Percent className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg sm:text-xl font-semibold text-red-700">₹{(stats.total_expenses || 0).toLocaleString('en-IN')}</h3>
+              <div className="p-2 rounded-lg bg-red-50 text-red-600">
+                <Receipt className="h-5 w-5" />
+              </div>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.gst_collected || 0).toLocaleString('en-IN')}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Commission Paid</span>
-              <CreditCard className="h-5 w-5 text-gray-400" />
-            </div>
-            <p className="text-lg sm:text-xl font-semibold text-gray-900">₹{(stats.commission_paid || 0).toLocaleString('en-IN')}</p>
+            <p className="text-sm text-gray-600">Total Expenses</p>
           </div>
         </div>
 

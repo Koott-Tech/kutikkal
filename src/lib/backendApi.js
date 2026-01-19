@@ -1554,14 +1554,33 @@ export const bookingsApi = {
 // Finance API
 export const financeApi = {
   // Dashboard
-  async getDashboard() {
-    return apiRequest('/finance/dashboard');
+  async getDashboard(params = {}) {
+    const queryParams = new URLSearchParams();
+    if (params.dateFrom) {
+      queryParams.append('dateFrom', params.dateFrom);
+    }
+    if (params.dateTo) {
+      queryParams.append('dateTo', params.dateTo);
+    }
+    const queryString = queryParams.toString();
+    const url = queryString ? `/finance/dashboard?${queryString}` : '/finance/dashboard';
+    return apiRequest(url);
   },
 
   // Sessions
   async getSessions(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return apiRequest(`/finance/sessions${queryString ? `?${queryString}` : ''}`);
+  },
+
+  // Get all sessions (same as admin, but through finance route)
+  async getAllSessions(params = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    return apiRequest(`/finance/sessions/all?${queryParams}`);
   },
 
   async getSessionDetails(sessionId) {
@@ -1645,22 +1664,6 @@ export const financeApi = {
     });
   },
 
-  // GST
-  async getGSTRecords(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return apiRequest(`/finance/gst${queryString ? `?${queryString}` : ''}`);
-  },
-
-  async getGSTSettings() {
-    return apiRequest('/finance/gst/settings');
-  },
-
-  async updateGSTSettings(data) {
-    return apiRequest('/finance/gst/settings', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
 
   // Settings
   async getExpenseCategories() {
@@ -1694,6 +1697,11 @@ export const financeApi = {
   async getPendingPayouts(params = {}) {
     const queryString = new URLSearchParams(params).toString();
     return apiRequest(`/finance/payouts/pending${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getDoctorPayouts(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/finance/payouts/doctors${queryString ? `?${queryString}` : ''}`);
   },
 
   async getPayoutDetails(payoutId) {

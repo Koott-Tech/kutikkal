@@ -106,7 +106,6 @@ export default function FinanceLayout({ children }) {
     { name: 'Doctors', href: '/finance/doctors', icon: Users },
     { name: 'Expenses', href: '/finance/expenses', icon: Receipt },
     { name: 'Income', href: '/finance/income', icon: DollarSign },
-    { name: 'GST & Tax', href: '/finance/gst', icon: FileText },
     { name: 'Payouts', href: '/finance/payouts', icon: CreditCard },
     { name: 'Settings', href: '/finance/settings', icon: Settings },
   ];
@@ -136,37 +135,6 @@ export default function FinanceLayout({ children }) {
         </button>
             <h6 className="text-sm font-semibold text-gray-800">Finance</h6>
             <div className="w-9"></div> {/* Spacer for centering */}
-          </div>
-          {/* Key Stats - Compact view for mobile */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-green-600 flex-shrink-0" />
-              <span className="text-gray-600 truncate">Revenue:</span>
-              <span className="font-semibold text-gray-900 truncate">
-                {isLoadingStats ? '...' : `₹${((headerStats.total_revenue || 0) / 1000).toFixed(0)}k`}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-purple-600 flex-shrink-0" />
-              <span className="text-gray-600 truncate">Profit:</span>
-              <span className="font-semibold text-gray-900 truncate">
-                {isLoadingStats ? '...' : `₹${((headerStats.net_profit || 0) / 1000).toFixed(0)}k`}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Receipt className="h-3 w-3 text-orange-600 flex-shrink-0" />
-              <span className="text-gray-600 truncate">Expenses:</span>
-              <span className="font-semibold text-gray-900 truncate">
-                {isLoadingStats ? '...' : `₹${((headerStats.total_expenses || 0) / 1000).toFixed(0)}k`}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CreditCard className="h-3 w-3 text-blue-600 flex-shrink-0" />
-              <span className="text-gray-600 truncate">Payouts:</span>
-              <span className="font-semibold text-gray-900 truncate">
-                {isLoadingStats ? '...' : `₹${((headerStats.pending_payouts || 0) / 1000).toFixed(0)}k`}
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -350,52 +318,6 @@ export default function FinanceLayout({ children }) {
                   <span className="ml-2 text-gray-400 capitalize">({user.role})</span>
                 </div>
               )}
-            </div>
-            
-            {/* Finance Stats Row */}
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <span className="text-xs text-gray-600">Revenue:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : `₹${(headerStats.total_revenue || 0).toLocaleString('en-IN')}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-                <span className="text-xs text-gray-600">Profit:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : `₹${(headerStats.net_profit || 0).toLocaleString('en-IN')}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-orange-600" />
-                <span className="text-xs text-gray-600">Expenses:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : `₹${(headerStats.total_expenses || 0).toLocaleString('en-IN')}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-blue-600" />
-                <span className="text-xs text-gray-600">Pending Payouts:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : `₹${(headerStats.pending_payouts || 0).toLocaleString('en-IN')}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-600" />
-                <span className="text-xs text-gray-600">Sessions:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : (headerStats.total_sessions || 0).toLocaleString('en-IN')}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-blue-600" />
-                <span className="text-xs text-gray-600">Doctor Wallet:</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {isLoadingStats ? '...' : `₹${(headerStats.total_doctor_wallet || 0).toLocaleString('en-IN')}`}
-                </span>
-              </div>
             </div>
           </div>
         </div>

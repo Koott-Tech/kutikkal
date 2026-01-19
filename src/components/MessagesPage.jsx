@@ -615,6 +615,12 @@ export default function MessagesPage({ session = null }) {
 
               {/* Message Input - Fixed at bottom */}
               <div className="p-4 border-t bg-white flex-shrink-0 z-10" style={{ marginTop: 'auto' }}>
+                {/* Disclaimer - Only show for clients */}
+                {user?.role === 'client' && (
+                  <p className="text-[10px] text-gray-500 mb-2 px-1" style={{ fontSize: '10px', lineHeight: '1.2' }}>
+                    This is not an instant message service. Our psychologists will respond as soon as they are free.
+                  </p>
+                )}
                 <form onSubmit={handleSendMessage} className="flex space-x-2">
                   <input
                     type="text"

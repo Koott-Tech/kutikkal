@@ -2,64 +2,67 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, Eye, Check, Clock, Calendar, User, Loader2 } from 'lucide-react';
+import { CreditCard, Eye, Check, Clock, Calendar, User, Loader2, MoreVertical, Filter, Receipt, CheckCircle } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import DateRangePicker from '@/components/ui/date-range-picker';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function FinancePayouts() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [payouts, setPayouts] = useState([]);
-  const [pendingPayouts, setPendingPayouts] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [doctorPayouts, setDoctorPayouts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [activeTab, setActiveTab] = useState('pending');
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [monthName, setMonthName] = useState('');
   const [markingAsPaid, setMarkingAsPaid] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [payoutToMark, setPayoutToMark] = useState(null);
-
-  const loadPayouts = async (status = null) => {
+  
+  // Date range filter (default to current month in IST)
+  const [dateRange, setDateRange] = useState(() => {
     try {
-      setIsLoading(true);
-      setError(null);
-
-      const params = status ? { status } : {};
-      const response = await financeApi.getPayouts(params);
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
       
-      if (response.success) {
-        setPayouts(response.data.payouts || []);
-      } else {
-        setError(response.message || 'Failed to load payouts');
+      const [month, day, year] = istString.split('/').map(Number);
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+        const today = new Date();
+        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        fallbackStart.setHours(0, 0, 0, 0);
+        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        fallbackEnd.setHours(23, 59, 59, 999);
+        return { from: fallbackStart, to: fallbackEnd };
       }
-    } catch (err) {
-      console.error('Failed to load payouts:', err);
-      setError('Failed to load payouts. Please try again.');
-    } finally {
-      setIsLoading(false);
+      return { from: startOfMonth, to: endOfMonth };
+    } catch (error) {
+      console.error('Error initializing date range:', error);
+      const today = new Date();
+      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      fallbackStart.setHours(0, 0, 0, 0);
+      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      fallbackEnd.setHours(23, 59, 59, 999);
+      return { from: fallbackStart, to: fallbackEnd };
     }
-  };
-
-  const loadPendingPayouts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await financeApi.getPendingPayouts({ month: selectedMonth, year: selectedYear });
-      if (response.success) {
-        setPendingPayouts(response.data.payouts || []);
-        if (response.data.month_name) {
-          setMonthName(response.data.month_name);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load pending payouts:', err);
-      setError('Failed to load pending payouts. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  });
 
   useEffect(() => {
     if (!authLoading) {
@@ -73,44 +76,111 @@ export default function FinancePayouts() {
         return;
       }
       
-      // Initial load
-      loadPendingPayouts();
+      loadDashboardData();
+      loadDoctorPayouts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, hasRole, router]);
 
+  // Reload data when date range changes
+  useEffect(() => {
+    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin')) && dateRange) {
+      loadDashboardData();
+      loadDoctorPayouts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, authLoading]);
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Format dates for API (YYYY-MM-DD format)
+      let dateFrom = null;
+      let dateTo = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+
+      const response = await financeApi.getDashboard({
+        dateFrom,
+        dateTo
+      });
+      
+      if (response.success) {
+        setDashboardData(response.data);
+      } else {
+        setError(response.message || 'Failed to load dashboard data');
+      }
+    } catch (err) {
+      console.error('Failed to load dashboard data:', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadDoctorPayouts = async () => {
+    try {
+      // Format dates for API
+      let dateFrom = null;
+      let dateTo = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+
+      const response = await financeApi.getDoctorPayouts({
+        dateFrom,
+        dateTo,
+        status: activeTab === 'pending' ? 'pending' : 'completed'
+      });
+      
+      if (response.success) {
+        setDoctorPayouts(response.data.payouts || []);
+      }
+    } catch (err) {
+      console.error('Failed to load doctor payouts:', err);
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
-      if (activeTab === 'completed') {
-        loadPayouts('paid');
-      }
+      loadDoctorPayouts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  useEffect(() => {
-    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
-      loadPendingPayouts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMonth, selectedYear]);
-
-  const handleViewDetails = async (payout) => {
-    // For pending payouts, use the payout object directly (no API call needed)
-    if (activeTab === 'pending') {
-      setSelectedPayout(payout);
-      return;
-    }
-    
-    // For processed payouts, fetch details from API
-    try {
-      const response = await financeApi.getPayoutDetails(payout.id);
-      if (response.success) {
-        setSelectedPayout(response.data.payout);
-      }
-    } catch (err) {
-      console.error('Failed to load payout details:', err);
-    }
+  const handleViewDetails = (payout) => {
+    setSelectedPayout(payout);
   };
 
   const handleMarkAsPaidClick = (payout) => {
@@ -124,17 +194,35 @@ export default function FinancePayouts() {
     try {
       setShowConfirmModal(false);
       setMarkingAsPaid(payoutToMark.psychologist_id);
+      
+      // Format dates for API
+      let dateFrom = null;
+      let dateTo = null;
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+
       const response = await financeApi.markPayoutAsPaid({
         psychologist_id: payoutToMark.psychologist_id,
-        month: selectedMonth,
-        year: selectedYear
+        dateFrom,
+        dateTo
       });
 
       if (response.success) {
-        // Reload pending payouts and completed payouts
-        await loadPendingPayouts();
-        await loadPayouts('paid');
-        // Switch to completed tab
+        await loadDashboardData();
+        await loadDoctorPayouts();
         setActiveTab('completed');
       } else {
         alert(response.message || 'Failed to mark payout as paid');
@@ -161,265 +249,197 @@ export default function FinancePayouts() {
     );
   }
 
-  const displayPayouts = activeTab === 'pending' ? pendingPayouts : payouts.filter(p => p.status === 'paid');
-  const totalPending = pendingPayouts.reduce((sum, p) => sum + (parseFloat(p.total_company_commission || p.total_commission) || 0), 0);
-  const totalDoctorWallet = pendingPayouts.reduce((sum, p) => sum + (parseFloat(p.total_doctor_wallet || p.net_payout) || 0), 0);
+  const stats = dashboardData?.summary || {};
+  const pendingTotal = stats.pending_payouts || 0;
+  const completedTotal = stats.payout || 0;
+  const pendingSessions = stats.pending_sessions || 0;
+  const completedSessions = stats.completed_sessions || 0;
+  const totalSessions = activeTab === 'pending' 
+    ? pendingSessions
+    : completedSessions;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Payouts & Payments</div>
+        <div className="mb-2 sm:mb-3">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">Payouts & Payments</div>
           <p className="text-xs sm:text-sm text-gray-600">Manage doctor payouts and commission payments</p>
         </div>
 
-        {/* Tabs and Month Selector */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row border-b border-gray-200 items-stretch sm:items-center justify-between px-4 sm:px-6">
-            <div className="flex">
-              <button
-                onClick={() => setActiveTab('pending')}
-                className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
-                  activeTab === 'pending'
-                    ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Pending Payouts ({pendingPayouts.length})
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('completed');
-                  loadPayouts('paid');
-                }}
-                className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
-                  activeTab === 'completed'
-                    ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Completed Payouts
-              </button>
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 sm:mb-4">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">Date Range:</span>
             </div>
-            {activeTab === 'pending' && (
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 py-3 sm:py-0">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="border border-gray-300 rounded-md px-3 py-1 text-sm"
-                >
-                  {[...Array(12)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>{new Date(2024, i, 1).toLocaleDateString('en-US', { month: 'long' })}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="border border-gray-300 rounded-md px-3 py-1 text-sm"
-                >
-                  {[...Array(5)].map((_, i) => {
-                    const year = new Date().getFullYear() - 2 + i;
-                    return <option key={year} value={year}>{year}</option>;
-                  })}
-                </select>
-              </div>
-            )}
+            <DateRangePicker
+              selectedRange={dateRange}
+              onSelect={setDateRange}
+            />
           </div>
         </div>
 
-        {/* Summary Cards for Pending */}
-        {activeTab === 'pending' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-yellow-800 mb-1">{monthName || 'Pending Payouts'}</p>
-                  <p style={{ fontSize: '20px', fontWeight: 600, color: '#854d0e' }}>₹{totalPending.toLocaleString('en-IN')}</p>
-                  <p className="text-xs text-yellow-700 mt-1">Company Commission</p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('pending')}
+              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
+                activeTab === 'pending'
+                  ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Pending Payouts ({doctorPayouts.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`px-3 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium ${
+                activeTab === 'completed'
+                  ? 'text-[#3f2e73] border-b-2 border-[#3f2e73]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Completed Payouts ({doctorPayouts.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
+          <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 ${activeTab === 'pending' ? 'border-orange-200 bg-orange-50' : ''}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Pending Payout</p>
+                <p className="text-2xl font-semibold text-orange-700">₹{pendingTotal.toLocaleString('en-IN')}</p>
               </div>
-            </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-800 mb-1">Total Doctor Wallet</p>
-                  <p style={{ fontSize: '20px', fontWeight: 600, color: '#166534' }}>₹{totalDoctorWallet.toLocaleString('en-IN')}</p>
-                  <p className="text-xs text-green-700 mt-1">To be paid to doctors</p>
-                </div>
-                <CreditCard className="h-8 w-8 text-green-600" />
-              </div>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-800 mb-1">Total Sessions</p>
-                  <p style={{ fontSize: '20px', fontWeight: 600, color: '#1e40af' }}>
-                    {pendingPayouts.reduce((sum, p) => sum + (p.total_sessions || 0), 0)}
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1">Completed sessions</p>
-                </div>
-                <User className="h-8 w-8 text-blue-600" />
-              </div>
+              <Clock className="h-8 w-8 text-orange-600" />
             </div>
           </div>
-        )}
+          <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 ${activeTab === 'completed' ? 'border-green-200 bg-green-50' : ''}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Completed Payout</p>
+                <p className="text-2xl font-semibold text-green-700">₹{completedTotal.toLocaleString('en-IN')}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Pending Sessions</p>
+                <p className="text-2xl font-semibold text-yellow-700">{pendingSessions}</p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Completed Sessions</p>
+                <p className="text-2xl font-semibold text-blue-700">{completedSessions}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+        </div>
 
         {error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
             <p className="text-red-700">{error}</p>
           </div>
-        ) : activeTab === 'pending' ? (
+        ) : (
           <div className="grid grid-cols-1 gap-6">
-            {displayPayouts.length > 0 ? (
-              displayPayouts.map((payout) => (
-                <div key={payout.psychologist_id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-[#3f2e73] flex items-center justify-center text-white font-semibold">
-                        {payout.psychologist?.first_name?.[0] || <User className="h-6 w-6" />}
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-gray-900">
-                          {payout.psychologist?.first_name} {payout.psychologist?.last_name}
-                        </div>
-                        <div className="text-sm text-gray-600">{payout.psychologist?.email}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleMarkAsPaidClick(payout)}
-                        disabled={markingAsPaid === payout.psychologist_id}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {markingAsPaid === payout.psychologist_id ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Marking...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Check className="h-4 w-4" />
-                            <span>Mark as Paid</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setSelectedPayout(payout)}
-                        className="text-[#3f2e73] hover:text-[#2d1f52]"
-                      >
-                        <Eye className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <div className="text-xs text-gray-600 mb-1">Total Sessions</div>
-                      <div className="text-lg font-semibold text-gray-900">{payout.total_sessions || 0}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 mb-1">Company Commission</div>
-                      <div className="text-lg font-semibold text-gray-900">
-                        ₹{(payout.total_company_commission || payout.total_commission || 0).toLocaleString('en-IN')}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 mb-1">Doctor Wallet</div>
-                      <div className="text-lg font-semibold text-green-600">
-                        ₹{(payout.total_doctor_wallet || payout.net_payout || 0).toLocaleString('en-IN')}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600 mb-1">Status</div>
-                      <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                        Pending
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Session counts by type */}
-                  {payout.session_counts_by_type && Object.keys(payout.session_counts_by_type).length > 0 && (
-                    <div className="border-t border-gray-200 pt-4">
-                      <div className="text-sm font-medium text-gray-700 mb-2">Sessions by Type:</div>
-                      <div className="flex flex-wrap gap-3">
-                        {Object.entries(payout.session_counts_by_type).map(([type, count]) => (
-                          <div key={type} className="bg-gray-50 px-3 py-1 rounded-md">
-                            <span className="text-xs text-gray-600 capitalize">{type.replace('_', ' ')}:</span>
-                            <span className="text-sm font-semibold text-gray-900 ml-1">{count}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+            {doctorPayouts.length > 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sessions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company Commission</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor Wallet</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {doctorPayouts.map((payout) => (
+                        <tr key={payout.psychologist_id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {payout.psychologist?.first_name} {payout.psychologist?.last_name}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {payout.total_sessions || 0}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            ₹{(payout.total_company_commission || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                            ₹{(payout.total_doctor_wallet || 0).toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              activeTab === 'pending' 
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-green-100 text-green-800'
+                            }`}>
+                              {activeTab === 'pending' ? 'Pending' : 'Completed'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={() => handleViewDetails(payout)} className="cursor-pointer">
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Details
+                                </DropdownMenuItem>
+                                {activeTab === 'pending' && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                      onClick={() => handleMarkAsPaidClick(payout)}
+                                      disabled={markingAsPaid === payout.psychologist_id}
+                                      className="cursor-pointer text-green-600"
+                                    >
+                                      {markingAsPaid === payout.psychologist_id ? (
+                                        <>
+                                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                          Marking...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Check className="h-4 w-4 mr-2" />
+                                          Mark as Paid
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))
+              </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                <p className="text-gray-500">No completed sessions found for {monthName || 'the selected month'}</p>
+                <p className="text-gray-500">No {activeTab} payouts found for the selected date range</p>
               </div>
             )}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Commission</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Net Payout</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {displayPayouts.length > 0 ? (
-                    displayPayouts.map((payout) => (
-                      <tr key={payout.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {payout.payout_date ? new Date(payout.payout_date).toLocaleDateString('en-IN') : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {payout.psychologist?.first_name} {payout.psychologist?.last_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                          ₹{(payout.total_commission || 0).toLocaleString('en-IN')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                          ₹{(payout.net_payout || 0).toLocaleString('en-IN')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            payout.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            payout.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {payout.status || 'Pending'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            onClick={() => handleViewDetails(payout)}
-                            className="text-[#3f2e73] hover:text-[#2d1f52]"
-                          >
-                            <Eye className="h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                        No payouts found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
 
@@ -435,8 +455,7 @@ export default function FinancePayouts() {
                   Are you sure you want to mark the payout as paid for{' '}
                   <span className="font-semibold">
                     {payoutToMark.psychologist?.first_name} {payoutToMark.psychologist?.last_name}
-                  </span>
-                  {' '}for {monthName || `${selectedMonth}/${selectedYear}`}?
+                  </span>?
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4 mb-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -447,7 +466,7 @@ export default function FinancePayouts() {
                     <div>
                       <span className="text-gray-600">Doctor Wallet:</span>
                       <span className="ml-2 font-semibold text-green-600">
-                        ₹{(payoutToMark.total_doctor_wallet || payoutToMark.net_payout || 0).toLocaleString('en-IN')}
+                        ₹{(payoutToMark.total_doctor_wallet || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
@@ -513,39 +532,28 @@ export default function FinancePayouts() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Company Commission</label>
                     <p className="mt-1 text-lg font-semibold text-gray-900">
-                      ₹{(selectedPayout.total_company_commission || selectedPayout.total_commission || 0).toLocaleString('en-IN')}
+                      ₹{(selectedPayout.total_company_commission || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Doctor Wallet</label>
                     <p className="mt-1 text-lg font-semibold text-green-600">
-                      ₹{(selectedPayout.total_doctor_wallet || selectedPayout.net_payout || 0).toLocaleString('en-IN')}
+                      ₹{(selectedPayout.total_doctor_wallet || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Status</label>
                     <p className="mt-1">
-                      <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                        {selectedPayout.status || 'Pending'}
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        activeTab === 'pending' 
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {activeTab === 'pending' ? 'Pending' : 'Completed'}
                       </span>
                     </p>
                   </div>
                 </div>
-
-                {/* Session Counts by Type */}
-                {selectedPayout.session_counts_by_type && Object.keys(selectedPayout.session_counts_by_type).length > 0 && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2">Sessions by Type</label>
-                    <div className="flex flex-wrap gap-3">
-                      {Object.entries(selectedPayout.session_counts_by_type).map(([type, count]) => (
-                        <div key={type} className="bg-gray-50 px-3 py-2 rounded-md">
-                          <span className="text-sm text-gray-600 capitalize">{type.replace('_', ' ')}:</span>
-                          <span className="text-base font-semibold text-gray-900 ml-2">{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Session Details */}
                 {selectedPayout.session_details && selectedPayout.session_details.length > 0 && (
@@ -566,9 +574,9 @@ export default function FinancePayouts() {
                           {selectedPayout.session_details.map((session, idx) => (
                             <tr key={idx}>
                               <td className="px-4 py-2 text-gray-900">
-                                {new Date(session.session_date).toLocaleDateString('en-IN')}
+                                {session.session_date ? new Date(session.session_date).toLocaleDateString('en-IN') : '-'}
                               </td>
-                              <td className="px-4 py-2 text-gray-600 capitalize">{session.session_type?.replace('_', ' ')}</td>
+                              <td className="px-4 py-2 text-gray-600 capitalize">{session.session_type?.replace('_', ' ') || '-'}</td>
                               <td className="px-4 py-2 text-right font-semibold text-gray-900">
                                 ₹{(session.session_amount || 0).toLocaleString('en-IN')}
                               </td>
@@ -585,42 +593,6 @@ export default function FinancePayouts() {
                     </div>
                   </div>
                 )}
-
-                {/* Legacy fields for "All Payouts" tab */}
-                {selectedPayout.payout_date && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Payout Date</label>
-                        <p className="mt-1 text-gray-900">{new Date(selectedPayout.payout_date).toLocaleDateString('en-IN')}</p>
-                      </div>
-                      {selectedPayout.tds_amount !== undefined && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">TDS Amount</label>
-                          <p className="mt-1 text-gray-900">₹{(selectedPayout.tds_amount || 0).toLocaleString('en-IN')}</p>
-                        </div>
-                      )}
-                      {selectedPayout.payment_method && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Payment Method</label>
-                          <p className="mt-1 text-gray-900 capitalize">{selectedPayout.payment_method.replace('_', ' ')}</p>
-                        </div>
-                      )}
-                      {selectedPayout.transaction_id && (
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Transaction ID</label>
-                          <p className="mt-1 text-gray-900">{selectedPayout.transaction_id}</p>
-                        </div>
-                      )}
-                    </div>
-                    {selectedPayout.notes && (
-                      <div className="border-t pt-4">
-                        <label className="text-sm font-medium text-gray-700">Notes</label>
-                        <p className="mt-1 text-gray-900">{selectedPayout.notes}</p>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -629,4 +601,3 @@ export default function FinancePayouts() {
     </div>
   );
 }
-

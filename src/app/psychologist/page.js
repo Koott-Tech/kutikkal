@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { psychologistApi } from "../../lib/backendApi";
 import { useNotification } from "../../contexts/NotificationContext";
@@ -7,8 +7,12 @@ import {
   Calendar, 
   Clock, 
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  DollarSign,
+  CheckCircle,
+  Filter
 } from "lucide-react";
+import DateRangePicker from "@/components/ui/date-range-picker";
 
 export default function PsychologistDashboard() {
   const { user } = useAuth();
@@ -16,10 +20,60 @@ export default function PsychologistDashboard() {
   const [stats, setStats] = useState({
     totalSessions: 0,
     upcomingSessions: 0,
-    totalAvailability: 0
+    completedSessions: 0
+  });
+  const [payoutStats, setPayoutStats] = useState({
+    incomeEarned: 0,
+    pendingPayout: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [allSessions, setAllSessions] = useState([]);
+  
+  // Date range filter (default to current month in IST)
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      // Get current date in IST timezone
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      // Parse MM/DD/YYYY format from IST
+      const [month, day, year] = istString.split('/').map(Number);
+      
+      // Create dates for start and end of month in IST
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      // Get last day of month
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+        // Fallback to current month in local timezone
+        const today = new Date();
+        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        fallbackStart.setHours(0, 0, 0, 0);
+        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        fallbackEnd.setHours(23, 59, 59, 999);
+        return { from: fallbackStart, to: fallbackEnd };
+      }
+      return { from: startOfMonth, to: endOfMonth };
+    } catch (error) {
+      console.error('Error initializing date range:', error);
+      // Fallback to current month in local timezone
+      const today = new Date();
+      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      fallbackStart.setHours(0, 0, 0, 0);
+      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      fallbackEnd.setHours(23, 59, 59, 999);
+      return { from: fallbackStart, to: fallbackEnd };
+    }
+  });
 
   useEffect(() => {
     if (user) {
@@ -27,42 +81,24 @@ export default function PsychologistDashboard() {
     }
   }, [user]);
 
+  // Reload dashboard stats when date range changes
+  useEffect(() => {
+    if (user && dateRange) {
+      // Stats are calculated from filtered sessions, which already react to dateRange changes
+      // Just trigger a re-render by updating a state or the filteredSessions will update automatically
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange]);
+
   const loadDashboardStats = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Load critical data first (sessions), then secondary data in background
+      // Load sessions data
       const sessionsData = await psychologistApi.getSessions();
       const sessions = sessionsData.data?.sessions || [];
-
-      // Calculate upcoming sessions (today and future)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const upcomingSessions = sessions.filter(session => {
-        const sessionDate = new Date(session.scheduled_date);
-        return sessionDate >= today && session.status === 'booked';
-      });
-
-      // Set initial stats with sessions data
-      setStats({
-        totalSessions: sessions.length,
-        upcomingSessions: upcomingSessions.length,
-        totalAvailability: 0 // Will be updated
-      });
-
-      // Load secondary data in background
-      psychologistApi.getAvailability().then(availabilityData => {
-        const availability = availabilityData.data || [];
-        
-        setStats(prev => ({
-          ...prev,
-          totalAvailability: availability.length
-        }));
-      }).catch(err => {
-        console.error('Error loading secondary dashboard data:', err);
-        // Don't show error for secondary data
-      });
+      setAllSessions(sessions);
 
     } catch (err) {
       console.error('Error loading dashboard stats:', err);
@@ -72,6 +108,120 @@ export default function PsychologistDashboard() {
       setIsLoading(false);
     }
   };
+
+  // Get date range based on filters (using IST timezone for comparison)
+  const getDateRange = () => {
+    if (dateRange && dateRange.from && dateRange.to) {
+      try {
+        const from = new Date(dateRange.from);
+        const to = new Date(dateRange.to);
+        // Validate dates
+        if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+          return { from: null, to: null };
+        }
+        
+        // Format dates in IST for comparison
+        const formatDateToIST = (date) => {
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(Number);
+          return new Date(year, month - 1, day);
+        };
+        
+        const fromIST = formatDateToIST(from);
+        const toIST = formatDateToIST(to);
+        fromIST.setHours(0, 0, 0, 0);
+        toIST.setHours(23, 59, 59, 999);
+        
+        return { from: fromIST, to: toIST };
+      } catch (error) {
+        console.error('Error parsing date range:', error);
+        return { from: null, to: null };
+      }
+    }
+    return { from: null, to: null };
+  }
+
+  // Filter sessions based on date filter and week days
+  const filteredSessions = useMemo(() => {
+    let filtered = [...allSessions];
+
+    // Date range filter
+    const { from, to } = getDateRange();
+    if (from && to) {
+      filtered = filtered.filter(s => {
+        if (!s.scheduled_date) return false;
+        const sessionDate = new Date(s.scheduled_date);
+        return sessionDate >= from && sessionDate <= to;
+      });
+    }
+
+    return filtered;
+  }, [allSessions, dateRange]);
+
+  // Calculate stats from filtered sessions
+  useEffect(() => {
+    if (allSessions.length === 0) return;
+
+    // Calculate session stats
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const upcomingSessions = filteredSessions.filter(session => {
+      const sessionDate = new Date(session.scheduled_date);
+      return sessionDate >= today && (session.status === 'booked' || session.status === 'rescheduled');
+    });
+
+    const completedSessions = filteredSessions.filter(session => {
+      return session.status === 'completed';
+    });
+
+    // Calculate payout stats
+    let incomeEarned = 0; // Commission from completed sessions
+    let pendingPayout = 0; // Commission from upcoming sessions
+
+    // Process completed sessions for earned commission
+    completedSessions.forEach(session => {
+      const sessionPrice = parseFloat(session.price || 0);
+      const commissionRate = 0.7; // Default 70% commission
+      const commission = session.doctor_commission_amount || (sessionPrice * commissionRate);
+      incomeEarned += commission;
+    });
+
+    // Process upcoming/booked sessions for pending payout
+    upcomingSessions.forEach(session => {
+      const sessionPrice = parseFloat(session.price || 0);
+      const commissionRate = 0.7; // Default 70% commission
+      const commission = sessionPrice * commissionRate;
+      pendingPayout += commission;
+    });
+
+    setStats({
+      totalSessions: filteredSessions.length,
+      upcomingSessions: upcomingSessions.length,
+      completedSessions: completedSessions.length
+    });
+
+    setPayoutStats({
+      incomeEarned: incomeEarned,
+      pendingPayout: pendingPayout
+    });
+  }, [filteredSessions, allSessions.length]);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+
 
   if (isLoading) {
     return (
@@ -111,8 +261,22 @@ export default function PsychologistDashboard() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Filters */}
+      <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">Date Range:</span>
+          </div>
+          <DateRangePicker
+            selectedRange={dateRange}
+            onSelect={setDateRange}
+          />
+        </div>
+      </div>
+
+      {/* Sessions Stats Row */}
+      <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-3">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-4 sm:p-5">
             <div className="flex items-center">
@@ -133,7 +297,7 @@ export default function PsychologistDashboard() {
           <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
               </div>
               <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>
@@ -149,50 +313,57 @@ export default function PsychologistDashboard() {
           <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
               <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>
-                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Available Slots</dt>
-                  <dd className="text-lg sm:text-xl font-medium text-gray-900">{stats.totalAvailability}</dd>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Completed Sessions</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">{stats.completedSessions}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Payout Details Row */}
+      <div className="mt-6 sm:mt-8 grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2">
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-4 sm:p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+              </div>
+              <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
+                <dl>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Income Earned</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">
+                    {formatCurrency(payoutStats.incomeEarned)}
+                  </dd>
+                  <dd className="text-xs text-gray-500 mt-1">Commission from completed sessions</dd>
                 </dl>
               </div>
             </div>
           </div>
         </div>
 
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8">
-        <p className="font-medium text-gray-900 mb-4">Quick Actions</p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <a
-            href="/psychologist/sessions"
-            className="block bg-white p-4 sm:p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-          >
-            <div className="flex items-start sm:items-center">
-              <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-3 sm:mr-4 flex-shrink-0 mt-0.5 sm:mt-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 text-sm sm:text-base">View Sessions</p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">Check your upcoming and past therapy sessions.</p>
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="p-4 sm:p-5">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+              </div>
+              <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
+                <dl>
+                  <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">Pending Payout</dt>
+                  <dd className="text-lg sm:text-xl font-medium text-gray-900">
+                    {formatCurrency(payoutStats.pendingPayout)}
+                  </dd>
+                  <dd className="text-xs text-gray-500 mt-1">Commission from upcoming sessions</dd>
+                </dl>
               </div>
             </div>
-          </a>
-
-          <a
-            href="/psychologist/availability"
-            className="block bg-white p-4 sm:p-6 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-          >
-            <div className="flex items-start sm:items-center">
-              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mr-3 sm:mr-4 flex-shrink-0 mt-0.5 sm:mt-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 text-sm sm:text-base">Manage Availability</p>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">Set your available time slots for client bookings.</p>
-              </div>
-            </div>
-          </a>
-
+          </div>
         </div>
       </div>
 

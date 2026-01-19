@@ -10,7 +10,9 @@ export default function ConfirmModal({
   message = 'Are you sure you want to proceed?',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  variant = 'danger' // 'danger' or 'warning'
+  variant = 'danger', // 'danger' or 'warning'
+  isLoading = false,
+  disabled = false
 }) {
   if (!isOpen) return null;
 
@@ -42,7 +44,8 @@ export default function ConfirmModal({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={isLoading || disabled}
+            className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="h-5 w-5" />
           </button>
@@ -57,18 +60,23 @@ export default function ConfirmModal({
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            disabled={isLoading || disabled}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelText}
           </button>
           <button
             onClick={() => {
               onConfirm();
-              onClose();
+              // Don't close immediately if loading - let parent handle it
+              if (!isLoading && !disabled) {
+                // onClose will be handled by parent if needed
+              }
             }}
-            className={`px-4 py-2 rounded-lg transition-colors ${styles.button}`}
+            disabled={isLoading || disabled}
+            className={`px-4 py-2 rounded-lg transition-colors ${styles.button} disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
           >
-            {confirmText}
+            {typeof confirmText === 'string' ? confirmText : confirmText}
           </button>
         </div>
       </div>

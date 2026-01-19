@@ -2,10 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Edit, Save, X, DollarSign, TrendingUp, Calendar, Wallet, Eye, User } from 'lucide-react';
+import { Edit, Save, X, DollarSign, TrendingUp, Calendar, Wallet, Eye, User, MoreVertical } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const getDoctorImageUrl = (doctor) => {
   if (!doctor) return null;
@@ -72,7 +79,12 @@ export default function FinanceDoctors() {
     setEditingId(doctor.psychologist_id);
     const commissions = doctor.commission_amounts || {};
     const editData = {
-      individual: commissions.individual?.toString() || ''
+      individual: commissions.individual?.toString() || '',
+      doctor_commission_first_session: doctor.doctor_commission_first_session?.toString() || '',
+      doctor_commission_followup: doctor.doctor_commission_followup?.toString() || '',
+      doctor_commission_individual: doctor.doctor_commission_individual?.toString() || '',
+      doctor_commission_first_session_package: doctor.doctor_commission_first_session_package?.toString() || '',
+      doctor_commission_followup_package: doctor.doctor_commission_followup_package?.toString() || ''
     };
     
     // Add commission amounts for each package type
@@ -88,11 +100,17 @@ export default function FinanceDoctors() {
 
   const handleSave = async (psychologistId) => {
     try {
-      // Build commission amounts object
+      // Build commission amounts object (company gets)
       const commissionAmounts = {};
+      const doctorCommissionFields = ['doctor_commission_first_session', 'doctor_commission_followup', 'doctor_commission_individual'];
       let hasValidAmount = false;
 
       for (const [packageType, value] of Object.entries(editCommissions)) {
+        // Skip doctor commission fields - they're handled separately
+        if (doctorCommissionFields.includes(packageType)) {
+          continue;
+        }
+        
         if (value && value.trim() !== '') {
           const amount = parseFloat(value);
           if (isNaN(amount) || amount < 0) {
@@ -104,14 +122,64 @@ export default function FinanceDoctors() {
         }
       }
 
+      // Build request data with commission amounts and doctor commission fields
+      const requestData = {
+        commission_amounts: commissionAmounts
+      };
+      
+      // Include doctor commission amounts if provided
+      if (editCommissions.doctor_commission_first_session && editCommissions.doctor_commission_first_session.trim() !== '') {
+        const amount = parseFloat(editCommissions.doctor_commission_first_session);
+        if (isNaN(amount) || amount < 0) {
+          alert('Please enter a valid doctor commission amount for first session (≥ 0)');
+          return;
+        }
+        requestData.doctor_commission_first_session = amount;
+        hasValidAmount = true;
+      }
+      if (editCommissions.doctor_commission_followup && editCommissions.doctor_commission_followup.trim() !== '') {
+        const amount = parseFloat(editCommissions.doctor_commission_followup);
+        if (isNaN(amount) || amount < 0) {
+          alert('Please enter a valid doctor commission amount for follow-up session (≥ 0)');
+          return;
+        }
+        requestData.doctor_commission_followup = amount;
+        hasValidAmount = true;
+      }
+      if (editCommissions.doctor_commission_individual && editCommissions.doctor_commission_individual.trim() !== '') {
+        const amount = parseFloat(editCommissions.doctor_commission_individual);
+        if (isNaN(amount) || amount < 0) {
+          alert('Please enter a valid doctor commission amount for individual session (≥ 0)');
+          return;
+        }
+        requestData.doctor_commission_individual = amount;
+        hasValidAmount = true;
+      }
+      if (editCommissions.doctor_commission_first_session_package && editCommissions.doctor_commission_first_session_package.trim() !== '') {
+        const amount = parseFloat(editCommissions.doctor_commission_first_session_package);
+        if (isNaN(amount) || amount < 0) {
+          alert('Please enter a valid doctor commission amount for first session (package) (≥ 0)');
+          return;
+        }
+        requestData.doctor_commission_first_session_package = amount;
+        hasValidAmount = true;
+      }
+      if (editCommissions.doctor_commission_followup_package && editCommissions.doctor_commission_followup_package.trim() !== '') {
+        const amount = parseFloat(editCommissions.doctor_commission_followup_package);
+        if (isNaN(amount) || amount < 0) {
+          alert('Please enter a valid doctor commission amount for follow-up session (package) (≥ 0)');
+          return;
+        }
+        requestData.doctor_commission_followup_package = amount;
+        hasValidAmount = true;
+      }
+
       if (!hasValidAmount) {
         alert('Please enter at least one commission amount');
         return;
       }
 
-      const response = await financeApi.updateCommissionRate(psychologistId, {
-        commission_amounts: commissionAmounts
-      });
+      const response = await financeApi.updateCommissionRate(psychologistId, requestData);
 
       if (response.success) {
         setEditingId(null);
@@ -166,10 +234,10 @@ export default function FinanceDoctors() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">
+        <div className="mb-2 sm:mb-3">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
             Doctor Commission Management
           </div>
           <p className="text-xs sm:text-sm text-gray-600">Manage commission amounts and view revenue statistics for each doctor</p>
@@ -289,28 +357,24 @@ export default function FinanceDoctors() {
                           </button>
                         </>
                       ) : (
-                        <>
-                          <button
-                            onClick={() => handleEdit(doctor)}
-                            className={`px-3 py-2 rounded-md transition-colors flex items-center text-sm ${
-                              (!doctor.commission_amount_individual || doctor.commission_amount_individual === 0) && 
-                              (!doctor.commission_amount_package || doctor.commission_amount_package === 0) 
-                                ? 'bg-green-600 text-white hover:bg-green-700' 
-                                : 'bg-gray-600 text-white hover:bg-gray-700'
-                            }`}
-                            title="Edit Commission"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleViewMore(doctor)}
-                            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center text-sm"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View More
-                          </button>
-                        </>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => handleViewMore(doctor)} className="cursor-pointer">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleEdit(doctor)} className="cursor-pointer">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Commission
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </div>
                   </div>
@@ -319,79 +383,133 @@ export default function FinanceDoctors() {
                   {editingId === doctor.psychologist_id ? (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div role="heading" aria-level="4" style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Commission Settings</div>
-                      <div className="flex flex-wrap gap-4">
-                        {/* Individual Session Commission */}
-                        <div className="flex-1 min-w-[200px]">
-                          <label className="block text-xs font-medium text-gray-700 mb-2">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Column 1: Individual Session */}
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="text-sm font-semibold text-gray-900 mb-4">
                             Individual Session
-                          </label>
-                          <div className="bg-blue-50 p-2 rounded mb-2">
-                            <div className="text-xs text-gray-600">Session Price:</div>
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-xs font-normal text-gray-600 mt-1">
                               ₹{doctor.individual_session_price ? doctor.individual_session_price.toLocaleString('en-IN') : 'Not Set'}
                             </div>
                           </div>
-                          <label className="block text-xs font-medium text-gray-700 mb-2">
-                            Commission Amount (Company Gets)
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">₹</span>
-                            <input
-                              type="number"
-                              value={editCommissions.individual || ''}
-                              onChange={(e) => setEditCommissions({...editCommissions, individual: e.target.value})}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                              min="0"
-                              step="0.01"
-                              placeholder="0.00"
-                            />
-                          </div>
-                          {editCommissions.individual && doctor.individual_session_price > 0 && (
-                            <div className="mt-2 text-xs text-gray-600">
-                              Doctor Wallet: ₹{(doctor.individual_session_price - parseFloat(editCommissions.individual || 0)).toLocaleString('en-IN')}
+                          
+                          {/* First Session Commission */}
+                          <div className="mb-4">
+                            <label className="block text-xs font-medium text-gray-700 mb-2">
+                              First Session Commission (What Doctor Gets)
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">₹</span>
+                              <input
+                                type="number"
+                                value={editCommissions.doctor_commission_first_session || ''}
+                                onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_first_session: e.target.value})}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                              />
                             </div>
-                          )}
+                            {editCommissions.doctor_commission_first_session && doctor.individual_session_price > 0 && (
+                              <div className="mt-1 text-xs text-gray-600">
+                                Company Commission: ₹{(doctor.individual_session_price - parseFloat(editCommissions.doctor_commission_first_session || 0)).toLocaleString('en-IN')}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Follow-up Session Commission */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-2">
+                              Follow-up Session Commission (What Doctor Gets)
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">₹</span>
+                              <input
+                                type="number"
+                                value={editCommissions.doctor_commission_followup || ''}
+                                onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_followup: e.target.value})}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                min="0"
+                                step="0.01"
+                                placeholder="0.00"
+                              />
+                            </div>
+                            {editCommissions.doctor_commission_followup && doctor.individual_session_price > 0 && (
+                              <div className="mt-1 text-xs text-gray-600">
+                                Company Commission: ₹{(doctor.individual_session_price - parseFloat(editCommissions.doctor_commission_followup || 0)).toLocaleString('en-IN')}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Package Commissions */}
-                        {doctor.package_commissions && doctor.package_commissions.length > 0 && (
-                          <>
-                            {doctor.package_commissions.map((pkg) => (
-                              <div key={pkg.type} className="flex-1 min-w-[200px]">
-                                <label className="block text-xs font-medium text-gray-700 mb-2">
-                                  {pkg.name || `${pkg.session_count} Session Package`}
-                                </label>
-                                <div className="bg-blue-50 p-2 rounded mb-2">
-                                  <div className="text-xs text-gray-600">Package Price:</div>
-                                  <div className="text-sm font-semibold text-gray-900">
-                                    ₹{pkg.price.toLocaleString('en-IN')}
-                                    <span className="text-xs text-gray-600 ml-2">
-                                      (₹{pkg.price_per_session.toFixed(0)}/session)
-                                    </span>
-                                  </div>
+                        {/* Column 2 & 3: Package Sessions */}
+                        {doctor.package_commissions && doctor.package_commissions.length > 0 ? (
+                          doctor.package_commissions.slice(0, 2).map((pkg) => (
+                            <div key={pkg.type} className="border border-gray-200 rounded-lg p-4">
+                              <div className="text-sm font-semibold text-gray-900 mb-4">
+                                {pkg.name || `Package of ${pkg.session_count} Sessions`}
+                                <div className="text-xs font-normal text-gray-600 mt-1">
+                                  ₹{pkg.price_per_session.toFixed(0)}/session
                                 </div>
+                              </div>
+                              
+                              {/* First Session Commission */}
+                              <div className="mb-4">
                                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                                  Commission Amount (Company Gets)
+                                  First Session Commission (What Doctor Gets)
                                 </label>
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm text-gray-600">₹</span>
                                   <input
                                     type="number"
-                                    value={editCommissions[pkg.type] || ''}
-                                    onChange={(e) => setEditCommissions({...editCommissions, [pkg.type]: e.target.value})}
+                                    value={editCommissions.doctor_commission_first_session_package || ''}
+                                    onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_first_session_package: e.target.value})}
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     min="0"
                                     step="0.01"
                                     placeholder="0.00"
                                   />
                                 </div>
-                                {editCommissions[pkg.type] && pkg.price > 0 && (
-                                  <div className="mt-2 text-xs text-gray-600">
-                                    Doctor Wallet: ₹{(pkg.price - parseFloat(editCommissions[pkg.type] || 0)).toLocaleString('en-IN')}
+                                {editCommissions.doctor_commission_first_session_package && pkg.price_per_session > 0 && (
+                                  <div className="mt-1 text-xs text-gray-600">
+                                    Company Commission: ₹{(pkg.price_per_session - parseFloat(editCommissions.doctor_commission_first_session_package || 0)).toFixed(0)}
                                   </div>
                                 )}
                               </div>
-                            ))}
+                              
+                              {/* Follow-up Session Commission */}
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-2">
+                                  Follow-up Session Commission (What Doctor Gets)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-gray-600">₹</span>
+                                  <input
+                                    type="number"
+                                    value={editCommissions.doctor_commission_followup_package || ''}
+                                    onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_followup_package: e.target.value})}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                  />
+                                </div>
+                                {editCommissions.doctor_commission_followup_package && pkg.price_per_session > 0 && (
+                                  <div className="mt-1 text-xs text-gray-600">
+                                    Company Commission: ₹{(pkg.price_per_session - parseFloat(editCommissions.doctor_commission_followup_package || 0)).toFixed(0)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <>
+                            <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                              <div className="text-sm font-semibold text-gray-500 mb-4">No Package</div>
+                            </div>
+                            <div className="border border-gray-200 rounded-lg p-4 opacity-50">
+                              <div className="text-sm font-semibold text-gray-500 mb-4">No Package</div>
+                            </div>
                           </>
                         )}
                       </div>

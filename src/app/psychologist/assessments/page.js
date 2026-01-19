@@ -12,8 +12,18 @@ import {
   FileText,
   Phone,
   Mail,
-  Trash2
+  Trash2,
+  MoreVertical,
+  Eye,
+  CheckCircle2
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
 import ScheduleAssessmentSessionModal from "../../../components/ScheduleAssessmentSessionModal";
@@ -440,37 +450,61 @@ export default function PsychologistAssessments() {
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      {session.status !== 'completed' && (
-                        <button
-                          onClick={() => openCompleteSessionModal(session)}
-                          disabled={completingSessions.has(session.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                        >
-                          {completingSessions.has(session.id) ? 'Completing...' : 'Complete Session'}
-                        </button>
-                      )}
-                      {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
-                      {hasPendingForNext(session) && (
-                        <button
-                          onClick={() => openScheduleModal(session)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                        >
-                          Book Next Session
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleDeleteAssessmentSession(session)}
-                        className="inline-flex items-center px-2 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        title="Delete assessment session"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewDetails(session)} className="cursor-pointer">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          {session.status !== 'completed' && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => openCompleteSessionModal(session)}
+                                disabled={completingSessions.has(session.id)}
+                                className="cursor-pointer"
+                              >
+                                {completingSessions.has(session.id) ? (
+                                  <>
+                                    <div className="h-4 w-4 mr-2 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                                    Completing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    Complete Session
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
+                          {hasPendingForNext(session) && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => openScheduleModal(session)} 
+                                className="cursor-pointer"
+                              >
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Book Next Session
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteAssessmentSession(session)} 
+                            className="cursor-pointer text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
@@ -526,21 +560,32 @@ export default function PsychologistAssessments() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
-                      {hasPendingForNext(session) && (
-                        <button
-                          onClick={() => openScheduleModal(session)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                        >
-                          Book Next Session
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        View Details
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewDetails(session)} className="cursor-pointer">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          {/* Show "Book Next Session" button ONLY if this session is completed AND there are pending sessions */}
+                          {hasPendingForNext(session) && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => openScheduleModal(session)} 
+                                className="cursor-pointer"
+                              >
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Book Next Session
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>

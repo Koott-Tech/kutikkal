@@ -17,8 +17,20 @@ import {
   DollarSign,
   FileText,
   MessageSquare,
-  Trash2
+  Trash2,
+  MoreVertical,
+  Eye,
+  Video,
+  CheckCircle2,
+  XCircle
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import SessionCompletionModal from "../../../components/SessionCompletionModal";
 import SessionDetailsModal from "../../../components/SessionDetailsModal";
@@ -559,101 +571,116 @@ export default function PsychologistSessions() {
                          ) :
                          session.status}
                       </span>
-                      {/* Show Schedule Session button only for pending assessment sessions that don't have date/time yet */}
-                      {session.status === 'pending' && 
-                       (session.session_type === 'assessment' || session.type === 'assessment') &&
-                       (!session.scheduled_date || !session.scheduled_time) && (
+                      {/* View Feedback Button - Outside 3 dots menu, only if feedback exists */}
+                      {session.status === 'completed' && (session.feedback || session.rating || session.client_feedback) && (
                         <button
-                          onClick={() => {
-                            setSelectedScheduleSession(session);
-                            setShowScheduleModal(true);
-                          }}
-                          className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          onClick={() => setFeedbackToView(session)}
+                          className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                         >
-                          Schedule Session
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          View Feedback
                         </button>
                       )}
-                      <button
-                        onClick={() => handleViewDetails(session)}
-                        className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        View Details
-                      </button>
-                      {getMeetLink(session) && (
-                        <button
-                          onClick={() => handleJoinMeet(session)}
-                          className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-green-300 text-[11px] sm:text-xs font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        >
-                          Join Meet
-                        </button>
-                      )}
-                      {/* Only show Finish button for non-completed sessions */}
-                      {session.status !== 'completed' && session.status !== 'no_show' && session.status !== 'noshow' && (
-                        <>
-                          <button
-                            onClick={() => openCompleteSessionModal(session)}
-                            disabled={completingSessions.has(session.id)}
-                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                              completingSessions.has(session.id)
-                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                : 'text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
-                            }`}
-                            title="Open modal to add summary, notes, and report"
-                          >
-                            {completingSessions.has(session.id) ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                                Finishing...
-                              </>
-                            ) : (
-                              <>
-                                Finish
-                              </>
-                            )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
-                          <button
-                            onClick={() => handleMarkAsNoShow(session.id)}
-                            disabled={markingNoShowSessions.has(session.id)}
-                            className={`inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-transparent text-[11px] sm:text-xs font-medium rounded-md transition-colors duration-200 ${
-                              markingNoShowSessions.has(session.id)
-                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                : 'text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                            }`}
-                            title="Mark session as no-show"
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleViewDetails(session)} className="cursor-pointer">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          {getMeetLink(session) && (
+                            <>
+                              <DropdownMenuItem onClick={() => handleJoinMeet(session)} className="cursor-pointer">
+                                <Video className="h-4 w-4 mr-2" />
+                                Join Meet
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {/* Show Schedule Session button only for pending assessment sessions that don't have date/time yet */}
+                          {session.status === 'pending' && 
+                           (session.session_type === 'assessment' || session.type === 'assessment') &&
+                           (!session.scheduled_date || !session.scheduled_time) && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedScheduleSession(session);
+                                  setShowScheduleModal(true);
+                                }} 
+                                className="cursor-pointer"
+                              >
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Schedule Session
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {/* Only show Finish button for non-completed sessions */}
+                          {session.status !== 'completed' && session.status !== 'no_show' && session.status !== 'noshow' && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => openCompleteSessionModal(session)}
+                                disabled={completingSessions.has(session.id)}
+                                className="cursor-pointer"
+                              >
+                                {completingSessions.has(session.id) ? (
+                                  <>
+                                    <div className="h-4 w-4 mr-2 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                                    Finishing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                                    Finish Session
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleMarkAsNoShow(session.id)}
+                                disabled={markingNoShowSessions.has(session.id)}
+                                className="cursor-pointer text-orange-600"
+                              >
+                                {markingNoShowSessions.has(session.id) ? (
+                                  <>
+                                    <div className="h-4 w-4 mr-2 border-2 border-orange-600 border-t-transparent rounded-full animate-spin" />
+                                    Marking...
+                                  </>
+                                ) : (
+                                  <>
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Mark No Show
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {/* Completed session actions */}
+                          {session.status === 'completed' && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => openSessionNotesModal(session)} 
+                                className="cursor-pointer"
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                View Notes
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteSession(session)} 
+                            className="cursor-pointer text-red-600"
                           >
-                            {markingNoShowSessions.has(session.id) ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 mr-1 border-b-2 border-white"></div>
-                                Marking...
-                              </>
-                            ) : (
-                              <>
-                                Mark as No Show
-                              </>
-                            )}
-                          </button>
-                        </>
-                      )}
-                      
-                      {/* Completed session actions */}
-                      {session.status === 'completed' && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openSessionNotesModal(session)}
-                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-gray-300 text-[11px] sm:text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                            title="View session notes"
-                          >
-                            <FileText className="h-3 w-3 mr-1" />
-                            View Notes
-                          </button>
-                          <button
-                            onClick={() => setFeedbackToView(session)}
-                            className="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 border border-purple-300 text-[11px] sm:text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                          >
-                            View Feedback
-                          </button>
-                        </div>
-                      )}
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>

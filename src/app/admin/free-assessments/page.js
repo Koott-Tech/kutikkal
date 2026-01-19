@@ -19,8 +19,16 @@ import {
   Loader2,
   Star,
   MessageSquare,
-  Trash2
+  Trash2,
+  MoreVertical
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { adminApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 
@@ -795,50 +803,67 @@ export default function FreeAssessmentsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleViewAssessment(assessment)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </button>
-                        {assessment.meetLink && (
-                          <button
-                            onClick={() => handleCopyMeetLink(assessment.meetLink)}
-                            className="text-green-600 hover:text-green-900 flex items-center"
-                            title="Copy Meet Link"
-                          >
-                            <Copy className="h-4 w-4 mr-1" />
-                            Meet Link
-                          </button>
-                        )}
-                        {assessment.status === 'completed' && (assessment.feedback || assessment.rating) && (
-                          <button
-                            onClick={() => handleViewFeedback(assessment)}
-                            className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                          >
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            View Feedback
-                          </button>
-                        )}
-                        {assessment.status !== 'completed' && assessment.session_id && (
-                          <button
-                            onClick={() => handleMarkAsCompleteClick(assessment)}
-                            className="inline-flex items-center px-3 py-1.5 border border-purple-300 text-xs font-medium rounded-md text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Mark as Complete"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Mark Complete
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeleteClick(assessment)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                          title="Delete Assessment"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                      <div className="flex items-center space-x-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem 
+                              onClick={() => handleViewAssessment(assessment)} 
+                              className="cursor-pointer"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            {assessment.meetLink && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleCopyMeetLink(assessment.meetLink)} 
+                                  className="cursor-pointer"
+                                >
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Copy Meet Link
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {assessment.status === 'completed' && (assessment.feedback || assessment.rating) && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleViewFeedback(assessment)} 
+                                  className="cursor-pointer"
+                                >
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  View Feedback
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {assessment.status !== 'completed' && assessment.session_id && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleMarkAsCompleteClick(assessment)} 
+                                  className="cursor-pointer"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Mark Complete
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteClick(assessment)} 
+                              className="cursor-pointer text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </td>
                   </tr>

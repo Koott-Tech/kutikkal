@@ -101,10 +101,10 @@ export default function FinanceSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Settings & Configuration</div>
+        <div className="mb-2 sm:mb-3">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">Settings & Configuration</div>
           <p className="text-xs sm:text-sm text-gray-600">Manage expense categories and income sources</p>
         </div>
 

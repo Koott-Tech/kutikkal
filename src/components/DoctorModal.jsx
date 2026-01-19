@@ -277,6 +277,7 @@ export default function DoctorModal({
         .filter(Boolean);
 
       // Parse phone number to extract country code and number
+      // Since we only support India (+91), always default to +91
       const parsePhoneNumber = (phoneStr) => {
         if (!phoneStr) return { code: '+91', number: '' };
         
@@ -287,49 +288,48 @@ export default function DoctorModal({
         let numberOnly = digitsOnly;
         
         if (digitsOnly.startsWith("+")) {
-          // List of known country codes (1-4 digits) - try longer codes first
-          const countryCodes = [
-            '+358', '+351', '+353', '+971', '+966', // 4-digit codes
-            '+44', '+49', '+33', '+39', '+34', '+31', '+32', '+41', '+46', '+47', '+45', '+48', '+27', '+61', '+65', '+60', '+64', '+81', '+86', '+91', '+92', // 2-digit codes
-            '+1' // 1-digit codes
-          ];
-          
-          // Try to match known country codes (longest first)
-          let matched = false;
-          for (const code of countryCodes) {
-            if (digitsOnly.startsWith(code)) {
-              extractedCode = code;
-              numberOnly = digitsOnly.slice(code.length);
-              matched = true;
-              break;
-            }
-          }
-          
-          // If no known country code matched, try to match 1-3 digits (most common pattern)
-          if (!matched) {
-            const match = digitsOnly.match(/^\+(\d{1,3})/);
+          // Check if it starts with +91 (India)
+          if (digitsOnly.startsWith('+91')) {
+            extractedCode = '+91';
+            numberOnly = digitsOnly.slice(3); // Remove +91
+          } else {
+            // For any other country code, remove it and use +91
+            // Try to find where the country code ends (1-4 digits after +)
+            const match = digitsOnly.match(/^\+\d{1,4}/);
             if (match) {
-              extractedCode = `+${match[1]}`;
               numberOnly = digitsOnly.slice(match[0].length);
+            } else {
+              // If no match, remove the + and use all digits
+              numberOnly = digitsOnly.slice(1);
             }
+            // Always use +91 as country code
+            extractedCode = '+91';
           }
         } else if (digitsOnly.length > 10) {
-          // For numbers without +, try to detect country code
-          // Indian numbers typically start with 91 and have 12 total digits
-          if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
+          // For numbers without +, check if it starts with 91
+          if (digitsOnly.startsWith('91') && digitsOnly.length >= 12) {
             extractedCode = '+91';
             numberOnly = digitsOnly.slice(2);
           } else {
-            // Try to match first 1-3 digits as country code
-            const match = digitsOnly.match(/^(\d{1,3})/);
-            if (match) {
-              extractedCode = `+${match[1]}`;
-              numberOnly = digitsOnly.slice(match[1].length);
+            // Remove any leading digits that might be a country code
+            // Indian numbers are 10 digits, so if longer, remove leading digits
+            if (digitsOnly.length > 10) {
+              numberOnly = digitsOnly.slice(-10); // Take last 10 digits
+            } else {
+              numberOnly = digitsOnly;
             }
+            extractedCode = '+91';
           }
+        } else {
+          // 10 digits or less - assume it's already just the number
+          numberOnly = digitsOnly;
+          extractedCode = '+91';
         }
         
-        return { code: extractedCode, number: numberOnly.replace(/\D/g, "") };
+        // Clean the number (remove any non-digits)
+        numberOnly = numberOnly.replace(/\D/g, "");
+        
+        return { code: extractedCode, number: numberOnly };
       };
 
       const parsedPhone = parsePhoneNumber(doctor.phone || '');
@@ -1272,31 +1272,6 @@ export default function DoctorModal({
                   className="w-28 rounded-md border border-gray-300 px-3 py-2 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="+91">🇮🇳 +91</option>
-                  <option value="+92">🇵🇰 +92</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+33">🇫🇷 +33</option>
-                  <option value="+49">🇩🇪 +49</option>
-                  <option value="+61">🇦🇺 +61</option>
-                  <option value="+65">🇸🇬 +65</option>
-                  <option value="+81">🇯🇵 +81</option>
-                  <option value="+971">🇦🇪 +971</option>
-                  <option value="+966">🇸🇦 +966</option>
-                  <option value="+60">🇲🇾 +60</option>
-                  <option value="+64">🇳🇿 +64</option>
-                  <option value="+27">🇿🇦 +27</option>
-                  <option value="+39">🇮🇹 +39</option>
-                  <option value="+34">🇪🇸 +34</option>
-                  <option value="+31">🇳🇱 +31</option>
-                  <option value="+32">🇧🇪 +32</option>
-                  <option value="+41">🇨🇭 +41</option>
-                  <option value="+46">🇸🇪 +46</option>
-                  <option value="+47">🇳🇴 +47</option>
-                  <option value="+45">🇩🇰 +45</option>
-                  <option value="+358">🇫🇮 +358</option>
-                  <option value="+351">🇵🇹 +351</option>
-                  <option value="+353">🇮🇪 +353</option>
-                  <option value="+48">🇵🇱 +48</option>
                 </select>
                 <input
                   type="tel"

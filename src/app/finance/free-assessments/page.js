@@ -2,9 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Search, Eye, ChevronLeft, ChevronRight, Video } from 'lucide-react';
+import { Calendar, Search, Eye, ChevronLeft, ChevronRight, Video, MoreVertical } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function FinanceFreeAssessments() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -75,10 +81,10 @@ export default function FinanceFreeAssessments() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-2">Free Assessments</div>
+        <div className="mb-2 sm:mb-3">
+          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">Free Assessments</div>
           <p className="text-xs sm:text-sm text-gray-600">View and manage all free assessment sessions</p>
         </div>
 
@@ -181,12 +187,19 @@ export default function FinanceFreeAssessments() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            onClick={() => handleViewDetails(assessment)}
-                            className="text-[#3f2e73] hover:text-[#2d1f52] transition-colors"
-                          >
-                            <Eye className="h-5 w-5" />
-                          </button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                                <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => handleViewDetails(assessment)} className="cursor-pointer">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     ))

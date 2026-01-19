@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { adminApi } from '@/lib/backendApi';
+import { Eye, Edit, Trash2, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function BetterParentingAdminPage() {
   const { isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -102,10 +110,33 @@ export default function BetterParentingAdminPage() {
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${r.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{r.status}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(r.updated_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button onClick={() => router.push(`/admin/better-parenting/edit/${r.id}`)} className="text-[#593494] hover:text-[#7351A9]">Edit</button>
-                      <button onClick={() => window.open(`/better-parenting/${r.slug}`, '_blank')} className="text-blue-600 hover:text-blue-800">View</button>
-                      <button onClick={() => handleDelete(r.id)} className="text-red-600 hover:text-red-800">Delete</button>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => window.open(`/better-parenting/${r.slug}`, '_blank')} className="cursor-pointer">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => router.push(`/admin/better-parenting/edit/${r.id}`)} className="cursor-pointer">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(r.id)} 
+                            className="cursor-pointer text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))}
