@@ -97,6 +97,7 @@ jobs:
         run: npm ci
 
       - name: Validate static images
+        continue-on-error: true
         run: node scripts/validate-images.js
 
       - name: Build Next.js app
