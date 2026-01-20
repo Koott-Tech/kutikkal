@@ -1438,29 +1438,6 @@ function PaymentSuccessContent() {
         </motion.div>
       )}
       
-      {/* Notification Text */}
-      {!showCenteredAnimation && sessionDetails && (
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ 
-            delay: isMobile ? 0.35 : 0.75, 
-            duration: isMobile ? 0.4 : 0.5 
-          }}
-          style={{
-            fontSize: '14px',
-            color: '#6b7280',
-            lineHeight: '1.5',
-            textAlign: 'center',
-            marginTop: '40px',
-            marginBottom: '8px',
-            willChange: 'transform, opacity'
-          }}
-        >
-          The session details and receipt have been sent to your registered email and WhatsApp number.
-        </motion.p>
-      )}
-      
       {/* Action Buttons */}
       {!showCenteredAnimation && (
       <motion.div

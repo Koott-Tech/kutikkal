@@ -4,7 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { clientApi, authApi } from "../../../lib/backendApi";
 
 export default function ContactPage() {
-  const { user, token, login, hasRole, isLoading: authLoading } = useAuth();
+  const { user, token, login, hasRole, isLoading: authLoading, isRemembered } = useAuth();
   const [profileForm, setProfileForm] = useState({
     first_name: '',
     last_name: '',
@@ -161,7 +161,7 @@ export default function ContactPage() {
 
       const refreshed = await authApi.getProfile();
       if (refreshed?.data?.user) {
-        login(refreshed.data.user, token);
+        login(refreshed.data.user, token, { remember: isRemembered });
         
         const refreshedProfile = refreshed.data.user.profile || {};
         

@@ -44,7 +44,7 @@ const pageMetadata = {
     description: 'Discover professional child psychology services and online counseling for children and families. Expert child psychologists help with anxiety, behavior, ADHD, and emotional support.',
     images: [
       {
-        url: 'https://www.little.care/mainlogo.webp',
+        url: 'https://www.little.care/favicon.png',
         width: 1200,
         height: 630,
         alt: 'Little Care logo',
@@ -55,7 +55,7 @@ const pageMetadata = {
     card: 'summary_large_image',
     title: 'Child Psychology Services & Online Counseling | Little Care',
     description: 'Discover professional child psychology services and online counseling for children and families. Expert child psychologists help with anxiety, behavior, ADHD, and emotional support.',
-    images: ['https://www.little.care/mainlogo.webp'],
+    images: ['https://www.little.care/favicon.png'],
     creator: '@littlecare',
   },
   alternates: {

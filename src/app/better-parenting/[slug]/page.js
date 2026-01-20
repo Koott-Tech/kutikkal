@@ -41,7 +41,7 @@ export async function generateMetadata({ params, searchParams }) {
         data.hero_subtext ||
         'Gentle, practical coaching to help parents support their child’s emotional and behavioural needs.';
       const ogImage =
-        data.og_image || data.hero_image_url || '/mainlogo.webp';
+        data.og_image || data.hero_image_url || '/favicon.png';
 
       return {
         title,

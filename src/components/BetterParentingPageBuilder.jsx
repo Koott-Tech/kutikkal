@@ -14,6 +14,7 @@ import HelpFaq from '@/components/HelpFaq';
 import ImageUpload from '@/components/ImageUpload';
 import TherapistCarousel from '@/components/TherapistCarousel';
 import { publicApi } from '@/lib/backendApi';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const normalizeInfoCards = (cards = []) => {
   if (!Array.isArray(cards)) return [];
@@ -829,7 +830,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
                 title: formData.hero_title,
                 subtext: formData.hero_subtext,
                 ctaText: formData.hero_cta_text,
-                imageUrl: formData.hero_image_url,
+                imageUrl: normalizeImageUrl(formData.hero_image_url),
                 features: []
               }}
             />
@@ -864,7 +865,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
               cmsData={{
                 title: formData.benefits_title,
                 benefits: formData.benefits,
-                benefitsImageUrl: formData.benefits_image_url
+                benefitsImageUrl: normalizeImageUrl(formData.benefits_image_url)
               }}
               showAllBenefits={true}
             />
@@ -878,7 +879,7 @@ export default function BetterParentingPageBuilder({ pageId, initialData = null,
               cmsData={{
                 title: formData.types_title,
                 types: formData.types,
-                rightImageUrl: formData.right_image_url
+                rightImageUrl: normalizeImageUrl(formData.right_image_url)
               }}
             />
           ))}

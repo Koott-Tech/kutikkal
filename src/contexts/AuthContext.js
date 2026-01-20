@@ -26,6 +26,13 @@ export function AuthProvider({ children }) {
     // Check for existing token and user data on app load
     const storedAuth = loadAuthData();
     
+    console.log('🔍 Auth initialization - storedAuth:', {
+      hasToken: !!storedAuth?.token,
+      hasUser: !!storedAuth?.user,
+      remember: storedAuth?.remember,
+      tokenPreview: storedAuth?.token?.substring(0, 20) + '...'
+    });
+    
     if (storedAuth?.token && storedAuth?.user) {
       try {
         // Decode JWT to check expiration
@@ -33,43 +40,59 @@ export function AuthProvider({ children }) {
         let isTokenExpired = false;
         
         if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-          const expirationDate = new Date(payload.exp * 1000);
-          const now = new Date();
-          isTokenExpired = now > expirationDate;
+          try {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            const expirationDate = new Date(payload.exp * 1000);
+            const now = new Date();
+            isTokenExpired = now > expirationDate;
+            console.log('🔍 Token expiration check:', {
+              expiresAt: expirationDate.toISOString(),
+              now: now.toISOString(),
+              isExpired: isTokenExpired
+            });
+          } catch (parseError) {
+            console.warn('Failed to parse token expiration:', parseError);
+            // If we can't parse, assume it's valid
+            isTokenExpired = false;
+          }
         }
           
-        // If token is expired BUT "Remember Me" is enabled and still valid
-        // Keep the user logged in - the API layer will handle token refresh/re-authentication
-        // Only clear if "Remember Me" period has also expired (handled by loadAuthData)
+        // If token is expired AND "Remember Me" is NOT enabled - clear session storage
         if (isTokenExpired && !storedAuth.remember) {
-          // Token expired and "Remember Me" not enabled - clear session storage
-            clearAuthData();
-            localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
-            setIsLoading(false);
-            return;
-          }
-        
-        // If token is expired but "Remember Me" is enabled, keep the data
-        // The API layer will handle re-authentication on next request
-        // This allows "Remember Me" to work even if JWT expires (user will need to re-login on first API call)
-        if (isTokenExpired && storedAuth.remember) {
-          console.log('Token expired but "Remember Me" is active - keeping session. User will be prompted to re-login on next API call.');
-          // Keep the user data but mark token as expired
-          // The API layer will handle prompting for re-login
+          console.log('⚠️ Token expired and "Remember Me" not enabled - clearing session');
+          clearAuthData();
+          localStorage.setItem('auth_error', 'Your session has expired. Please log in again.');
+          setIsLoading(false);
+          return;
         }
         
+        // If token is expired but "Remember Me" is enabled, still restore the session
+        // The API layer will handle token refresh/re-authentication on next request
+        if (isTokenExpired && storedAuth.remember) {
+          console.log('✅ Token expired but "Remember Me" is active - restoring session. API will handle refresh on next request.');
+        }
+        
+        // Restore the session (even if token is expired, if Remember Me is enabled)
         setToken(storedAuth.token);
         setUser(storedAuth.user);
         setIsRemembered(!!storedAuth.remember);
         
+        console.log('✅ Auth session restored:', {
+          hasToken: !!storedAuth.token,
+          hasUser: !!storedAuth.user,
+          remember: !!storedAuth.remember,
+          userId: storedAuth.user?.id
+        });
+        
         // Skip Supabase token refresh since we're using backend JWT tokens
         // The backend handles token validation and refresh
       } catch (error) {
-        console.error('Error parsing stored user data:', error);
+        console.error('❌ Error parsing stored user data:', error);
         // Only clear if it's a parsing error, not just token expiration
         clearAuthData();
       }
+    } else {
+      console.log('ℹ️ No stored auth data found - user not logged in');
     }
     
     setIsLoading(false);
@@ -133,16 +156,27 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, authToken, options) => {
-    const rememberPreference =
-      typeof options === 'boolean'
-        ? options
-        : options?.remember;
-    const finalRemember = rememberPreference ?? isRemembered ?? true;
+    // This login function works for ALL roles: client, admin, psychologist, finance, superadmin
+    // All roles use the same authentication storage system with "Remember Me" functionality
+    
+    // Explicitly check if remember preference is provided
+    let rememberPreference;
+    if (typeof options === 'boolean') {
+      rememberPreference = options;
+    } else if (options && typeof options === 'object' && 'remember' in options) {
+      // Explicitly check if remember is provided (even if false)
+      rememberPreference = options.remember;
+    } else {
+      // Default to true if not specified (better UX - remember by default)
+      rememberPreference = true;
+    }
 
     setUser(userData);
     setToken(authToken);
-    setIsRemembered(!!finalRemember);
-    storeAuthData({ token: authToken, user: userData, remember: !!finalRemember });
+    setIsRemembered(!!rememberPreference);
+    storeAuthData({ token: authToken, user: userData, remember: !!rememberPreference });
+    
+    console.log('✅ Login successful for role:', userData?.role || 'unknown', '- Remember Me:', !!rememberPreference);
   };
 
   const logout = () => {
@@ -157,11 +191,21 @@ export function AuthProvider({ children }) {
   };
 
   const hasRole = (role) => {
-    return user && user.role === role;
+    if (!user) return false;
+    // Superadmin has access to all roles
+    if (user.role === 'superadmin') {
+      return true;
+    }
+    return user.role === role;
   };
 
   const hasAnyRole = (roles) => {
-    return user && roles.includes(user.role);
+    if (!user) return false;
+    // Superadmin has access to all roles
+    if (user.role === 'superadmin') {
+      return true;
+    }
+    return roles.includes(user.role);
   };
 
   const value = {

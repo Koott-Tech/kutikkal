@@ -1,21 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { 
   Users, 
   UserCheck, 
   Calendar, 
   BarChart3, 
-  Settings, 
   LogOut,
   Menu,
   X,
   Clock,
   FileText,
   MessageSquare,
-  Shield,
   Package,
   ChevronDown,
   ChevronRight,
@@ -23,7 +21,6 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import SecurityNotificationCenter from '@/components/SecurityNotificationCenter';
 
 export default function AdminLayout({ children }) {
   // Desktop (>= 1024px): open by default, Mobile: closed by default
@@ -37,6 +34,7 @@ export default function AdminLayout({ children }) {
   const [isCmsMenuOpen, setIsCmsMenuOpen] = useState(false);
   const { user, isAuthenticated, hasRole, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!authLoading) {
@@ -88,8 +86,6 @@ export default function AdminLayout({ children }) {
         { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
       ]
     },
-    { name: 'Security', href: '/admin/security', icon: Shield },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   if (authLoading) {
@@ -176,11 +172,16 @@ export default function AdminLayout({ children }) {
                       <div className="ml-4 mt-1 space-y-1">
                         {item.submenu.map((subItem) => {
                           const SubIcon = subItem.icon;
+                          const isSubActive = pathname === subItem.href || pathname.startsWith(subItem.href + '/');
                           return (
                             <a
                               key={subItem.name}
                               href={subItem.href}
-                              className="flex items-center px-4 py-2 text-sm text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                              className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
+                                isSubActive 
+                                  ? 'bg-blue-100 text-blue-700 font-medium' 
+                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                              }`}
                               onClick={() => {
                                 // Close mobile sidebar on navigation
                                 if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -200,11 +201,16 @@ export default function AdminLayout({ children }) {
               }
               
               // Regular menu item
+              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
               return (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-blue-100 text-blue-700 font-medium' 
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
                   onClick={() => {
                     // Close mobile sidebar on navigation
                     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
@@ -284,11 +290,16 @@ export default function AdminLayout({ children }) {
                       <div className="ml-4 mt-1 space-y-1">
                         {item.submenu.map((subItem) => {
                           const SubIcon = subItem.icon;
+                          const isSubActive = pathname === subItem.href || pathname.startsWith(subItem.href + '/');
                           return (
                             <a
                               key={subItem.name}
                               href={subItem.href}
-                              className="flex items-center px-4 py-2 text-sm text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                              className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
+                                isSubActive 
+                                  ? 'bg-blue-100 text-blue-700 font-medium' 
+                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                              }`}
                             >
                               <SubIcon className="h-4 w-4 mr-3" />
                               {subItem.name}
@@ -302,11 +313,16 @@ export default function AdminLayout({ children }) {
               }
               
               // Regular menu item
+              const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
               return (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-blue-100 text-blue-700 font-medium' 
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {item.name}
@@ -347,7 +363,6 @@ export default function AdminLayout({ children }) {
             <h6>Little Care Admin Panel</h6>
             </div>
             <div className="flex items-center space-x-4">
-              <SecurityNotificationCenter />
               {user && (
                 <div className="text-sm text-gray-600">
                   <span className="font-medium">{user.email}</span>

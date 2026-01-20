@@ -37,7 +37,7 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://littlecare.com' }) => {
     "@type": "BlogPosting",
     "headline": metaTitle,
     "description": metaDescription,
-    "image": featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/images/blog-default.jpg`,
+    "image": featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/favicon.png`,
     "author": {
       "@type": "Person",
       "name": author_name || "Little Care Team"
@@ -75,7 +75,7 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://littlecare.com' }) => {
       <meta property="og:url" content={`${siteUrl}/blog/${slug}`} />
       <meta property="og:title" content={metaTitle} />
       <meta property="og:description" content={metaDescription} />
-      <meta property="og:image" content={featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/images/blog-default.jpg`} />
+      <meta property="og:image" content={featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/favicon.png`} />
       <meta property="og:site_name" content="Little Care" />
       <meta property="og:locale" content="en_US" />
       <meta property="article:author" content={author_name || "Little Care Team"} />
@@ -93,7 +93,7 @@ const BlogMetaTags = ({ blog, siteUrl = 'https://littlecare.com' }) => {
       <meta property="twitter:url" content={`${siteUrl}/blog/${slug}`} />
       <meta property="twitter:title" content={metaTitle} />
       <meta property="twitter:description" content={metaDescription} />
-      <meta property="twitter:image" content={featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/images/blog-default.jpg`} />
+      <meta property="twitter:image" content={featured_image_url ? `${siteUrl}${featured_image_url}` : `${siteUrl}/favicon.png`} />
 
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content="index, follow" />

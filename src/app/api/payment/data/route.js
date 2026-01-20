@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
+import { getPaymentData } from '@/lib/paymentDataStorage';
 
 // Mark route as dynamic (uses in-memory storage that changes)
 export const dynamic = 'force-dynamic';
 
-// Temporary storage for payment data (in production, use Redis or database)
-let paymentData = null;
-let failureData = null;
-
 export async function GET() {
   try {
     // Return the most recent payment data
-    const data = paymentData || failureData;
+    const data = getPaymentData();
     
     if (data) {
       console.log('📤 Returning payment data:', data);
@@ -23,15 +20,4 @@ export async function GET() {
     console.error('❌ Error getting payment data:', error);
     return NextResponse.json({ success: false, message: 'Error retrieving payment data' });
   }
-}
-
-// Function to set payment data (called from route handlers)
-export function setPaymentData(data) {
-  paymentData = data;
-  failureData = null; // Clear failure data
-}
-
-export function setFailureData(data) {
-  failureData = data;
-  paymentData = null; // Clear payment data
 }

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function ProfileLayout({ children }) {
-  const { user, logout, hasRole, login, token, isLoading: authLoading } = useAuth();
+  const { user, logout, hasRole, login, token, isLoading: authLoading, isRemembered } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   // Load sidebar state from localStorage, default based on screen size
@@ -63,7 +63,7 @@ export default function ProfileLayout({ children }) {
             setProfileData(profile);
             // Update the auth context with full profile data
             if (token) {
-              login({ ...user, profile }, token);
+              login({ ...user, profile }, token, { remember: isRemembered });
             }
           }
         } catch (error) {

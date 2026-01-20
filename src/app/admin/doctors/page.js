@@ -328,10 +328,11 @@ export default function DoctorsPage() {
 
 
   const filteredDoctors = doctors.filter(doctor => {
-    const matchesSearch = doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (doctor.area_of_expertise && Array.isArray(doctor.area_of_expertise) && 
-                          doctor.area_of_expertise.some(spec => spec.toLowerCase().includes(searchTerm.toLowerCase())));
+    const fullName = doctor.name?.toLowerCase() || '';
+    const email = doctor.email?.toLowerCase() || '';
+    
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
+                         email.includes(searchTerm.toLowerCase());
     
     const matchesSpecialty = filterSpecialty === 'all' || 
                             (doctor.area_of_expertise && Array.isArray(doctor.area_of_expertise) && 
@@ -403,7 +404,7 @@ export default function DoctorsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search doctors by name, email, or specialty..."
+                placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

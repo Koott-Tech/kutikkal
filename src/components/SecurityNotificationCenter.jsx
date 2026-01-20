@@ -199,7 +199,7 @@ const SecurityNotificationCenter = () => {
 
           <div className="p-4 border-t border-gray-200">
             <a
-              href="/admin/security"
+              href="/admin"
               className="block w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
               View All Security Alerts →

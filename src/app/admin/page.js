@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         };
       }
 
-      // Load recent bookings for activity section (last 24 hours)
+      // Load recent bookings for activity section (today's activity only)
       try {
         const recentBookingsResponse = await adminApi.getRecentBookings(10);
         if (recentBookingsResponse && recentBookingsResponse.success) {
@@ -514,26 +514,18 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
-        <h6>Welcome to Admin Dashboard</h6>
-        <p className="text-blue-100 mb-2 text-sm sm:text-base">Manage your platform, users, and therapy sessions from one central location.</p>
-        <div className="text-blue-100 text-xs sm:text-sm">
-          <p>Logged in as: <span className="font-semibold">{user?.email}</span></p>
-          <p>Role: <span className="font-semibold capitalize">{user?.role}</span></p>
-        </div>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-              <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white inline-block mb-3`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white flex-shrink-0`}>
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{stat.title}</p>
               <p className="number-bold">{stat.value}</p>
             </div>
           );
@@ -560,15 +552,17 @@ export default function AdminDashboard() {
             const Icon = card.icon;
             return (
               <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                <div className={`p-2 rounded-lg ${card.color} text-white inline-block mb-3`}>
-                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{card.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
-                    {card.subValue && (
-                      <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
-                    )}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-lg ${card.color} text-white flex-shrink-0`}>
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
+                {card.subValue && (
+                  <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
+                )}
+              </div>
             );
           })}
         </div>
@@ -594,10 +588,12 @@ export default function AdminDashboard() {
             const Icon = card.icon;
             return (
               <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                <div className={`p-2 rounded-lg ${card.color} text-white inline-block mb-3`}>
-                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-lg ${card.color} text-white flex-shrink-0`}>
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
                 </div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{card.title}</p>
                 <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
                 {card.subValue && (
                   <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
@@ -614,7 +610,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
           <h6>Recent Activity</h6>
-              <p className="text-sm text-gray-600 mt-1">Bookings from the last 24 hours</p>
+              <p className="text-sm text-gray-600 mt-1">Today's bookings</p>
             </div>
           <a href="/admin/bookings" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
             View All

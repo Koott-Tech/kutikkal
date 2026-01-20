@@ -355,14 +355,11 @@ export default function BookingsPage() {
     if (!searchTerm) return true; // No search filter, show all
     
     const clientName = `${booking.client?.first_name || ''} ${booking.client?.last_name || ''}`.toLowerCase();
-    const psychologistName = `${booking.psychologist?.first_name || ''} ${booking.psychologist?.last_name || ''}`.toLowerCase();
     const clientEmail = booking.client?.user?.email?.toLowerCase() || '';
     
     const matchesSearch = 
       clientName.includes(searchTerm.toLowerCase()) ||
-      psychologistName.includes(searchTerm.toLowerCase()) ||
-      clientEmail.includes(searchTerm.toLowerCase()) ||
-      booking.id?.toLowerCase().includes(searchTerm.toLowerCase());
+      clientEmail.includes(searchTerm.toLowerCase());
     
     return matchesSearch;
   });
@@ -462,7 +459,7 @@ export default function BookingsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by client name, psychologist, email, or session ID..."
+                placeholder="Search by client name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -477,7 +474,7 @@ export default function BookingsPage() {
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Statuses</option>
-              {statuses.map(status => (
+              {statuses.filter(status => status !== 'all').map(status => (
                 <option key={status} value={status}>
                   {status === 'no_show' ? 'No Show' : 
                    status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown'}

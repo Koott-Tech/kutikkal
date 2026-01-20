@@ -542,14 +542,11 @@ export default function FreeAssessmentsPage() {
     if (!searchTerm) return true;
     
     const clientName = `${assessment.client?.first_name || ''} ${assessment.client?.last_name || ''}`.toLowerCase();
-    const psychologistName = `${assessment.psychologist?.first_name || ''} ${assessment.psychologist?.last_name || ''}`.toLowerCase();
-    const assessmentNumber = assessment.assessmentNumber?.toString().toLowerCase() || '';
+    const clientEmail = assessment.client?.user?.email?.toLowerCase() || '';
     
     const matchesSearch = 
       clientName.includes(searchTerm.toLowerCase()) ||
-      psychologistName.includes(searchTerm.toLowerCase()) ||
-      assessmentNumber.includes(searchTerm.toLowerCase()) ||
-      assessment.id?.toLowerCase().includes(searchTerm.toLowerCase());
+      clientEmail.includes(searchTerm.toLowerCase());
     
     return matchesSearch;
   });
@@ -700,7 +697,7 @@ export default function FreeAssessmentsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by client name, psychologist, or assessment number..."
+                  placeholder="Search by client name or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

@@ -823,27 +823,28 @@ const Guide = () => {
               padding: 0 clamp(1rem, 2vw, 2rem) !important; /* responsive side padding - reduced */
               justify-items: center;
             }
-            .guide-video-card {
+            .doctor-card-wrapper {
               cursor: pointer;
               will-change: transform;
               transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.2s;
               z-index: 1;
+            }
+            .doctor-card-wrapper:hover {
+              transform: scale(1.04) translateY(-12px);
+              z-index: 10;
+            }
+            .guide-video-card {
               width: 100%;
               min-width: 300px; /* Increased minimum width for cards */
               max-width: 100%; /* Allow cards to grow with grid - remains flexible */
               height: 360px;
-              border-radius: 10px;
+              border-radius: 10px 10px 0 0; /* Rounded only on top to connect seamlessly with availability container */
               overflow: hidden;
               box-shadow: none !important;
               background: #fff;
               border: none;
               position: relative;
               margin: 0 !important; /* ensure no extra row spacing */
-            }
-            .guide-video-card:hover {
-              transform: scale(1.04) translateY(-12px);
-              z-index: 10;
-              box-shadow: none !important;
             }
             
             /* Mac M1 13-inch / 14-15 inch laptop view (1366px - 1440px) - flexible cards with minimal gaps */
@@ -860,9 +861,8 @@ const Guide = () => {
                 width: 100%;
                 height: 360px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.04) translateY(-12px);
-                box-shadow: none !important;
               }
             }
             
@@ -880,9 +880,8 @@ const Guide = () => {
                 width: 100%;
                 height: 360px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.03) translateY(-10px);
-                box-shadow: none !important;
               }
             }
             
@@ -900,9 +899,8 @@ const Guide = () => {
                 width: 100%;
                 height: 360px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.04) translateY(-12px);
-                box-shadow: none !important;
               }
             }
             
@@ -920,9 +918,8 @@ const Guide = () => {
                 width: 100%;
                 height: 360px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.04) translateY(-12px);
-                box-shadow: none !important;
               }
             }
             
@@ -941,9 +938,8 @@ const Guide = () => {
                 width: 100%;
                 height: 360px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.04) translateY(-12px);
-                box-shadow: none !important;
               }
             }
             
@@ -962,9 +958,8 @@ const Guide = () => {
                 width: 100%;
                 height: 380px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.04) translateY(-12px);
-                box-shadow: none !important;
               }
             }
             
@@ -981,9 +976,8 @@ const Guide = () => {
                 width: 100%;
                 height: 350px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.03) translateY(-10px);
-                box-shadow: none !important;
               }
             }
             
@@ -1000,9 +994,8 @@ const Guide = () => {
                 width: 100%;
                 height: 330px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: scale(1.02) translateY(-8px);
-                box-shadow: none !important;
               }
             }
             
@@ -1024,9 +1017,8 @@ const Guide = () => {
                 width: 100% !important;
                 height: 460px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: none !important; /* Remove hover effect on mobile */
-                box-shadow: none !important;
               }
               /* Increase doctor name size on mobile */
               .guide-video-card .doctor-card-name {
@@ -1049,9 +1041,8 @@ const Guide = () => {
                 width: 100% !important;
                 height: 440px;
               }
-              .guide-video-card:hover {
+              .doctor-card-wrapper:hover {
                 transform: none !important; /* Remove hover effect on mobile */
-                box-shadow: none !important;
               }
             }
             
@@ -1157,11 +1148,15 @@ const Guide = () => {
           ) : (
             doctors.map((doc, idx) => {
               return (
-                <div key={doc.id || doc.name || idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                <div
-                  className="guide-video-card"
+                <div 
+                  key={doc.id || doc.name || idx} 
+                  className="doctor-card-wrapper" 
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
                   onClick={() => handleDoctorClick(doc, idx)}
                   onMouseEnter={() => syncDoctorAvailability(doc.id)} // Sync on hover for accurate data
+                >
+                <div
+                  className="guide-video-card"
                 >
                   {/* Doctor Profile Picture or Cover Image */}
                   <div style={{ 
@@ -1358,14 +1353,14 @@ const Guide = () => {
                 </div>
                 {/* Availability information - below card */}
                 <div className="availability-container" style={{
-                  marginTop: 8,
+                  marginTop: 0,
                   marginBottom: 20
                 }}>
                   <div style={{
                     background: 'rgba(255,255,255,0.25)',
                     color: '#000000',
-                    borderRadius: 12,
-                    padding: '8px 12px',
+                    borderRadius: '0 0 12px 12px',
+                    padding: '8px 12px 12px 12px',
                     fontWeight: 500,
                     fontSize: '0.75rem',
                     boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
@@ -1374,11 +1369,11 @@ const Guide = () => {
                     border: '1px solid #ffffff',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'flex-start',
+                    justifyContent: 'space-between',
                     width: '100%',
                     lineHeight: '1.4', // Better line spacing
-                    overflow: 'hidden', // Hide overflow if content is too long
-                    minHeight: '4.2rem' // Fixed minimum height for 3 lines (Next available: + 2 date lines) to match first card
+                    overflow: 'visible', // Allow button to be visible
+                    minHeight: '7.5rem' // Fixed minimum height to always reserve space for Today + Tomorrow + button
                   }}>
                     {(() => {
                       const isLoading = loadingAvailability.has(doc.id);
@@ -1440,17 +1435,29 @@ const Guide = () => {
                             });
                           }
                           
-                          return `${dateLabel}: ${times.join(' • ')}`;
+                          return { dateLabel, text: `${dateLabel}: ${times.join(' • ')}`, isToday, isTomorrow };
                         });
+                        
+                        // Check if there's a Today slot but no Tomorrow slot
+                        const hasToday = formattedSlots.some(slot => slot.isToday);
+                        const hasTomorrow = formattedSlots.some(slot => slot.isTomorrow);
+                        const needsExtraLineBreak = hasToday && !hasTomorrow;
                         
                         return (
                           <>
                             Next available:
                             <br />
-                            {formattedSlots.map((slotGroup, index) => (
+                            {formattedSlots.map((slot, index) => (
                               <React.Fragment key={index}>
-                                {slotGroup}
-                                {index < formattedSlots.length - 1 && <br />}
+                                {slot.text}
+                                {slot.isToday && needsExtraLineBreak ? (
+                                  <>
+                                    <br />
+                                    <br />
+                                  </>
+                                ) : (
+                                  index < formattedSlots.length - 1 && <br />
+                                )}
                               </React.Fragment>
                             ))}
                           </>
@@ -1460,7 +1467,6 @@ const Guide = () => {
                       // Only show "No availability" if not loading and no slots found
                       return 'No availability';
                     })()}
-                    </div>
                     {/* Book Now Button */}
                     <button
                       onClick={(e) => {
@@ -1476,7 +1482,7 @@ const Guide = () => {
                         }
                       }}
                       style={{
-                        marginTop: '8px',
+                        marginTop: '12px',
                         width: '100%',
                         padding: '8px 16px',
                         backgroundColor: '#3f2e73',
@@ -1509,6 +1515,7 @@ const Guide = () => {
                       Book Now
                     </button>
                   </div>
+                </div>
                 </div>
               );
             })

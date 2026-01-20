@@ -63,6 +63,7 @@ export default function DoctorModal({
     education: {
       ug: '',
       pg: '',
+      mphil: '',
       phd: ''
     },
     description: '',
@@ -343,6 +344,7 @@ export default function DoctorModal({
         designation: doctor.designation || null,
         ug_college: doctor.ug_college || doctor.education?.ug || '',
         pg_college: doctor.pg_college || doctor.education?.pg || '',
+        mphil_college: doctor.mphil_college || doctor.education?.mphil || '',
         phd_college: doctor.phd_college || doctor.education?.phd || '',
         description: doctor.description || '',
         price: doctor.price || doctor.individual_session_price || null,
@@ -374,6 +376,7 @@ export default function DoctorModal({
         education: {
           ug: doctor.ug_college || doctor.education?.ug || '',
           pg: doctor.pg_college || doctor.education?.pg || '',
+          mphil: doctor.mphil_college || doctor.education?.mphil || '',
           phd: doctor.phd_college || doctor.education?.phd || ''
         },
         description: doctor.description || '',
@@ -962,7 +965,7 @@ export default function DoctorModal({
     });
 
     // Compare education fields
-    const educationFields = ['ug_college', 'pg_college', 'phd_college'];
+    const educationFields = ['ug_college', 'pg_college', 'mphil_college', 'phd_college'];
     educationFields.forEach(field => {
       const currentValue = currentData[field];
       const originalValue = originalData[field];
@@ -1104,6 +1107,7 @@ export default function DoctorModal({
         phone: countryCode + formData.phone,
         ug_college: formData.education.ug,
         pg_college: formData.education.pg,
+        mphil_college: formData.education.mphil,
         phd_college: formData.education.phd,
         description: formData.description,
         designation: formData.designation?.trim() || null,
@@ -1454,6 +1458,19 @@ export default function DoctorModal({
                 {errors.pg && (
                   <p className="text-red-500 text-sm mt-1">{errors.pg}</p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  MPhil (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.education.mphil}
+                  onChange={(e) => handleEducationChange('mphil', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Clinical Psychology, Oxford"
+                />
               </div>
 
               <div>

@@ -1,13 +1,24 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { getStoredToken } from '@/lib/authStorage';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 export default function ImageUploadAssessments({ currentImageUrl, onImageUpload, imageType, slug, label = "Upload Image" }) {
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(currentImageUrl || '');
+  // Normalize the initial preview URL to convert Supabase URLs to proxy URLs
+  const [previewUrl, setPreviewUrl] = useState(currentImageUrl ? normalizeImageUrl(currentImageUrl) : '');
   const fileInputRef = useRef(null);
+
+  // Update preview URL when currentImageUrl changes
+  useEffect(() => {
+    if (currentImageUrl) {
+      setPreviewUrl(normalizeImageUrl(currentImageUrl));
+    } else {
+      setPreviewUrl('');
+    }
+  }, [currentImageUrl]);
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
@@ -48,15 +59,17 @@ export default function ImageUploadAssessments({ currentImageUrl, onImageUpload,
       }
       const data = await response.json();
       if (data.success && data.data?.url) {
-        setPreviewUrl(data.data.url);
-        onImageUpload(data.data.url);
+        // Normalize the URL from the server response
+        const normalizedUrl = normalizeImageUrl(data.data.url);
+        setPreviewUrl(normalizedUrl);
+        onImageUpload(data.data.url); // Keep original URL for saving to database
       } else {
         throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error('Upload error:', error);
       alert(`Upload failed: ${error.message}`);
-      setPreviewUrl(currentImageUrl || '');
+      setPreviewUrl(currentImageUrl ? normalizeImageUrl(currentImageUrl) : '');
     } finally {
       setUploading(false);
     }
@@ -74,7 +87,7 @@ export default function ImageUploadAssessments({ currentImageUrl, onImageUpload,
       {previewUrl ? (
         <div className="relative">
           <div className="relative w-full h-48 border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-            <Image src={previewUrl} alt="Preview" fill className="object-contain" />
+            <Image src={normalizeImageUrl(previewUrl)} alt="Preview" fill className="object-contain" />
           </div>
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex-1 px-3 py-2 text-xs md:text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50">{uploading ? 'Uploading...' : 'Change Image'}</button>

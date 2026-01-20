@@ -30,7 +30,7 @@ export default function AuthModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(isRemembered ?? false);
+  const [rememberMe, setRememberMe] = useState(isRemembered ?? true);
 
   // Signup form state
   const [signup, setSignup] = useState({ 
@@ -123,10 +123,13 @@ export default function AuthModal({
     setIsLoading(true);
     setError("");
     try {
+      // This login works for ALL roles: client, admin, psychologist, finance, superadmin
+      // The backend /api/auth/login endpoint handles all roles and returns { user, token }
       const data = await authApi.login({ email, password });
       const loggedInUser = data?.data?.user;
       const token = data?.data?.token;
 
+      // Pass remember preference - works for all roles
       login(loggedInUser, token, { remember: rememberMe });
       // Call onAuthSuccess first, then check for pending booking
       try { 

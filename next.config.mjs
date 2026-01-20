@@ -1,21 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Note: Babel config exists for Jest compatibility, so SWC is disabled
-  // This is expected - compiler options will show warnings but build works correctly
-  // For production builds, console logs will still be removed via Babel plugins if needed
-  // Optimize for modern browsers (reduces bundle size by removing unnecessary polyfills)
-  swcMinify: false, // Explicitly disabled since we're using Babel
+  // SWC is now enabled (Babel config moved to Jest-only configuration)
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
-      // Supabase storage - using environment variable instead of hardcoded project ID
-      ...(process.env.NEXT_PUBLIC_SUPABASE_URL ? [{
-        protocol: 'https',
-        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
-      }] : []),
+      // NOTE: Supabase storage URLs are NOT included here because we use a proxy route
+      // All Supabase images should go through /api/images/... proxy route which handles
+      // authentication and signed URLs properly. Including Supabase here causes Next.js
+      // Image Optimization to try fetching directly from Supabase, which fails with 400 errors
+      // for private buckets or invalid URLs.
       // Allow images from same domain (for proxy)
       {
         protocol: 'https',

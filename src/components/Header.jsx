@@ -370,7 +370,9 @@ export default function Header() {
   };
 
   const handleProfileClick = () => {
-    if (user?.role === 'admin' || user?.role === 'superadmin') {
+    if (user?.role === 'superadmin') {
+      router.push('/superadmin'); // Redirect superadmin to superadmin dashboard
+    } else if (user?.role === 'admin') {
       router.push('/admin');
     } else if (user?.role === 'psychologist') {
       router.push('/psychologist');

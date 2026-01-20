@@ -83,14 +83,31 @@ export default function FinanceDoctors() {
       doctor_commission_first_session: doctor.doctor_commission_first_session?.toString() || '',
       doctor_commission_followup: doctor.doctor_commission_followup?.toString() || '',
       doctor_commission_individual: doctor.doctor_commission_individual?.toString() || '',
+      // Legacy package commissions (for backward compatibility)
       doctor_commission_first_session_package: doctor.doctor_commission_first_session_package?.toString() || '',
       doctor_commission_followup_package: doctor.doctor_commission_followup_package?.toString() || ''
     };
     
-    // Add commission amounts for each package type
+    // Add commission amounts for each package type (company commission)
     if (doctor.package_commissions) {
       doctor.package_commissions.forEach(pkg => {
         editData[pkg.type] = pkg.commission_amount?.toString() || '';
+      });
+    }
+    
+    // Add package-specific doctor commissions (first_session and followup for each package)
+    if (doctor.package_commissions) {
+      doctor.package_commissions.forEach(pkg => {
+        const packageType = pkg.type || `package_${pkg.session_count}`;
+        // Get from doctor_commission_packages JSONB field if available
+        const packageCommissions = doctor.doctor_commission_packages || {};
+        const firstSessionKey = `${packageType}_first_session`;
+        const followupKey = `${packageType}_followup`;
+        
+        editData[firstSessionKey] = packageCommissions[firstSessionKey]?.toString() || 
+          (pkg.doctor_commission_first_session?.toString() || '');
+        editData[followupKey] = packageCommissions[followupKey]?.toString() || 
+          (pkg.doctor_commission_followup?.toString() || '');
       });
     }
     
@@ -155,6 +172,7 @@ export default function FinanceDoctors() {
         requestData.doctor_commission_individual = amount;
         hasValidAmount = true;
       }
+      // Legacy package commissions (for backward compatibility)
       if (editCommissions.doctor_commission_first_session_package && editCommissions.doctor_commission_first_session_package.trim() !== '') {
         const amount = parseFloat(editCommissions.doctor_commission_first_session_package);
         if (isNaN(amount) || amount < 0) {
@@ -172,6 +190,41 @@ export default function FinanceDoctors() {
         }
         requestData.doctor_commission_followup_package = amount;
         hasValidAmount = true;
+      }
+      
+      // Package-specific doctor commissions (for each package type)
+      const doctorCommissionPackages = {};
+      const doctor = doctors.find(d => d.psychologist_id === psychologistId);
+      if (doctor && doctor.package_commissions) {
+        doctor.package_commissions.forEach(pkg => {
+          const packageType = pkg.type || `package_${pkg.session_count}`;
+          const firstSessionKey = `${packageType}_first_session`;
+          const followupKey = `${packageType}_followup`;
+          
+          if (editCommissions[firstSessionKey] && editCommissions[firstSessionKey].trim() !== '') {
+            const amount = parseFloat(editCommissions[firstSessionKey]);
+            if (isNaN(amount) || amount < 0) {
+              alert(`Please enter a valid doctor commission amount for ${pkg.name || packageType} first session (≥ 0)`);
+              return;
+            }
+            doctorCommissionPackages[firstSessionKey] = amount;
+            hasValidAmount = true;
+          }
+          
+          if (editCommissions[followupKey] && editCommissions[followupKey].trim() !== '') {
+            const amount = parseFloat(editCommissions[followupKey]);
+            if (isNaN(amount) || amount < 0) {
+              alert(`Please enter a valid doctor commission amount for ${pkg.name || packageType} follow-up session (≥ 0)`);
+              return;
+            }
+            doctorCommissionPackages[followupKey] = amount;
+            hasValidAmount = true;
+          }
+        });
+      }
+      
+      if (Object.keys(doctorCommissionPackages).length > 0) {
+        requestData.doctor_commission_packages = doctorCommissionPackages;
       }
 
       if (!hasValidAmount) {
@@ -444,64 +497,75 @@ export default function FinanceDoctors() {
 
                         {/* Column 2 & 3: Package Sessions */}
                         {doctor.package_commissions && doctor.package_commissions.length > 0 ? (
-                          doctor.package_commissions.slice(0, 2).map((pkg) => (
-                            <div key={pkg.type} className="border border-gray-200 rounded-lg p-4">
-                              <div className="text-sm font-semibold text-gray-900 mb-4">
-                                {pkg.name || `Package of ${pkg.session_count} Sessions`}
-                                <div className="text-xs font-normal text-gray-600 mt-1">
-                                  ₹{pkg.price_per_session.toFixed(0)}/session
-                                </div>
-                              </div>
-                              
-                              {/* First Session Commission */}
-                              <div className="mb-4">
-                                <label className="block text-xs font-medium text-gray-700 mb-2">
-                                  First Session Commission (What Doctor Gets)
-                                </label>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600">₹</span>
-                                  <input
-                                    type="number"
-                                    value={editCommissions.doctor_commission_first_session_package || ''}
-                                    onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_first_session_package: e.target.value})}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                  />
-                                </div>
-                                {editCommissions.doctor_commission_first_session_package && pkg.price_per_session > 0 && (
-                                  <div className="mt-1 text-xs text-gray-600">
-                                    Company Commission: ₹{(pkg.price_per_session - parseFloat(editCommissions.doctor_commission_first_session_package || 0)).toFixed(0)}
+                          doctor.package_commissions.map((pkg) => {
+                            const packageType = pkg.type || `package_${pkg.session_count}`;
+                            const firstSessionKey = `${packageType}_first_session`;
+                            const followupKey = `${packageType}_followup`;
+                            const firstSessionValue = editCommissions[firstSessionKey] || '';
+                            const followupValue = editCommissions[followupKey] || '';
+                            
+                            // Calculate full package price (price * session_count if price_per_session, otherwise use price directly)
+                            const fullPackagePrice = pkg.price || (pkg.price_per_session ? pkg.price_per_session * (pkg.session_count || 1) : 0);
+                            
+                            return (
+                              <div key={pkg.type} className="border border-gray-200 rounded-lg p-4">
+                                <div className="text-sm font-semibold text-gray-900 mb-4">
+                                  {pkg.name || `Package of ${pkg.session_count} Sessions`}
+                                  <div className="text-xs font-normal text-gray-600 mt-1">
+                                    ₹{fullPackagePrice.toLocaleString('en-IN')} (Full Package)
                                   </div>
-                                )}
-                              </div>
-                              
-                              {/* Follow-up Session Commission */}
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-2">
-                                  Follow-up Session Commission (What Doctor Gets)
-                                </label>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600">₹</span>
-                                  <input
-                                    type="number"
-                                    value={editCommissions.doctor_commission_followup_package || ''}
-                                    onChange={(e) => setEditCommissions({...editCommissions, doctor_commission_followup_package: e.target.value})}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                  />
                                 </div>
-                                {editCommissions.doctor_commission_followup_package && pkg.price_per_session > 0 && (
-                                  <div className="mt-1 text-xs text-gray-600">
-                                    Company Commission: ₹{(pkg.price_per_session - parseFloat(editCommissions.doctor_commission_followup_package || 0)).toFixed(0)}
+                                
+                                {/* First Session Commission */}
+                                <div className="mb-4">
+                                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                                    First Session Commission for Full Package (What Doctor Gets)
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600">₹</span>
+                                    <input
+                                      type="number"
+                                      value={firstSessionValue}
+                                      onChange={(e) => setEditCommissions({...editCommissions, [firstSessionKey]: e.target.value})}
+                                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
                                   </div>
-                                )}
+                                  {firstSessionValue && fullPackagePrice > 0 && (
+                                    <div className="mt-1 text-xs text-gray-600">
+                                      Company Commission: ₹{(fullPackagePrice - parseFloat(firstSessionValue || 0)).toLocaleString('en-IN')}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Follow-up Session Commission */}
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                                    Follow-up Session Commission for Full Package (What Doctor Gets)
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600">₹</span>
+                                    <input
+                                      type="number"
+                                      value={followupValue}
+                                      onChange={(e) => setEditCommissions({...editCommissions, [followupKey]: e.target.value})}
+                                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+                                  {followupValue && fullPackagePrice > 0 && (
+                                    <div className="mt-1 text-xs text-gray-600">
+                                      Company Commission: ₹{(fullPackagePrice - parseFloat(followupValue || 0)).toLocaleString('en-IN')}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))
+                            );
+                          })
                         ) : (
                           <>
                             <div className="border border-gray-200 rounded-lg p-4 opacity-50">
@@ -554,12 +618,9 @@ export default function FinanceDoctors() {
                                       {pkg.name || `${pkg.session_count} Session Package`}
                                     </div>
                                     <div className="bg-blue-50 p-2 rounded">
-                                      <div className="text-xs text-gray-600">Package Price (from Admin Profile):</div>
+                                      <div className="text-xs text-gray-600">Full Package Price (from Admin Profile):</div>
                                       <div className="text-sm font-semibold text-gray-900">
-                                        ₹{pkg.price.toLocaleString('en-IN')} total
-                                        <span className="text-xs text-gray-600 ml-2">
-                                          (₹{pkg.price_per_session.toFixed(0)} per session)
-                                        </span>
+                                        ₹{pkg.price.toLocaleString('en-IN')} (Full Package)
                                       </div>
                                     </div>
                                   </div>
@@ -661,7 +722,7 @@ export default function FinanceDoctors() {
                           <div key={idx} className="flex justify-between">
                             <span className="text-sm text-gray-600">{pkg.session_count} Session Package:</span>
                             <span className="text-sm font-semibold text-gray-900">
-                              ₹{pkg.price.toLocaleString('en-IN')} (₹{pkg.price_per_session.toFixed(0)}/session)
+                              ₹{pkg.price.toLocaleString('en-IN')} (Full Package)
                             </span>
                           </div>
                         ))

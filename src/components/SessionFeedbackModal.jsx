@@ -58,6 +58,37 @@ export default function SessionFeedbackModal({
     setRating(starRating);
   };
 
+  // Format time from 24-hour to 12-hour format with AM/PM
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    
+    // Handle formats: "18:00:00" or "18:00" or "6:00 PM" (shouldn't happen but handle it)
+    // First, check if it's already in 12-hour format
+    if (typeof timeString === 'string' && (timeString.includes('AM') || timeString.includes('PM'))) {
+      // Already formatted, return as is
+      return timeString;
+    }
+    
+    // Extract time parts (handle HH:MM:SS or HH:MM)
+    const timeOnly = timeString.split(' ')[0]; // Remove any timezone or other text
+    const timeParts = timeOnly.split(':');
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = timeParts[1] || '00';
+    
+    // Validate hours
+    if (isNaN(hours) || hours < 0 || hours > 23) {
+      console.error('Invalid time format:', timeString);
+      return timeString;
+    }
+    
+    // Convert to 12-hour format
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    const displayMinutes = minutes.padStart(2, '0');
+    
+    return `${displayHour}:${displayMinutes} ${ampm}`;
+  };
+
   if (!isOpen || !session) return null;
 
   return (
@@ -97,7 +128,7 @@ export default function SessionFeedbackModal({
             <div>
               <span className="text-gray-600">Time:</span>
               <span className="ml-2 font-medium text-gray-800">
-                {session.scheduled_time}
+                {formatTime(session.scheduled_time)}
               </span>
             </div>
             <div>

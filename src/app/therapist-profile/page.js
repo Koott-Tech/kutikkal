@@ -646,6 +646,7 @@ const TherapistProfileContent = () => {
     (
       (selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A') ||
       (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') ||
+      (selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A') ||
       (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A')
     )
   );
@@ -676,6 +677,11 @@ const TherapistProfileContent = () => {
           {selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A' && (
             <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
               <strong>Post Graduate:</strong> {selectedDoctor.pg_college}
+            </p>
+          )}
+          {selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A' && (
+            <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
+              <strong>MPhil:</strong> {selectedDoctor.mphil_college}
             </p>
           )}
           {selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A' && (

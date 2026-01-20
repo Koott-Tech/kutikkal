@@ -121,13 +121,10 @@ export default function AssessmentSessionsPage() {
       const searchedGroups = {};
       Object.keys(filteredGroups).forEach(key => {
         const group = filteredGroups[key];
-        const clientName = `${group.client?.first_name || ''} ${group.client?.last_name || ''} ${group.client?.child_name || ''}`.toLowerCase();
-        const assessmentTitle = (group.assessment?.hero_title || group.assessment?.seo_title || '').toLowerCase();
-        const psychologistName = group.sessions.some(s => 
-          s.psychologist && `${s.psychologist.first_name || ''} ${s.psychologist.last_name || ''}`.toLowerCase().includes(searchLower)
-        );
+        const clientName = `${group.client?.first_name || ''} ${group.client?.last_name || ''}`.toLowerCase();
+        const clientEmail = group.client?.user?.email?.toLowerCase() || '';
         
-        if (clientName.includes(searchLower) || assessmentTitle.includes(searchLower) || psychologistName) {
+        if (clientName.includes(searchLower) || clientEmail.includes(searchLower)) {
           searchedGroups[key] = group;
         }
       });
@@ -250,7 +247,7 @@ export default function AssessmentSessionsPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by client name or assessment title..."
+                placeholder="Search by client name or email..."
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

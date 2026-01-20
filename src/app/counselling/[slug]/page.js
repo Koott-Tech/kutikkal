@@ -66,7 +66,7 @@ export async function generateMetadata({ params, searchParams }) {
             service.hero_subtext ||
             'Specialized counseling services for children and families.';
           const ogImage =
-            service.og_image || service.hero_image_url || '/mainlogo.webp';
+            service.og_image || service.hero_image_url || '/favicon.png';
 
           return {
             title,

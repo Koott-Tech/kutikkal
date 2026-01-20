@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '../lib/supabaseClient';
 
 export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
-  const { login } = useAuth();
+  const { login, isRemembered } = useAuth();
   const router = useRouter();
 
   // Get singleton Supabase client
@@ -57,7 +57,7 @@ export default function GoogleSignIn({ onSuccess, onError, returnUrl }) {
         }
         try {
           if (payload?.user && payload?.token) {
-            login(payload.user, payload.token);
+            login(payload.user, payload.token, { remember: isRemembered ?? true });
           }
         } catch (error) {
           console.warn('Unable to hydrate AuthContext from popup result:', error);

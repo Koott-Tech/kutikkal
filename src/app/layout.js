@@ -9,7 +9,6 @@ import ConditionalProviders from "@/components/ConditionalProviders";
 import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidgetWrapper from "@/components/WhatsAppWidgetWrapper";
 import PageLoadingOverlay from "@/components/PageLoadingOverlay";
-import ClickBurst from "@/components/ClickBurst";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 export const metadata = {
@@ -37,7 +36,7 @@ export const metadata = {
     url: "https://www.little.care",
     images: [
       {
-        url: "https://www.little.care/mainlogo.webp",
+        url: "https://www.little.care/favicon.png",
         width: 1200,
         height: 630,
         alt: "Little Care logo",
@@ -49,7 +48,7 @@ export const metadata = {
     title: "India's Trusted Child Psychologist | Online Child Counseling",
     description:
       "Connect with experienced child psychologists for safe, supportive online child counseling. Help your child manage anxiety, behavior, or school stress from the comfort of home.",
-    images: ["https://www.little.care/mainlogo.webp"],
+    images: ["https://www.little.care/favicon.png"],
   },
   robots: {
     index: true,
@@ -333,7 +332,6 @@ export default function RootLayout({ children }) {
         <Suspense fallback={null}>
           <PageLoadingOverlay />
         </Suspense>
-        <ClickBurst />
         <ErrorBoundary>
           <ConditionalProviders>
             <HeaderWrapper />

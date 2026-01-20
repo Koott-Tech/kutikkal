@@ -163,13 +163,13 @@ export default function UsersPage() {
   // Note: Search and role filtering are now handled on the backend via API
   // Keep client-side filtering as fallback if backend doesn't support it
   const filteredUsers = users.filter(user => {
+    const fullName = `${user.profile?.first_name || ''} ${user.profile?.last_name || ''}`.trim().toLowerCase() || 
+                     user.name?.toLowerCase() || '';
+    const email = user.email?.toLowerCase() || '';
+    
     const matchesSearch = !searchTerm || 
-                         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.profile?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.profile?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.profile?.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.profile?.child_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                         fullName.includes(searchTerm.toLowerCase()) ||
+                         email.includes(searchTerm.toLowerCase());
     
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     
@@ -251,7 +251,7 @@ export default function UsersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name, email, phone, or child name..."
+                placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

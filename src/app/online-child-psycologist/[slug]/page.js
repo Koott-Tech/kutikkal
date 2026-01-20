@@ -24,8 +24,8 @@ import { loadAuthData } from '../../../lib/authStorage';
 import { formatCurrency } from '../../../lib/utils';
 // import { isClientContactComplete, getIncompleteContactFields } from '../../../lib/contactValidation'; // Removed - contact details collected during signup
 // import ContactCompletionWarning from '../../../components/ContactCompletionWarning'; // Removed - no longer needed
-import AuthModal from '@/components/AuthModal';
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import AuthModal from '../../../components/AuthModal';
+import { normalizeImageUrl } from '../../../utils/urlNormalizer';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
 // Booking Loading Animation Component
@@ -670,6 +670,7 @@ const TherapistProfileContent = ({ slug, packageId }) => {
     (
       (selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A') ||
       (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') ||
+      (selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A') ||
       (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A')
     )
   );
@@ -700,6 +701,11 @@ const TherapistProfileContent = ({ slug, packageId }) => {
           {selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A' && (
             <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
               <strong>Post Graduate:</strong> {selectedDoctor.pg_college}
+            </p>
+          )}
+          {selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A' && (
+            <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
+              <strong>MPhil:</strong> {selectedDoctor.mphil_college}
             </p>
           )}
           {selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A' && (
