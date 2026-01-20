@@ -67,7 +67,7 @@ jobs:
         env:
           NODE_ENV: test
           NEXT_PUBLIC_BACKEND_URL: http://localhost:5001/api
-        run: npm run test:ci || npm test -- --ci --coverage --maxWorkers=2
+        run: npm run test:ci
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
