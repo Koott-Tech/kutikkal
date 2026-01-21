@@ -1125,6 +1125,17 @@ export default function Header() {
                     </div>
                   )}
                 </li>
+                <li className="relative group">
+                  <button 
+                    className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
+                    onClick={() => {
+                      router.push('/psychologists');
+                    }}
+                  >
+                    <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>View Therapists</h2>
+                  </button>
+                  <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>
+                </li>
 
               </ul>
             </nav>
@@ -1816,6 +1827,19 @@ export default function Header() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* View Therapists */}
+                <div className="border-b border-gray-100">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-2"
+                    onClick={() => {
+                      router.push('/psychologists');
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <h2 className="text-gray-900 header-nav-item" style={{ fontSize: '18px', fontWeight: 500, lineHeight: '1.3', margin: 0 }}>View Therapists</h2>
+                  </div>
                 </div>
               </div>
               
