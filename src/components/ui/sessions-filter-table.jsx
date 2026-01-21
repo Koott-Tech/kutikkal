@@ -434,6 +434,19 @@ export default function SessionsFilterTable({
                         {session.package && (
                           <div className="text-xs text-gray-400">
                             Package: {session.package.package_type}
+                            {(() => {
+                              const pkg = session.package || {};
+                              const totalSessions = pkg.total_sessions || pkg.session_count || 0;
+                              const completedSessions = pkg.completed_sessions;
+                              
+                              // If we have both values, show completion status
+                              if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
+                                return ` (${completedSessions}/${totalSessions} completed)`;
+                              } else if (totalSessions > 0) {
+                                return ` (${totalSessions} sessions)`;
+                              }
+                              return '';
+                            })()}
                           </div>
                         )}
                       </div>

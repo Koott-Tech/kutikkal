@@ -19,7 +19,8 @@ import {
   ArrowRightLeft,
   Wallet,
   User,
-  Download
+  Download,
+  XCircle
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Image from 'next/image';
@@ -38,6 +39,8 @@ export default function FinanceDashboard() {
   const [error, setError] = useState(null);
   const [pendingPayouts, setPendingPayouts] = useState([]);
   const [isLoadingPayouts, setIsLoadingPayouts] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
+  const [isLoadingCharts, setIsLoadingCharts] = useState(false);
   // Date range filter (default to current month in IST)
   const [dateRange, setDateRange] = useState(() => {
     try {
@@ -100,15 +103,16 @@ export default function FinanceDashboard() {
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
 
-  // Load dashboard data when date range changes (includes initial load)
+  // Load dashboard data when date range changes (includes initial load) - without charts
   useEffect(() => {
     if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin')) && dateRange) {
-      loadDashboardData();
+      loadDashboardData(false); // Don't include charts on initial load
+      setShowCharts(false); // Reset charts visibility when date range changes
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, authLoading]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (includeCharts = false) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -142,7 +146,8 @@ export default function FinanceDashboard() {
 
       const response = await financeApi.getDashboard({
         dateFrom,
-        dateTo
+        dateTo,
+        includeCharts
       });
       
       if (response.success) {
@@ -155,6 +160,58 @@ export default function FinanceDashboard() {
       setError('Failed to load dashboard data. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadChartsData = async () => {
+    if (dashboardData?.charts) {
+      // Charts already loaded, just show them
+      setShowCharts(true);
+      return;
+    }
+
+    try {
+      setIsLoadingCharts(true);
+      
+      // Format dates for API (YYYY-MM-DD format)
+      let dateFrom = null;
+      let dateTo = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+
+      const response = await financeApi.getDashboard({
+        dateFrom,
+        dateTo,
+        includeCharts: true
+      });
+      
+      if (response.success && response.data?.charts) {
+        // Merge charts data into existing dashboard data
+        setDashboardData(prev => ({
+          ...prev,
+          charts: response.data.charts
+        }));
+        setShowCharts(true);
+      }
+    } catch (err) {
+      console.error('Failed to load charts data:', err);
+    } finally {
+      setIsLoadingCharts(false);
     }
   };
 
@@ -209,34 +266,34 @@ export default function FinanceDashboard() {
   const recentSessions = dashboardData?.recent_sessions || [];
   const topDoctors = dashboardData?.top_doctors || [];
   const monthlyRevenue = dashboardData?.monthly_revenue || [];
-  const charts = dashboardData?.charts || {};
+  const charts = dashboardData?.charts || null;
   
-  // Prepare chart data
-  const revenueByTypeData = charts.revenueByType ? [
+  // Prepare chart data (only if charts are loaded)
+  const revenueByTypeData = charts?.revenueByType ? [
     { name: 'Individual', value: charts.revenueByType.individual || 0 },
     { name: 'Package', value: charts.revenueByType.package || 0 }
   ].filter(item => item.value > 0) : [];
   
-  const commissionBreakdownData = charts.commissionBreakdown ? [
+  const commissionBreakdownData = charts?.commissionBreakdown ? [
     { name: 'Company Commission', value: charts.commissionBreakdown.company || 0 },
     { name: 'Doctor Wallet', value: charts.commissionBreakdown.doctor || 0 }
   ].filter(item => item.value > 0) : [];
   
-  const expenseByCategoryData = charts.expenseByCategory || [];
+  const expenseByCategoryData = charts?.expenseByCategory || [];
   
-  const monthlyRevenueChart = charts.monthlyRevenue || [];
-  const monthlyExpensesChart = charts.monthlyExpenses || [];
-  const monthlyCommissionChart = charts.monthlyCommission || [];
-  const monthlyDoctorWalletChart = charts.monthlyDoctorWallet || [];
+  const monthlyRevenueChart = charts?.monthlyRevenue || [];
+  const monthlyExpensesChart = charts?.monthlyExpenses || [];
+  const monthlyCommissionChart = charts?.monthlyCommission || [];
+  const monthlyDoctorWalletChart = charts?.monthlyDoctorWallet || [];
   
   // Combine monthly data for comparison chart
-  const monthlyComparisonData = monthlyRevenueChart.map((rev, idx) => ({
+  const monthlyComparisonData = monthlyRevenueChart.length > 0 ? monthlyRevenueChart.map((rev, idx) => ({
     month: rev.month,
     revenue: rev.revenue,
     expenses: monthlyExpensesChart[idx]?.expenses || 0,
     commission: monthlyCommissionChart[idx]?.commission || 0,
     doctorWallet: monthlyDoctorWalletChart[idx]?.wallet || 0
-  }));
+  })) : [];
   
   // Chart colors
   const COLORS = ['#3f2e73', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
@@ -846,24 +903,24 @@ export default function FinanceDashboard() {
         </div>
 
         {/* Row 1: Session Status Counts */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Total Sessions</span>
+              <span className="text-sm text-gray-600">Total</span>
               <Calendar className="h-5 w-5 text-gray-400" />
             </div>
             <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Pending Sessions</span>
+              <span className="text-sm text-gray-600">Pending </span>
               <Clock className="h-5 w-5 text-yellow-400" />
             </div>
             <p className="text-lg sm:text-xl font-semibold text-yellow-700">{stats.pending_sessions || 0}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Completed Sessions</span>
+              <span className="text-sm text-gray-600">Completed </span>
               <CheckCircle className="h-5 w-5 text-green-400" />
             </div>
             <p className="text-lg sm:text-xl font-semibold text-green-700">{stats.completed_sessions || 0}</p>
@@ -881,6 +938,13 @@ export default function FinanceDashboard() {
               <Clock className="h-5 w-5 text-orange-400" />
             </div>
             <p className="text-lg sm:text-xl font-semibold text-orange-700">{stats.reschedule_requested_sessions || 0}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">No Show</span>
+              <XCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-red-700">{stats.no_show_sessions || 0}</p>
           </div>
         </div>
 
@@ -944,8 +1008,38 @@ export default function FinanceDashboard() {
           </div>
         </div>
 
+        {/* Charts Section Toggle */}
+        {!showCharts && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-medium text-gray-900 mb-1">Charts & Graphs</h3>
+                <p className="text-xs text-gray-600">View detailed analytics and visualizations</p>
+              </div>
+              <button
+                onClick={loadChartsData}
+                disabled={isLoadingCharts}
+                className="flex items-center gap-2 px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#2d1f52] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingCharts ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="h-4 w-4" />
+                    <span>Show Graphs</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Pie Charts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {showCharts && dashboardData?.charts && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Revenue by Type Pie Chart */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Revenue by Type</div>
@@ -1034,8 +1128,10 @@ export default function FinanceDashboard() {
             )}
           </div>
         </div>
+        )}
 
         {/* Line/Bar Charts Row */}
+        {showCharts && dashboardData?.charts && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Monthly Revenue vs Expenses Line Chart */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
@@ -1077,8 +1173,7 @@ export default function FinanceDashboard() {
             )}
           </div>
         </div>
-
-        {/* Pending Payouts - Doctors with Completed Sessions */}
+        )}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div>

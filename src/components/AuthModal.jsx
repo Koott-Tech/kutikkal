@@ -574,12 +574,13 @@ export default function AuthModal({
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="h-4 w-4"
+                        className="h-4 w-4 cursor-pointer"
                         checked={rememberMe}
                         onChange={(e)=>setRememberMe(e.target.checked)}
+                        style={{ accentColor: '#3f2e73' }}
                       />
                       <span>Remember me</span>
                     </label>
@@ -798,6 +799,16 @@ export default function AuthModal({
                         style={{ accentColor: '#3f2e73', cursor: 'pointer' }}
                       />
                       <span>I accept the <a href="/therapy-agreement" target="_blank" className="text-[#3f2e73] hover:underline">Therapy Agreement</a> *</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 cursor-pointer"
+                        checked={rememberMe}
+                        onChange={(e)=>setRememberMe(e.target.checked)}
+                        style={{ accentColor: '#3f2e73' }}
+                      />
+                      <span>Remember me</span>
                     </label>
                   </div>
                   

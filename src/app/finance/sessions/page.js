@@ -10,11 +10,13 @@ import {
   DollarSign,
   Clock,
   User,
-  UserCheck
+  UserCheck,
+  Filter
 } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import SessionsFilterTable from '@/components/ui/sessions-filter-table';
+import DateRangePicker from '@/components/ui/date-range-picker';
 
 export default function FinanceSessionsPage() {
   const { showError } = useNotification();
@@ -22,21 +24,94 @@ export default function FinanceSessionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  // Date range filter (default to current month in IST)
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      // Get current date in IST timezone
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      // Parse MM/DD/YYYY format from IST
+      const [month, day, year] = istString.split('/').map(Number);
+      
+      // Create dates for start and end of month in IST
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      // Get last day of month
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
+        // Fallback to current month in local timezone
+        const today = new Date();
+        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        fallbackStart.setHours(0, 0, 0, 0);
+        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        fallbackEnd.setHours(23, 59, 59, 999);
+        return { from: fallbackStart, to: fallbackEnd };
+      }
+      return { from: startOfMonth, to: endOfMonth };
+    } catch (error) {
+      console.error('Error initializing date range:', error);
+      // Fallback to current month in local timezone
+      const today = new Date();
+      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      fallbackStart.setHours(0, 0, 0, 0);
+      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      fallbackEnd.setHours(23, 59, 59, 999);
+      return { from: fallbackStart, to: fallbackEnd };
+    }
+  });
 
   useEffect(() => {
     loadSessions();
-  }, []);
+  }, [dateRange]);
 
   const loadSessions = async () => {
     try {
       setIsLoading(true);
       
-      // Load all sessions (we'll do client-side filtering)
+      // Format dates for API (YYYY-MM-DD format)
+      // Use IST timezone (Asia/Kolkata) for date formatting
+      let dateFrom = null;
+      let dateTo = null;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
+        // Convert dates to IST timezone and format as YYYY-MM-DD
+        const formatDateToIST = (date) => {
+          if (!date) return null;
+          
+          // Convert to IST timezone explicitly
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          
+          // Parse MM/DD/YYYY format from toLocaleString and convert to YYYY-MM-DD
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        
+        dateFrom = formatDateToIST(dateRange.from);
+        dateTo = formatDateToIST(dateRange.to);
+      }
+      
+      // Load sessions with date range filter
       const params = {
         page: 1,
         limit: 1000, // Load more sessions for client-side filtering
         sort: 'created_at',
-        order: 'desc'
+        order: 'desc',
+        dateFrom,
+        dateTo
       };
 
       const response = await financeApi.getAllSessions(params);
@@ -142,6 +217,20 @@ export default function FinanceSessionsPage() {
             <p className="mt-1 text-sm text-gray-600">
               View all therapy sessions and appointments
             </p>
+          </div>
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 sm:mb-4">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">Date Range:</span>
+            </div>
+            <DateRangePicker
+              selectedRange={dateRange}
+              onSelect={setDateRange}
+            />
           </div>
         </div>
 

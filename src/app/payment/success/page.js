@@ -386,6 +386,25 @@ function PaymentSuccessContent() {
     // Webhook is the source of truth - frontend only polls for status
     if (razorpay_order_id && razorpay_order_id !== 'N/A' && !hasCalledPaymentSuccessRef.current) {
       hasCalledPaymentSuccessRef.current = true;
+      
+      // Check if this is a revisit (payment initiated more than 10 minutes ago)
+      const paymentInitTimeKey = `payment_init_${razorpay_order_id}`;
+      const storedInitTime = localStorage.getItem(paymentInitTimeKey);
+      const now = Date.now();
+      
+      if (storedInitTime) {
+        const minutesSinceInit = (now - parseInt(storedInitTime)) / (1000 * 60);
+        if (minutesSinceInit > 10) {
+          console.log(`⏰ Payment was initiated ${minutesSinceInit.toFixed(1)} minutes ago, checking status once without polling...`);
+          // Check status once, but don't poll if it's old
+          pollBookingStatus(razorpay_order_id, 0, true); // Pass skipPolling flag
+          return;
+        }
+      } else {
+        // Store current time as payment initiation time
+        localStorage.setItem(paymentInitTimeKey, now.toString());
+      }
+      
       console.log('🔍 Starting booking status polling...', { orderId: razorpay_order_id?.substring(0, 10) + '...' });
       pollBookingStatus(razorpay_order_id);
     } else if (!razorpay_order_id && !hasCalledPaymentSuccessRef.current) {
@@ -437,7 +456,7 @@ function PaymentSuccessContent() {
   // Poll booking status (NEW: Uses webhook-based system)
   // This function polls the booking status endpoint which returns current state
   // Sessions are created by webhook, not by frontend
-  const pollBookingStatus = async (orderId, attempt = 0) => {
+  const pollBookingStatus = async (orderId, attempt = 0, skipPolling = false) => {
     // Prevent duplicate fetches
     if (attempt === 0) {
       if (isFetchingSessionRef.current) {
@@ -460,6 +479,50 @@ function PaymentSuccessContent() {
 
       if (statusResponse.success && statusResponse.data) {
         const { status, session, message, payment } = statusResponse.data;
+        
+        // Check if payment was completed long ago (more than 5 minutes)
+        // If so, and session exists, fetch it immediately without polling
+        if (payment?.completed_at || payment?.created_at) {
+          const paymentTime = payment.completed_at ? new Date(payment.completed_at) : new Date(payment.created_at);
+          const now = new Date();
+          const minutesSincePayment = (now - paymentTime) / (1000 * 60);
+          
+          // If payment is older than 5 minutes and session exists, fetch immediately
+          if (minutesSincePayment > 5 && status === 'COMPLETED' && session?.id) {
+            console.log('⏰ Payment is older than 5 minutes, fetching session directly...');
+            // Fetch session directly - will be handled below in the COMPLETED status block
+          } else if (minutesSincePayment > 10) {
+            // If payment is older than 10 minutes, stop polling and show message
+            console.log('⏰ Payment is older than 10 minutes, stopping polling...');
+            setLoadingSessionDetails(false);
+            if (session?.id) {
+              // Session exists, try to fetch it
+              try {
+                const sessionResponse = await clientApi.getSession(session.id);
+                if (sessionResponse.success && sessionResponse.data) {
+                  const fullSession = sessionResponse.data.session || sessionResponse.data;
+                  setSessionDetails({
+                    psychologistName: fullSession.psychologist?.first_name || 'your therapist',
+                    date: fullSession.scheduled_date,
+                    time: fullSession.scheduled_time,
+                    packageInfo: fullSession.package_id ? { hasPackage: true } : null,
+                    sessionType: fullSession.package_id ? 'Package Session' : 'Individual Session'
+                  });
+                  setLoadingSessionDetails(false);
+                  isFetchingSessionRef.current = false;
+                  fetchAbortControllerRef.current = null;
+                  return;
+                }
+              } catch (err) {
+                console.error('Error fetching old session:', err);
+              }
+            }
+            setError('This payment was completed some time ago. Please check your sessions page.');
+            isFetchingSessionRef.current = false;
+            fetchAbortControllerRef.current = null;
+            return;
+          }
+        }
         
         // Update paymentData with amount if available
         if (payment && payment.amount) {
@@ -655,6 +718,11 @@ function PaymentSuccessContent() {
                 setLoadingSessionDetails(false);
                 isFetchingSessionRef.current = false;
                 fetchAbortControllerRef.current = null;
+                
+                // Clean up localStorage entry for this payment
+                const paymentInitTimeKey = `payment_init_${orderId}`;
+                localStorage.removeItem(paymentInitTimeKey);
+                
                 return;
               }
             } catch (sessionError) {
@@ -751,6 +819,11 @@ function PaymentSuccessContent() {
           setLoadingSessionDetails(false);
           isFetchingSessionRef.current = false;
           fetchAbortControllerRef.current = null;
+          
+          // Clean up localStorage entry for this payment
+          const paymentInitTimeKey = `payment_init_${orderId}`;
+          localStorage.removeItem(paymentInitTimeKey);
+          
           return;
         } else if (status === 'FAILED' || status === 'EXPIRED') {
           // Booking failed
@@ -761,15 +834,59 @@ function PaymentSuccessContent() {
           return;
         } else {
           // Still processing - continue polling
+          // Don't poll if skipPolling flag is set (old payment revisit)
+          if (skipPolling) {
+            console.log('⏰ Skipping polling for old payment, redirecting to sessions page...');
+            setLoadingSessionDetails(false);
+            setError('Payment was completed earlier. Please check your sessions page for booking details.');
+            isFetchingSessionRef.current = false;
+            fetchAbortControllerRef.current = null;
+            return;
+          }
+          
+          // Reduce max attempts if payment is old (already processed)
           const maxAttempts = 20; // Poll for up to ~20 seconds
-          if (attempt < maxAttempts) {
+          
+          // Check localStorage for payment initiation time
+          const paymentInitTimeKey = `payment_init_${orderId}`;
+          const storedInitTime = localStorage.getItem(paymentInitTimeKey);
+          let adjustedMaxAttempts = maxAttempts;
+          
+          if (storedInitTime) {
+            const minutesSinceInit = (Date.now() - parseInt(storedInitTime)) / (1000 * 60);
+            if (minutesSinceInit > 2) {
+              // If payment is older than 2 minutes, only poll 3 more times
+              adjustedMaxAttempts = Math.min(attempt + 3, maxAttempts);
+              console.log(`⏰ Payment is ${minutesSinceInit.toFixed(1)} minutes old, limiting polling attempts to ${adjustedMaxAttempts}`);
+            }
+          }
+          
+          // If payment is older than 2 minutes, reduce polling attempts
+          if (payment?.completed_at || payment?.created_at) {
+            const paymentTime = payment.completed_at ? new Date(payment.completed_at) : new Date(payment.created_at);
+            const now = new Date();
+            const minutesSincePayment = (now - paymentTime) / (1000 * 60);
+            
+            if (minutesSincePayment > 2) {
+              // If payment is older than 2 minutes, only poll 3 more times
+              adjustedMaxAttempts = Math.min(attempt + 3, maxAttempts);
+              console.log(`⏰ Payment is ${minutesSincePayment.toFixed(1)} minutes old, limiting polling attempts to ${adjustedMaxAttempts}`);
+            }
+          }
+          
+          if (attempt < adjustedMaxAttempts) {
             setTimeout(() => {
-              pollBookingStatus(orderId, attempt + 1);
+              pollBookingStatus(orderId, attempt + 1, skipPolling);
             }, 1000); // Poll every 1 second
           } else {
             // Timeout - show message but don't error (webhook might still process it)
             setLoadingSessionDetails(false);
-            setError('Booking is taking longer than expected. Please check your sessions page in a few minutes.');
+            // Check if session might exist but status check failed
+            if (payment?.status === 'success') {
+              setError('Payment was successful. Please check your sessions page for booking details.');
+            } else {
+              setError('Booking is taking longer than expected. Please check your sessions page in a few minutes.');
+            }
             isFetchingSessionRef.current = false;
             fetchAbortControllerRef.current = null;
           }
@@ -1156,7 +1273,7 @@ function PaymentSuccessContent() {
         alignItems: 'center'
       }}>
         <h1 style={{ color: '#ef4444' }}>❌ Payment Error</h1>
-        <p style={{ color: '#6b7280', marginBottom: '20px' }}>{error}</p>
+        <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '14px' }}>{error}</p>
         <button
           onClick={() => router.push('/profile/sessions')}
           style={{

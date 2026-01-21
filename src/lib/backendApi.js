@@ -1336,7 +1336,7 @@ export const sessionsApi = {
 
   // Delete session (admin only)
   async deleteSession(sessionId) {
-    return apiRequest(`/sessions/${sessionId}`, {
+    return apiRequest(`/admin/sessions/${sessionId}`, {
       method: 'DELETE',
     });
   },
@@ -1561,6 +1561,9 @@ export const financeApi = {
     }
     if (params.dateTo) {
       queryParams.append('dateTo', params.dateTo);
+    }
+    if (params.includeCharts !== undefined) {
+      queryParams.append('includeCharts', params.includeCharts.toString());
     }
     const queryString = queryParams.toString();
     const url = queryString ? `/finance/dashboard?${queryString}` : '/finance/dashboard';

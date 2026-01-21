@@ -156,17 +156,24 @@ export default function BookingsPage() {
     if (!sessionToDelete) return;
 
     try {
+      let response;
       // Check if it's an assessment session or regular session
       if (sessionToDelete.session_type === 'assessment' || sessionToDelete.type === 'assessment') {
         // Delete assessment session via admin API
-        await adminApi.deleteAssessmentSession(sessionToDelete.id);
+        response = await adminApi.deleteAssessmentSession(sessionToDelete.id);
       } else {
         // Delete regular session
-        await sessionsApi.deleteSession(sessionToDelete.id);
+        response = await sessionsApi.deleteSession(sessionToDelete.id);
       }
 
-      // Remove from list
-      setBookings(prevBookings => prevBookings.filter(booking => booking.id !== sessionToDelete.id));
+      // Check if deletion was successful
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'Failed to delete session');
+      }
+
+      // Reload bookings to get fresh data from server
+      await loadBookings();
+      
       showSuccess('Session deleted successfully!', 'Delete Success');
       
       // Close details modal if it's open for this session
@@ -180,7 +187,7 @@ export default function BookingsPage() {
       setSessionToDelete(null);
     } catch (error) {
       console.error('Error deleting session:', error);
-      showError(`Failed to delete session: ${error.message}`, 'Delete Error');
+      showError(`Failed to delete session: ${error.message || error.error || 'Unknown error'}`, 'Delete Error');
       setShowDeleteConfirm(false);
       setSessionToDelete(null);
     }
@@ -543,6 +550,19 @@ export default function BookingsPage() {
                       {booking.package && (
                         <div className="text-xs text-gray-400">
                           Package: {booking.package.package_type}
+                          {(() => {
+                            const pkg = booking.package || {};
+                            const totalSessions = pkg.total_sessions || pkg.session_count || 0;
+                            const completedSessions = pkg.completed_sessions;
+                            
+                            // If we have both values, show completion status
+                            if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
+                              return ` (${completedSessions}/${totalSessions} completed)`;
+                            } else if (totalSessions > 0) {
+                              return ` (${totalSessions} sessions)`;
+                            }
+                            return '';
+                          })()}
                         </div>
                       )}
                     </div>
