@@ -1661,11 +1661,11 @@ const TherapistProfileContent = () => {
     const title = `${name} | Child Psychologist | Little Care`;
     
     // Build description from psychologist details
-    const parts: string[] = [];
+    const parts = [];
     parts.push(name);
     
     // Add education
-    const education: string[] = [];
+    const education = [];
     if (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A') {
       education.push('PhD');
     } else if (selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A') {
@@ -1704,7 +1704,7 @@ const TherapistProfileContent = () => {
     const description = parts.join(' • ') || `Book an online session with ${name}, an experienced child psychologist at Little Care.`;
     
     // Normalize image URL for Open Graph
-    const normalizeImageUrl = (url: string | null | undefined): string => {
+    const normalizeImageUrl = (url) => {
       if (!url) {
         return 'https://www.little.care/favicon.png';
       }
@@ -1741,7 +1741,7 @@ const TherapistProfileContent = () => {
     document.title = title;
     
     // Update or create meta tags
-    const updateMetaTag = (property: string, content: string) => {
+    const updateMetaTag = (property, content) => {
       let meta = document.querySelector(`meta[property="${property}"]`) || document.querySelector(`meta[name="${property}"]`);
       if (!meta) {
         meta = document.createElement('meta');

@@ -1,10 +1,9 @@
-import { Metadata } from 'next';
 import React from 'react';
 
 // Default metadata for therapist profile page
 // Note: Dynamic metadata based on ?doctor= query param will be handled client-side
 // since Next.js layouts don't have access to searchParams
-export const metadata: Metadata = {
+export const metadata = {
   title: "Child Psychologist Profile | Little Care",
   description:
     "View details of a Little Care child psychologist, including experience, specialization, and available online counseling slots.",
@@ -35,10 +34,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TherapistProfileLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function TherapistProfileLayout({ children }) {
   return children;
 }
