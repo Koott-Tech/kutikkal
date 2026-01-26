@@ -274,7 +274,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Users List - Simplified (Name and Email only) */}
+      {/* Users List */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -285,6 +285,9 @@ export default function UsersPage() {
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
+                </th>
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone Number
                 </th>
                 <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -299,13 +302,20 @@ export default function UsersPage() {
                 >
                   <td className="px-4 sm:px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
-                      {user.name || (user.profile?.first_name && user.profile?.last_name 
-                        ? `${user.profile.first_name} ${user.profile.last_name}`
-                        : 'No Name')}
+                      {user.name || 
+                       (user.profile?.first_name && user.profile?.last_name 
+                        ? `${user.profile.first_name} ${user.profile.last_name}`.trim()
+                        : user.profile?.first_name || 
+                          user.profile?.child_name || 
+                          user.email?.split('@')[0] || 
+                          'No Name')}
                     </div>
                   </td>
                   <td className="px-4 sm:px-6 py-4">
                     <div className="text-sm text-gray-600">{user.email}</div>
+                  </td>
+                  <td className="px-4 sm:px-6 py-4">
+                    <div className="text-sm text-gray-600">{user.profile?.phone_number || 'Not provided'}</div>
                   </td>
                   <td className="px-4 sm:px-6 py-4 text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -368,7 +378,7 @@ export default function UsersPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="3" className="px-4 sm:px-6 py-8 text-center text-gray-500">
+                  <td colSpan="4" className="px-4 sm:px-6 py-8 text-center text-gray-500">
                     No users found
                   </td>
                 </tr>
@@ -453,105 +463,110 @@ export default function UsersPage() {
       {/* Full Profile Modal */}
       {isFullProfileOpen && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h6>User Profile</h6>
-                <button
-                  onClick={() => setIsFullProfileOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header - Stands out with blue background */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between rounded-t-lg">
+              <div>
+                <h6 className="text-xl font-bold text-white">
+                  {selectedUser.name || 
+                   (selectedUser.profile?.first_name && selectedUser.profile?.last_name 
+                    ? `${selectedUser.profile.first_name} ${selectedUser.profile.last_name}`.trim()
+                    : selectedUser.profile?.first_name || 
+                      selectedUser.profile?.child_name || 
+                      selectedUser.email?.split('@')[0] || 
+                      'User Profile')}
+                </h6>
+                <p className="text-sm text-blue-100 mt-1 capitalize font-medium">{selectedUser.role || 'User'}</p>
+              </div>
+              <button
+                onClick={() => setIsFullProfileOpen(false)}
+                className="text-white hover:text-blue-100 transition-colors p-1.5 rounded-lg hover:bg-blue-800"
+                aria-label="Close modal"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Basic Information</h6>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Email</label>
+                    <p className="text-sm text-gray-900 font-medium">{selectedUser.email || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Phone Number</label>
+                    <p className="text-sm text-gray-900 font-medium">{selectedUser.profile?.phone_number || 'Not provided'}</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                {/* Basic Info */}
-                <div>
-                  <h6>Basic Information</h6>
+              {/* Child Information (for clients) */}
+              {selectedUser.role === 'client' && (selectedUser.profile?.child_name || selectedUser.profile?.child_age) && (
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Child Information</h6>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedUser.profile?.first_name && selectedUser.profile?.last_name 
-                          ? `${selectedUser.profile.first_name} ${selectedUser.profile.last_name}`
-                          : 'Not provided'
-                        }
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Child Name</label>
+                      <p className="text-sm text-gray-900 font-medium">{selectedUser.profile?.child_name || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Child Age</label>
+                      <p className="text-sm text-gray-900 font-medium">
+                        {selectedUser.profile?.child_age ? `${selectedUser.profile.child_age} years old` : 'Not provided'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Account Information */}
+              {selectedUser.created_at && (
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Account Information</h6>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Member Since</label>
+                      <p className="text-sm text-gray-900 font-medium">
+                        {new Date(selectedUser.created_at).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedUser.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedUser.profile?.phone_number || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Role</label>
-                      <p className="mt-1 text-sm text-gray-900 capitalize">{selectedUser.role}</p>
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Account Status</label>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                      </span>
                     </div>
                   </div>
                 </div>
+              )}
 
-                {/* Child Information (for clients) */}
-                {selectedUser.role === 'client' && (selectedUser.profile?.child_name || selectedUser.profile?.child_age) && (
-                  <div>
-                    <h6>Child Information</h6>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Child Name</label>
-                        <p className="mt-1 text-sm text-gray-900">{selectedUser.profile?.child_name || 'Not provided'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Child Age</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {selectedUser.profile?.child_age ? `${selectedUser.profile.child_age} years old` : 'Not provided'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Additional Info */}
-                {selectedUser.created_at && (
-                  <div>
-                    <h6>Account Information</h6>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Member Since</label>
-                        <p className="mt-1 text-sm text-gray-900">
-                          {new Date(selectedUser.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Account Status</label>
-                        <p className="mt-1 text-sm text-gray-900">Active</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      setIsFullProfileOpen(false);
-                      handleEditUser(selectedUser);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Edit Profile
-                  </button>
-                  <button
-                    onClick={() => setIsFullProfileOpen(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setIsFullProfileOpen(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setIsFullProfileOpen(false);
+                    handleEditUser(selectedUser);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Edit Profile
+                </button>
               </div>
             </div>
           </div>

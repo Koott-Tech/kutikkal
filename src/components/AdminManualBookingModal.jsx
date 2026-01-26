@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -27,6 +27,7 @@ export default function AdminManualBookingModal({
   const { showError, showSuccess } = useNotification();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const isSubmittingRef = useRef(false); // Ref to prevent duplicate submissions
   const [error, setError] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
@@ -148,6 +149,7 @@ export default function AdminManualBookingModal({
     setShowSuccessModal(false);
     setShowFailureModal(false);
     setFailureMessage('');
+    isSubmittingRef.current = false; // Reset submission flag when form resets
   };
 
   const handleNewClientInputChange = (field, value) => {
@@ -228,10 +230,14 @@ export default function AdminManualBookingModal({
   };
 
   const fetchPsychologistAvailability = async () => {
-    if (!psychologistId) return;
+    if (!psychologistId) {
+      console.log('⚠️ [ADMIN BOOKING] No psychologist ID, skipping availability fetch');
+      return;
+    }
 
     try {
       setLoadingAvailability(true);
+      console.log('🔄 [ADMIN BOOKING] Fetching availability for psychologist:', psychologistId);
       
       // Get month range using local formatting
       const year = currentDate.getFullYear();
@@ -249,21 +255,42 @@ export default function AdminManualBookingModal({
       const endDay = String(new Date(year, month + 1, 0).getDate()).padStart(2, '0');
       const endDate = `${endYear}-${endMonth}-${endDay}`;
 
+      console.log('📅 [ADMIN BOOKING] Fetching availability range:', startDate, 'to', endDate);
+
       const response = await adminApi.getPsychologistAvailabilityForReschedule(
         psychologistId, 
         startDate, 
         endDate
       );
 
-      if (response.success) {
+      console.log('📦 [ADMIN BOOKING] Availability response:', {
+        success: response.success,
+        hasData: !!response.data,
+        hasAvailability: !!response.data?.availability,
+        availabilityLength: response.data?.availability?.length || 0,
+        firstItem: response.data?.availability?.[0] || null
+      });
+
+      if (response.success && response.data && response.data.availability) {
         const availabilityObject = {};
         response.data.availability.forEach(dayAvailability => {
-          availabilityObject[dayAvailability.date] = dayAvailability;
+          if (dayAvailability.date) {
+            availabilityObject[dayAvailability.date] = dayAvailability;
+            console.log(`✅ [ADMIN BOOKING] Added availability for ${dayAvailability.date}:`, {
+              available_slots: dayAvailability.available_slots?.length || 0,
+              time_slots: dayAvailability.time_slots?.length || 0,
+              is_available: dayAvailability.is_available
+            });
+          }
         });
         setPsychologistAvailability(availabilityObject);
+        console.log('✅ [ADMIN BOOKING] Availability loaded:', Object.keys(availabilityObject).length, 'days');
+      } else {
+        console.warn('⚠️ [ADMIN BOOKING] Invalid response format:', response);
+        setPsychologistAvailability({});
       }
     } catch (error) {
-      console.error('Error fetching availability:', error);
+      console.error('❌ [ADMIN BOOKING] Error fetching availability:', error);
       setPsychologistAvailability({});
     } finally {
       setLoadingAvailability(false);
@@ -365,7 +392,22 @@ export default function AdminManualBookingModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🔵 Form submit triggered', { isLoading, isLoadingData, isNewClient });
+    console.log('🔵 Form submit triggered', { isLoading, isLoadingData, isNewClient, isSubmitting: isSubmittingRef.current });
+    
+    // Prevent duplicate submissions - check and set atomically to prevent race conditions
+    if (isSubmittingRef.current) {
+      console.log('⏭️ Submission already in progress (ref check), ignoring duplicate request');
+      return;
+    }
+    
+    if (isLoading || isLoadingData) {
+      console.log('⏭️ Submission already in progress (state check), ignoring duplicate request');
+      return;
+    }
+    
+    // Mark as submitting immediately (atomic operation)
+    isSubmittingRef.current = true;
+    console.log('🔒 Lock acquired for submission');
     setError(null);
 
     let finalClientId = clientId;
@@ -376,6 +418,7 @@ export default function AdminManualBookingModal({
       // last_name, child_name, and child_age are optional
       if (!newClientData.email || !newClientData.first_name || !newClientData.phone_number) {
         setError('Please fill in all required client details: Email, First Name, and Phone Number');
+        isSubmittingRef.current = false;
         return;
       }
 
@@ -383,6 +426,7 @@ export default function AdminManualBookingModal({
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(newClientData.email)) {
         setError('Please enter a valid email address');
+        isSubmittingRef.current = false;
         return;
       }
 
@@ -391,6 +435,7 @@ export default function AdminManualBookingModal({
       const childAge = parseInt(newClientData.child_age);
       if (isNaN(childAge) || childAge < 1 || childAge > 18) {
         setError('Child age must be between 1 and 18');
+        isSubmittingRef.current = false;
         return;
         }
       }
@@ -418,6 +463,7 @@ export default function AdminManualBookingModal({
         if (!clientResponse.success) {
           setError(clientResponse.message || 'Failed to create client');
           setIsLoading(false);
+          isSubmittingRef.current = false;
           return;
         }
 
@@ -454,6 +500,7 @@ export default function AdminManualBookingModal({
           });
           setError('Failed to get client ID after creation. The client profile may not have been created correctly. Please check the console for details.');
           setIsLoading(false);
+          isSubmittingRef.current = false;
           return;
         }
 
@@ -462,12 +509,14 @@ export default function AdminManualBookingModal({
         console.error('Create client error:', error);
         setError(error.message || 'Failed to create client');
         setIsLoading(false);
+        isSubmittingRef.current = false;
         return;
       }
     } else {
       // Validate existing client selection
       if (!clientId) {
         setError('Please select a client');
+        isSubmittingRef.current = false;
         return;
       }
     }
@@ -476,12 +525,14 @@ export default function AdminManualBookingModal({
     if (!finalClientId || !psychologistId || !selectedDateObj || !selectedTime || !amount || !paymentReceivedDate) {
       setError('Please fill in all required booking fields');
       setIsLoading(false); // Reset loading state on validation error
+      isSubmittingRef.current = false;
       return;
     }
 
     if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       setError('Please enter a valid amount');
       setIsLoading(false); // Reset loading state on validation error
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -517,18 +568,22 @@ export default function AdminManualBookingModal({
       const response = await adminApi.createManualBooking(bookingData);
 
       if (response.success) {
+        console.log('✅ Booking created successfully, showing success modal');
         // Show success popup
         setShowSuccessModal(true);
         onBookingSuccess?.(response.data);
         // Close the form modal after a short delay
         setTimeout(() => {
-        onClose();
+          console.log('🔓 Resetting submission flag and closing modal');
+          isSubmittingRef.current = false; // Reset before closing
+          onClose();
         }, 1500);
       } else {
         console.error('Booking creation failed:', response);
         const errorMessage = response.message || 'Failed to create booking';
         setFailureMessage(errorMessage);
         setShowFailureModal(true);
+        isSubmittingRef.current = false; // Reset on failure
       }
     } catch (error) {
       console.error('Create booking error:', error);
@@ -545,8 +600,15 @@ export default function AdminManualBookingModal({
       const errorMessage = error.message || 'Failed to create booking';
       setFailureMessage(errorMessage);
       setShowFailureModal(true);
+      isSubmittingRef.current = false; // Reset on error
     } finally {
       setIsLoading(false);
+      // Note: isSubmittingRef is reset in success/error handlers above
+      // Only reset here if we didn't already reset (shouldn't happen, but safety net)
+      if (isSubmittingRef.current) {
+        console.log('🔓 Resetting submission flag in finally block (safety net)');
+        isSubmittingRef.current = false;
+      }
     }
   };
 
@@ -1071,9 +1133,9 @@ export default function AdminManualBookingModal({
             </button>
             <button
               type="submit"
-              disabled={isLoading || isLoadingData}
+              disabled={isLoading || isLoadingData || isSubmittingRef.current}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              style={{ cursor: (isLoading || isLoadingData) ? 'not-allowed' : 'pointer' }}
+              style={{ cursor: (isLoading || isLoadingData || isSubmittingRef.current) ? 'not-allowed' : 'pointer' }}
             >
               {isLoading ? (
                 <>

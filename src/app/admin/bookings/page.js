@@ -59,6 +59,7 @@ export default function BookingsPage() {
   const [sessionToMarkNoShow, setSessionToMarkNoShow] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -153,15 +154,20 @@ export default function BookingsPage() {
   };
 
   const handleDeleteSession = async () => {
-    if (!sessionToDelete) return;
+    if (!sessionToDelete || isDeleting) return; // Prevent double-clicks
 
+    console.log('🗑️ [DELETE] Starting delete operation, setting isDeleting to true');
+    setIsDeleting(true);
+    
     try {
       let response;
       // Check if it's an assessment session or regular session
       if (sessionToDelete.session_type === 'assessment' || sessionToDelete.type === 'assessment') {
+        console.log('🗑️ [DELETE] Deleting assessment session');
         // Delete assessment session via admin API
         response = await adminApi.deleteAssessmentSession(sessionToDelete.id);
       } else {
+        console.log('🗑️ [DELETE] Deleting regular session');
         // Delete regular session
         response = await sessionsApi.deleteSession(sessionToDelete.id);
       }
@@ -171,6 +177,7 @@ export default function BookingsPage() {
         throw new Error(response?.message || 'Failed to delete session');
       }
 
+      console.log('🗑️ [DELETE] Session deleted, reloading bookings...');
       // Reload bookings to get fresh data from server
       await loadBookings();
       
@@ -182,20 +189,25 @@ export default function BookingsPage() {
         setSelectedSession(null);
       }
 
-      // Close confirmation modal
+      console.log('🗑️ [DELETE] Closing modal and resetting state');
+      // Close confirmation modal AFTER loading completes
       setShowDeleteConfirm(false);
       setSessionToDelete(null);
+      setIsDeleting(false);
     } catch (error) {
-      console.error('Error deleting session:', error);
+      console.error('❌ [DELETE] Error deleting session:', error);
       showError(`Failed to delete session: ${error.message || error.error || 'Unknown error'}`, 'Delete Error');
-      setShowDeleteConfirm(false);
-      setSessionToDelete(null);
+      // Keep modal open on error so user can see the error and try again
+      setIsDeleting(false);
+      // Don't close modal on error - let user see the error message
     }
   };
 
   const handleDeleteCancel = () => {
+    if (isDeleting) return; // Prevent canceling while deleting
     setShowDeleteConfirm(false);
     setSessionToDelete(null);
+    setIsDeleting(false);
   };
 
   const handleMarkAsNoShowClick = (session) => {
@@ -542,6 +554,11 @@ export default function BookingsPage() {
                       <div className="text-sm text-gray-500">
                         {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}
                       </div>
+                      {booking.status === 'rescheduled' && booking.original_scheduled_date && (
+                        <div className="text-xs text-amber-600 mt-0.5">
+                          Originally: {formatDate(booking.original_scheduled_date)}
+                        </div>
+                      )}
                       {(booking.session_type === 'assessment' || booking.type === 'assessment') && booking.assessment_title && (
                         <div className="text-xs text-gray-400">
                           {booking.assessment_title}
@@ -851,6 +868,15 @@ export default function BookingsPage() {
                       {formatTime(selectedSession.scheduled_time)}
                     </p>
                   </div>
+                  {selectedSession.status === 'rescheduled' && selectedSession.original_scheduled_date && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Original scheduled date</p>
+                      <p className="text-sm text-amber-700 flex items-center">
+                        <Calendar className="h-4 w-4 mr-1 text-amber-500" />
+                        {formatDate(selectedSession.original_scheduled_date)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1058,6 +1084,8 @@ export default function BookingsPage() {
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
+        isLoading={isDeleting}
+        disabled={isDeleting}
       />
 
       </div>

@@ -431,6 +431,11 @@ export default function SessionsFilterTable({
                         <div className="text-sm text-gray-500">
                           {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                         </div>
+                        {session.status === 'rescheduled' && session.original_scheduled_date && (
+                          <div className="text-xs text-amber-600 mt-0.5">
+                            Originally: {formatDate(session.original_scheduled_date)}
+                          </div>
+                        )}
                         {session.package && (
                           <div className="text-xs text-gray-400">
                             Package: {session.package.package_type}

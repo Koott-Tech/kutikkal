@@ -17,6 +17,7 @@ const predefinedRanges = [
   { label: "Last 7 days", value: "last7days" },
   { label: "Last 14 days", value: "last14days" },
   { separator: true },
+  { label: "Last month", value: "lastMonth" },
   { label: "This month", value: "thisMonth" },
   { label: "This year", value: "thisYear" },
 ];
@@ -98,6 +99,12 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
       case "last14days":
         from = startOfDay(subDays(today, 13));
         to = endOfDay(today);
+        break;
+      case "lastMonth":
+        // Get first day of last month
+        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        from = startOfMonth(lastMonth);
+        to = endOfMonth(lastMonth);
         break;
       case "thisMonth":
         from = startOfMonth(today);
@@ -190,9 +197,11 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
     setTempRange({ from, to });
   };
 
-  // Generate years for dropdown (current year ± 10 years)
+  // Generate years for dropdown (starting from 2025 to current year + 10 years)
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
+  const startYear = 2025;
+  const endYear = currentYear + 10;
+  const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
   const getRangeText = () => {
     try {

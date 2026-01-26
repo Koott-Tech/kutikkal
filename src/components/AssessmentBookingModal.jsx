@@ -398,14 +398,43 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
         if (!window.Razorpay) {
           const script = document.createElement('script');
           script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          
+          // Add timeout for script loading (10 seconds)
+          const scriptLoadTimeout = setTimeout(() => {
+            if (!window.Razorpay) {
+              console.error('❌ Razorpay script load timeout - upstream server not responding');
+              showError(
+                'Payment gateway script is taking too long to load. This may be due to network issues or Razorpay server problems. Please check your internet connection and try again.',
+                'Script Load Timeout'
+              );
+              setIsBooking(false);
+              // Remove script if it failed to load
+              if (script.parentNode) {
+                script.parentNode.removeChild(script);
+              }
+            }
+          }, 10000);
+          
           script.onload = () => {
+            clearTimeout(scriptLoadTimeout);
+            console.log('✅ Razorpay script loaded successfully');
             openRazorpayCheckout(paymentResponse.data);
           };
+          
           script.onerror = () => {
-            console.error('❌ Failed to load Razorpay checkout script');
-            showError('Payment gateway error: Failed to load payment script');
-          setIsBooking(false);
+            clearTimeout(scriptLoadTimeout);
+            console.error('❌ Failed to load Razorpay checkout script - upstream server timeout');
+            showError(
+              'Failed to load payment gateway. This may be due to network issues or Razorpay server problems. Please check your internet connection and try again.',
+              'Script Load Error'
+            );
+            setIsBooking(false);
+            // Remove script on error
+            if (script.parentNode) {
+              script.parentNode.removeChild(script);
+            }
           };
+          
           document.body.appendChild(script);
         } else {
           openRazorpayCheckout(paymentResponse.data);
@@ -473,25 +502,103 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
           };
 
           const rzp = new window.Razorpay(options);
+          
+          // Handle Razorpay initialization errors
+          rzp.on('payment.error', function (response) {
+            console.error('❌ Razorpay payment error:', response);
+            let errorMessage = 'Payment gateway error occurred';
+            
+            if (response.error?.description) {
+              errorMessage = response.error.description;
+            } else if (response.error?.code === 'NETWORK_ERROR' || response.error?.code === 'TIMEOUT') {
+              errorMessage = 'Payment gateway is taking too long to respond. Please check your internet connection and try again.';
+            }
+            
+            showError(errorMessage, 'Payment Error');
+            setIsBooking(false);
+          });
+          
           rzp.on('payment.failed', function (response) {
             console.error('❌ Razorpay payment failed:', response);
-            showError(`Payment failed: ${response.error?.description || 'Unknown error'}`, 'Payment Failed');
+            
+            // Provide user-friendly error message based on error type
+            let errorMessage = 'Payment failed. Please try again.';
+            if (response.error?.reason === 'payment_risk_check_failed') {
+              errorMessage = 'Payment was declined due to security checks. Please try again with a different payment method or contact support if this persists.';
+            } else if (response.error?.code === 'BAD_REQUEST_ERROR' && response.error?.description) {
+              errorMessage = response.error.description;
+            } else if (response.error?.description) {
+              errorMessage = response.error.description;
+            }
+            
+            // Always show error to user
+            showError(errorMessage, 'Payment Failed');
             setIsBooking(false);
             
-            // Send failure to backend
+            // Send failure to backend (non-blocking)
             fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/failure`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                razorpay_order_id: response.error?.metadata?.order_id,
+                razorpay_order_id: response.error?.metadata?.order_id || response.razorpay_order_id,
                 error: response.error
               })
-            }).catch(err => console.error('Failed to send failure notification:', err));
+            }).catch(err => {
+              console.error('Failed to send failure notification to backend:', err);
+              // Don't show this error to user - backend failure notification is not critical
+            });
           });
           
-          rzp.open();
+          // Track if checkout opened successfully
+          let checkoutOpened = false;
+          let openTimeout;
+          
+          // Add timeout for Razorpay checkout window opening
+          openTimeout = setTimeout(() => {
+            if (!checkoutOpened) {
+              console.warn('⚠️ Razorpay checkout is taking too long to open - upstream server timeout');
+              showError(
+                'Payment gateway is taking too long to load. This may be due to network issues or Razorpay server problems. Please try again in a few moments or contact support if this persists.',
+                'Connection Timeout'
+              );
+              setIsBooking(false);
+            }
+          }, 20000); // 20 second timeout (increased from 15s)
+          
+          // Handle successful checkout opening
+          rzp.on('payment.open', function() {
+            checkoutOpened = true;
+            if (openTimeout) {
+              clearTimeout(openTimeout);
+            }
+            console.log('✅ Razorpay checkout opened successfully');
+          });
+          
+          // Handle checkout window close (user dismissed)
+          rzp.on('payment.close', function() {
+            if (openTimeout) {
+              clearTimeout(openTimeout);
+            }
+            console.log('ℹ️ Razorpay checkout closed by user');
+            setIsBooking(false);
+          });
+          
+          try {
+            rzp.open();
+            console.log('📤 Razorpay checkout opening...');
+          } catch (openError) {
+            if (openTimeout) {
+              clearTimeout(openTimeout);
+            }
+            console.error('❌ Failed to open Razorpay checkout:', openError);
+            showError(
+              'Failed to open payment gateway. This may be a temporary issue. Please try again or contact support if the problem persists.',
+              'Payment Error'
+            );
+            setIsBooking(false);
+          }
         }
       } else {
         showError('Failed to create payment order. Please try again.', 'Payment Error');

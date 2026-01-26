@@ -533,6 +533,11 @@ export default function PsychologistSessions() {
                               Reschedule Requested
                             </span>
                           )}
+                          {session.status === 'rescheduled' && session.original_scheduled_date && (
+                            <span className="flex items-center text-xs sm:text-sm text-amber-600">
+                              Originally: {new Date(session.original_scheduled_date).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
                         {session.package && (
                           <p className="text-xs sm:text-sm text-gray-500 mt-1">

@@ -1279,9 +1279,36 @@ const TherapistProfileContent = () => {
           };
 
           const rzp = new window.Razorpay(options);
+          
+          // Handle Razorpay initialization errors
+          rzp.on('payment.error', function (response) {
+            console.error('❌ Razorpay payment error:', response);
+            let errorMessage = 'Payment gateway error occurred';
+            
+            if (response.error?.description) {
+              errorMessage = response.error.description;
+            } else if (response.error?.code === 'NETWORK_ERROR' || response.error?.code === 'TIMEOUT') {
+              errorMessage = 'Payment gateway is taking too long to respond. Please check your internet connection and try again.';
+            }
+            
+            showError(errorMessage, 'Payment Error');
+            setIsBooking(false);
+          });
+          
           rzp.on('payment.failed', function (response) {
             console.error('❌ Razorpay payment failed:', response);
-            showError(`Payment failed: ${response.error?.description || 'Unknown error'}`, 'Payment Failed');
+            
+            // Provide user-friendly error message based on error type
+            let errorMessage = 'Payment failed';
+            if (response.error?.reason === 'payment_risk_check_failed') {
+              errorMessage = 'Payment was declined due to security checks. Please try again or use a different payment method.';
+            } else if (response.error?.description) {
+              errorMessage = response.error.description;
+            } else {
+              errorMessage = 'Payment failed. Please try again.';
+            }
+            
+            showError(errorMessage, 'Payment Failed');
             setIsBooking(false);
             
             // Send failure to backend
@@ -1291,13 +1318,31 @@ const TherapistProfileContent = () => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                razorpay_order_id: response.error?.metadata?.order_id,
+                razorpay_order_id: response.error?.metadata?.order_id || response.razorpay_order_id,
                 error: response.error
               })
             }).catch(err => console.error('Failed to send failure notification:', err));
           });
           
-          rzp.open();
+          // Add timeout for Razorpay checkout window opening
+          const openTimeout = setTimeout(() => {
+            console.warn('⚠️ Razorpay checkout is taking too long to open');
+            showError('Payment gateway is taking too long to load. Please check your internet connection and try again.', 'Connection Timeout');
+            setIsBooking(false);
+          }, 15000); // 15 second timeout
+          
+          try {
+            rzp.open();
+            // Clear timeout if checkout opens successfully
+            rzp.on('payment.open', function() {
+              clearTimeout(openTimeout);
+            });
+          } catch (openError) {
+            clearTimeout(openTimeout);
+            console.error('❌ Failed to open Razorpay checkout:', openError);
+            showError('Failed to open payment gateway. Please try again or contact support.', 'Payment Error');
+            setIsBooking(false);
+          }
         }
       } else {
         console.error('❌ Payment response failed:', paymentResponse);

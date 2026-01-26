@@ -1072,7 +1072,8 @@ export default function DoctorModal({
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
     if (mode === 'add' && !formData.password.trim()) newErrors.password = 'Password is required';
     if (!formData.experience_years || formData.experience_years < 0) newErrors.experience_years = 'Years of experience is required and must be 0 or greater';
-    if (Object.keys(availabilityData).length === 0) {
+    // Only require availability when adding a new doctor, not when editing (can be added via daily availability adder)
+    if (mode === 'add' && Object.keys(availabilityData).length === 0) {
       newErrors.availability = 'Please set at least one availability slot. Click on "Set Availability" below to add your available times.';
     }
 
@@ -1897,8 +1898,11 @@ export default function DoctorModal({
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-800">Set Doctor Availability</h3>
-              {Object.keys(availabilityData).length === 0 && (
+              {mode === 'add' && Object.keys(availabilityData).length === 0 && (
                 <span className="text-red-500 text-sm font-medium">⚠️ Required</span>
+              )}
+              {mode === 'edit' && Object.keys(availabilityData).length === 0 && (
+                <span className="text-gray-500 text-sm font-medium">ℹ️ Optional - Can be added via daily availability adder</span>
               )}
             </div>
             

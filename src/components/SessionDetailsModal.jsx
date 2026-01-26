@@ -70,6 +70,14 @@ export default function SessionDetailsModal({
                 {formatTime(session.scheduled_time)}
               </span>
             </div>
+            {session.status === 'rescheduled' && session.original_scheduled_date && (
+              <div className="col-span-2">
+                <span className="text-gray-600">Original scheduled date:</span>
+                <span className="ml-2 font-medium text-amber-700">
+                  {formatDate(session.original_scheduled_date)}
+                </span>
+              </div>
+            )}
             <div>
               <span className="text-gray-600">Status:</span>
               <span className={`ml-2 font-medium px-2 py-1 rounded-full text-xs ${

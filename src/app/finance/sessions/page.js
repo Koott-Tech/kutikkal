@@ -324,6 +324,15 @@ export default function FinanceSessionsPage() {
                         {formatTime(selectedSession.scheduled_time)}
                       </p>
                     </div>
+                    {selectedSession.status === 'rescheduled' && selectedSession.original_scheduled_date && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Original scheduled date</p>
+                        <p className="text-sm text-amber-700 flex items-center">
+                          <Calendar className="h-4 w-4 mr-1 text-amber-500" />
+                          {formatDate(selectedSession.original_scheduled_date)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

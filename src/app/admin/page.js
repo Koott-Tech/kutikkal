@@ -195,7 +195,8 @@ export default function AdminDashboard() {
       console.log('Platform stats response:', platformStats);
       
       let newStats = {
-        totalUsers: 0,
+        totalUsers: 0, // This now represents total clients
+        totalClients: 0, // Explicit clients count
         totalDoctors: 0,
         totalBookings: 0,
         recentUsers: 0,
@@ -228,7 +229,8 @@ export default function AdminDashboard() {
         console.warn('Platform stats response format unexpected:', platformStats);
         newStats = {
           ...newStats,
-          totalUsers: platformStats?.data?.totalUsers || 0,
+          totalUsers: platformStats?.data?.totalClients || platformStats?.data?.totalUsers || 0, // Use totalClients if available, fallback to totalUsers
+          totalClients: platformStats?.data?.totalClients || platformStats?.data?.totalUsers || 0,
           totalDoctors: platformStats?.data?.totalDoctors || 0,
           totalBookings: platformStats?.data?.totalBookings || 0,
           failures: platformStats?.data?.failures || {
@@ -307,11 +309,11 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Users',
+      title: 'Total Clients',
       value: stats.totalUsers,
       icon: Users,
       color: 'bg-blue-500',
-      description: 'Registered users on the platform'
+      description: 'Registered clients on the platform'
     },
     {
       title: 'Total Doctors',

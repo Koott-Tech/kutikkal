@@ -147,13 +147,17 @@ export default function DoctorsPage() {
       // Avoid logging entire doctor objects in admin console for privacy and performance
       // console.log('API Response OK');
       
-      if (response && response.success && response.data && response.data.users) {
-        // Backend returns psychologists in users array format
-        const doctorsData = response.data.users;
-        // console.log('Doctors loaded:', doctorsData.map(d => ({ id: d.id || d.psychologist_id, name: d.name })));
+      if (response && response.success && response.data) {
+        // Backend returns psychologists as an array directly in data
+        // Handle both formats: response.data (array) or response.data.users (array)
+        const doctorsData = Array.isArray(response.data) 
+          ? response.data 
+          : (response.data.users || []);
+        
+        console.log('📊 Doctors loaded:', doctorsData.length, 'doctors');
         setDoctors(doctorsData);
       } else {
-        console.warn('Invalid response structure:', response);
+        console.warn('⚠️ Invalid response structure:', response);
         setDoctors([]);
       }
     } catch (error) {
