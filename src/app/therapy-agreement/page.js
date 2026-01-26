@@ -4,6 +4,28 @@ export const metadata = {
     title: "Therapy Agreement | Little Care",
     description:
         "Therapy agreement outlining services, expectations, confidentiality, payment, and legal terms for clients of Little Care by Koott Care Pvt. Ltd.",
+    openGraph: {
+        title: "Therapy Agreement | Little Care",
+        description:
+            "Therapy agreement outlining services, expectations, confidentiality, payment, and legal terms for clients of Little Care by Koott Care Pvt. Ltd.",
+        type: "website",
+        url: "https://www.little.care/therapy-agreement",
+        images: [
+            {
+                url: "https://www.little.care/favicon.png",
+                width: 1200,
+                height: 630,
+                alt: "Little Care logo",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Therapy Agreement | Little Care",
+        description:
+            "Therapy agreement outlining services, expectations, confidentiality, payment, and legal terms for clients of Little Care by Koott Care Pvt. Ltd.",
+        images: ["https://www.little.care/favicon.png"],
+    },
 };
 
 export const dynamic = 'force-static';

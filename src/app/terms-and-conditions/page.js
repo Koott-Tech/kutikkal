@@ -4,6 +4,28 @@ export const metadata = {
     title: "Terms and Conditions | Little Care",
     description:
         "Review the Terms and Conditions governing the use of Little Care by Koott Care Pvt. Ltd., including definitions, user obligations, and legal notices.",
+    openGraph: {
+        title: "Terms and Conditions | Little Care",
+        description:
+            "Review the Terms and Conditions governing the use of Little Care by Koott Care Pvt. Ltd., including definitions, user obligations, and legal notices.",
+        type: "website",
+        url: "https://www.little.care/terms-and-conditions",
+        images: [
+            {
+                url: "https://www.little.care/favicon.png",
+                width: 1200,
+                height: 630,
+                alt: "Little Care logo",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Terms and Conditions | Little Care",
+        description:
+            "Review the Terms and Conditions governing the use of Little Care by Koott Care Pvt. Ltd., including definitions, user obligations, and legal notices.",
+        images: ["https://www.little.care/favicon.png"],
+    },
 };
 
 export const dynamic = 'force-static';

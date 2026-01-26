@@ -576,7 +576,7 @@ export default function Header() {
                       }
                     }}
                   >
-                  <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Counseling</h2>
+                  <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>Counselling</h2>
                     <ChevronUpIcon className={`transition-transform ${isFindCareOpen ? 'rotate-180' : ''}`} />
                   </button>
                   <span className="pointer-events-none absolute -bottom-3 left-0 h-0.5 w-0 bg-indigo-700 transition-all duration-150 group-hover:w-[calc(100%-1.25rem)]"></span>

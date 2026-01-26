@@ -65,8 +65,8 @@ export async function generateMetadata({ params, searchParams }) {
             service.seo_description ||
             service.hero_subtext ||
             'Specialized counseling services for children and families.';
-          const ogImage =
-            service.og_image || service.hero_image_url || '/favicon.png';
+          // Always use favicon.png for social sharing (as per requirements)
+          const ogImage = 'https://www.little.care/favicon.png';
 
           return {
             title,
@@ -79,9 +79,10 @@ export async function generateMetadata({ params, searchParams }) {
               url: `https://www.little.care/counselling/${slug}`,
               images: [
                 {
-                  url: ogImage.startsWith('http')
-                    ? ogImage
-                    : `https://www.little.care${ogImage}`,
+                  url: ogImage,
+                  width: 1200,
+                  height: 630,
+                  alt: 'Little Care logo',
                 },
               ],
             },
@@ -89,11 +90,7 @@ export async function generateMetadata({ params, searchParams }) {
               card: 'summary_large_image',
               title,
               description,
-              images: [
-                ogImage.startsWith('http')
-                  ? ogImage
-                  : `https://www.little.care${ogImage}`,
-              ],
+              images: [ogImage],
             },
             alternates: {
               canonical: `https://www.little.care/counselling/${slug}`,

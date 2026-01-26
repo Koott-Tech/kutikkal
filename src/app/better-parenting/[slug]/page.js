@@ -40,8 +40,8 @@ export async function generateMetadata({ params, searchParams }) {
         data.seo_description ||
         data.hero_subtext ||
         'Gentle, practical coaching to help parents support their child’s emotional and behavioural needs.';
-      const ogImage =
-        data.og_image || data.hero_image_url || '/favicon.png';
+      // Always use favicon.png for social sharing (as per requirements)
+      const ogImage = 'https://www.little.care/favicon.png';
 
       return {
         title,
@@ -54,9 +54,10 @@ export async function generateMetadata({ params, searchParams }) {
           url: `https://www.little.care/better-parenting/${slug}`,
           images: [
             {
-              url: ogImage.startsWith('http')
-                ? ogImage
-                : `https://www.little.care${ogImage}`,
+              url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: 'Little Care logo',
             },
           ],
         },
@@ -64,11 +65,7 @@ export async function generateMetadata({ params, searchParams }) {
           card: 'summary_large_image',
           title,
           description,
-          images: [
-            ogImage.startsWith('http')
-              ? ogImage
-              : `https://www.little.care${ogImage}`,
-          ],
+          images: [ogImage],
         },
         alternates: {
           canonical: `https://www.little.care/better-parenting/${slug}`,

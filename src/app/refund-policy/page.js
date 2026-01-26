@@ -4,6 +4,28 @@ export const metadata = {
     title: "Refund & Cancellation Policy | Little Care",
     description:
         "Review Little Care by Koott Care Pvt. Ltd.'s policies on refunds, cancellations, eligibility, timelines, and liabilities for counselling and wellness services.",
+    openGraph: {
+        title: "Refund & Cancellation Policy | Little Care",
+        description:
+            "Review Little Care by Koott Care Pvt. Ltd.'s policies on refunds, cancellations, eligibility, timelines, and liabilities for counselling and wellness services.",
+        type: "website",
+        url: "https://www.little.care/refund-policy",
+        images: [
+            {
+                url: "https://www.little.care/favicon.png",
+                width: 1200,
+                height: 630,
+                alt: "Little Care logo",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Refund & Cancellation Policy | Little Care",
+        description:
+            "Review Little Care by Koott Care Pvt. Ltd.'s policies on refunds, cancellations, eligibility, timelines, and liabilities for counselling and wellness services.",
+        images: ["https://www.little.care/favicon.png"],
+    },
 };
 
 export const dynamic = 'force-static';

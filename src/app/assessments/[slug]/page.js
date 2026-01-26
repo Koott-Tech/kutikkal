@@ -34,11 +34,8 @@ export async function generateMetadata({ params, searchParams }) {
         data.seo_description ||
         data.hero_subtext ||
         'Professional assessments to better understand children’s needs and strengths.';
-      const ogImage =
-        data.og_image || data.hero_image_url || '/favicon.png';
-      const normalizedOgImage = ogImage.startsWith('http')
-        ? ogImage
-        : `https://www.little.care${ogImage}`;
+      // Always use favicon.png for social sharing (as per requirements)
+      const ogImage = 'https://www.little.care/favicon.png';
 
       return {
         title,
@@ -51,9 +48,10 @@ export async function generateMetadata({ params, searchParams }) {
           url: `https://www.little.care/assessments/${slug}`,
           images: [
             {
-              url: normalizedOgImage,
+              url: ogImage,
               width: 1200,
               height: 630,
+              alt: 'Little Care logo',
             },
           ],
         },
@@ -61,7 +59,7 @@ export async function generateMetadata({ params, searchParams }) {
           card: 'summary_large_image',
           title,
           description,
-          images: [normalizedOgImage],
+          images: [ogImage],
         },
         alternates: {
           canonical: `https://www.little.care/assessments/${slug}`,

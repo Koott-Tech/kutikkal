@@ -1653,6 +1653,126 @@ const TherapistProfileContent = () => {
     }
   }, [selectedDoctor]);
 
+  // Update social sharing metadata when doctor is selected
+  useEffect(() => {
+    if (!selectedDoctor) return;
+
+    const name = selectedDoctor.name || `${selectedDoctor.first_name || ''} ${selectedDoctor.last_name || ''}`.trim();
+    const title = `${name} | Child Psychologist | Little Care`;
+    
+    // Build description from psychologist details
+    const parts: string[] = [];
+    parts.push(name);
+    
+    // Add education
+    const education: string[] = [];
+    if (selectedDoctor.phd_college && selectedDoctor.phd_college !== 'N/A') {
+      education.push('PhD');
+    } else if (selectedDoctor.mphil_college && selectedDoctor.mphil_college !== 'N/A') {
+      education.push('MPhil');
+    }
+    if (selectedDoctor.pg_college && selectedDoctor.pg_college !== 'N/A') {
+      education.push('Post Graduate');
+    }
+    if (selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A') {
+      education.push('Graduate');
+    }
+    if (education.length > 0) {
+      parts.push(education.join(', '));
+    }
+    
+    // Add experience
+    if (selectedDoctor.experience_years) {
+      parts.push(`${selectedDoctor.experience_years}+ years experience`);
+    }
+    
+    // Add price
+    if (selectedDoctor.individual_session_price) {
+      parts.push(`Starting at ₹${selectedDoctor.individual_session_price}`);
+    } else if (selectedDoctor.price) {
+      parts.push(`Starting at ₹${selectedDoctor.price}`);
+    }
+    
+    // Add description if available
+    if (selectedDoctor.description) {
+      const shortDesc = selectedDoctor.description.length > 100 
+        ? selectedDoctor.description.substring(0, 100) + '...'
+        : selectedDoctor.description;
+      parts.push(shortDesc);
+    }
+    
+    const description = parts.join(' • ') || `Book an online session with ${name}, an experienced child psychologist at Little Care.`;
+    
+    // Normalize image URL for Open Graph
+    const normalizeImageUrl = (url: string | null | undefined): string => {
+      if (!url) {
+        return 'https://www.little.care/favicon.png';
+      }
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      const supabaseStorageMatch = url.match(/\/storage\/v1\/object\/(?:public|sign)\/([^\/]+)\/(.+)$/);
+      if (supabaseStorageMatch) {
+        const bucket = supabaseStorageMatch[1];
+        let filename = supabaseStorageMatch[2].split('?')[0];
+        try {
+          filename = decodeURIComponent(filename);
+        } catch (e) {
+          // If decoding fails, use original filename
+        }
+        return `https://www.little.care/api/images/${bucket}/${encodeURIComponent(filename)}`;
+      }
+      if (url.startsWith('/api/images/')) {
+        return `https://www.little.care${url}`;
+      }
+      return `https://www.little.care${url.startsWith('/') ? url : `/${url}`}`;
+    };
+    
+    const therapistImage = normalizeImageUrl(
+      selectedDoctor.cover_image_url || 
+      selectedDoctor.profile_picture_url || 
+      selectedDoctor.profile_image_url || 
+      selectedDoctor.image_url
+    );
+    
+    const url = `https://www.little.care/therapist-profile?doctor=${encodeURIComponent(doctorParam || selectedDoctor.id)}`;
+    
+    // Update document title
+    document.title = title;
+    
+    // Update or create meta tags
+    const updateMetaTag = (property: string, content: string) => {
+      let meta = document.querySelector(`meta[property="${property}"]`) || document.querySelector(`meta[name="${property}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('property', property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+    
+    // Update Open Graph tags
+    updateMetaTag('og:title', title);
+    updateMetaTag('og:description', description);
+    updateMetaTag('og:image', therapistImage);
+    updateMetaTag('og:url', url);
+    updateMetaTag('og:type', 'profile');
+    
+    // Update Twitter tags
+    updateMetaTag('twitter:card', 'summary_large_image');
+    updateMetaTag('twitter:title', title);
+    updateMetaTag('twitter:description', description);
+    updateMetaTag('twitter:image', therapistImage);
+    
+    // Update description meta tag
+    updateMetaTag('description', description);
+    
+    // Cleanup function to restore default metadata when component unmounts or doctor changes
+    return () => {
+      // Optionally restore default metadata here if needed
+    };
+  }, [selectedDoctor, doctorParam]);
+
   useEffect(() => {
     if (selectedDoctor) {
       const designation = getDoctorDesignation(selectedDoctor);
