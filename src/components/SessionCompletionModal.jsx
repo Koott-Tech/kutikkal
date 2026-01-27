@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { X, FileText, Stethoscope, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, FileText, Calendar } from "lucide-react";
 
 export default function SessionCompletionModal({ 
   isOpen, 
@@ -8,11 +8,26 @@ export default function SessionCompletionModal({
   session, 
   onSubmit 
 }) {
+  // Initialize completion_date with scheduled_date (default to scheduled date)
   const [formData, setFormData] = useState({
     summary: "",
     report: "",
-    summary_notes: ""
+    summary_notes: "",
+    completion_date: ""
   });
+
+  // Set default completion_date when session changes
+  useEffect(() => {
+    if (session && session.scheduled_date) {
+      // Format scheduled_date to YYYY-MM-DD for date input
+      const scheduledDate = new Date(session.scheduled_date);
+      const formattedDate = scheduledDate.toISOString().split('T')[0];
+      setFormData(prev => ({
+        ...prev,
+        completion_date: prev.completion_date || formattedDate
+      }));
+    }
+  }, [session]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -65,7 +80,8 @@ export default function SessionCompletionModal({
       setFormData({
         summary: "",
         report: "",
-        summary_notes: ""
+        summary_notes: "",
+        completion_date: session?.scheduled_date ? new Date(session.scheduled_date).toISOString().split('T')[0] : ""
       });
       onClose();
     } catch (error) {
@@ -79,7 +95,8 @@ export default function SessionCompletionModal({
     setFormData({
       summary: "",
       report: "",
-      summary_notes: ""
+      summary_notes: "",
+      completion_date: session?.scheduled_date ? new Date(session.scheduled_date).toISOString().split('T')[0] : ""
     });
     setErrors({});
     onClose();
@@ -91,23 +108,19 @@ export default function SessionCompletionModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Stethoscope className="h-6 w-6 text-green-600" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <div style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.5rem' }} className="text-gray-900">
+              Complete Session
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                Complete Session
-              </h2>
-              <p className="text-sm text-gray-600">
-                Submit session summary, report, and notes
-              </p>
-            </div>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Submit session summary, report, and notes
+            </p>
           </div>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            disabled={isSubmitting}
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
@@ -115,23 +128,23 @@ export default function SessionCompletionModal({
 
         {/* Session Info */}
         {session && (
-          <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="px-6 py-4 bg-white border-b border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Client</label>
-                <p className="text-sm text-gray-900">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Client</label>
+                <p className="text-sm text-gray-900 mt-1">
                   {session.client?.first_name} {session.client?.last_name}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Child</label>
-                <p className="text-sm text-gray-900">
-                  {session.client?.child_name} ({session.client?.child_age} years)
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Child</label>
+                <p className="text-sm text-gray-900 mt-1">
+                  {session.client?.child_name} {session.client?.child_age ? `(${session.client.child_age} years)` : ''}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Session Date</label>
-                <p className="text-sm text-gray-900">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Session Date</label>
+                <p className="text-sm text-gray-900 mt-1">
                   {new Date(session.scheduled_date).toLocaleDateString()} at {(() => {
                     const [hours, minutes] = session.scheduled_time.split(':');
                     const hour = parseInt(hours);
@@ -147,85 +160,100 @@ export default function SessionCompletionModal({
 
         {/* Form */}
         <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Summary */}
-          <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              <label className="text-sm font-medium text-gray-700">
-                Session Summary
+          <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
+            {/* Summary */}
+            <div className="border-b border-gray-200 pb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Session Summary <span className="text-red-500">*</span>
               </label>
-              <span className="text-xs text-gray-500">(Visible to client)</span>
+              <p className="text-xs text-gray-500 mb-3">Visible to client</p>
+              <textarea
+                value={formData.summary}
+                onChange={(e) => handleInputChange("summary", e.target.value)}
+                placeholder="Provide a brief summary of the session that the client can read..."
+                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
+                  errors.summary ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
+              />
+              {errors.summary && (
+                <p className="text-sm text-red-600 mt-1">{errors.summary}</p>
+              )}
             </div>
-            <textarea
-              value={formData.summary}
-              onChange={(e) => handleInputChange("summary", e.target.value)}
-              placeholder="Provide a brief summary of the session that the client can read..."
-              className={`w-full h-24 sm:h-32 px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.summary ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.summary && (
-              <p className="text-sm text-red-600 mt-1">{errors.summary}</p>
-            )}
-          </div>
 
-          {/* Report */}
-          <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <FileText className="h-5 w-5 text-green-600" />
-              <label className="text-sm font-medium text-gray-700">
-                Session Report
+            {/* Report */}
+            <div className="border-b border-gray-200 pb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Session Report <span className="text-red-500">*</span>
               </label>
-              <span className="text-xs text-gray-500">(Visible to client)</span>
+              <p className="text-xs text-gray-500 mb-3">Visible to client</p>
+              <textarea
+                value={formData.report}
+                onChange={(e) => handleInputChange("report", e.target.value)}
+                placeholder="Provide a detailed report of the session findings and recommendations..."
+                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
+                  errors.report ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
+              />
+              {errors.report && (
+                <p className="text-sm text-red-600 mt-1">{errors.report}</p>
+              )}
             </div>
-            <textarea
-              value={formData.report}
-              onChange={(e) => handleInputChange("report", e.target.value)}
-              placeholder="Provide a detailed report of the session findings and recommendations..."
-              className={`w-full h-24 sm:h-32 px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                errors.report ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.report && (
-              <p className="text-sm text-red-600 mt-1">{errors.report}</p>
-            )}
-          </div>
 
-          {/* Summary Notes */}
-          <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <EyeOff className="h-5 w-5 text-purple-600" />
-              <label className="text-sm font-medium text-gray-700">
-                Private Summary Notes
+            {/* Summary Notes */}
+            <div className="border-b border-gray-200 pb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Private Summary Notes <span className="text-red-500">*</span>
               </label>
-              <span className="text-xs text-gray-500">(Psychologist only)</span>
+              <p className="text-xs text-gray-500 mb-3">Private notes visible only to you</p>
+              <textarea
+                value={formData.summary_notes}
+                onChange={(e) => handleInputChange("summary_notes", e.target.value)}
+                placeholder="Add private notes about the session that only you can see..."
+                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
+                  errors.summary_notes ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
+              />
+              {errors.summary_notes && (
+                <p className="text-sm text-red-600 mt-1">{errors.summary_notes}</p>
+              )}
             </div>
-            <textarea
-              value={formData.summary_notes}
-              onChange={(e) => handleInputChange("summary_notes", e.target.value)}
-              placeholder="Add private notes about the session that only you can see..."
-              className={`w-full h-24 sm:h-32 px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                errors.summary_notes ? "border-red-500" : "border-gray-300"
-              }`}
-            />
-            {errors.summary_notes && (
-              <p className="text-sm text-red-600 mt-1">{errors.summary_notes}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              These notes are private and will not be visible to the client.
-            </p>
-          </div>
 
+            {/* Completion Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Completion Date <span className="text-red-500">*</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-3">Select the date when this session was completed (defaults to scheduled date)</p>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="date"
+                  value={formData.completion_date}
+                  onChange={(e) => handleInputChange("completion_date", e.target.value)}
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
+                    errors.completion_date ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                  }`}
+                  disabled={isSubmitting}
+                  required
+                />
+              </div>
+              {errors.completion_date && (
+                <p className="text-sm text-red-600 mt-1">{errors.completion_date}</p>
+              )}
+            </div>
           </form>
         </div>
 
         {/* Action Buttons - Fixed at bottom */}
-        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 p-4 sm:p-6 border-t border-gray-200 bg-white">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
           <button
             type="button"
             onClick={handleClose}
-            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            disabled={isSubmitting}
           >
             Cancel
           </button>
@@ -233,7 +261,7 @@ export default function SessionCompletionModal({
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-lg hover:bg-gray-800 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center space-x-2">

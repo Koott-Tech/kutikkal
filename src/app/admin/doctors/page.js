@@ -372,11 +372,12 @@ export default function DoctorsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h6>Doctors Management</h6>
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h6>Doctors Management</h6>
           <p className="mt-1 text-sm text-gray-600">
             Manage psychologists and therapists on the platform
           </p>
@@ -782,6 +783,7 @@ export default function DoctorsPage() {
         />
       )}
 
+      </div>
     </div>
   );
 }

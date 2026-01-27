@@ -68,7 +68,41 @@ export default function FinanceLayout({ children }) {
     const loadHeaderStats = async () => {
       try {
         setIsLoadingStats(true);
-        const response = await financeApi.getDashboard();
+        
+        // Always send current month dates in IST
+        const getCurrentMonthDates = () => {
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(Number);
+          const startOfMonth = new Date(year, month - 1, 1);
+          
+          const formatDateToIST = (date) => {
+            const istStr = date.toLocaleString('en-US', {
+              timeZone: 'Asia/Kolkata',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            });
+            const [m, d, y] = istStr.split('/').map(num => num.padStart(2, '0'));
+            return `${y}-${m}-${d}`;
+          };
+          
+          return {
+            from: formatDateToIST(startOfMonth),
+            to: formatDateToIST(now)
+          };
+        };
+        
+        const dates = getCurrentMonthDates();
+        const response = await financeApi.getDashboard({
+          dateFrom: dates.from,
+          dateTo: dates.to
+        });
         if (response.success && response.data?.summary) {
           const stats = response.data.summary;
           setHeaderStats(stats);

@@ -38,6 +38,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import AdminRescheduleModal from '@/components/AdminRescheduleModal';
 import AdminManualBookingModal from '@/components/AdminManualBookingModal';
 import AdminEditSessionModal from '@/components/AdminEditSessionModal';
+import SessionCompletionModal from '@/components/SessionCompletionModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { cache } from '@/lib/cache';
 import WheelPagination from '@/components/ui/wheel-pagination';
@@ -60,6 +61,8 @@ export default function BookingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [selectedCompleteSession, setSelectedCompleteSession] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -146,6 +149,47 @@ export default function BookingsPage() {
 
   const handleEditSuccess = () => {
     loadBookings(); // Reload bookings after successful edit
+  };
+
+  const openCompleteSessionModal = (session) => {
+    // Only allow completing for non-completed sessions
+    if (session.status === 'completed') {
+      showError('This session is already completed', 'Session Status');
+      return;
+    }
+    setSelectedCompleteSession(session);
+    setIsCompleteModalOpen(true);
+  };
+
+  const handleCompleteSession = async (sessionId, sessionData) => {
+    try {
+      // Map the form data from SessionCompletionModal to backend expected format
+      const mappedData = {
+        summary: sessionData.summary?.trim?.() || '',
+        report: sessionData.report?.trim?.() || '',
+        summary_notes: sessionData.summary_notes?.trim?.() || '',
+        completion_date: sessionData.completion_date || ''
+      };
+      
+      if (!mappedData.summary || !mappedData.report || !mappedData.summary_notes) {
+        throw new Error('Summary, report, and summary notes are required.');
+      }
+      
+      await adminApi.completeSession(sessionId, mappedData);
+      
+      showSuccess('Session completed successfully!', 'Completion Success');
+      
+      // Reload bookings to update the UI
+      await loadBookings();
+      
+      // Close modal
+      setIsCompleteModalOpen(false);
+      setSelectedCompleteSession(null);
+    } catch (err) {
+      console.error('Error completing session:', err);
+      showError(`Failed to complete session: ${err.message}`, 'Completion Error');
+      throw err; // Re-throw to let the modal handle the error
+    }
   };
 
   const handleDeleteSessionClick = (session) => {
@@ -539,19 +583,51 @@ export default function BookingsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        Session #{booking.id?.slice(0, 8)}
-                        {booking.session_type === 'free_assessment' && (
-                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Free Assessment
-                          </span>
-                        )}
-                        {(booking.session_type === 'assessment' || booking.type === 'assessment') && (
-                          <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            Assessment
-                          </span>
-                        )}
+                        {(() => {
+                          // Show session type instead of session ID
+                          if (booking.session_type === 'free_assessment') {
+                            return (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Free Assessment
+                              </span>
+                            );
+                          }
+                          if (booking.session_type === 'assessment' || booking.type === 'assessment') {
+                            return (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                Assessment
+                              </span>
+                            );
+                          }
+                          // Check if it's a package session
+                          if (booking.package || booking.package_id) {
+                            const pkg = booking.package || {};
+                            const totalSessions = pkg.total_sessions || pkg.session_count || 0;
+                            const completedSessions = pkg.completed_sessions;
+                            const packageType = pkg.package_type || 'Package';
+                            
+                            return (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {packageType}
+                                {totalSessions > 0 && (
+                                  <span className="ml-1">
+                                    {completedSessions !== undefined && completedSessions !== null
+                                      ? `(${completedSessions}/${totalSessions})`
+                                      : `(${totalSessions})`}
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          }
+                          // Default: Individual session
+                          return (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              Individual Session
+                            </span>
+                          );
+                        })()}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 mt-1">
                         {formatDate(booking.scheduled_date)} at {formatTime(booking.scheduled_time)}
                       </div>
                       {booking.status === 'rescheduled' && booking.original_scheduled_date && (
@@ -560,25 +636,23 @@ export default function BookingsPage() {
                         </div>
                       )}
                       {(booking.session_type === 'assessment' || booking.type === 'assessment') && booking.assessment_title && (
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-400 mt-0.5">
                           {booking.assessment_title}
                         </div>
                       )}
                       {booking.package && (
-                        <div className="text-xs text-gray-400">
-                          Package: {booking.package.package_type}
+                        <div className="text-xs text-gray-600 mt-1">
                           {(() => {
                             const pkg = booking.package || {};
                             const totalSessions = pkg.total_sessions || pkg.session_count || 0;
                             const completedSessions = pkg.completed_sessions;
                             
-                            // If we have both values, show completion status
                             if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
-                              return ` (${completedSessions}/${totalSessions} completed)`;
+                              return `Package: ${completedSessions}/${totalSessions} sessions completed`;
                             } else if (totalSessions > 0) {
-                              return ` (${totalSessions} sessions)`;
+                              return `Package: ${totalSessions} sessions`;
                             }
-                            return '';
+                            return `Package: ${pkg.package_type || 'Package'}`;
                           })()}
                         </div>
                       )}
@@ -665,6 +739,11 @@ export default function BookingsPage() {
                           )}
                           {booking.status !== 'completed' && booking.status !== 'no_show' && booking.status !== 'noshow' && (
                             <>
+                              <DropdownMenuItem onClick={() => openCompleteSessionModal(booking)} className="cursor-pointer text-green-600">
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Mark as Completed
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleMarkAsNoShowClick(booking)} className="cursor-pointer text-orange-600">
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Mark No Show
@@ -672,15 +751,13 @@ export default function BookingsPage() {
                               <DropdownMenuSeparator />
                             </>
                           )}
-                          {booking.status !== 'completed' && (
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteSessionClick(booking)} 
-                              className="cursor-pointer text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteSessionClick(booking)} 
+                            className="cursor-pointer text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -777,241 +854,236 @@ export default function BookingsPage() {
 
       {/* Enhanced Session Details Modal */}
       {isSessionDetailsOpen && selectedSession && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-lg font-semibold text-gray-900">Session Details</div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.5rem' }} className="text-gray-900 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-gray-600" />
+                  Session Details
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Session #{selectedSession.id?.slice(0, 8)}</p>
+              </div>
               <button
                 onClick={() => setIsSessionDetailsOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 rounded-lg p-2 hover:bg-gray-100 transition-all"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
             
-            <div className="space-y-4">
-              {/* Session Information */}
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                  Session Information
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Session ID</p>
-                    <p className="text-sm text-gray-900 font-mono">
-                      #{selectedSession.id}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Status</p>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status, selectedSession)}`}>
-                      {getStatusText(selectedSession.status, selectedSession)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Session Type</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Package className="h-4 w-4 mr-1 text-gray-500" />
-                      {selectedSession.package || selectedSession.package_id ? (
-                        (() => {
-                          const pkg = selectedSession.package || {};
-                          
-                          // Get total sessions from various possible fields
-                          let totalSessions = pkg.total_sessions 
-                            || pkg.session_count 
-                            || 0;
-                          
-                          // If still 0, try to extract from package_type (e.g., "3_session", "package_6")
-                          if (totalSessions === 0 && pkg.package_type) {
-                            const match = String(pkg.package_type).match(/\d+/);
-                            if (match) {
-                              totalSessions = parseInt(match[0], 10);
-                            }
-                          }
-                          
-                          const completedSessions = pkg.completed_sessions;
-                          
-                          // Always show count if it's a package
-                          if (totalSessions > 0) {
-                            return (
-                              <>
-                                Package
-                                <span className="ml-1">
-                                  ({completedSessions !== undefined && completedSessions !== null
-                                    ? `${completedSessions}/${totalSessions}`
-                                    : totalSessions} sessions)
-                                </span>
-                              </>
-                            );
-                          } else {
-                            // Package exists but no count available - still show Package
-                            return 'Package';
-                          }
-                        })()
-                      ) : (
-                        'Individual'
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Date</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Calendar className="h-4 w-4 mr-1 text-gray-500" />
-                      {formatDate(selectedSession.scheduled_date)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Time</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Clock className="h-4 w-4 mr-1 text-gray-500" />
-                      {formatTime(selectedSession.scheduled_time)}
-                    </p>
-                  </div>
-                  {selectedSession.status === 'rescheduled' && selectedSession.original_scheduled_date && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Original scheduled date</p>
-                      <p className="text-sm text-amber-700 flex items-center">
-                        <Calendar className="h-4 w-4 mr-1 text-amber-500" />
-                        {formatDate(selectedSession.original_scheduled_date)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Client Information */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                  <User className="h-4 w-4 mr-2 text-blue-600" />
-                  Client Information
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Full Name</p>
-                    <p className="text-sm text-gray-900">
-                      {selectedSession.client?.first_name} {selectedSession.client?.last_name}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Email</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Mail className="h-4 w-4 mr-1 text-gray-500" />
-                      {selectedSession.client?.user?.email || 'Not provided'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Phone Number</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Phone className="h-4 w-4 mr-1 text-gray-500" />
-                      {selectedSession.client?.phone_number || 'Not provided'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Child Name</p>
-                    <p className="text-sm text-gray-900">
-                      {selectedSession.client?.child_name || 'Not provided'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Child Age</p>
-                    <p className="text-sm text-gray-900">
-                      {selectedSession.client?.child_age ? `${selectedSession.client.child_age} years` : 'Not provided'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Psychologist Information */}
-              <div className="bg-green-50 p-3 rounded-lg">
-                <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                  <UserCheck className="h-4 w-4 mr-2 text-green-600" />
-                  Psychologist Information
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Full Name</p>
-                    <p className="text-sm text-gray-900">
-                      {selectedSession.psychologist?.first_name} {selectedSession.psychologist?.last_name}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Email</p>
-                    <p className="text-sm text-gray-900 flex items-center">
-                      <Mail className="h-4 w-4 mr-1 text-gray-500" />
-                      {selectedSession.psychologist?.email}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Areas of Expertise</p>
-                    <p className="text-sm text-gray-900">
-                      {selectedSession.psychologist?.area_of_expertise?.join(', ') || 'Not specified'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Package & Pricing Information */}
-              {selectedSession.package && (
-                <div className="bg-yellow-50 p-3 rounded-lg">
-                  <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                    <Package className="h-4 w-4 mr-2 text-yellow-600" />
-                    Package & Pricing
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 pb-0">
+              <div className="space-y-6 pb-6">
+                {/* Session Information */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-4">
+                    Session Information
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Package Type</p>
-                      <p className="text-sm text-gray-900">
-                        {selectedSession.package.package_type}
+                      <p className="text-sm font-medium text-gray-700 mb-1">Session ID</p>
+                      <p className="text-sm text-gray-900 font-mono">
+                        #{selectedSession.id}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-700">Price</p>
-                      <p className="text-sm text-gray-900 flex items-center">
-                        <DollarSign className="h-4 w-4 mr-1 text-green-600" />
-                        ${selectedSession.package.price}
+                      <p className="text-sm font-medium text-gray-700 mb-1">Status</p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedSession.status, selectedSession)}`}>
+                        {getStatusText(selectedSession.status, selectedSession)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Session Type</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.package || selectedSession.package_id ? (
+                          (() => {
+                            const pkg = selectedSession.package || {};
+                            
+                            // Get total sessions from various possible fields
+                            let totalSessions = pkg.total_sessions 
+                              || pkg.session_count 
+                              || 0;
+                            
+                            // If still 0, try to extract from package_type (e.g., "3_session", "package_6")
+                            if (totalSessions === 0 && pkg.package_type) {
+                              const match = String(pkg.package_type).match(/\d+/);
+                              if (match) {
+                                totalSessions = parseInt(match[0], 10);
+                              }
+                            }
+                            
+                            const completedSessions = pkg.completed_sessions;
+                            
+                            // Always show count if it's a package
+                            if (totalSessions > 0) {
+                              return (
+                                <>
+                                  Package
+                                  <span className="ml-1 text-gray-600">
+                                    ({completedSessions !== undefined && completedSessions !== null
+                                      ? `${completedSessions}/${totalSessions}`
+                                      : totalSessions} sessions)
+                                  </span>
+                                </>
+                              );
+                            } else {
+                              // Package exists but no count available - still show Package
+                              return 'Package';
+                            }
+                          })()
+                        ) : (
+                          'Individual'
+                        )}
                       </p>
                     </div>
-                    {selectedSession.package.description && (
-                      <div className="md:col-span-2">
-                        <p className="text-sm font-medium text-gray-700">Description</p>
-                        <p className="text-sm text-gray-900">
-                          {selectedSession.package.description}
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Date</p>
+                      <p className="text-sm text-gray-900">
+                        {formatDate(selectedSession.scheduled_date)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Time</p>
+                      <p className="text-sm text-gray-900">
+                        {formatTime(selectedSession.scheduled_time)}
+                      </p>
+                    </div>
+                    {selectedSession.status === 'rescheduled' && selectedSession.original_scheduled_date && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Original Scheduled Date</p>
+                        <p className="text-sm text-gray-600">
+                          {formatDate(selectedSession.original_scheduled_date)}
                         </p>
                       </div>
                     )}
                   </div>
                 </div>
-              )}
 
-              {/* Session Notes */}
-              {selectedSession.session_notes && (
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="text-sm font-semibold text-gray-900 mb-2">Session Notes</div>
-                  <p className="text-sm text-gray-900">{selectedSession.session_notes}</p>
+                {/* Client Information */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-4">
+                    Client Information
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Full Name</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.client?.first_name} {selectedSession.client?.last_name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.client?.user?.email || 'Not provided'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Phone Number</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.client?.phone_number || 'Not provided'}
+                      </p>
+                    </div>
+                    {selectedSession.client?.child_name && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Child Name</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedSession.client.child_name}
+                        </p>
+                      </div>
+                    )}
+                    {selectedSession.client?.child_age && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Child Age</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedSession.client.child_age} years
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
 
-              {/* Actions */}
-              <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                {selectedSession.status === 'booked' && (
-                  <button
-                    onClick={() => {
-                      setIsSessionDetailsOpen(false);
-                      handleReschedule(selectedSession);
-                    }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Reschedule
-                  </button>
+                {/* Psychologist Information */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-4">
+                    Psychologist Information
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Full Name</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.psychologist?.first_name} {selectedSession.psychologist?.last_name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedSession.psychologist?.email}
+                      </p>
+                    </div>
+                    {selectedSession.psychologist?.area_of_expertise && (
+                      <div className="md:col-span-2">
+                        <p className="text-sm font-medium text-gray-700 mb-1">Areas of Expertise</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedSession.psychologist.area_of_expertise.join(', ')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Package & Pricing Information */}
+                {selectedSession.package && (
+                  <div className="border-t border-gray-200 pt-6">
+                    <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-4">
+                      Package & Pricing
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Package Type</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedSession.package.package_type}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Price</p>
+                        <p className="text-sm text-gray-900">
+                          ₹{selectedSession.package.price}
+                        </p>
+                      </div>
+                      {selectedSession.package.description && (
+                        <div className="md:col-span-2">
+                          <p className="text-sm font-medium text-gray-700 mb-1">Description</p>
+                          <p className="text-sm text-gray-900">
+                            {selectedSession.package.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
-                <button
-                  onClick={() => setIsSessionDetailsOpen(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                >
-                  Close
-                </button>
+
+                {/* Session Notes */}
+                {selectedSession.session_notes && (
+                  <div className="border-t border-gray-200 pt-6">
+                    <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-2">
+                      Session Notes
+                    </div>
+                    <p className="text-sm text-gray-900">{selectedSession.session_notes}</p>
+                  </div>
+                )}
               </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+              <button
+                onClick={() => setIsSessionDetailsOpen(false)}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -1086,6 +1158,17 @@ export default function BookingsPage() {
         variant="danger"
         isLoading={isDeleting}
         disabled={isDeleting}
+      />
+
+      {/* Complete Session Modal */}
+      <SessionCompletionModal
+        session={selectedCompleteSession}
+        isOpen={isCompleteModalOpen}
+        onClose={() => {
+          setIsCompleteModalOpen(false);
+          setSelectedCompleteSession(null);
+        }}
+        onSubmit={(formData) => handleCompleteSession(selectedCompleteSession?.id, formData)}
       />
 
       </div>

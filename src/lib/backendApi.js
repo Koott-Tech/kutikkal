@@ -1556,10 +1556,16 @@ export const financeApi = {
   // Dashboard
   async getDashboard(params = {}) {
     const queryParams = new URLSearchParams();
-    if (params.dateFrom) {
+    
+    // Frontend should always pass valid date strings
+    // If dates are provided, always send them (even if empty string, backend will handle)
+    // If dates are undefined/null, don't send (backend will use IST defaults)
+    if (params.dateFrom !== undefined && params.dateFrom !== null) {
+      // Send the date (even if empty string - backend will default)
       queryParams.append('dateFrom', params.dateFrom);
     }
-    if (params.dateTo) {
+    if (params.dateTo !== undefined && params.dateTo !== null) {
+      // Send the date (even if empty string - backend will default)
       queryParams.append('dateTo', params.dateTo);
     }
     if (params.includeCharts !== undefined) {
@@ -1567,6 +1573,12 @@ export const financeApi = {
     }
     const queryString = queryParams.toString();
     const url = queryString ? `/finance/dashboard?${queryString}` : '/finance/dashboard';
+    console.log('Finance API getDashboard:', { 
+      url, 
+      receivedParams: { dateFrom: params.dateFrom, dateTo: params.dateTo, includeCharts: params.includeCharts },
+      willSendDateFrom: params.dateFrom !== undefined && params.dateFrom !== null,
+      willSendDateTo: params.dateTo !== undefined && params.dateTo !== null
+    });
     return apiRequest(url);
   },
 

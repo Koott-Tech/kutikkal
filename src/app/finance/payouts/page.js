@@ -96,30 +96,86 @@ export default function FinancePayouts() {
       setIsLoading(true);
       setError(null);
 
-      // Format dates for API (YYYY-MM-DD format)
-      let dateFrom = null;
-      let dateTo = null;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
-        const formatDateToIST = (date) => {
-          if (!date) return null;
+      // Format dates for API (YYYY-MM-DD format) - ALWAYS return valid strings
+      const formatDateToIST = (date) => {
+        if (!date) {
+          // Return current date in IST if date is invalid
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+        
+        try {
           const istString = new Date(date).toLocaleString('en-US', {
             timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
           });
-          const [month, day, year] = istString.split('/');
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        } catch (error) {
+          console.error('Error formatting date:', error);
+          // Return current date as fallback
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+      };
+      
+      // Get current month dates in IST as default
+      const getCurrentMonthDates = () => {
+        const now = new Date();
+        const istString = now.toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const [month, day, year] = istString.split('/').map(Number);
+        const startOfMonth = new Date(year, month - 1, 1);
+        return {
+          from: formatDateToIST(startOfMonth),
+          to: formatDateToIST(now)
         };
-        
+      };
+      
+      // ALWAYS get valid dates - use dateRange if available, otherwise use current month
+      let dateFrom, dateTo;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
+      } else {
+        // Use current month as default
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
+      }
+      
+      // Final validation - ensure dates are always valid strings
+      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+        console.error('CRITICAL: Dates validation failed!', { dateFrom, dateTo, dateRange });
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
       }
 
       const response = await financeApi.getDashboard({
-        dateFrom,
-        dateTo
+        dateFrom, // Always a valid string
+        dateTo // Always a valid string
       });
       
       if (response.success) {

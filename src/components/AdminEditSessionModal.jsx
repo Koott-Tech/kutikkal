@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Loader2, DollarSign, CreditCard, Save, User, UserCheck, Calendar, Clock, Tag } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Loader2, DollarSign, CreditCard, Save, User, UserCheck, Calendar, Clock, Tag, CheckCircle } from 'lucide-react';
 import { adminApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 
@@ -15,11 +15,13 @@ export default function AdminEditSessionModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [error, setError] = useState(null);
+  const idsSetRef = useRef(false);
   
   // Session fields state
   const [psychologistId, setPsychologistId] = useState('');
   const [clientId, setClientId] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
+  const [originalScheduledDate, setOriginalScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [status, setStatus] = useState('');
   const [price, setPrice] = useState('');
@@ -35,6 +37,7 @@ export default function AdminEditSessionModal({
   const [clients, setClients] = useState([]);
   const [searchPsychologist, setSearchPsychologist] = useState('');
   const [searchClient, setSearchClient] = useState('');
+  const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
 
   // Available statuses (only commonly used ones for admin)
   // Note: 'reschedule_requested' is removed - admins can directly reschedule
@@ -51,19 +54,131 @@ export default function AdminEditSessionModal({
   // Load initial data
   useEffect(() => {
     if (isOpen && session) {
-      loadSessionData();
-      loadPsychologists();
-      loadClients();
+      idsSetRef.current = false; // Reset flag when opening new session
+      // Reset IDs first
+      setPsychologistId('');
+      setClientId('');
+      
+      // Load dropdowns first, then set session data to ensure options are available
+      const loadData = async () => {
+        await Promise.all([loadPsychologists(), loadClients()]);
+        // Wait a bit longer to ensure state is updated
+        setTimeout(() => {
+          loadSessionData();
+        }, 200);
+      };
+      loadData();
+    } else {
+      // Reset form when modal closes
+      setPsychologistId('');
+      setClientId('');
+      setSearchPsychologist('');
+      setSearchClient('');
+      setShowDoctorDropdown(false);
+      idsSetRef.current = false;
     }
   }, [isOpen, session]);
+
+  // Ensure IDs are set correctly after psychologists/clients load
+  useEffect(() => {
+    if (isOpen && session && psychologists.length > 0 && clients.length > 0 && !idsSetRef.current) {
+      // Get expected IDs from session
+      const expectedPsychId = session.psychologist_id || session.psychologist?.id || '';
+      const expectedCliId = session.client_id || session.client?.id || '';
+      
+      let psychSet = false;
+      let clientSet = false;
+      
+      // Verify and set psychologist ID if it exists in list
+      if (expectedPsychId) {
+        const psychExists = psychologists.some(p => p.id === expectedPsychId);
+        if (psychExists) {
+          console.log('useEffect: Setting psychologist ID:', expectedPsychId);
+          setPsychologistId(expectedPsychId);
+          psychSet = true;
+        } else {
+          console.warn('Psychologist ID not found in list:', expectedPsychId, 'Available:', psychologists.map(p => p.id));
+        }
+      }
+      
+      // Verify and set client ID if it exists in list
+      if (expectedCliId) {
+        const clientExists = clients.some(c => {
+          const cId = c.id || c.client_id || c.profile?.id;
+          return cId === expectedCliId;
+        });
+        if (clientExists) {
+          console.log('useEffect: Setting client ID:', expectedCliId);
+          setClientId(expectedCliId);
+          clientSet = true;
+        } else {
+          console.warn('Client ID not found in list:', expectedCliId, 'Available:', clients.map(c => c.id || c.client_id || c.profile?.id));
+        }
+      }
+      
+      if (psychSet && clientSet) {
+        idsSetRef.current = true; // Mark as set if both IDs were processed
+      }
+    }
+  }, [isOpen, psychologists.length, clients.length, session?.id]); // Don't include IDs in deps to avoid loops
 
   const loadSessionData = () => {
     if (!session) return;
 
-    setPsychologistId(session.psychologist_id || '');
-    setClientId(session.client_id || '');
-    setScheduledDate(session.scheduled_date || '');
-    setScheduledTime(session.scheduled_time || '');
+    // Set psychologist ID - handle both direct ID and nested object
+    const psychId = session.psychologist_id || session.psychologist?.id || '';
+    if (psychId) {
+      console.log('loadSessionData: Setting psychologist ID to', psychId);
+      setPsychologistId(psychId);
+    }
+    
+    // Set client ID - handle both direct ID and nested object
+    const cliId = session.client_id || session.client?.id || '';
+    if (cliId) {
+      console.log('loadSessionData: Setting client ID to', cliId);
+      setClientId(cliId);
+    }
+    
+    // Format date for input (YYYY-MM-DD)
+    let formattedDate = '';
+    if (session.scheduled_date) {
+      const date = new Date(session.scheduled_date);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        formattedDate = `${year}-${month}-${day}`;
+      }
+    }
+    setScheduledDate(formattedDate);
+    
+    // Format original scheduled date for input (YYYY-MM-DD)
+    let formattedOriginalDate = '';
+    if (session.original_scheduled_date) {
+      const origDate = new Date(session.original_scheduled_date);
+      if (!isNaN(origDate.getTime())) {
+        const year = origDate.getFullYear();
+        const month = String(origDate.getMonth() + 1).padStart(2, '0');
+        const day = String(origDate.getDate()).padStart(2, '0');
+        formattedOriginalDate = `${year}-${month}-${day}`;
+      }
+    } else if (session.scheduled_date) {
+      // If original_scheduled_date is not set, use scheduled_date as default
+      formattedOriginalDate = formattedDate;
+    }
+    setOriginalScheduledDate(formattedOriginalDate);
+    
+    // Format time for input (HH:MM)
+    let formattedTime = '';
+    if (session.scheduled_time) {
+      // Handle both "HH:MM" and "HH:MM:SS" formats
+      const timeParts = session.scheduled_time.split(':');
+      if (timeParts.length >= 2) {
+        formattedTime = `${timeParts[0].padStart(2, '0')}:${timeParts[1].padStart(2, '0')}`;
+      }
+    }
+    setScheduledTime(formattedTime);
+    
     setStatus(session.status || 'booked');
     setPrice(session.price || '');
 
@@ -107,6 +222,7 @@ export default function AdminEditSessionModal({
           const clientId = user.profile?.id || user.id;
           return {
             ...user,
+            id: clientId, // Use client.id as the main id for matching
             client_id: clientId, // Store the actual client.id for use in dropdown
             display_name: user.profile?.first_name && user.profile?.last_name
               ? `${user.profile.first_name} ${user.profile.last_name}`
@@ -132,26 +248,38 @@ export default function AdminEditSessionModal({
       return;
     }
 
+    // Check if doctor was changed
+    const originalPsychId = session.psychologist_id || session.psychologist?.id || '';
+    const doctorChanged = psychologistId !== originalPsychId;
+
     setIsLoading(true);
 
     try {
       const updateData = {
         psychologist_id: psychologistId,
-        client_id: clientId,
+        client_id: clientId, // Keep original client ID (read-only)
         scheduled_date: scheduledDate,
         scheduled_time: scheduledTime,
+        // Send original_scheduled_date explicitly - if empty, backend will use scheduled_date as fallback
+        original_scheduled_date: originalScheduledDate || scheduledDate, // Use edited original_scheduled_date or fallback to scheduled_date
         status: status,
         price: price ? parseFloat(price) : null,
         payment_method: paymentMethod,
         transaction_id: transactionId.trim() || null,
         razorpay_order_id: razorpayOrderId.trim() || null,
-        razorpay_payment_id: razorpayPaymentId.trim() || null
+        razorpay_payment_id: razorpayPaymentId.trim() || null,
+        notify_doctor: doctorChanged // Flag to send notification to new doctor
       };
+      
+      console.log('Updating session with original_scheduled_date:', updateData.original_scheduled_date);
 
       const response = await adminApi.updateSession(session.id, updateData);
 
       if (response.success) {
-        showSuccess('Session updated successfully', 'Update Success');
+        const successMsg = doctorChanged 
+          ? 'Session updated successfully. Notification sent to the new doctor.'
+          : 'Session updated successfully';
+        showSuccess(successMsg, 'Update Success');
         if (onUpdateSuccess) {
           onUpdateSuccess(response.data);
         }
@@ -183,91 +311,143 @@ export default function AdminEditSessionModal({
   if (!isOpen || !session) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Edit Session</h2>
+            <div style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.5rem' }} className="text-gray-900 flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-gray-600" />
+              Edit Session
+            </div>
             <p className="text-sm text-gray-500 mt-1">Session #{session.id?.slice(0, 8)}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 rounded-lg p-2 hover:bg-gray-100 transition-all"
             disabled={isLoading}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+              <p className="font-medium">{error}</p>
             </div>
           )}
 
           <div className="space-y-6">
-            {/* Psychologist Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <UserCheck className="h-4 w-4 inline mr-1" />
-                Psychologist *
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search psychologist..."
-                  value={searchPsychologist}
-                  onChange={(e) => setSearchPsychologist(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
-                />
-                <select
-                  value={psychologistId}
-                  onChange={(e) => setPsychologistId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            {/* Psychologist and Client Selection - Side by Side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Psychologist Display with Assign Button */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Assigned Doctor
+                </label>
+                {/* Current Doctor Display */}
+                <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-medium min-h-[42px] flex items-center">
+                  {(() => {
+                    if (psychologistId) {
+                      const selectedPsych = psychologists.find(p => p.id === psychologistId);
+                      if (selectedPsych) {
+                        return `${selectedPsych.first_name || ''} ${selectedPsych.last_name || ''}`.trim() || selectedPsych.email || 'Unknown';
+                      }
+                    }
+                    // Fallback to session data
+                    if (session.psychologist) {
+                      return `${session.psychologist.first_name || ''} ${session.psychologist.last_name || ''}`.trim() || 
+                             session.psychologist.email || 
+                             'Doctor';
+                    }
+                    return 'No doctor assigned';
+                  })()}
+                </div>
+                
+                {/* Assign to Another Doc Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowDoctorDropdown(!showDoctorDropdown)}
+                  className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-all text-sm font-medium flex items-center justify-center gap-2"
                   disabled={isLoading || isLoadingData}
                 >
-                  <option value="">Select a psychologist</option>
-                  {filteredPsychologists.map(psych => (
-                    <option key={psych.id} value={psych.id}>
-                      {psych.first_name} {psych.last_name} {psych.email ? `(${psych.email})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                  <UserCheck className="h-4 w-4" />
+                  {showDoctorDropdown ? 'Cancel' : 'Assign to Another Doctor'}
+                </button>
 
-            {/* Client Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="h-4 w-4 inline mr-1" />
-                Client *
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search client..."
-                  value={searchClient}
-                  onChange={(e) => setSearchClient(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
-                />
-                <select
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading || isLoadingData}
-                >
-                  <option value="">Select a client</option>
-                  {filteredClients.map(client => (
-                    <option key={client.id} value={client.client_id || client.profile?.id || client.id}>
-                      {client.display_name || client.email || 'Unknown'} {client.email ? `(${client.email})` : ''}
-                    </option>
-                  ))}
-                </select>
+                {/* Doctor Dropdown (shown when button clicked) */}
+                {showDoctorDropdown && (
+                  <div className="space-y-2 animate-in fade-in duration-200">
+                    <input
+                      type="text"
+                      placeholder="Search psychologist..."
+                      value={searchPsychologist}
+                      onChange={(e) => setSearchPsychologist(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
+                    />
+                    <select
+                      value={psychologistId}
+                      onChange={(e) => {
+                        setPsychologistId(e.target.value);
+                        if (e.target.value) {
+                          setShowDoctorDropdown(false);
+                        }
+                      }}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
+                      disabled={isLoading || isLoadingData}
+                    >
+                      <option value="">-- Select New Doctor --</option>
+                      {filteredPsychologists.map(psych => (
+                        <option key={psych.id} value={psych.id}>
+                          {psych.first_name} {psych.last_name} {psych.email ? `(${psych.email})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    {psychologistId && (
+                      <p className="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Doctor will be changed on save
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Client Display (Read-only) */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Client
+                </label>
+                <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 font-medium min-h-[42px] flex flex-col justify-center">
+                  {(() => {
+                    // Use same logic as bookings page: first_name + last_name
+                    if (session.client) {
+                      const clientName = `${session.client.first_name || ''} ${session.client.last_name || ''}`.trim();
+                      return clientName || session.client.email || 'Client';
+                    }
+                    // Fallback: try to get from clients list
+                    if (clientId && clients.length > 0) {
+                      const selectedClient = clients.find(c => {
+                        const cId = c.id || c.client_id || c.profile?.id;
+                        return cId === clientId;
+                      });
+                      if (selectedClient) {
+                        const name = `${selectedClient.profile?.first_name || ''} ${selectedClient.profile?.last_name || ''}`.trim();
+                        return name || selectedClient.email || 'Unknown';
+                      }
+                    }
+                    return 'Client';
+                  })()}
+                  {session.client?.child_name && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Child: {session.client.child_name} {session.client.child_age ? `(${session.client.child_age} years)` : ''}
+                    </div>
+                  )}
+                </div>
+                <input type="hidden" value={clientId} name="client_id" />
               </div>
             </div>
 
@@ -275,7 +455,6 @@ export default function AdminEditSessionModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="h-4 w-4 inline mr-1" />
                   Scheduled Date *
                 </label>
                 <input
@@ -283,13 +462,12 @@ export default function AdminEditSessionModal({
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
                   disabled={isLoading}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="h-4 w-4 inline mr-1" />
                   Scheduled Time *
                 </label>
                 <input
@@ -297,7 +475,26 @@ export default function AdminEditSessionModal({
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            
+            {/* Original Scheduled Date */}
+            <div className="mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Original Scheduled Date
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  The original date when this session was first scheduled (used for finance calculations)
+                </p>
+                <input
+                  type="date"
+                  value={originalScheduledDate}
+                  onChange={(e) => setOriginalScheduledDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
                   disabled={isLoading}
                 />
               </div>
@@ -307,14 +504,13 @@ export default function AdminEditSessionModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Tag className="h-4 w-4 inline mr-1" />
                   Status *
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
                   disabled={isLoading}
                 >
                   {availableStatuses.map(statusOption => (
@@ -326,7 +522,6 @@ export default function AdminEditSessionModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <DollarSign className="h-4 w-4 inline mr-1" />
                   Price (₹)
                 </label>
                 <input
@@ -335,8 +530,8 @@ export default function AdminEditSessionModal({
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter session price"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all text-sm"
+                  placeholder="0.00"
                   disabled={isLoading}
                 />
               </div>
@@ -344,19 +539,20 @@ export default function AdminEditSessionModal({
 
             {/* Payment Details Section */}
             <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Payment Details</h3>
+              <div style={{ fontSize: '16px', fontWeight: '600' }} className="text-gray-900 mb-4">
+                Payment Details
+              </div>
               
               <div className="space-y-4">
                 {/* Payment Method */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <CreditCard className="h-4 w-4 inline mr-1" />
                     Payment Method
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
                     disabled={isLoading}
                   >
                     <option value="cash">Cash</option>
@@ -379,7 +575,7 @@ export default function AdminEditSessionModal({
                     type="text"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
                     placeholder="Enter transaction ID"
                     disabled={isLoading}
                   />
@@ -395,7 +591,7 @@ export default function AdminEditSessionModal({
                       type="text"
                       value={razorpayOrderId}
                       onChange={(e) => setRazorpayOrderId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
                       placeholder="Enter Razorpay order ID"
                       disabled={isLoading}
                     />
@@ -408,7 +604,7 @@ export default function AdminEditSessionModal({
                       type="text"
                       value={razorpayPaymentId}
                       onChange={(e) => setRazorpayPaymentId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm"
                       placeholder="Enter Razorpay payment ID"
                       disabled={isLoading}
                     />
@@ -419,11 +615,11 @@ export default function AdminEditSessionModal({
           </div>
 
           {/* Footer Buttons */}
-          <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-200 -mx-6 -mb-6 px-6 py-4 bg-white">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium"
               disabled={isLoading}
             >
               Cancel
@@ -431,7 +627,7 @@ export default function AdminEditSessionModal({
             <button
               type="submit"
               disabled={isLoading || isLoadingData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
             >
               {isLoading ? (
                 <>

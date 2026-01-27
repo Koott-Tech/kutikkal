@@ -777,14 +777,6 @@ export default function FinanceExpenses() {
                       ₹{(viewingExpense.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
-                  {viewingExpense.gst_amount && parseFloat(viewingExpense.gst_amount) > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">GST Amount</label>
-                      <p className="text-sm text-gray-900">
-                        ₹{(parseFloat(viewingExpense.gst_amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                    </div>
-                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-500 mb-1">Total Amount</label>
                     <p className="text-sm font-semibold text-gray-900">

@@ -17,6 +17,7 @@ import { financeApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import SessionsFilterTable from '@/components/ui/sessions-filter-table';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import WheelPagination from '@/components/ui/wheel-pagination';
 
 export default function FinanceSessionsPage() {
   const { showError } = useNotification();
@@ -24,64 +25,39 @@ export default function FinanceSessionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  // Date range filter (default to current month in IST)
-  const [dateRange, setDateRange] = useState(() => {
-    try {
-      // Get current date in IST timezone
-      const now = new Date();
-      const istString = now.toLocaleString('en-US', {
-        timeZone: 'Asia/Kolkata',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
-      
-      // Parse MM/DD/YYYY format from IST
-      const [month, day, year] = istString.split('/').map(Number);
-      
-      // Create dates for start and end of month in IST
-      const startOfMonth = new Date(year, month - 1, 1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      
-      // Get last day of month
-      const endOfMonth = new Date(year, month, 0);
-      endOfMonth.setHours(23, 59, 59, 999);
-      
-      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) {
-        // Fallback to current month in local timezone
-        const today = new Date();
-        const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        fallbackStart.setHours(0, 0, 0, 0);
-        const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        fallbackEnd.setHours(23, 59, 59, 999);
-        return { from: fallbackStart, to: fallbackEnd };
-      }
-      return { from: startOfMonth, to: endOfMonth };
-    } catch (error) {
-      console.error('Error initializing date range:', error);
-      // Fallback to current month in local timezone
-      const today = new Date();
-      const fallbackStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      fallbackStart.setHours(0, 0, 0, 0);
-      const fallbackEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      fallbackEnd.setHours(23, 59, 59, 999);
-      return { from: fallbackStart, to: fallbackEnd };
-    }
-  });
+  
+  // Pagination state (matching admin bookings page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalSessions, setTotalSessions] = useState(0);
+  // Date range filter (no default - show all sessions like admin bookings page)
+  const [dateRange, setDateRange] = useState(null);
 
   useEffect(() => {
     loadSessions();
+  }, [currentPage, dateRange]); // Reload when page or date range changes
+
+  // Reset pagination when date range changes (but not on initial load)
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   }, [dateRange]);
 
   const loadSessions = async () => {
     try {
       setIsLoading(true);
       
-      // Format dates for API (YYYY-MM-DD format)
-      // Use IST timezone (Asia/Kolkata) for date formatting
-      let dateFrom = null;
-      let dateTo = null;
-      
+      // Build query parameters for server-side pagination (matching admin bookings page exactly)
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        sort: 'created_at',
+        order: 'desc'
+      };
+
+      // Add date range filters if provided (same as admin page)
       if (dateRange && dateRange.from && dateRange.to) {
         // Convert dates to IST timezone and format as YYYY-MM-DD
         const formatDateToIST = (date) => {
@@ -100,33 +76,42 @@ export default function FinanceSessionsPage() {
           return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         };
         
-        dateFrom = formatDateToIST(dateRange.from);
-        dateTo = formatDateToIST(dateRange.to);
+        params.dateFrom = formatDateToIST(dateRange.from);
+        params.dateTo = formatDateToIST(dateRange.to);
       }
-      
-      // Load sessions with date range filter
-      const params = {
-        page: 1,
-        limit: 1000, // Load more sessions for client-side filtering
-        sort: 'created_at',
-        order: 'desc',
-        dateFrom,
-        dateTo
-      };
 
+      // Load sessions with pagination from backend (same method as admin bookings page)
+      // Using financeApi.getAllSessions which calls /finance/sessions/all
+      // This endpoint uses the same backend method (sessionController.getAllSessions) as admin
       const response = await financeApi.getAllSessions(params);
       
       if (response && response.success) {
+        console.log('Finance Sessions data received:', response);
         const sessionsData = response.data?.sessions || [];
+        const paginationData = response.data?.pagination || {};
+        
+        console.log('Finance Pagination data:', paginationData);
+        console.log('Finance Sessions count:', sessionsData.length);
+        console.log('Finance Total sessions:', paginationData.total);
+        console.log('Finance Calculated totalPages:', Math.max(1, Math.ceil((paginationData.total || 0) / itemsPerPage)));
+        
         setSessions(sessionsData);
+        setTotalSessions(paginationData.total || 0);
+        setTotalPages(Math.max(1, Math.ceil((paginationData.total || 0) / itemsPerPage)));
       } else {
+        console.warn('Finance Sessions response not successful:', response);
         setSessions([]);
+        setTotalSessions(0);
+        setTotalPages(1);
       }
       
     } catch (error) {
-      console.error('Failed to load sessions:', error);
+      console.error('Failed to load finance sessions:', error);
+      console.error('Error details:', error.response || error.message);
       showError('Failed to load sessions', 'Load Error');
       setSessions([]);
+      setTotalSessions(0);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
@@ -240,6 +225,17 @@ export default function FinanceSessionsPage() {
           isLoading={isLoading}
           onViewSession={handleViewSession}
         />
+
+        {/* Pagination (matching admin bookings page) */}
+        {!isLoading && totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <WheelPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
         {/* Session Details Modal */}
         {isSessionDetailsOpen && selectedSession && (

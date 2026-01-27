@@ -1,37 +1,17 @@
 "use client"
 
 import * as React from "react"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import {
   Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { MoreVertical, Eye, Calendar as CalendarIcon, ChevronDown } from "lucide-react"
-import { format } from "date-fns"
-
-const weekDays = [
-  { value: 0, label: "Sunday" },
-  { value: 1, label: "Monday" },
-  { value: 2, label: "Tuesday" },
-  { value: 3, label: "Wednesday" },
-  { value: 4, label: "Thursday" },
-  { value: 5, label: "Friday" },
-  { value: 6, label: "Saturday" },
-]
-
-const months = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-]
+import { MoreVertical, Eye } from "lucide-react"
 
 export default function SessionsFilterTable({ 
   sessions = [], 
@@ -43,118 +23,16 @@ export default function SessionsFilterTable({
   onPageChange,
 }) {
   const [selectedRows, setSelectedRows] = useState(new Set())
-  const [search, setSearch] = useState("")
-  const [status, setStatus] = useState("All")
-  const [dateFilter, setDateFilter] = useState("currentMonth") // currentMonth, week, month, year, custom
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedWeekDays, setSelectedWeekDays] = useState(new Set())
-  const [dateRange, setDateRange] = useState(undefined)
 
-  // Set default to current month
-  useEffect(() => {
-    const now = new Date()
-    setSelectedMonth(now.getMonth())
-    setSelectedYear(now.getFullYear())
-  }, [])
-
-  const getDateRange = () => {
-    const now = new Date()
-    let from, to
-
-    switch (dateFilter) {
-      case "currentMonth":
-        from = new Date(now.getFullYear(), now.getMonth(), 1)
-        to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        break
-      case "week":
-        const dayOfWeek = now.getDay()
-        from = new Date(now)
-        from.setDate(now.getDate() - dayOfWeek)
-        from.setHours(0, 0, 0, 0)
-        to = new Date(from)
-        to.setDate(from.getDate() + 6)
-        to.setHours(23, 59, 59, 999)
-        break
-      case "month":
-        from = new Date(selectedYear, selectedMonth, 1)
-        to = new Date(selectedYear, selectedMonth + 1, 0)
-        break
-      case "year":
-        from = new Date(selectedYear, 0, 1)
-        to = new Date(selectedYear, 11, 31)
-        break
-      case "custom":
-        from = dateRange?.from
-        to = dateRange?.to
-        break
-      default:
-        from = null
-        to = null
-    }
-
-    return { from, to }
-  }
-
+  // No filtering - use sessions directly (filtering is handled by parent component via dateRange)
   const filteredData = useMemo(() => {
-    let filtered = [...sessions]
-
-    // Status filter
-    if (status !== "All") {
-      filtered = filtered.filter(s => s.status === status)
-    }
-
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase()
-      filtered = filtered.filter(s => {
-        const clientName = `${s.client?.first_name || ''} ${s.client?.last_name || ''}`.toLowerCase()
-        const psychologistName = `${s.psychologist?.first_name || ''} ${s.psychologist?.last_name || ''}`.toLowerCase()
-        const clientEmail = s.client?.user?.email?.toLowerCase() || ''
-        const sessionId = s.id?.toString().toLowerCase() || ''
-        
-        return clientName.includes(searchLower) ||
-               psychologistName.includes(searchLower) ||
-               clientEmail.includes(searchLower) ||
-               sessionId.includes(searchLower)
-      })
-    }
-
-    // Date range filter
-    const { from, to } = getDateRange()
-    if (from && to) {
-      filtered = filtered.filter(s => {
-        if (!s.scheduled_date) return false
-        const sessionDate = new Date(s.scheduled_date)
-        return sessionDate >= from && sessionDate <= to
-      })
-    }
-
-    // Week days filter
-    if (selectedWeekDays.size > 0) {
-      filtered = filtered.filter(s => {
-        if (!s.scheduled_date) return false
-        const sessionDate = new Date(s.scheduled_date)
-        const dayOfWeek = sessionDate.getDay()
-        return selectedWeekDays.has(dayOfWeek)
-      })
-    }
-
-    return filtered
-  }, [sessions, search, status, dateFilter, selectedMonth, selectedYear, selectedWeekDays, dateRange])
+    return sessions
+  }, [sessions])
 
   const toggleRow = (id) => {
     setSelectedRows((prev) => {
       const newSet = new Set(prev)
       newSet.has(id) ? newSet.delete(id) : newSet.add(id)
-      return newSet
-    })
-  }
-
-  const toggleWeekDay = (dayValue) => {
-    setSelectedWeekDays((prev) => {
-      const newSet = new Set(prev)
-      newSet.has(dayValue) ? newSet.delete(dayValue) : newSet.add(dayValue)
       return newSet
     })
   }
@@ -192,190 +70,9 @@ export default function SessionsFilterTable({
     return <Badge variant={variant}>{displayStatus}</Badge>
   }
 
-  const getDateFilterLabel = () => {
-    switch (dateFilter) {
-      case "currentMonth":
-        return `Current Month (${format(new Date(), 'MMMM yyyy')})`
-      case "week":
-        const { from } = getDateRange()
-        return `This Week (${format(from, 'MMM d')} - ${format(new Date(from.getTime() + 6 * 24 * 60 * 60 * 1000), 'MMM d')})`
-      case "month":
-        return `${months[selectedMonth]} ${selectedYear}`
-      case "year":
-        return selectedYear.toString()
-      case "custom":
-        if (dateRange?.from && dateRange?.to) {
-          return `${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d')}`
-        }
-        return "Custom Range"
-      default:
-        return "All Dates"
-    }
-  }
-
-  const statuses = ['All', 'booked', 'completed', 'cancelled', 'rescheduled', 'no_show']
-
-  // Generate years for dropdown (current year ± 5 years)
-  const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i)
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-      {/* Super Mega Filters */}
-      <div className="p-4 flex flex-col gap-3 md:flex-row md:flex-wrap items-start md:items-center border-b border-gray-200">
-        <Input
-          placeholder="Search by client, psychologist, email, or session ID"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="md:w-1/4"
-        />
-
-        {/* Status Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="min-w-[120px] justify-between">
-              {status}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {statuses.map((s) => (
-              <DropdownMenuItem key={s} onClick={() => setStatus(s)}>
-                {s === 'no_show' ? 'No Show' : s.charAt(0).toUpperCase() + s.slice(1)}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Date Filter Type */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="min-w-[180px] justify-between">
-              {getDateFilterLabel()}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuItem onClick={() => setDateFilter("currentMonth")}>
-              Current Month
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDateFilter("week")}>
-              This Week
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDateFilter("month")}>
-              Select Month
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDateFilter("year")}>
-              Select Year
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDateFilter("custom")}>
-              Custom Range
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setDateFilter("all")}>
-              All Dates
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Month Selector (when month filter is selected) */}
-        {dateFilter === "month" && (
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="min-w-[120px]">
-                  {months[selectedMonth]}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {months.map((month, index) => (
-                  <DropdownMenuItem key={index} onClick={() => setSelectedMonth(index)}>
-                    {month}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="min-w-[100px]">
-                  {selectedYear}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {years.map((year) => (
-                  <DropdownMenuItem key={year} onClick={() => setSelectedYear(year)}>
-                    {year}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-
-        {/* Year Selector (when year filter is selected) */}
-        {dateFilter === "year" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="min-w-[100px]">
-                {selectedYear}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {years.map((year) => (
-                <DropdownMenuItem key={year} onClick={() => setSelectedYear(year)}>
-                  {year}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {/* Custom Date Range */}
-        {dateFilter === "custom" && (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="min-w-[200px]">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                {dateRange.from && dateRange.to
-                  ? `${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d')}`
-                  : "Select Date Range"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-        )}
-
-        {/* Week Days Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="min-w-[140px] justify-between">
-              {selectedWeekDays.size === 0 
-                ? "Week Days" 
-                : selectedWeekDays.size === 7 
-                ? "All Days" 
-                : `${selectedWeekDays.size} Selected`}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-48">
-            {weekDays.map((day) => (
-              <DropdownMenuCheckboxItem
-                key={day.value}
-                checked={selectedWeekDays.has(day.value)}
-                onCheckedChange={() => toggleWeekDay(day.value)}
-              >
-                {day.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       {/* Table */}
       <div className="max-h-[600px] overflow-y-auto">
         {isLoading ? (

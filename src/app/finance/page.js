@@ -105,7 +105,8 @@ export default function FinanceDashboard() {
 
   // Load dashboard data when date range changes (includes initial load) - without charts
   useEffect(() => {
-    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin')) && dateRange) {
+    if (!authLoading && (hasRole('finance') || hasRole('admin') || hasRole('superadmin'))) {
+      // Always load - loadDashboardData has fallback for dates
       loadDashboardData(false); // Don't include charts on initial load
       setShowCharts(false); // Reset charts visibility when date range changes
     }
@@ -117,16 +118,22 @@ export default function FinanceDashboard() {
       setIsLoading(true);
       setError(null);
 
-      // Format dates for API (YYYY-MM-DD format)
-      // Use IST timezone (Asia/Kolkata) for date formatting
-      let dateFrom = null;
-      let dateTo = null;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
-        // Convert dates to IST timezone and format as YYYY-MM-DD
-        const formatDateToIST = (date) => {
-          if (!date) return null;
-          
+      // Format dates for API (YYYY-MM-DD format) - ALWAYS return a valid string, never null/undefined
+      const formatDateToIST = (date) => {
+        if (!date) {
+          // Return current date in IST if date is invalid
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+        
+        try {
           // Convert to IST timezone explicitly
           const istString = new Date(date).toLocaleString('en-US', {
             timeZone: 'Asia/Kolkata',
@@ -136,28 +143,94 @@ export default function FinanceDashboard() {
           });
           
           // Parse MM/DD/YYYY format from toLocaleString and convert to YYYY-MM-DD
-          const [month, day, year] = istString.split('/');
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        } catch (error) {
+          console.error('Error formatting date:', error);
+          // Return current date as fallback - NEVER return null
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+      };
+      
+      // Get current month dates in IST as default - ALWAYS returns valid strings
+      const getCurrentMonthDates = () => {
+        const now = new Date();
+        const istString = now.toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const [month, day, year] = istString.split('/').map(Number);
+        const startOfMonth = new Date(year, month - 1, 1);
+        return {
+          from: formatDateToIST(startOfMonth),
+          to: formatDateToIST(now)
         };
-        
+      };
+      
+      // ALWAYS get valid dates - use dateRange if available, otherwise use current month
+      // This ensures we NEVER pass undefined to the API
+      let dateFrom, dateTo;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
+      } else {
+        // Use current month as default
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
+      }
+      
+      // Final validation - ensure dates are always valid strings (should never fail at this point)
+      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+        console.error('CRITICAL ERROR: Dates validation failed!', { dateFrom, dateTo, dateRange, dateFromType: typeof dateFrom, dateToType: typeof dateTo });
+        // Last resort - use current month
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
       }
 
+      // Ensure we never pass undefined (should be impossible at this point, but double-check)
+      if (dateFrom === undefined || dateTo === undefined) {
+        console.error('FATAL ERROR: Dates are still undefined!', { dateFrom, dateTo });
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
+      }
+
+      console.log('Finance dashboard FINAL dates being sent:', { dateFrom, dateTo, dateRange });
+
+      // Always send dates (defaults to current month if not set)
+      // Ensure we never pass undefined - always pass valid date strings
       const response = await financeApi.getDashboard({
-        dateFrom,
-        dateTo,
+        dateFrom: dateFrom, // Should always be a valid string at this point
+        dateTo: dateTo, // Should always be a valid string at this point
         includeCharts
       });
       
-      if (response.success) {
+      console.log('Finance dashboard API response:', response);
+      
+      if (response && response.success) {
+        console.log('Finance dashboard data received:', response.data);
         setDashboardData(response.data);
       } else {
-        setError(response.message || 'Failed to load dashboard data');
+        console.error('Finance dashboard API error:', response);
+        setError(response?.message || 'Failed to load dashboard data');
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again.');
+      console.error('Error details:', err.response || err.message);
+      setError(`Failed to load dashboard data: ${err.message || 'Please try again.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -173,30 +246,84 @@ export default function FinanceDashboard() {
     try {
       setIsLoadingCharts(true);
       
-      // Format dates for API (YYYY-MM-DD format)
-      let dateFrom = null;
-      let dateTo = null;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
-        const formatDateToIST = (date) => {
-          if (!date) return null;
+      // Use the same date formatting logic as loadDashboardData
+      const formatDateToIST = (date) => {
+        if (!date) {
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+        
+        try {
           const istString = new Date(date).toLocaleString('en-US', {
             timeZone: 'Asia/Kolkata',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
           });
-          const [month, day, year] = istString.split('/');
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        } catch (error) {
+          console.error('Error formatting date:', error);
+          const now = new Date();
+          const istString = now.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/').map(num => num.padStart(2, '0'));
+          return `${year}-${month}-${day}`;
+        }
+      };
+      
+      const getCurrentMonthDates = () => {
+        const now = new Date();
+        const istString = now.toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const [month, day, year] = istString.split('/').map(Number);
+        const startOfMonth = new Date(year, month - 1, 1);
+        return {
+          from: formatDateToIST(startOfMonth),
+          to: formatDateToIST(now)
         };
-        
+      };
+      
+      // Always get valid dates
+      let dateFrom, dateTo;
+      
+      if (dateRange && dateRange.from && dateRange.to) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
+      } else {
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
+      }
+      
+      // Final validation
+      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+        console.error('CRITICAL: Charts dates validation failed!', { dateFrom, dateTo, dateRange });
+        const currentDates = getCurrentMonthDates();
+        dateFrom = currentDates.from;
+        dateTo = currentDates.to;
       }
 
+      console.log('Finance charts FINAL dates being sent:', { dateFrom, dateTo });
+
       const response = await financeApi.getDashboard({
-        dateFrom,
-        dateTo,
+        dateFrom, // Always a valid string
+        dateTo, // Always a valid string
         includeCharts: true
       });
       
@@ -1013,7 +1140,7 @@ export default function FinanceDashboard() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-medium text-gray-900 mb-1">Charts & Graphs</h3>
+                <div className="text-[20px] font-medium text-gray-900 mb-1">Charts & Graphs</div>
                 <p className="text-xs text-gray-600">View detailed analytics and visualizations</p>
               </div>
               <button
@@ -1177,7 +1304,7 @@ export default function FinanceDashboard() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div>
-              <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-1">Pending Payouts</div>
+              <div role="heading" aria-level="3" className="text-[20px] font-medium text-gray-900 mb-1">Pending Payouts</div>
               <p className="text-xs text-gray-600">Doctors with completed sessions awaiting payout</p>
             </div>
             <a
