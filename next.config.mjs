@@ -50,6 +50,20 @@ const nextConfig = {
     }
     return config;
   },
+  // Rewrite analytics requests to bypass ad blockers
+  // These proxies make analytics requests appear as first-party requests (bypasses ad blockers)
+  async rewrites() {
+    return [
+      {
+        source: '/posthog/:path*',
+        destination: 'https://us.i.posthog.com/:path*',
+      },
+      {
+        source: '/clarity/:path*',
+        destination: 'https://www.clarity.ms/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

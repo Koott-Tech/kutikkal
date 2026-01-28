@@ -19,7 +19,14 @@ export function isPostHogLoaded() {
  */
 export function captureEvent(eventName, properties = {}) {
   if (isPostHogLoaded()) {
-    posthog.capture(eventName, properties)
+    try {
+      posthog.capture(eventName, properties)
+    } catch (error) {
+      // Silently handle blocked requests (ERR_BLOCKED_BY_CLIENT from ad blockers)
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('[PostHog] Event capture failed (may be blocked):', eventName, error)
+      }
+    }
   } else if (process.env.NODE_ENV === 'development') {
     console.log('[PostHog] Event not captured (PostHog not loaded):', eventName, properties)
   }

@@ -18,7 +18,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
   const [stage, setStage] = useState('root');
   const [selected, setSelected] = useState(null);
   const [selectedSubmenuItem, setSelectedSubmenuItem] = useState(null);
-  const [submenu, setSubmenu] = useState({ loading: false, items: [], grouped: null });
+  const [submenu, setSubmenu] = useState({ loading: false, items: [], grouped: null, error: null });
   const [submenuStage, setSubmenuStage] = useState('categories');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const router = useRouter();
@@ -93,12 +93,31 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
 
   const fetchSubmenu = async (key) => {
     try {
-      setSubmenu({ loading: true, items: [], grouped: null });
-      const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      setSubmenu({ loading: true, items: [], grouped: null, error: null });
+      // Use BACKEND_URL consistently (same as other components)
+      const base = process.env.NEXT_PUBLIC_BACKEND_URL 
+        ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/api\/?$/, '') // Remove /api suffix if present
+        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001');
+      
       if (key === 'counselling') {
-        const res = await fetch(`${base}/api/counselling?limit=50`, { cache: 'no-store' });
+        const res = await fetch(`${base}/api/counselling?limit=50`, { 
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
         const services = json?.data?.services || json?.message?.services || json?.services || [];
+        
+        if (!Array.isArray(services)) {
+          console.warn('GuideModal: Invalid services data format', json);
+          throw new Error('Invalid response format');
+        }
         const grouped = { emotional: [], development: [], behaviour: [], stress: [], trauma: [] };
         services
           .filter(s => s.status === 'published' && s.category && s.slug)
@@ -120,12 +139,34 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
             }
           });
         Object.keys(grouped).forEach(cat => grouped[cat].sort((a,b)=>a.order-b.order));
-        setSubmenu({ loading: false, items: [], grouped });
+        
+        // Check if we have any data
+        const hasData = Object.values(grouped).some(cat => cat.length > 0);
+        if (!hasData) {
+          setSubmenu({ loading: false, items: [], grouped: null, error: 'No services available' });
+        } else {
+          setSubmenu({ loading: false, items: [], grouped, error: null });
+        }
         requestAnimationFrame(() => setMounted(true));
       } else if (key === 'assessments') {
-        const res = await fetch(`${base}/api/assessments?limit=50`, { cache: 'no-store' });
+        const res = await fetch(`${base}/api/assessments?limit=50`, { 
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
         const assessments = json?.data?.assessments || json?.message?.assessments || json?.assessments || json?.message || [];
+        
+        if (!Array.isArray(assessments)) {
+          console.warn('GuideModal: Invalid assessments data format', json);
+          throw new Error('Invalid response format');
+        }
         const grouped = { adhd: [], ebs: [], intelligence: [], projective: [] };
         (assessments || [])
           .filter(a => a.status === 'published' && a.category)
@@ -140,23 +181,51 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
             }
           });
         Object.keys(grouped).forEach(cat => grouped[cat].sort((a,b)=>a.order-b.order));
-        setSubmenu({ loading: false, items: [], grouped });
+        
+        // Check if we have any data
+        const hasData = Object.values(grouped).some(cat => cat.length > 0);
+        if (!hasData) {
+          setSubmenu({ loading: false, items: [], grouped: null, error: 'No assessments available' });
+        } else {
+          setSubmenu({ loading: false, items: [], grouped, error: null });
+        }
         requestAnimationFrame(() => setMounted(true));
       } else if (key === 'better-parenting') {
-        const res = await fetch(`${base}/api/better-parenting?limit=50`, { cache: 'no-store' });
+        const res = await fetch(`${base}/api/better-parenting?limit=50`, { 
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const json = await res.json();
         const pages = json?.data?.pages || json?.message?.pages || json?.pages || [];
+        
+        if (!Array.isArray(pages)) {
+          console.warn('GuideModal: Invalid pages data format', json);
+          throw new Error('Invalid response format');
+        }
         const items = pages.filter(p => p.status === 'published').map(p => ({
           title: formatDisplayName(p.slug),
           slug: p.slug,
           href: `/better-parenting/${p.slug}`,
           order: p.menu_order || 0
         })).sort((a, b) => a.order - b.order);
-        setSubmenu({ loading: false, items, grouped: null });
+        
+        if (items.length === 0) {
+          setSubmenu({ loading: false, items: [], grouped: null, error: 'No programs available' });
+        } else {
+          setSubmenu({ loading: false, items, grouped: null, error: null });
+        }
         requestAnimationFrame(() => setMounted(true));
       }
     } catch (e) {
-      setSubmenu({ loading: false, items: [], grouped: null });
+      console.error('Error fetching submenu:', e);
+      setSubmenu({ loading: false, items: [], grouped: null, error: 'Failed to load options. Please try again.' });
       requestAnimationFrame(() => setMounted(true));
     }
   };
@@ -240,7 +309,22 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
               <div className="w-4" />
             </div>
             {submenu.loading ? (
-              <></>
+              <div className="flex items-center justify-center py-8">
+                <div className="text-white/80 text-sm">Loading...</div>
+              </div>
+            ) : submenu.error ? (
+              <div className="space-y-3">
+                <div className="text-gray-600 text-sm bg-white p-4 rounded-xl border border-gray-200 text-center">
+                  {submenu.error}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fetchSubmenu(selected)}
+                  className="w-full p-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-sm font-medium text-gray-900"
+                >
+                  Try Again
+                </button>
+              </div>
             ) : (
               <div className="space-y-5">
                 {selected !== 'better-parenting' && submenu.grouped && submenuStage === 'categories' && (
@@ -250,7 +334,19 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                         <button
                           key={cat}
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedCategory(cat);
+                            setMounted(false);
+                            setTimeout(() => {
+                              setSubmenuStage('items');
+                              setTimeout(() => setMounted(true), 50);
+                            }, 200);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             setSelectedCategory(cat);
                             setMounted(false);
                             setTimeout(() => {
@@ -259,7 +355,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                             }, 200);
                           }}
                           className={`w-full text-left transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                          style={{ transitionDelay: `${idx * 220}ms` }}
+                          style={{ transitionDelay: `${idx * 220}ms`, touchAction: 'manipulation' }}
                         >
                           <div className="flex items-center justify-between p-3 md:p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50">
                             <div className="text-sm md:text-base font-semibold text-gray-900">
@@ -279,11 +375,20 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                       <button
                         key={item.slug || idx}
                         type="button"
-                        onClick={() => handleSubmenuItemClick(item)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSubmenuItemClick(item);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSubmenuItemClick(item);
+                        }}
                         className={`w-full text-left transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${selectedSubmenuItem && selectedSubmenuItem !== item.slug ? 'opacity-0 translate-y-2 scale-[0.98] pointer-events-none' : ''}`}
-                        style={{ transitionDelay: `${idx * 220}ms` }}
+                        style={{ transitionDelay: `${idx * 220}ms`, touchAction: 'manipulation' }}
                       >
-                        <div className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50">
+                        <div className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 active:bg-gray-100">
                         <div className="flex-1">
                           <div className="text-sm md:text-base font-medium text-gray-900">{item.title}</div>
                         </div>
@@ -300,11 +405,20 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                       <button
                         key={item.slug || idx}
                         type="button"
-                        onClick={() => handleSubmenuItemClick(item)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSubmenuItemClick(item);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSubmenuItemClick(item);
+                        }}
                         className={`w-full text-left transition-all duration-700 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${selectedSubmenuItem && selectedSubmenuItem !== item.slug ? 'opacity-0 translate-y-2 scale-[0.98] pointer-events-none' : ''}`}
-                        style={{ transitionDelay: `${idx * 220}ms` }}
+                        style={{ transitionDelay: `${idx * 220}ms`, touchAction: 'manipulation' }}
                       >
-                        <div className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50">
+                        <div className="flex items-center gap-3 p-3 md:p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 active:bg-gray-100">
                           <div className="flex-1">
                             <div className="text-sm md:text-base font-medium text-gray-900">{item.title}</div>
                           </div>
@@ -312,7 +426,7 @@ export default function GuideModal({ open, onClose, defaultCategory = null }) {
                         </div>
                       </button>
                     ))}
-                    {submenu.items.length === 0 && (
+                    {submenu.items.length === 0 && !submenu.error && (
                       <div className="text-gray-600 text-sm bg-white p-3 rounded-xl border border-gray-200">No options found.</div>
                     )}
                   </div>

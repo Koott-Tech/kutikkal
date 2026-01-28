@@ -91,12 +91,9 @@ export default function RootLayout({ children }) {
         {/* Preconnect to critical third-party origins for better performance */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />
-        <link rel="preconnect" href="https://www.clarity.ms" />
-        <link rel="preconnect" href="https://us.i.posthog.com" />
+        {/* Clarity and PostHog preconnect removed - using proxies (/clarity/* and /posthog/*) which don't need preconnect */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
-        <link rel="dns-prefetch" href="https://www.clarity.ms" />
-        <link rel="dns-prefetch" href="https://us.i.posthog.com" />
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -367,11 +364,15 @@ export default function RootLayout({ children }) {
           `}
         </Script>
         {/* Microsoft Clarity - User behavior analytics */}
+        {/* Using proxy (/clarity/*) to bypass ad blockers - requests appear as first-party */}
         <Script id="microsoft-clarity-analytics" strategy="afterInteractive">
           {`
             (function(c,l,a,r,i,t,y){
               c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              t=l.createElement(r);t.async=1;
+              // Use proxy to bypass ad blockers - /clarity/* proxies to clarity.ms
+              t.src="/clarity/tag/"+i;
+              t.onerror=function(){/* Silently handle blocked requests */};
               y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
             })(window, document, "clarity", "script", "v8mh6s1q7j");
           `}

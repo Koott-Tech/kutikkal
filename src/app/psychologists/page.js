@@ -190,8 +190,11 @@ const Guide = () => {
     }
   };
 
-  // Fetch doctors from database with caching
-  const fetchDoctors = async (forceRefresh = false) => {
+  // Fetch doctors from database with caching and retry logic
+  const fetchDoctors = async (forceRefresh = false, retryCount = 0) => {
+    const MAX_RETRIES = 2;
+    const RETRY_DELAY = 2000; // 2 seconds between retries
+    
     try {
       // Check cache first (unless force refresh)
       if (!forceRefresh) {
@@ -223,43 +226,27 @@ const Guide = () => {
         clearDoctorCache();
       }
 
-      console.log('Fetching doctors...');
+      // OPTIMIZED: Removed console.log statements for production performance
+      if (process.env.NODE_ENV === 'development' && retryCount > 0) {
+        console.log('Fetching doctors...', `(Retry ${retryCount}/${MAX_RETRIES})`);
+      }
       setLoading(true);
       setError(null);
       
-      // Add timeout to prevent hanging if backend is down
+      // Increased timeout to 15 seconds for better reliability
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - backend may be down')), 10000)
+        setTimeout(() => reject(new Error('Request timeout')), 15000)
       );
       
       const fetchPromise = publicApi.getPsychologists();
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
-      console.log('API Response:', response);
       const psychologists = response?.data?.psychologists || [];
-      console.log('Psychologists data:', psychologists);
-      
-      // Debug: Log the order received from API
-      console.log('📊 Frontend - Psychologists order from API:', psychologists.map((psych, index) => ({
-        index,
-        name: psych.name || `${psych.first_name} ${psych.last_name}`,
-        id: psych.id
-      })));
-      
-      // Debug image URLs
-      psychologists.forEach(psych => {
-        console.log(`🔍 Frontend - Image URL for ${psych.name || psych.first_name}:`, psych.cover_image_url);
-      });
       
       const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
       const filteredPsychologists = psychologists.filter(psych => (psych.email || '').toLowerCase() !== assessmentEmail);
       
-      // Debug: Log the order after filtering
-      console.log('📊 Frontend - Psychologists order after filtering:', filteredPsychologists.map((psych, index) => ({
-        index,
-        name: psych.name || `${psych.first_name} ${psych.last_name}`,
-        id: psych.id
-      })));
+      // OPTIMIZED: Removed debug console.log for production performance
       
       // Get cache version from response if available
       const cacheVersion = response?.data?.cache_version || Date.now();
@@ -269,23 +256,57 @@ const Guide = () => {
       setDoctors(filteredPsychologists);
       // Don't wait for images - show content immediately after doctors are loaded
       setImagesLoaded(true); // Set to true immediately so page shows without waiting for images
+      setError(null); // Clear any previous errors
     } catch (err) {
       console.error('Error fetching doctors:', err);
       
-      // On error, try to use cache as fallback
+      // Determine error type for better messaging
+      const isNetworkError = err.message?.includes('Failed to fetch') || 
+                            err.message?.includes('NetworkError') ||
+                            err.message?.includes('timeout') ||
+                            err.name === 'TypeError';
+      const isTimeout = err.message?.includes('timeout') || err.message?.includes('Request timeout');
+      
+      // On error, try to use cache as fallback first
       const cached = getCachedDoctors();
       if (cached) {
         console.log('📦 Using cached data as fallback due to fetch error');
         setDoctors(cached);
-        setImagesLoaded(true); // Don't wait for images - show content immediately
+        setImagesLoaded(true);
         setError(null);
+        // Try to fetch fresh data in background
+        setTimeout(() => fetchDoctorsInBackground(), 1000);
+      } else if (retryCount < MAX_RETRIES) {
+        // Retry with exponential backoff
+        console.log(`🔄 Retrying fetch (attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+        // Clear error and show loading during retry
+        setError(null);
+        setLoading(true);
+        // Retry after delay - don't await, let it run in background
+        setTimeout(() => {
+          fetchDoctors(false, retryCount + 1);
+        }, RETRY_DELAY * (retryCount + 1));
+        // Keep loading state - don't clear it here
+        return; // Exit early, retry will handle loading state
       } else {
-        setError('Failed to load doctors. Please check if the backend server is running.');
+        // All retries exhausted, show user-friendly error
+        let errorMessage = 'Unable to load therapists at the moment.';
+        
+        if (isTimeout) {
+          errorMessage = 'The request is taking longer than expected. Please check your internet connection and try again.';
+        } else if (isNetworkError) {
+          errorMessage = 'Connection issue detected. Please check your internet connection and try again.';
+        }
+        
+        setError(errorMessage);
         setDoctors([]);
+        setLoading(false);
       }
     } finally {
-      // Always clear loading state, even on error
-      setLoading(false);
+      // Only clear loading if we're not retrying (retries handle their own loading state)
+      if (retryCount >= MAX_RETRIES) {
+        setLoading(false);
+      }
     }
   };
 
@@ -338,7 +359,7 @@ const Guide = () => {
       const today = new Date();
       const startDate = today.toISOString().split('T')[0]; // Today
       const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 7); // Only next 7 days (reduced from 14 for faster queries)
+      endDate.setDate(endDate.getDate() + 5); // OPTIMIZED: Reduced to 5 days (from 7) for faster queries - we only need 3 slots
       const endDateStr = endDate.toISOString().split('T')[0];
 
       // Increased timeout to 5 seconds (backend caching should make most requests fast)
@@ -1122,14 +1143,46 @@ const Guide = () => {
               width: "100%",
               gridColumn: "1 / -1",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              height: 200,
-              color: "#e74c3c",
-              fontSize: "1.2rem",
+              gap: "1rem",
+              padding: "2rem",
               textAlign: "center"
             }}>
-              {error}
+              <div style={{
+                color: "#e74c3c",
+                fontSize: "1.1rem",
+                fontWeight: 500,
+                marginBottom: "0.5rem"
+              }}>
+                {error}
+              </div>
+              <button
+                onClick={() => {
+                  setError(null);
+                  fetchDoctors(true);
+                }}
+                style={{
+                  padding: "0.75rem 1.5rem",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                  color: "#fff",
+                  backgroundColor: "#3f2e73",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1d1733";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#3f2e73";
+                }}
+              >
+                Try Again
+              </button>
             </div>
           ) : doctors.length === 0 ? (
             <div style={{
@@ -1190,8 +1243,10 @@ const Guide = () => {
                       }
                     }
                     
-                    console.log(`Doctor ${doc.name || doc.first_name}: imageSrc = ${imageSrc}`);
-                    console.log(`Doctor ${doc.name || doc.first_name}: cover_image_url = ${doc.cover_image_url}`);
+                    // OPTIMIZED: Removed console.log for production performance
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log(`Doctor ${doc.name || doc.first_name}: imageSrc = ${imageSrc}`);
+                    }
                     
                     if (imageSrc) {
                       // Preload first 3 images (above the fold) for faster initial render
@@ -1217,7 +1272,7 @@ const Guide = () => {
                             zIndex: 2
                           }}
                           onError={(e) => {
-                            console.log(`Image failed to load for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            // OPTIMIZED: Removed console.log for production performance
                             // Fallback to initials if image fails to load
                             e.target.style.display = 'none';
                             if (e.target.nextSibling) {
@@ -1227,7 +1282,7 @@ const Guide = () => {
                             handleImageLoad();
                           }}
                           onLoad={(e) => {
-                            console.log(`Image loaded successfully for ${doc.name || doc.first_name}: ${imageSrc}`);
+                            // OPTIMIZED: Removed console.log for production performance
                             handleImageLoad();
                           }}
                         />

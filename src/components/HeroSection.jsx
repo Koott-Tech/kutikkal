@@ -6,6 +6,13 @@ import GuideModal from "@/components/GuideModal";
 
 export default function HeroSection({ therapyType = "individual", cmsData = null }) {
   const [showGuide, setShowGuide] = useState(false);
+
+  const handleHowItWorksClick = () => {
+    const howItWorksSection = document.getElementById('how-it-works');
+    if (howItWorksSection) {
+      howItWorksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   // Content configuration for different therapy types
   const content = {
     individual: {
@@ -240,14 +247,26 @@ export default function HeroSection({ therapyType = "individual", cmsData = null
                   Get started
                 </button>
                 
-                <div className="flex items-center gap-2 font-normal cursor-pointer transition-colors duration-200 justify-center md:justify-start w-fit" style={{ color: '#15171A' }}>
+                <div 
+                  className="flex items-center gap-2 font-normal cursor-pointer transition-colors duration-200 justify-center md:justify-start w-fit hover:opacity-80" 
+                  style={{ color: '#15171A' }}
+                  onClick={handleHowItWorksClick}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleHowItWorksClick();
+                    }
+                  }}
+                >
                   <span>See how it works</span>
-                                     <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13l5 5 5-5" />
-                   </svg>
-                   <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                   </svg>
+                  <svg className="w-4 h-4 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13l5 5 5-5" />
+                  </svg>
+                  <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </div>
               
