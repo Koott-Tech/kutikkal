@@ -10,6 +10,7 @@ import ConditionalPadding from "@/components/ConditionalPadding";
 import WhatsAppWidgetWrapper from "@/components/WhatsAppWidgetWrapper";
 import PageLoadingOverlay from "@/components/PageLoadingOverlay";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export const metadata = {
   title: {
@@ -91,9 +92,11 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.youtube-nocookie.com" />
         <link rel="preconnect" href="https://www.clarity.ms" />
+        <link rel="preconnect" href="https://us.i.posthog.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
+        <link rel="dns-prefetch" href="https://us.i.posthog.com" />
         {/* Font preloading to prevent CLS */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -335,14 +338,18 @@ export default function RootLayout({ children }) {
           <PageLoadingOverlay />
         </Suspense>
         <ErrorBoundary>
-          <ConditionalProviders>
-            <HeaderWrapper />
-            <ConditionalPadding>
-              {children}
-            </ConditionalPadding>
-            <FooterWrapper />
-            <WhatsAppWidgetWrapper />
-          </ConditionalProviders>
+          <Suspense fallback={null}>
+            <PostHogProvider>
+              <ConditionalProviders>
+                <HeaderWrapper />
+                <ConditionalPadding>
+                  {children}
+                </ConditionalPadding>
+                <FooterWrapper />
+                <WhatsAppWidgetWrapper />
+              </ConditionalProviders>
+            </PostHogProvider>
+          </Suspense>
         </ErrorBoundary>
         <SpeedInsights />
         <Analytics />
