@@ -12,9 +12,10 @@ import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
-// Use ISR for better performance - revalidate every 60 seconds
-// This allows static generation with periodic updates, improving TTFB and reducing server load
-export const revalidate = 60; // Revalidate every 60 seconds
+// No cache for CMS pages - changes reflect immediately
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 export const dynamicParams = true;
 
 // Dynamic metadata for assessment pages
@@ -93,9 +94,8 @@ async function fetchAssessment(slug, { preview = false } = {}) {
     
     console.log(`[Assessment] Fetching: ${url}`);
     
-    // Use ISR with revalidation - allows Next.js to cache and revalidate
     const response = await fetch(url, {
-      next: { revalidate: 60 } // Revalidate every 60 seconds
+      cache: 'no-store'
     });
 
     console.log(`[Assessment] Response status: ${response.status} for slug: ${slug}`);

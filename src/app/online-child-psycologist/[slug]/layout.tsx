@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import React from 'react';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
-// Helper function to create slug from name
+// Same helper as page.js - create slug from doctor name
 const createSlug = (name: string): string => {
   if (!name) return '';
   return name
@@ -11,85 +12,48 @@ const createSlug = (name: string): string => {
     .replace(/^-+|-+$/g, '');
 };
 
-// Fetch psychologist data by slug
+// Same fetch as page: publicApi.getPsychologists() -> BACKEND_URL + '/public/psychologists'
+// Same filter (exclude assessment psychologist) and same find-by-slug logic
 async function getPsychologistBySlug(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.little.care';
-    const response = await fetch(`${baseUrl}/public/psychologists`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
-    });
+    const baseUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api').replace(/\/$/, '');
+    const url = `${baseUrl}/public/psychologists`;
+    const response = await fetch(url, { cache: 'no-store' });
 
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    if (!data.success) {
-      return null;
+    if (!data.success) return null;
+
+    const rawList = data.data?.psychologists ?? data.data ?? data.psychologists ?? [];
+    const list = Array.isArray(rawList) ? rawList : [];
+
+    const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
+    const psychologists = list.filter((p: { email?: string }) => (p.email || '').toLowerCase() !== assessmentEmail);
+
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    if (isUUID) {
+      return psychologists.find((doc: { id?: string }) => doc.id === slug) ?? null;
     }
 
-    // API returns data.psychologists or data.data
-    const psychologists = Array.isArray(data.data?.psychologists) 
-      ? data.data.psychologists 
-      : Array.isArray(data.data) 
-        ? data.data 
-        : Array.isArray(data.psychologists)
-          ? data.psychologists
-          : [];
-    
-    // Check if slug is a UUID
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-    
-    if (isUUID) {
-      return psychologists.find((doc: any) => doc.id === slug);
-    }
-    
-    // Find by name slug
-    const psychologist = psychologists.find((doc: any) => {
+    const psychologist = psychologists.find((doc: { name?: string; first_name?: string; last_name?: string }) => {
       const name = doc.name || `${doc.first_name || ''} ${doc.last_name || ''}`.trim();
-      const nameSlug = createSlug(name);
-      return nameSlug === slug;
+      return createSlug(name) === slug;
     });
-    
-    return psychologist || null;
+    return psychologist ?? null;
   } catch (error) {
     console.error('Error fetching psychologist for metadata:', error);
     return null;
   }
 }
 
-// Normalize image URL for Open Graph (needs absolute URL)
-function normalizeImageUrlForOG(url: string | null | undefined): string {
-  if (!url) {
-    return 'https://www.little.care/favicon.png';
-  }
-  
-  // If already a full URL, return as is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  
-  // If it's a Supabase storage URL, convert to proxy URL for absolute path
-  // Pattern: /storage/v1/object/public/BUCKET/FILENAME
-  const supabaseStorageMatch = url.match(/\/storage\/v1\/object\/(?:public|sign)\/([^\/]+)\/(.+)$/);
-  if (supabaseStorageMatch) {
-    const bucket = supabaseStorageMatch[1];
-    let filename = supabaseStorageMatch[2].split('?')[0]; // Remove query params
-    try {
-      filename = decodeURIComponent(filename);
-    } catch (e) {
-      // If decoding fails, use original filename
-    }
-    return `https://www.little.care/api/images/${bucket}/${encodeURIComponent(filename)}`;
-  }
-  
-  // If it's already a relative proxy URL, make it absolute
-  if (url.startsWith('/api/images/')) {
-    return `https://www.little.care${url}`;
-  }
-  
-  // Otherwise, prepend the base URL
-  return `https://www.little.care${url.startsWith('/') ? url : `/${url}`}`;
+// Same image as page: profile_picture_url || cover_image_url, then normalizeImageUrl; make absolute for OG
+function toAbsoluteOgImage(rawUrl: string | null | undefined): string {
+  if (!rawUrl || typeof rawUrl !== 'string') return 'https://www.little.care/favicon.png';
+  const normalized = normalizeImageUrl(rawUrl);
+  if (!normalized) return 'https://www.little.care/favicon.png';
+  if (normalized.startsWith('http://') || normalized.startsWith('https://')) return normalized;
+  return `https://www.little.care${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -108,13 +72,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
                          psychologist.short_bio ||
                          `Book an online session with ${name}, an experienced child psychologist at Little Care. Professional counseling and therapy for children.`;
       
-      // Get therapist image - prefer cover_image_url, then profile_picture_url, then fallback
-      const therapistImage = normalizeImageUrlForOG(
-        psychologist.cover_image_url || 
-        psychologist.profile_picture_url || 
-        psychologist.profile_image_url || 
-        psychologist.image_url
-      );
+      // Same image as page: profile_picture_url || cover_image_url, then normalizeImageUrl → absolute for OG
+      const rawImageUrl = psychologist.profile_picture_url || psychologist.cover_image_url;
+      const therapistImage = toAbsoluteOgImage(rawImageUrl);
       
       const url = `https://www.little.care/online-child-psycologist/${slug}`;
       
