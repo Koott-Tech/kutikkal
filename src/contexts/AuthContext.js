@@ -8,6 +8,7 @@ import {
   loadAuthData,
   storeAuthData,
 } from '@/lib/authStorage';
+import { identifyUser, resetUser } from '@/lib/posthog';
 
 const AuthContext = createContext();
 
@@ -76,7 +77,13 @@ export function AuthProvider({ children }) {
         setToken(storedAuth.token);
         setUser(storedAuth.user);
         setIsRemembered(!!storedAuth.remember);
-        
+
+        const u = storedAuth.user;
+        const distinctId = u?.email || u?.id || u?.user_id;
+        if (distinctId) {
+          identifyUser(distinctId, { email: u?.email, role: u?.role, name: u?.name });
+        }
+
         console.log('✅ Auth session restored:', {
           hasToken: !!storedAuth.token,
           hasUser: !!storedAuth.user,
@@ -175,7 +182,17 @@ export function AuthProvider({ children }) {
     setToken(authToken);
     setIsRemembered(!!rememberPreference);
     storeAuthData({ token: authToken, user: userData, remember: !!rememberPreference });
-    
+
+    // PostHog: identify user so events are tied to this user
+    const distinctId = userData?.email || userData?.id || userData?.user_id;
+    if (distinctId) {
+      identifyUser(distinctId, {
+        email: userData?.email,
+        role: userData?.role,
+        name: userData?.name,
+      });
+    }
+
     console.log('✅ Login successful for role:', userData?.role || 'unknown', '- Remember Me:', !!rememberPreference);
   };
 
@@ -184,6 +201,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     setIsRemembered(false);
     clearAuthData();
+    resetUser();
   };
 
   const isAuthenticated = () => {

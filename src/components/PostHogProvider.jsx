@@ -141,32 +141,29 @@ export function PostHogProvider({ children }) {
 
       const posthogConfig = {
         api_host: apiHost,
-        // Disable automatic retries to prevent repeated failed requests
-        request_batching: false,
-        // Reduce retry attempts to minimize error spam
-        _retry_queue: [],
-        // Enable automatic pageview tracking
+        // PostHog recommended defaults for new projects (SPA pageviews via history API, autocapture, etc.)
+        defaults: '2025-11-30',
+        // Enable automatic pageview tracking (works with SPA via history_change when using defaults)
         capture_pageview: true,
         // Capture pageleave automatically
         capture_pageleave: true,
+        // Autocapture: pageviews, clicks, form submissions, input changes (a, button, form, input, select, textarea, label)
+        autocapture: true,
         // Enable tracing headers to send session ID on requests to backend
         ...(backendDomains.length > 0 && {
           __add_tracing_headers: backendDomains
         }),
-        // Callback when PostHog is loaded
+        // Disable automatic retries to minimize error spam when blocked
+        request_batching: false,
+        _retry_queue: [],
         loaded: (posthog) => {
           if (process.env.NODE_ENV === 'development') {
             console.log('[PostHog] Initialized with tracing headers for:', backendDomains)
             console.log('[PostHog] Using API host:', apiHost)
           }
         },
-        // Handle errors gracefully (e.g., ad blockers - fallback if proxy doesn't work)
         _onCapture: (eventName, properties) => {
-          // Suppress errors from blocked requests
-          if (process.env.NODE_ENV === 'development') {
-            // In development, we can log but not throw
-            return
-          }
+          if (process.env.NODE_ENV === 'development') return
         },
       }
 
