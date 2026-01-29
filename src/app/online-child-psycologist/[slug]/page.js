@@ -420,7 +420,23 @@ const TherapistProfileContent = ({ slug, packageId }) => {
           (psych) => (psych.email || '').toLowerCase() !== assessmentEmail
         );
         setDoctors(filteredPsychologists);
-        
+
+        // Helper: fetch full profile (education, FAQs, etc.) and set doctor so it loads with name/designation (no pop-in)
+        const setDoctorWithDetails = async (psychologist) => {
+          try {
+            const detailsRes = await publicApi.getPsychologistDetails(psychologist.id);
+            if (detailsRes?.success && detailsRes.data?.psychologist) {
+              setSelectedDoctor({ ...psychologist, ...detailsRes.data.psychologist });
+              setDetailsFetched((prev) => ({ ...prev, [psychologist.id]: true }));
+            } else {
+              setSelectedDoctor(psychologist);
+            }
+          } catch (err) {
+            console.error('Failed to fetch psychologist details:', err);
+            setSelectedDoctor(psychologist);
+          }
+        };
+
         // Handle doctor parameter (name slug, UUID, or index for backward compatibility)
         if (doctorParam !== null) {
           // Helper function to create slug from name
@@ -431,15 +447,15 @@ const TherapistProfileContent = ({ slug, packageId }) => {
               .replace(/[^a-z0-9]+/g, '-')
               .replace(/^-+|-+$/g, '');
           };
-          
+
           // Check if it's a UUID (psychologist ID)
           const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
-          
+
           if (isUUID) {
             // If it's a UUID, find the psychologist by ID
             const psychologist = filteredPsychologists.find(doc => doc.id === doctorParam);
             if (psychologist) {
-              setSelectedDoctor(psychologist);
+              await setDoctorWithDetails(psychologist);
             } else {
               setError('Doctor not found');
             }
@@ -450,14 +466,14 @@ const TherapistProfileContent = ({ slug, packageId }) => {
               const slug = createSlug(name);
               return slug === doctorParam;
             });
-            
+
             if (psychologist) {
-              setSelectedDoctor(psychologist);
+              await setDoctorWithDetails(psychologist);
             } else {
               // Fallback: Check if it's a number (for backward compatibility)
               const index = parseInt(doctorParam);
               if (!Number.isNaN(index) && filteredPsychologists[index]) {
-                setSelectedDoctor(filteredPsychologists[index]);
+                await setDoctorWithDetails(filteredPsychologists[index]);
               } else {
                 setError('Doctor not found');
               }
@@ -678,21 +694,27 @@ const TherapistProfileContent = ({ slug, packageId }) => {
   const renderEducationSection = () => {
     if (!selectedDoctor || !hasEducationDetails) return null;
     return (
-      <div className="p-4 rounded-lg education-section-container">
+      <div className="p-4 rounded-lg education-section-container text-center md:text-left">
         <style>{`
           @media (max-width: 768px) {
             .education-section-container {
               margin-left: auto !important;
               margin-right: auto !important;
-              max-width: fit-content !important;
+              max-width: 100% !important;
+              text-align: center !important;
             }
-            .education-section-container > div {
-              text-align: left !important;
+            .education-section-container .education-section-heading,
+            .education-section-container .education-section-list {
+              text-align: center !important;
             }
           }
+          @media (min-width: 769px) {
+            .education-section-container { text-align: left; }
+            .education-section-container > div { text-align: left; }
+          }
         `}</style>
-        <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I studied at</p>
-        <div className="space-y-1 text-left" style={{ lineHeight: '1.1' }}>
+        <p className="font-semibold text-gray-800 mb-2 education-section-heading" style={{ lineHeight: '1.1' }}>I studied at</p>
+        <div className="space-y-1 text-center md:text-left education-section-list" style={{ lineHeight: '1.1' }}>
           {selectedDoctor.ug_college && selectedDoctor.ug_college !== 'N/A' && (
             <p className="text-gray-700 text-sm" style={{ lineHeight: '1.1' }}>
               <strong>Bachelor's:</strong> {selectedDoctor.ug_college}
@@ -1593,21 +1615,22 @@ const TherapistProfileContent = ({ slug, packageId }) => {
         const docSlug = createSlug(name);
         return docSlug === doctorParam;
       });
-      
+
       // Fallback: Try UUID if slug doesn't match (backward compatibility)
       if (!doctor) {
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
-      if (isUUID) {
-        doctor = doctors.find(doc => doc.id === doctorParam);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(doctorParam);
+        if (isUUID) {
+          doctor = doctors.find(doc => doc.id === doctorParam);
         }
       }
 
-      if (doctor) {
+      // Only set when switching to a different doctor (e.g. navigation). Don't overwrite merged data from fetchDoctors.
+      if (doctor && selectedDoctor?.id !== doctor.id) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setSelectedDoctor(doctor);
       }
     }
-  }, [doctorParam, doctors]);
+  }, [doctorParam, doctors, selectedDoctor?.id]);
 
   useEffect(() => {
     if (selectedDoctor) {

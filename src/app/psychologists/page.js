@@ -906,7 +906,7 @@ const Guide = () => {
             position: relative;
             z-index: 1;
           }
-          /* Line break before "you" only on mobile */
+          /* Mobile-only: line break in heading before word you */
           .psychologists-heading-mobile-br { display: none; }
           @media (max-width: 767px) {
             .psychologists-heading-mobile-br { display: block; }
