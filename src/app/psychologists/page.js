@@ -870,7 +870,9 @@ const Guide = () => {
       
       <section className="psychologists-hero-section" style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
         <h2 className="psychologists-main-heading text-center max-w-[900px] mb-4 md:mb-9 text-[#1a1a1a] font-semibold mt-4 text-xl md:text-2xl lg:text-3xl px-4">
-          Psychologists that help you grow
+          Psychologists that help
+          <br className="psychologists-heading-mobile-br" />
+          you grow
         </h2>
         <p className="psychologists-description text-sm md:text-base lg:text-lg text-center max-w-[600px] font-medium px-4 mb-6 md:mb-9" style={{ color: "#444" }}>
           Skilled and supportive mental health professionals dedicated to you and your wellness journey.
@@ -903,6 +905,11 @@ const Guide = () => {
           .find-therapist-btn span {
             position: relative;
             z-index: 1;
+          }
+          /* Line break before "you" only on mobile */
+          .psychologists-heading-mobile-br { display: none; }
+          @media (max-width: 767px) {
+            .psychologists-heading-mobile-br { display: block; }
           }
           /* Mobile-specific styles for psychologists page */
           @media (max-width: 767px) {
