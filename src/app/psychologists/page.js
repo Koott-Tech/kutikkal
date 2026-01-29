@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
-import LoadingScreen from '@/components/LoadingScreen';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 
 const Guide = () => {
@@ -196,31 +195,29 @@ const Guide = () => {
     const RETRY_DELAY = 2000; // 2 seconds between retries
     
     try {
-      // Check cache first (unless force refresh)
+      // OPTIMIZED: Check cache first (unless force refresh) - show cached data immediately
       if (!forceRefresh) {
         const cached = getCachedDoctors();
-        if (cached) {
+        if (cached && cached.length > 0) {
           // Use cached data immediately - don't wait for version check
-            setDoctors(cached);
+          setDoctors(cached);
           setImagesLoaded(true); // Don't wait for images - show content immediately
-          setLoading(false);
+          setLoading(false); // Stop loading screen immediately
           
-          // Check cache version in background (non-blocking)
+          // Check cache version in background (non-blocking) - don't await
           checkCacheVersion().then(versionValid => {
             if (!versionValid) {
               // Version mismatch, fetch fresh data in background
-              console.log('📦 Cache version mismatch, fetching fresh data in background...');
               fetchDoctorsInBackground();
             } else {
-            // Still fetch in background to update cache
-            fetchDoctorsInBackground();
+              // Still fetch in background to update cache
+              fetchDoctorsInBackground();
             }
-          }).catch(err => {
-            console.error('Error checking cache version:', err);
+          }).catch(() => {
             // On error, still fetch in background to update cache
             fetchDoctorsInBackground();
           });
-            return;
+          return; // Exit early - page is already showing cached data
         }
       } else {
         clearDoctorCache();
@@ -233,9 +230,9 @@ const Guide = () => {
       setLoading(true);
       setError(null);
       
-      // Increased timeout to 15 seconds for better reliability
+      // OPTIMIZED: Reduced timeout for faster error feedback (8s for initial, retries can be longer)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout')), 15000)
+        setTimeout(() => reject(new Error('Request timeout')), retryCount > 0 ? 15000 : 8000)
       );
       
       const fetchPromise = publicApi.getPsychologists();
@@ -257,6 +254,7 @@ const Guide = () => {
       // Don't wait for images - show content immediately after doctors are loaded
       setImagesLoaded(true); // Set to true immediately so page shows without waiting for images
       setError(null); // Clear any previous errors
+      setLoading(false); // Critical: clear loading on first-visit success (was missing, caused stuck loader)
     } catch (err) {
       console.error('Error fetching doctors:', err);
       
@@ -274,6 +272,7 @@ const Guide = () => {
         setDoctors(cached);
         setImagesLoaded(true);
         setError(null);
+        setLoading(false);
         // Try to fetch fresh data in background
         setTimeout(() => fetchDoctorsInBackground(), 1000);
       } else if (retryCount < MAX_RETRIES) {
@@ -618,17 +617,107 @@ const Guide = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
-  // Fetch availability when doctors are loaded (fully async - doesn't block page render)
+  // OPTIMIZED: Only fetch availability for visible doctors (first 3-4) on initial load
+  // Use Intersection Observer to fetch availability as cards scroll into view
+  // This prevents loading ALL doctors' availability on page load (major performance improvement)
   useEffect(() => {
-    // Debounce availability fetching to prevent duplicate requests
-    if (doctors.length > 0) {
-      const timeoutId = setTimeout(() => {
-        fetchAllDoctorsAvailability(doctors).catch(err => {
-          console.error('Error fetching doctors availability:', err);
-        });
-      }, 200); // Reduced debounce delay (backend caching makes this safe)
+    if (doctors.length === 0) return;
+
+    // Fetch availability for first 3-4 doctors immediately (above the fold)
+    const initialDoctors = doctors.slice(0, 4);
+    initialDoctors.forEach((doctor) => {
+      // Mark as loading
+      setLoadingAvailability(prev => new Set(prev).add(doctor.id));
       
-      return () => clearTimeout(timeoutId);
+      // Fetch in background - don't await
+      fetchDoctorAvailability(doctor.id)
+        .then(availability => {
+          setDoctorAvailability(prev => ({
+            ...prev,
+            [doctor.id]: availability || { timeSlots: [], nextDate: null }
+          }));
+        })
+        .catch(() => {
+          // Silently fail - availability will show as loading
+        })
+        .finally(() => {
+          setLoadingAvailability(prev => {
+            const updated = new Set(prev);
+            updated.delete(doctor.id);
+            return updated;
+          });
+        });
+    });
+
+    // Use Intersection Observer to fetch availability for remaining doctors as they scroll into view
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      const observerOptions = {
+        root: null,
+        rootMargin: '200px', // Start fetching 200px before card enters viewport
+        threshold: 0.1
+      };
+
+      const observerCallback = (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const cardElement = entry.target;
+            const doctorId = cardElement.getAttribute('data-doctor-id');
+            
+            if (doctorId) {
+              // Check if already loaded or loading
+              const alreadyLoaded = doctorAvailability[doctorId];
+              const isLoading = loadingAvailability.has(doctorId);
+              
+              if (!alreadyLoaded && !isLoading) {
+                // Mark as loading
+                setLoadingAvailability(prev => new Set(prev).add(doctorId));
+                
+                // Fetch availability
+                fetchDoctorAvailability(doctorId)
+                  .then(availability => {
+                    setDoctorAvailability(prev => ({
+                      ...prev,
+                      [doctorId]: availability || { timeSlots: [], nextDate: null }
+                    }));
+                  })
+                  .catch(() => {
+                    // Silently fail
+                  })
+                  .finally(() => {
+                    setLoadingAvailability(prev => {
+                      const updated = new Set(prev);
+                      updated.delete(doctorId);
+                      return updated;
+                    });
+                  });
+                
+                // Unobserve after fetching (only fetch once)
+                observer.unobserve(cardElement);
+              }
+            }
+          }
+        });
+      };
+
+      const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+      // Observe all doctor cards (skip first 4 since we fetch them immediately)
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const cards = document.querySelectorAll('[data-doctor-id]');
+          cards.forEach((card, index) => {
+            // Skip first 4 (already fetching immediately)
+            if (index >= 4) {
+              observer.observe(card);
+            }
+          });
+        }, 100); // Small delay to ensure DOM is rendered
+      });
+
+      return () => {
+        observer.disconnect();
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
@@ -732,12 +821,18 @@ const Guide = () => {
     setShowDateTimePicker(true);
   };
 
-  // Show loading screen while fetching doctors OR until images are loaded
-  // Availability can fetch asynchronously in the background
-  // Only show loading screen while fetching doctors data, not while waiting for images
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  // No full-screen loader on first visit: show page shell + skeleton cards so mobile feels faster.
+  // When doctors load we fill in; cached visit shows content at once.
+
+  // Skeleton card for first-load perceived performance (mobile)
+  const SkeletonCard = () => (
+    <div className="guide-video-card" style={{ opacity: 0.85 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+      <div style={{ position: 'absolute', bottom: 80, left: 16, right: 16, height: 20, borderRadius: 4, background: '#e5e7eb' }} />
+      <div style={{ position: 'absolute', bottom: 50, left: 16, right: 40, height: 14, borderRadius: 4, background: '#e5e7eb' }} />
+      <div style={{ position: 'absolute', bottom: 12, left: 16, right: 16, height: 36, borderRadius: 8, background: '#e5e7eb' }} />
+    </div>
+  );
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", background: "#f8fafc", overflowX: "hidden", position: "relative" }}>
@@ -1125,19 +1220,16 @@ const Guide = () => {
             }
           `}</style>
           
-          {loading ? (
-            <div style={{
-              width: "100%",
-              gridColumn: "1 / -1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: 200,
-              color: "#666",
-              fontSize: "1.2rem"
-            }}>
-              Loading psychologists...
-            </div>
+          {loading && doctors.length === 0 ? (
+            <>
+              <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={`skeleton-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+                  <SkeletonCard />
+                  <div style={{ height: 60, background: '#f8fafc', borderRadius: '0 0 10px 10px', border: '1px solid #e2e8f0', borderTop: 'none' }} />
+                </div>
+              ))}
+            </>
           ) : error ? (
             <div style={{
               width: "100%",
@@ -1204,6 +1296,7 @@ const Guide = () => {
                 <div 
                   key={doc.id || doc.name || idx} 
                   className="doctor-card-wrapper" 
+                  data-doctor-id={doc.id}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
                   onClick={() => handleDoctorClick(doc, idx)}
                   onMouseEnter={() => syncDoctorAvailability(doc.id)} // Sync on hover for accurate data
