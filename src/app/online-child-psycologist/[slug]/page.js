@@ -1627,13 +1627,9 @@ const TherapistProfileContent = ({ slug, packageId }) => {
 
   useEffect(() => {
     if (!selectedDoctor?.id) return;
-
-    const hasDesignation = !!getDoctorDesignation(selectedDoctor);
-    const hasLanguages = getDoctorLanguages(selectedDoctor).length > 0;
-
-    if (hasDesignation && hasLanguages) return;
     if (detailsFetched[selectedDoctor.id]) return;
 
+    // Always fetch details once per doctor so we get FAQs and full profile (designation/languages were optional skip)
     const fetchDetails = async () => {
       try {
         const response = await publicApi.getPsychologistDetails(selectedDoctor.id);
