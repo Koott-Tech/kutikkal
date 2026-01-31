@@ -18,7 +18,8 @@ import {
   Calendar as CalendarIcon,
   X,
   RefreshCw,
-  Unlock
+  Unlock,
+  Loader2
 } from "lucide-react";
 
 export default function PsychologistAvailability() {
@@ -46,6 +47,7 @@ export default function PsychologistAvailability() {
   const [showRecurringBlockModal, setShowRecurringBlockModal] = useState(false);
   // Custom unblock confirm popup: { id, label } or null
   const [unblockConfirmBlock, setUnblockConfirmBlock] = useState(null);
+  const [isUnblocking, setIsUnblocking] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -370,6 +372,7 @@ export default function PsychologistAvailability() {
   };
 
   const handleUnblockRecurringBlock = async (blockId) => {
+    setIsUnblocking(true);
     try {
       await psychologistApi.deleteRecurringBlock(blockId);
       showSuccess('Recurring block removed – that day is available again');
@@ -378,6 +381,8 @@ export default function PsychologistAvailability() {
       await loadAvailability();
     } catch (err) {
       showError(err.message || 'Failed to unblock');
+    } finally {
+      setIsUnblocking(false);
     }
   };
 
@@ -756,9 +761,10 @@ export default function PsychologistAvailability() {
             <p style={{ margin: 0, fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
               &quot;{unblockConfirmBlock.label}&quot; will be removed. That day will be available again for future weeks.
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', alignItems: 'center' }}>
               <button
                 type="button"
+                disabled={isUnblocking}
                 onClick={() => setUnblockConfirmBlock(null)}
                 style={{
                   padding: '8px 16px',
@@ -768,13 +774,15 @@ export default function PsychologistAvailability() {
                   borderRadius: 8,
                   background: '#fff',
                   color: '#374151',
-                  cursor: 'pointer'
+                  cursor: isUnblocking ? 'not-allowed' : 'pointer',
+                  opacity: isUnblocking ? 0.6 : 1
                 }}
               >
                 Cancel
               </button>
               <button
                 type="button"
+                disabled={isUnblocking}
                 onClick={() => handleUnblockRecurringBlock(unblockConfirmBlock.id)}
                 style={{
                   padding: '8px 16px',
@@ -782,14 +790,29 @@ export default function PsychologistAvailability() {
                   fontWeight: 500,
                   border: 'none',
                   borderRadius: 8,
-                  background: '#16a34a',
+                  background: isUnblocking ? '#22c55e' : '#16a34a',
                   color: '#fff',
-                  cursor: 'pointer'
+                  cursor: isUnblocking ? 'wait' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8
                 }}
               >
-                Unblock
+                {isUnblocking ? (
+                  <>
+                    <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} />
+                    <span>Unblocking...</span>
+                  </>
+                ) : (
+                  'Unblock'
+                )}
               </button>
             </div>
+            {isUnblocking && (
+              <style>{`
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+              `}</style>
+            )}
           </div>
         </div>
       )}
