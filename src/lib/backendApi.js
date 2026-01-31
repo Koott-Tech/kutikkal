@@ -734,6 +734,21 @@ export const psychologistApi = {
     });
   },
 
+  // Recurring blocks (e.g. block every Sunday - applies to all future weeks)
+  async getRecurringBlocks() {
+    return apiRequest('/psychologists/recurring-blocks');
+  },
+  async addRecurringBlock(data) {
+    return apiRequest('/psychologists/recurring-blocks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  async deleteRecurringBlock(blockId) {
+    return apiRequest(`/psychologists/recurring-blocks/${blockId}`, {
+      method: 'DELETE',
+    });
+  },
 
   // Get Google Calendar events
   async getGoogleCalendarEvents(params = {}) {

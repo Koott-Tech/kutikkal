@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { psychologistApi } from "../../../lib/backendApi";
 import { useNotification } from "../../../contexts/NotificationContext";
-import TimeBlockingModal from "../../../components/TimeBlockingModal";
-import BlockedTimeSlots from "../../../components/BlockedTimeSlots";
 import AvailabilityModal from "../../../components/AvailabilityModal";
+import RecurringBlockModal from "../../../components/RecurringBlockModal";
 import WheelPagination from "../../../components/ui/wheel-pagination";
 import { getStoredToken } from "@/lib/authStorage";
 import { 
@@ -16,9 +15,10 @@ import {
   XCircle,
   AlertCircle,
   Clock,
-  Shield,
   Calendar as CalendarIcon,
-  X
+  X,
+  RefreshCw,
+  Unlock
 } from "lucide-react";
 
 export default function PsychologistAvailability() {
@@ -41,14 +41,32 @@ export default function PsychologistAvailability() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAvailability, setEditingAvailability] = useState(null);
 
-  // Time blocking state
-  const [showBlockingModal, setShowBlockingModal] = useState(false);
+  // Recurring blocks (e.g. block every Sunday)
+  const [recurringBlocks, setRecurringBlocks] = useState([]);
+  const [showRecurringBlockModal, setShowRecurringBlockModal] = useState(false);
+  // Custom unblock confirm popup: { id, label } or null
+  const [unblockConfirmBlock, setUnblockConfirmBlock] = useState(null);
 
   useEffect(() => {
     if (user) {
       loadAvailability();
     }
   }, [user, currentPage, selectedDate]);
+
+  const loadRecurringBlocks = async () => {
+    if (!user) return;
+    try {
+      const res = await psychologistApi.getRecurringBlocks();
+      const data = res?.data ?? res;
+      setRecurringBlocks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error loading recurring blocks:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) loadRecurringBlocks();
+  }, [user]);
 
   const loadAvailability = async () => {
     try {
@@ -211,51 +229,6 @@ export default function PsychologistAvailability() {
     }
   };
 
-  // Time blocking function
-  const handleBlockTimeSlots = async (blockingData) => {
-    try {
-      console.log('🚫 handleBlockTimeSlots called with:', blockingData);
-      
-      // Check if user is authenticated
-      const token = getStoredToken();
-      if (!token) {
-        showError('Please log in to block time slots');
-        return;
-      }
-      
-      const url = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/psychologists/block-time`;
-      console.log('🚫 Making blocking request to:', url);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(blockingData)
-      });
-
-      console.log('🚫 Blocking response status:', response.status);
-      console.log('🚫 Blocking response ok:', response.ok);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          showError('Please log in to block time slots');
-          return;
-        }
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to block time slots');
-      }
-
-      console.log('🚫 Blocking successful, reloading availability...');
-      // Reload availability to reflect blocked slots
-      await loadAvailability();
-    } catch (error) {
-      console.error('Error blocking time slots:', error);
-      throw error;
-    }
-  };
-
   const handleAddAvailability = async (availabilityData, isUpdate = false) => {
     try {
       let response;
@@ -388,6 +361,25 @@ export default function PsychologistAvailability() {
     setError(null);
   };
 
+  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  const handleSaveRecurringBlock = async (data) => {
+    await psychologistApi.addRecurringBlock(data);
+    await loadRecurringBlocks();
+    await loadAvailability();
+  };
+
+  const handleUnblockRecurringBlock = async (blockId) => {
+    try {
+      await psychologistApi.deleteRecurringBlock(blockId);
+      showSuccess('Recurring block removed – that day is available again');
+      setUnblockConfirmBlock(null);
+      await loadRecurringBlocks();
+      await loadAvailability();
+    } catch (err) {
+      showError(err.message || 'Failed to unblock');
+    }
+  };
 
   const formatTimeForDisplay = (time) => {
     // If time already contains AM/PM, return as-is (already formatted)
@@ -410,6 +402,19 @@ export default function PsychologistAvailability() {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Format recurring block time range (e.g. "11:00 AM – 3:00 PM" for slots 11–14)
+  const formatRecurringBlockTimeRange = (block) => {
+    const slots = block?.time_slots || [];
+    if (slots.length === 0) return '';
+    const start = formatTimeForDisplay(slots[0]);
+    const lastSlot = slots[slots.length - 1];
+    const lastMatch = String(lastSlot).match(/^(\d{1,2}):(\d{2})/);
+    const endHour = lastMatch ? parseInt(lastMatch[1], 10) + 1 : 0;
+    const endStr = `${String(endHour).padStart(2, '0')}:${lastMatch ? lastMatch[2] : '00'}`;
+    const end = formatTimeForDisplay(endStr);
+    return `${start} – ${end}`;
   };
 
   if (isLoading) {
@@ -452,11 +457,11 @@ export default function PsychologistAvailability() {
             Clean Duplicates
           </button>
           <button
-            onClick={() => setShowBlockingModal(true)}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            onClick={() => setShowRecurringBlockModal(true)}
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-amber-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
           >
-            <Shield className="h-4 w-4 mr-2" />
-            Block Time
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            Block recurring (e.g. leave every Sunday)
           </button>
           <button
             onClick={() => setShowAddModal(true)}
@@ -656,17 +661,138 @@ export default function PsychologistAvailability() {
         onAddAvailability={handleAddAvailability}
       />
 
-      {/* Blocked Time Slots */}
-      <div className="mt-8">
-        <BlockedTimeSlots psychologistId={user?.id} />
+      {/* Recurring blocks – add block or unblock to re-enable */}
+      <div className="mt-8 bg-white shadow rounded-lg p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <p className="font-medium text-gray-900">Recurring blocks</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Block the same day every week (e.g. leave every Sunday). Unblock to re-enable that day for future weeks.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { loadRecurringBlocks(); loadAvailability(); }}
+              className="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              title="Refresh list of recurring blocks"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </button>
+            <button
+              onClick={() => setShowRecurringBlockModal(true)}
+              className="inline-flex items-center rounded-md border border-amber-600 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add recurring block
+            </button>
+          </div>
+        </div>
+        {recurringBlocks.length === 0 ? (
+          <p className="text-sm text-gray-500">No recurring blocks. Add one to block a day every week (e.g. leave). Unblock later to re-enable.</p>
+        ) : (
+          <ul className="space-y-2">
+            {recurringBlocks.map((block) => (
+              <li
+                key={block.id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 border border-gray-200"
+              >
+                <span className="text-sm font-medium text-gray-800">
+                  Every {DAY_NAMES[block.day_of_week] ?? block.day_of_week}
+                  {block.block_entire_day
+                    ? ' – Full day blocked'
+                    : ` – ${formatRecurringBlockTimeRange(block)}`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setUnblockConfirmBlock({ id: block.id, label: `Every ${DAY_NAMES[block.day_of_week] ?? block.day_of_week}${block.block_entire_day ? ' – Full day' : ` – ${formatRecurringBlockTimeRange(block)}`}` })}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100"
+                  title="Unblock – re-enable this day for future weeks"
+                >
+                  <Unlock className="h-4 w-4" />
+                  Unblock
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* Time Blocking Modal */}
-      <TimeBlockingModal
-        isOpen={showBlockingModal}
-        onClose={() => setShowBlockingModal(false)}
-        onBlock={handleBlockTimeSlots}
+      {/* Recurring block modal */}
+      <RecurringBlockModal
+        isOpen={showRecurringBlockModal}
+        onClose={() => setShowRecurringBlockModal(false)}
+        onSave={handleSaveRecurringBlock}
       />
+
+      {/* Custom unblock confirm popup – inline styles only */}
+      {unblockConfirmBlock && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 50,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            background: 'rgba(0,0,0,0.4)'
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+              width: '100%',
+              maxWidth: 360,
+              padding: 20
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 8 }}>
+              Unblock recurring block?
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
+              &quot;{unblockConfirmBlock.label}&quot; will be removed. That day will be available again for future weeks.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setUnblockConfirmBlock(null)}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 8,
+                  background: '#fff',
+                  color: '#374151',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUnblockRecurringBlock(unblockConfirmBlock.id)}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: 'none',
+                  borderRadius: 8,
+                  background: '#16a34a',
+                  color: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                Unblock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
