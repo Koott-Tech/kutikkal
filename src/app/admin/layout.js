@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { AdminSidebarContext } from '@/contexts/AdminSidebarContext';
 import Image from 'next/image';
 import { 
   Users, 
@@ -96,7 +97,14 @@ export default function AdminLayout({ children }) {
     );
   }
 
+  const sidebarValue = {
+    isSidebarOpen: isSidebarOpen,
+    setSidebarOpen: setIsSidebarOpen,
+    toggleSidebar: () => setIsSidebarOpen((o) => !o),
+  };
+
   return (
+    <AdminSidebarContext.Provider value={sidebarValue}>
     <div className="min-h-screen bg-white">
       {/* Mobile header with menu button */}
       <div 
@@ -380,5 +388,6 @@ export default function AdminLayout({ children }) {
       </div>
 
     </div>
+    </AdminSidebarContext.Provider>
   );
 }

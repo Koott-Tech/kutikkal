@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Strip console.* in production (logs only on localhost/dev)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   // SWC is now enabled (Babel config moved to Jest-only configuration)
   images: {
     remotePatterns: [

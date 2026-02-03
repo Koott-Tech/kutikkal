@@ -352,11 +352,12 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     
-    // Replace HTML links with markdown format
-    const links = tempDiv.querySelectorAll('a[data-link-url]');
+    // Replace HTML links with markdown format (use a[href] so we catch all links even if data-link-url is missing after serialization)
+    const links = tempDiv.querySelectorAll('a[href]');
     links.forEach(link => {
       const url = link.getAttribute('data-link-url') || link.getAttribute('href') || '';
-      const text = link.textContent || link.innerText || '';
+      const text = (link.textContent || link.innerText || '').trim();
+      if (!url) return;
       const markdown = `[${text}](${url})`;
       
       // Create a text node with the markdown
@@ -390,8 +391,8 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
   const handleContextMenu = (e, blockIndex) => {
     const target = e.target;
     
-    // Check if clicking on an existing link
-    const linkElement = target.closest('a[data-link-url]');
+    // Check if clicking on an existing link (support both data-link-url and plain href so right-click always finds the link)
+    const linkElement = target.closest('a[data-link-url]') || target.closest('a[href]');
     if (linkElement) {
       e.preventDefault();
       const url = linkElement.getAttribute('data-link-url') || linkElement.href;
@@ -557,12 +558,12 @@ const StructuredContentEditor = ({ content, onChange, onImageUpload }) => {
       const textNode = document.createTextNode(linkText);
       linkElement.parentNode.replaceChild(textNode, linkElement);
     } else {
-      // Fallback: find the link by URL in the editable div
+      // Fallback: find the link by URL in the editable div (check all links with href)
       const linkUrl = normalizeUrl(linkDialog.url);
-      const links = editableDiv.querySelectorAll('a[data-link-url]');
+      const links = editableDiv.querySelectorAll('a[href]');
       links.forEach(link => {
         const linkDataUrl = link.getAttribute('data-link-url');
-        const linkHref = link.href;
+        const linkHref = link.getAttribute('href') || link.href;
         if (linkDataUrl === linkUrl || linkHref === linkUrl || linkHref.includes(linkUrl) || linkUrl.includes(linkHref)) {
           const linkText = link.textContent || link.innerText;
           const textNode = document.createTextNode(linkText);

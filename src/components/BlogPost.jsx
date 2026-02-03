@@ -508,6 +508,43 @@ export default function BlogPost({ slug }) {
         <div className="blog-content">
           <style dangerouslySetInnerHTML={{
             __html: `
+              .blog-content p,
+              .blog-content div {
+                display: block !important;
+                margin-bottom: 1rem !important;
+                line-height: 1.75 !important;
+              }
+              .blog-content p:last-child,
+              .blog-content div:last-child {
+                margin-bottom: 0 !important;
+              }
+              .blog-content br {
+                display: block !important;
+                margin-bottom: 0.25em !important;
+              }
+              .blog-content ul,
+              .blog-content ol {
+                display: block !important;
+                margin: 1rem 0 !important;
+                padding-left: 1.5rem !important;
+              }
+              .blog-content ul {
+                list-style-type: disc !important;
+              }
+              .blog-content ol {
+                list-style-type: decimal !important;
+              }
+              .blog-content li {
+                display: list-item !important;
+                margin-bottom: 0.5rem !important;
+                line-height: 1.6 !important;
+              }
+              .blog-content ul ul,
+              .blog-content ol ul,
+              .blog-content ul ol,
+              .blog-content ol ol {
+                margin: 0.5rem 0 !important;
+              }
               .blog-content h1 {
                 font-size: 2.5rem !important;
                 line-height: 1.2 !important;
@@ -550,6 +587,13 @@ export default function BlogPost({ slug }) {
                 margin-top: 0.875rem !important;
                 margin-bottom: 0.5rem !important;
               }
+              .blog-content a {
+                color: #3f2e73 !important;
+                text-decoration: underline !important;
+              }
+              .blog-content a:hover {
+                color: #1d1733 !important;
+              }
             `
           }} />
           {blogPost.structured_content && blogPost.structured_content.length > 0 ? (
@@ -557,7 +601,16 @@ export default function BlogPost({ slug }) {
           ) : (
           <div 
               className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: blogPost.content }}
+            dangerouslySetInnerHTML={{ 
+              __html: (() => {
+                const html = blogPost.content || '';
+                // If content has no block elements, newlines won't show; convert \n to <br>
+                if (html && !/<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(html) && /\n/.test(html)) {
+                  return html.replace(/\n/g, '<br>');
+                }
+                return html;
+              })()
+            }}
                         />
           )}
         </div>
