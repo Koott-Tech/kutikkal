@@ -4,7 +4,7 @@ export default async function sitemap() {
   const staticRoutes = [
     "", 
     "/about", 
-    "/psychologists", 
+    "/online-child-psychologist", 
     "/blog",
     "/faq",
     "/free-assessment",
@@ -17,7 +17,7 @@ export default async function sitemap() {
     (route) => ({
       url: `${baseUrl}${route}`,
       changeFrequency: "monthly",
-      priority: route === "" ? 1.0 : route === "/blog" || route === "/psychologists" ? 0.9 : 0.7,
+      priority: route === "" ? 1.0 : route === "/blog" || route === "/online-child-psychologist" ? 0.9 : 0.7,
       lastModified: new Date(),
     })
   );
@@ -114,7 +114,7 @@ export default async function sitemap() {
       lastModified: new Date(),
     })),
     ...psychologistSlugs.map((slug) => ({
-      url: `${baseUrl}/online-child-psycologist/${slug}`,
+      url: `${baseUrl}/online-child-psychologist/${slug}`,
       changeFrequency: "monthly",
       priority: 0.9,
       lastModified: new Date(),

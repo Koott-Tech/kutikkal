@@ -569,7 +569,7 @@ export default function SessionsPage() {
                 You don't have any packages with remaining sessions.
               </p>
               <button
-                onClick={() => router.push('/psychologists')}
+                onClick={() => router.push('/online-child-psychologist')}
                 className="text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
                 style={{ backgroundColor: '#3f2e73' }}
                 {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
@@ -680,7 +680,7 @@ export default function SessionsPage() {
                                       .trim()
                                       .replace(/[^a-z0-9]+/g, '-')
                                       .replace(/^-+|-+$/g, '');
-                                    router.push(`/online-child-psycologist/${slug}?package_id=${pkg.id}`);
+                                    router.push(`/online-child-psychologist/${slug}?package_id=${pkg.id}`);
                                   }
                                 }
                               }}
@@ -802,7 +802,7 @@ export default function SessionsPage() {
                                           .trim()
                                           .replace(/[^a-z0-9]+/g, '-')
                                           .replace(/^-+|-+$/g, '');
-                                        router.push(`/online-child-psycologist/${slug}?package_id=${pkg.id}`);
+                                        router.push(`/online-child-psychologist/${slug}?package_id=${pkg.id}`);
                                       }
                                     }
                                   }}
@@ -853,7 +853,7 @@ export default function SessionsPage() {
                 : 'You don\'t have any sessions yet.'}
             </p>
             <button
-              onClick={() => router.push('/psychologists')}
+              onClick={() => router.push('/online-child-psychologist')}
               className="text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 flex items-center gap-2 mx-auto cursor-pointer"
               style={{ backgroundColor: '#3f2e73' }}
               {...(typeof window !== 'undefined' && window.innerWidth >= 1024 ? {
@@ -1062,7 +1062,7 @@ export default function SessionsPage() {
                                       .replace(/^-+|-+$/g, '');
                                     return (
                                       <button
-                                        onClick={() => router.push(`/online-child-psycologist/${slug}?package_id=${session.package_id}`)}
+                                        onClick={() => router.push(`/online-child-psychologist/${slug}?package_id=${session.package_id}`)}
                                         className="flex-1 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1"
                                         style={{ backgroundColor: '#3f2e73' }}
                                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -1335,7 +1335,7 @@ export default function SessionsPage() {
                                           .replace(/^-+|-+$/g, '');
                                         return (
                                           <button
-                                            onClick={() => router.push(`/online-child-psycologist/${slug}?package_id=${session.package_id}`)}
+                                            onClick={() => router.push(`/online-child-psychologist/${slug}?package_id=${session.package_id}`)}
                                             className="text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer"
                                             style={{ backgroundColor: '#3f2e73' }}
                                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}

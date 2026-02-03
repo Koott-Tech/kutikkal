@@ -54,6 +54,26 @@ const nextConfig = {
     }
     return config;
   },
+  // Redirect old URLs to canonical psychologist listing
+  async redirects() {
+    return [
+      {
+        source: '/online-child-psycologist/:path*',
+        destination: '/online-child-psychologist/:path*',
+        permanent: true,
+      },
+      {
+        source: '/psychologists',
+        destination: '/online-child-psychologist',
+        permanent: true,
+      },
+      {
+        source: '/psychologists/',
+        destination: '/online-child-psychologist',
+        permanent: true,
+      },
+    ];
+  },
   // Rewrite analytics requests to bypass ad blockers
   // These proxies make analytics requests appear as first-party requests (bypasses ad blockers)
   async rewrites() {

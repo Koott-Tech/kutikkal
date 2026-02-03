@@ -361,7 +361,7 @@ export default function HowItWorks({ heading, ctaText } = {}) {
             style={{ backgroundColor: '#15171A' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2d33'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#15171A'}
-            onClick={() => router.push('/psychologists')}
+            onClick={() => router.push('/online-child-psychologist')}
           >
             Get started
           </button>

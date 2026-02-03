@@ -116,7 +116,7 @@ export default function PackagesPage() {
           <h6 className="text-gray-900 mb-2">No packages purchased yet</h6>
           <p className="text-gray-600">You can browse therapists and purchase packages from the guide page.</p>
           <button
-            onClick={() => router.push('/psychologists')}
+            onClick={() => router.push('/online-child-psychologist')}
             className="mt-4 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
             style={{ backgroundColor: '#3f2e73' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}

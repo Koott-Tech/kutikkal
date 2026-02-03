@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       const rawImageUrl = psychologist.profile_picture_url || psychologist.cover_image_url;
       const therapistImage = toAbsoluteOgImage(rawImageUrl);
       
-      const url = `https://www.little.care/online-child-psycologist/${slug}`;
+      const url = `https://www.little.care/online-child-psychologist/${slug}`;
       
       return {
         title,
@@ -124,7 +124,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: 'Book an online session with an experienced child psychologist at Little Care. Professional counseling and therapy for children.',
       type: 'profile',
       siteName: 'Little Care',
-      url: `https://www.little.care/online-child-psycologist/${slug}`,
+      url: `https://www.little.care/online-child-psychologist/${slug}`,
       images: [
         {
           url: 'https://www.little.care/favicon.png',
@@ -141,7 +141,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       images: ['https://www.little.care/favicon.png'],
     },
     alternates: {
-      canonical: `https://www.little.care/online-child-psycologist/${slug}`,
+      canonical: `https://www.little.care/online-child-psychologist/${slug}`,
     },
   };
 }

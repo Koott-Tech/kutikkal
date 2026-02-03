@@ -237,7 +237,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         </p>
                         <button 
                             className="bg-gray-800 hover:bg-gray-900 text-white font-normal py-2 px-4 md:py-3 md:px-6 rounded-full text-sm md:text-base transition-colors duration-200"
-                            onClick={() => router.push('/psychologists')}
+                            onClick={() => router.push('/online-child-psychologist')}
                         >
                             Get started
                         </button>
@@ -280,7 +280,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
-                                onClick={() => router.push('/psychologists')}
+                                onClick={() => router.push('/online-child-psychologist')}
                             >
                                 {pathname === '/about' ? 'Join Our Team' : 'Book  Now'}
                             </button>

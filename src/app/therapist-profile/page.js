@@ -1867,7 +1867,7 @@ const TherapistProfileContent = () => {
           <p className="font-bold text-gray-800 mb-4">Doctor Not Found</p>
           <p className="text-gray-600 mb-4">{error || 'Unable to load doctor information'}</p>
           <button 
-            onClick={() => router.push('/psychologists')}
+            onClick={() => router.push('/online-child-psychologist')}
             className="bg-[#3f2e73] hover:bg-[#1d1733] text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Back to Psychologists
@@ -3027,12 +3027,12 @@ function TherapistProfileRedirect() {
       // If it's a UUID, we need to fetch the doctor name first, but for now just redirect
       // The new route will handle both UUID and slug for backward compatibility
       const newUrl = packageId 
-        ? `/online-child-psycologist/${doctorParam}?package_id=${packageId}`
-        : `/online-child-psycologist/${doctorParam}`;
+        ? `/online-child-psychologist/${doctorParam}?package_id=${packageId}`
+        : `/online-child-psychologist/${doctorParam}`;
       router.replace(newUrl);
     } else {
       // If no doctor param, redirect to psychologists page
-      router.replace('/psychologists');
+      router.replace('/online-child-psychologist');
     }
   }, [router, searchParams]);
   

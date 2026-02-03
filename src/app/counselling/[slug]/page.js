@@ -244,7 +244,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
               .replace(/^-+|-+$/g, '');
             if (!nameSlug) return null; // Skip if no valid name
             return (
-              <a key={idx} href={`/online-child-psycologist/${nameSlug}`} className="block">
+              <a key={idx} href={`/online-child-psychologist/${nameSlug}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
                   <img 
                     src={imageSrc} 
@@ -322,7 +322,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
       </div>
       {/* Desktop-only View More under grid */}
       <div className="hidden md:block text-center mt-6">
-        <a href="/psychologists" className="inline-flex items-center justify-center text-gray-900 text-lg group">
+        <a href="/online-child-psychologist" className="inline-flex items-center justify-center text-gray-900 text-lg group">
           <span className="relative cursor-pointer">
             View more →
             <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gray-900 transition-all duration-300 ease-out group-hover:w-full" />

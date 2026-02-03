@@ -12,7 +12,7 @@ export default function InfoCards({ cmsData = null, compact = false, hideIcons =
       description:
         "With online child counseling, parents can connect with a caring child psychologist who helps children talk through their feelings, handle anxiety or behaviour concerns, and develop healthy coping skills—right from home.",
       cta: "Find a therapist",
-      ctaLink: "/psychologists",
+      ctaLink: "/online-child-psychologist",
     },
     {
       icon: "pill",

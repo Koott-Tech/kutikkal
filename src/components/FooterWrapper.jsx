@@ -7,13 +7,13 @@ export default function FooterWrapper() {
   const pathname = usePathname();
   
   // Don't show footer on admin, superadmin, finance, staff, psychologist, and client dashboard pages
-  // Note: /psychologists (listing page) should show footer, only /psychologist (dashboard) should hide it
+  // Note: /online-child-psychologist (listing page) should show footer, only /psychologist (dashboard) should hide it
   const shouldHideFooter = pathname.startsWith('/admin') || 
                             pathname.startsWith('/superadmin') || 
                             pathname.startsWith('/finance') || 
                             pathname.startsWith('/staff') || 
                             pathname.startsWith('/profile') ||
-                            (pathname.startsWith('/psychologist') && !pathname.startsWith('/psychologists'));
+                            (pathname.startsWith('/psychologist') && !pathname.startsWith('/online-child-psychologist'));
   
   if (shouldHideFooter) {
     return null;
@@ -26,7 +26,7 @@ export default function FooterWrapper() {
   const isCmsPage = pathname.startsWith('/counselling/');
   
   // Check if we're on a therapist/psychologist profile page (no gap above footer)
-  const isTherapistProfile = pathname.startsWith('/therapist-profile') || pathname.startsWith('/online-child-psycologist');
+  const isTherapistProfile = pathname.startsWith('/therapist-profile') || pathname.startsWith('/online-child-psychologist');
   
   return <Footer isHomePage={isHomePage} isCmsPage={isCmsPage} isTherapistProfile={isTherapistProfile} />;
 }

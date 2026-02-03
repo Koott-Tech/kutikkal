@@ -328,7 +328,7 @@ export default function Header() {
   const handleTherapyTypeClick = (therapyType) => {
     // Therapy type pages have been removed
     // Redirect to guide page instead
-    router.push('/psychologists');
+    router.push('/online-child-psychologist');
     setIsFindCareOpen(false);
   };
 
@@ -1129,7 +1129,7 @@ export default function Header() {
                   <button 
                     className="relative flex items-center gap-1 cursor-pointer hover:text-gray-900"
                     onClick={() => {
-                      router.push('/psychologists');
+                      router.push('/online-child-psychologist');
                     }}
                   >
                     <h2 className="header-nav-item inline-block" style={{ fontSize: '16px', fontWeight: 500, lineHeight: '1.2', margin: 0 }}>View Therapists</h2>
@@ -1216,7 +1216,7 @@ export default function Header() {
               </button>
             )}
             <button 
-              onClick={() => router.push('/psychologists')} 
+              onClick={() => router.push('/online-child-psychologist')} 
               className="inline-flex items-center rounded-full px-3 md:px-4 xl:px-6 py-2 text-sm md:text-base font-semibold text-white shadow-sm transition-colors duration-200"
               style={{ backgroundColor: '#3f2e73' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -1374,7 +1374,7 @@ export default function Header() {
                   <button 
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      router.push('/psychologists');
+                      router.push('/online-child-psychologist');
                     }}
                     className="w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200"
                     style={{ backgroundColor: '#3f2e73' }}
@@ -1834,7 +1834,7 @@ export default function Header() {
                   <div 
                     className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-2 py-2"
                     onClick={() => {
-                      router.push('/psychologists');
+                      router.push('/online-child-psychologist');
                       setIsMobileMenuOpen(false);
                     }}
                   >

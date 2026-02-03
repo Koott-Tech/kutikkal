@@ -135,7 +135,7 @@ export default function TherapistCarousel({ therapists = [] }) {
           return (
             <a 
               key={idx} 
-              href={`/online-child-psycologist/${nameSlug}`} 
+              href={`/online-child-psychologist/${nameSlug}`} 
               className="therapist-card-item block"
             >
               <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">
@@ -214,7 +214,7 @@ export default function TherapistCarousel({ therapists = [] }) {
 
         {/* View more link under last card */}
         <a 
-          href="/psychologists" 
+          href="/online-child-psychologist" 
           className="therapist-card-item block mt-2"
         >
           <div className="w-full py-4 text-center">

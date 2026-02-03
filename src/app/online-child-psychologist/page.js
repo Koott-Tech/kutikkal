@@ -870,12 +870,10 @@ const Guide = () => {
       
       <section className="psychologists-hero-section" style={{ width: "100vw", minHeight: "100vh", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: "8rem", paddingBottom: "4rem" }}>
         <h2 className="psychologists-main-heading text-center max-w-[900px] mb-4 md:mb-9 text-[#1a1a1a] font-semibold mt-4 text-xl md:text-2xl lg:text-3xl px-4">
-          Psychologists that help
-          <br className="psychologists-heading-mobile-br" />
-          you grow
+          Child Psychologists Helping Children Grow Emotionally and Confidently
         </h2>
         <p className="psychologists-description text-sm md:text-base lg:text-lg text-center max-w-[600px] font-medium px-4 mb-6 md:mb-9" style={{ color: "#444" }}>
-          Skilled and supportive mental health professionals dedicated to you and your wellness journey.
+          Our child psychologists provide gentle, evidence-based child and parenting counselling to feel understood, emotionally safe, and supported through every stage of growth.
         </p>
         
         
@@ -930,7 +928,7 @@ const Guide = () => {
         <OnboardingModal 
           open={showOnboarding} 
           onClose={() => setShowOnboarding(false)} 
-          onComplete={() => { setShowOnboarding(false); router.push('/psychologists'); }} 
+          onComplete={() => { setShowOnboarding(false); router.push('/online-child-psychologist'); }} 
         />
         
         {/* Guide video cards grid - Responsive grid layout */}
@@ -1633,7 +1631,7 @@ const Guide = () => {
                           .replace(/[^a-z0-9]+/g, '-')
                           .replace(/^-+|-+$/g, '');
                         if (slug) {
-                          router.push(`/online-child-psycologist/${slug}`);
+                          router.push(`/online-child-psychologist/${slug}`);
                         }
                       }}
                       style={{
@@ -2331,7 +2329,7 @@ const Guide = () => {
                           .trim()
                           .replace(/[^a-z0-9]+/g, '-')
                           .replace(/^-+|-+$/g, '');
-                        router.push(`/online-child-psycologist/${slug}`);
+                        router.push(`/online-child-psychologist/${slug}`);
                       }
                     }
                   }}

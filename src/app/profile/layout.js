@@ -41,7 +41,7 @@ export default function ProfileLayout({ children }) {
 
   const navigation = [
     { name: 'Home', href: '/', icon: Home, show: true },
-  { name: 'Browse Therapists', href: '/psychologists', icon: Users, show: false },
+  { name: 'Browse Therapists', href: '/online-child-psychologist', icon: Users, show: false },
     { name: 'Sessions', href: '/profile/sessions', icon: Calendar },
     { name: 'Messages', href: '/profile/messages', icon: MessageSquare },
     { name: 'Contact', href: '/profile/contact', icon: Mail },

@@ -1729,7 +1729,7 @@ const TherapistProfileContent = ({ slug, packageId }) => {
           <p className="font-bold text-gray-800 mb-4">Doctor Not Found</p>
           <p className="text-gray-600 mb-4">{error || 'Unable to load doctor information'}</p>
           <button 
-            onClick={() => router.push('/psychologists')}
+            onClick={() => router.push('/online-child-psychologist')}
             className="bg-[#3f2e73] hover:bg-[#1d1733] text-white px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Back to Psychologists

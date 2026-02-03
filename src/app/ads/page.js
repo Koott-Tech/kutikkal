@@ -723,7 +723,7 @@ export default function AdsLandingPage() {
     const name = psychologist.name || `${psychologist.first_name} ${psychologist.last_name}`;
     const slug = createSlug(name);
     if (slug) {
-      router.push(`/online-child-psycologist/${slug}`);
+      router.push(`/online-child-psychologist/${slug}`);
     }
   };
 

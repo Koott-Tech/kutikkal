@@ -1120,7 +1120,7 @@ const Guide = () => {
                         .trim()
                         .replace(/[^a-z0-9]+/g, '-')
                         .replace(/^-+|-+$/g, '');
-                          router.push(`/online-child-psycologist/${slug}`);
+                          router.push(`/online-child-psychologist/${slug}`);
                         }
                       }
                     }
