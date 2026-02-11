@@ -916,6 +916,7 @@ const Guide = () => {
             }
             .psychologists-main-heading {
               margin-top: 0.75rem !important; /* Reduced from mt-4 (1rem) to 0.75rem */
+              line-height: 1.30 !important; /* Readable line height when heading wraps on mobile */
             }
             .psychologists-description {
               line-height: 1.3 !important; /* Reduced line height for mobile */
