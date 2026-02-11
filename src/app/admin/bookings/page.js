@@ -665,11 +665,6 @@ export default function BookingsPage() {
                         {booking.client?.first_name} {booking.client?.last_name}
                       </div>
                     </div>
-                    {booking.client?.child_name && (
-                      <div className="text-xs text-gray-500">
-                        Child: {booking.client.child_name} ({booking.client.child_age} years)
-                      </div>
-                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {booking.session_type === 'free_assessment' ? (

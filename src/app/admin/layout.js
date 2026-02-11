@@ -12,6 +12,8 @@ import {
   LogOut,
   Menu,
   X,
+  PanelLeftClose,
+  PanelLeft,
   Clock,
   FileText,
   MessageSquare,
@@ -360,13 +362,14 @@ export default function AdminLayout({ children }) {
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* Toggle sidebar button */}
+              {/* Small icon to hide/unhide side menu */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-                aria-label="Toggle sidebar"
+                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                aria-label={isSidebarOpen ? 'Hide side menu' : 'Show side menu'}
+                title={isSidebarOpen ? 'Hide side menu' : 'Show side menu'}
               >
-                {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isSidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
               </button>
             <h6>Little Care Admin Panel</h6>
             </div>

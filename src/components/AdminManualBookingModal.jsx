@@ -12,12 +12,16 @@ import {
   Loader2,
   CalendarDays,
   CheckCircle,
-  XCircle
+  XCircle,
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { adminApi } from '@/lib/backendApi';
 import { publicApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
+import { validatePassword } from '@/utils/passwordValidation';
 
 export default function AdminManualBookingModal({ 
   isOpen, 
@@ -47,8 +51,10 @@ export default function AdminManualBookingModal({
     phone_number: '',
     country_code: '+91',
     child_name: '',
-    child_age: ''
+    child_age: '',
+    password: '' // Optional: client login password. If empty, a random one is generated.
   });
+  const [showNewClientPassword, setShowNewClientPassword] = useState(false);
   
   // Form data - Booking
   const [psychologistId, setPsychologistId] = useState('');
@@ -127,7 +133,8 @@ export default function AdminManualBookingModal({
       phone_number: '',
       country_code: '+91',
       child_name: '',
-      child_age: ''
+      child_age: '',
+      password: ''
     });
     setPsychologistId('');
     setPackageId('');
@@ -149,6 +156,7 @@ export default function AdminManualBookingModal({
     setShowSuccessModal(false);
     setShowFailureModal(false);
     setFailureMessage('');
+    setShowNewClientPassword(false);
     isSubmittingRef.current = false; // Reset submission flag when form resets
   };
 
@@ -440,17 +448,28 @@ export default function AdminManualBookingModal({
         }
       }
 
+      // If admin entered a password, validate it (policy must be met for client login)
+      const customPassword = newClientData.password?.trim();
+      if (customPassword) {
+        const passwordValidation = validatePassword(customPassword);
+        if (!passwordValidation.valid) {
+          setError(`Password does not meet requirements: ${passwordValidation.unmetRequirements.join(', ')}`);
+          isSubmittingRef.current = false;
+          return;
+        }
+      }
+
       setIsLoading(true);
 
       try {
         // Step 1: Create new client
         console.log('Creating new client...');
         const fullPhoneNumber = newClientData.country_code + newClientData.phone_number;
-        const randomPassword = generateRandomPassword();
+        const passwordToUse = customPassword || generateRandomPassword();
         
         const clientResponse = await adminApi.createUser({
           email: newClientData.email.trim().toLowerCase(),
-          password: randomPassword, // Auto-generated password
+          password: passwordToUse, // Admin-set or auto-generated client login password
           first_name: newClientData.first_name,
           last_name: newClientData.last_name || '', // Optional
           phone_number: fullPhoneNumber,
@@ -787,9 +806,37 @@ export default function AdminManualBookingModal({
                         placeholder="Age 1-18 (optional)"
                       />
                     </div>
+
+                    {/* Client login password (optional) */}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <Lock className="h-4 w-4 inline mr-1" />
+                        Client login password (optional)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showNewClientPassword ? 'text' : 'password'}
+                          value={newClientData.password}
+                          onChange={(e) => handleNewClientInputChange('password', e.target.value)}
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Leave blank to auto-generate; if set, client uses this to log in"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewClientPassword(!showNewClientPassword)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                          aria-label={showNewClientPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showNewClientPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        If you set a password, the client will use this to log in. Otherwise a random password is generated (they can reset it later).
+                      </p>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    A new client account will be created automatically. A random password will be generated and can be reset later.
+                    A new client account will be created. Set a login password above or leave it blank to auto-generate.
                   </p>
                 </div>
               ) : (

@@ -1,20 +1,45 @@
 'use client';
 
-import { useState, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useMemo, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import {
-  ChevronDown,
-  ChevronRight,
-  Upload,
-  X,
-  Eye,
+  Plus,
   Settings,
   Search,
+  Upload,
+  X,
+  ChevronDown,
+  ChevronRight,
   CheckCircle2,
   AlertCircle,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  CheckSquare,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  IndentIncrease,
+  IndentDecrease,
+  Undo2,
+  Redo2,
+  Minus,
+  Smile,
+  Type,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Quote,
+  Code,
 } from 'lucide-react';
-import DocumentStyleEditor from '@/components/DocumentStyleEditor';
+import DocumentStyleEditor, { getDefaultToolbarState } from '@/components/DocumentStyleEditor';
+import styles from './BlogEditorWix.module.css';
 
-// Generate slug from title (same logic as backend)
 const generateSlug = (title) => {
   if (!title) return '';
   return title
@@ -25,12 +50,36 @@ const generateSlug = (title) => {
     .replace(/^-|-$/g, '');
 };
 
-/**
- * Wix-style blog editor:
- * - Left panel: post settings (cover, excerpt, author, status, tags, SEO)
- * - Main area: block-based content with inline "+" to add blocks
- * Uses same structured_content format as existing editor.
- */
+const BLOCK_TYPES = [
+  { value: 'p', label: 'Paragraph' },
+  { value: 'h1', label: 'Heading 1' },
+  { value: 'h2', label: 'Heading 2' },
+  { value: 'h3', label: 'Heading 3' },
+  { value: 'h4', label: 'Heading 4' },
+  { value: 'quote', label: 'Quote' },
+  { value: 'code', label: 'Code Block' },
+];
+
+const FONT_SIZES = [12, 14, 16, 18, 20, 24, 32, 48];
+
+const FONT_FAMILIES = [
+  { value: '', label: 'Default' },
+  { value: 'Arial, sans-serif', label: 'Arial' },
+  { value: 'Georgia, serif', label: 'Georgia' },
+  { value: 'Times New Roman, serif', label: 'Times New Roman' },
+  { value: 'Courier New, monospace', label: 'Courier New' },
+  { value: 'Verdana, sans-serif', label: 'Verdana' },
+];
+
+const ACCEPT_IMAGE = 'image/jpeg,image/jpg,image/png,image/webp';
+
+// Toolbar button: prevent default so editor keeps focus/selection (Google Docs style), then run command
+const toolbarCmd = (e, fn) => {
+  e.preventDefault();
+  e.stopPropagation();
+  fn();
+};
+
 const BlogEditorWix = forwardRef(function BlogEditorWix({
   blog,
   onChange,
@@ -39,469 +88,490 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   uploadProgress = false,
   defaultAuthorName = '',
   featuredImagePreview = null,
+  adminSidebarCollapsed = false,
 }, ref) {
   const editorRef = useRef(null);
+  const fileInputRef = useRef(null);
+
   useImperativeHandle(ref, () => ({
     getContent: () => editorRef.current?.getContent?.() ?? ''
   }), []);
 
-  const [settingsOpen, setSettingsOpen] = useState(true);
-  const [seoOpen, setSeoOpen] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState('add');
   const [seoPreviewOpen, setSeoPreviewOpen] = useState(true);
-  
-  // Auto-generate slug from title (display only; backend generates slug on save if needed)
+  const [isDragging, setIsDragging] = useState(false);
+  const [toolbarState, setToolbarState] = useState(() => getDefaultToolbarState());
+  const [blockTypeDropdownOpen, setBlockTypeDropdownOpen] = useState(false);
+  const blockTypeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const close = (e) => {
+      if (blockTypeDropdownRef.current && !blockTypeDropdownRef.current.contains(e.target)) setBlockTypeDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
+
   const autoSlug = useMemo(() => generateSlug(blog.title || ''), [blog.title]);
   const displaySlug = blog.slug || autoSlug;
 
-  // Wrapper for image upload to convert File to FormData
-  const handleImageUpload = async (file) => {
+  const handleImageUpload = useCallback(async (file) => {
     if (!onContentImageUpload || !file) return { success: false, error: 'No file provided' };
-    
     try {
       const formData = new FormData();
       formData.append('images', file);
       formData.append('blogTitle', blog.title || 'untitled');
       const result = await onContentImageUpload(formData);
-      
-      // API can return: data as array, data.uploadedImages array, data.imageUrl, or data as string URL
-      if (result?.success && result?.data) {
-        const d = result.data;
-        // Backend upload-multiple returns { uploadedImages: [{ imageUrl, ... }], errors: [] }
-        if (d.uploadedImages && Array.isArray(d.uploadedImages) && d.uploadedImages.length > 0) {
+      const d = result?.data;
+      if (result?.success && d) {
+        if (d.uploadedImages?.[0]) {
           const first = d.uploadedImages[0];
-          return {
-            success: true,
-            data: { imageUrl: first.imageUrl || first.url || first }
-          };
+          return { success: true, data: { imageUrl: first.imageUrl || first.url || first } };
         }
-        // If result.data is an array, get first image
-        if (Array.isArray(d) && d.length > 0) {
-          const firstImage = d[0];
-          return {
-            success: true,
-            data: {
-              imageUrl: firstImage.imageUrl || firstImage.url || firstImage
-            }
-          };
+        if (Array.isArray(d) && d[0]) {
+          const first = d[0];
+          return { success: true, data: { imageUrl: first.imageUrl || first.url || first } };
         }
-        // If result.data has imageUrl directly
-        if (d?.imageUrl) {
-          return result;
-        }
-        // If result.data is a string (URL)
-        if (typeof d === 'string') {
-          return { success: true, data: { imageUrl: d } };
-        }
+        if (d?.imageUrl) return result;
+        if (typeof d === 'string') return { success: true, data: { imageUrl: d } };
       }
       return result;
-    } catch (error) {
-      console.error('Image upload error:', error);
-      return { success: false, error: error.message };
+    } catch (e) {
+      console.error(e);
+      return { success: false, error: e.message };
     }
+  }, [onContentImageUpload, blog.title]);
+
+  const insertImageFromSidebar = useCallback(async (file) => {
+    if (!file || !editorRef.current?.insertImageByUrl) return;
+    const result = await handleImageUpload(file);
+    if (result?.success && result?.data?.imageUrl) {
+      editorRef.current.insertImageByUrl(result.data.imageUrl);
+      editorRef.current.focus?.();
+      const input = fileInputRef.current;
+      if (input) input.value = '';
+    }
+  }, [handleImageUpload]);
+
+  const onAddZoneClick = () => fileInputRef.current?.click();
+  const onAddZoneDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (file && /^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) insertImageFromSidebar(file);
+  };
+  const onAddZoneDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const onAddZoneDragLeave = () => setIsDragging(false);
+  const onAddZoneChange = (e) => {
+    const file = e.target?.files?.[0];
+    if (file) insertImageFromSidebar(file);
   };
 
   const addTag = () => {
-    const input = document.getElementById('wix-tag-input');
+    const input = document.getElementById('bec-tag-input');
     const v = input?.value?.trim();
-    if (v && !blog.tags.includes(v)) {
+    if (v && !(blog.tags || []).includes(v)) {
       onChange({ ...blog, tags: [...(blog.tags || []), v] });
       if (input) input.value = '';
     }
   };
-  const removeTag = (tag) => {
-    onChange({ ...blog, tags: (blog.tags || []).filter((t) => t !== tag) });
-  };
-  const addCategory = () => {
-    const input = document.getElementById('wix-category-input');
-    const v = input?.value?.trim();
-    if (v && !(blog.categories || []).includes(v)) {
-      onChange({ ...blog, categories: [...(blog.categories || []), v] });
-      if (input) input.value = '';
-    }
-  };
-  const removeCategory = (cat) => {
-    onChange({ ...blog, categories: (blog.categories || []).filter((c) => c !== cat) });
-  };
-  const addMetaKeyword = () => {
-    const input = document.getElementById('wix-meta-keyword-input');
-    const v = input?.value?.trim();
-    if (v && !(blog.meta_keywords || []).includes(v)) {
-      onChange({ ...blog, meta_keywords: [...(blog.meta_keywords || []), v] });
-      if (input) input.value = '';
-    }
-  };
-  const removeMetaKeyword = (kw) => {
-    onChange({ ...blog, meta_keywords: (blog.meta_keywords || []).filter((k) => k !== kw) });
-  };
+  const removeTag = (t) => onChange({ ...blog, tags: (blog.tags || []).filter((x) => x !== t) });
+
+  const wordCount = useMemo(() => {
+    const html = blog.content ?? '';
+    const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return text ? text.split(/\s+/).length : 0;
+  }, [blog.content]);
+
+  const readingTime = useMemo(() => {
+    const w = wordCount || 0;
+    return Math.max(1, Math.ceil(w / 200));
+  }, [wordCount]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full min-h-0">
-      {/* Left panel - Wix-style settings */}
-      <aside className="lg:w-80 flex-shrink-0 bg-gray-50 rounded-xl border border-gray-200 overflow-y-auto max-h-[calc(95vh-8rem)]">
-        <div className="p-4 space-y-4">
-          <button
-            type="button"
-            onClick={() => setSettingsOpen((o) => !o)}
-            className="flex items-center justify-between w-full text-left font-medium text-gray-900"
-          >
-            <span className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Post settings
-            </span>
-            {settingsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
-          {settingsOpen && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Featured image</label>
-                <div className="space-y-2">
-                  <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 bg-white">
-                    {uploadProgress ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
-                    ) : (
-                      <>
-                        <Upload className="w-5 h-5 text-gray-400 mb-0.5" />
-                        <span className="text-xs text-gray-500">Upload</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) onFeaturedImageUpload?.(f);
-                      }}
-                      disabled={uploadProgress}
-                    />
-                  </label>
-                  {(blog.featured_image_url || featuredImagePreview) && (
-                    <div className="relative">
-                      <img
-                        src={featuredImagePreview || blog.featured_image_url}
-                        alt="Cover"
-                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => onChange({ ...blog, featured_image_url: '' })}
-                        className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-                  <input
-                    type="text"
-                    value={blog.featured_image_url || ''}
-                    onChange={(e) => onChange({ ...blog, featured_image_url: e.target.value })}
-                    placeholder="Or paste image URL"
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
-                <input
-                  type="text"
-                  value={blog.author_name ?? defaultAuthorName}
-                  onChange={(e) => onChange({ ...blog, author_name: e.target.value })}
-                  placeholder="Author name"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  value={blog.status ?? 'draft'}
-                  onChange={(e) => onChange({ ...blog, status: e.target.value })}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Read time (min)</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={blog.read_time_minutes ?? 5}
-                  onChange={(e) => onChange({ ...blog, read_time_minutes: parseInt(e.target.value, 10) || 5 })}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-                <div className="flex gap-1 mb-1">
-                  <input
-                    id="wix-tag-input"
-                    type="text"
-                    placeholder="Add tag"
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  />
-                  <button type="button" onClick={addTag} className="px-2 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {(blog.tags || []).map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full"
-                    >
-                      {tag}
-                      <button type="button" onClick={() => removeTag(tag)} className="ml-1 text-blue-600 hover:text-blue-800">
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
+    <div className={`${styles.root} ${adminSidebarCollapsed ? styles.rootExpanded : ''}`}>
+      <div className={styles.layout}>
+        <div className={styles.layoutRow}>
+          {/* Left sidebar: 220–250px, only Add / Settings / SEO */}
+          <aside className={styles.sidebar}>
+            <nav className={styles.sidebarNav}>
               <button
                 type="button"
-                onClick={() => setSeoOpen((o) => !o)}
-                className="flex items-center justify-between w-full text-left font-medium text-gray-900 mt-4 pt-4 border-t border-gray-200"
+                className={sidebarTab === 'add' ? `${styles.sidebarNavBtn} ${styles.sidebarNavBtnActive}` : styles.sidebarNavBtn}
+                onClick={() => setSidebarTab('add')}
+                title="Add"
+                aria-label="Add"
               >
-                <span className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  SEO
-                </span>
-                {seoOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <Plus size={20} />
               </button>
-              {seoOpen && (
-                <div className="space-y-3 pt-2">
-                  {/* SEO Preview Toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setSeoPreviewOpen((o) => !o)}
-                    className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 mb-2 p-2 bg-green-50 rounded-lg hover:bg-green-100 border border-green-200"
+              <button
+                type="button"
+                className={sidebarTab === 'settings' ? `${styles.sidebarNavBtn} ${styles.sidebarNavBtnActive}` : styles.sidebarNavBtn}
+                onClick={() => setSidebarTab('settings')}
+                title="Settings"
+                aria-label="Settings"
+              >
+                <Settings size={20} />
+              </button>
+              <button
+                type="button"
+                className={sidebarTab === 'seo' ? `${styles.sidebarNavBtn} ${styles.sidebarNavBtnActive}` : styles.sidebarNavBtn}
+                onClick={() => setSidebarTab('seo')}
+                title="SEO"
+                aria-label="SEO"
+              >
+                <Search size={20} />
+              </button>
+            </nav>
+
+            <div className={styles.sidebarPanel}>
+              {sidebarTab === 'add' && (
+                <>
+                  <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Add</span>
+                  <div
+                    className={`${styles.addImageZone} ${isDragging ? styles.addImageZoneDragging : ''} ${uploadProgress ? styles.addImageZoneDisabled : ''}`}
+                    onClick={onAddZoneClick}
+                    onDrop={onAddZoneDrop}
+                    onDragOver={onAddZoneDragOver}
+                    onDragLeave={onAddZoneDragLeave}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && onAddZoneClick()}
                   >
-                    <span className="flex items-center gap-2">
-                      <Search className="h-4 w-4 text-green-600" />
-                      Google Preview
-                    </span>
-                    {seoPreviewOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  </button>
-                  
-                  {/* SEO Preview Panel */}
-                  {seoPreviewOpen && (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 mb-3">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                          <span className="text-xs text-gray-600">Google</span>
-                        </div>
-                        <div className="flex-1 border-t border-gray-200"></div>
-                        <div className="text-xs text-gray-500">Search Preview</div>
+                    {uploadProgress ? (
+                      <div style={{ margin: '12px 0' }}>Uploading…</div>
+                    ) : (
+                      <>
+                        <Upload className={styles.addImageZoneIcon} size={40} />
+                        <p className={styles.addImageZoneText}>Image upload</p>
+                        <p className={styles.addImageZoneHint}>Drag & drop or click · JPG, PNG, WEBP</p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPT_IMAGE}
+                    onChange={onAddZoneChange}
+                    style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+                    aria-hidden
+                  />
+                </>
+              )}
+
+              {sidebarTab === 'settings' && (
+                <>
+                  <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Settings</span>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Featured image</label>
+                    <label style={{ display: 'block', border: '2px dashed var(--bec-border)', borderRadius: 8, padding: 16, textAlign: 'center', cursor: 'pointer', background: 'var(--bec-hover)' }}>
+                      {uploadProgress ? 'Uploading…' : 'Upload'}
+                      <input
+                        type="file"
+                        accept={ACCEPT_IMAGE}
+                        className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) onFeaturedImageUpload?.(f); }}
+                        disabled={uploadProgress}
+                      />
+                    </label>
+                    {(blog.featured_image_url || featuredImagePreview) && (
+                      <div style={{ position: 'relative', marginTop: 8 }}>
+                        <img src={featuredImagePreview || blog.featured_image_url} alt="Featured" style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 8 }} />
+                        <button type="button" onClick={() => onChange({ ...blog, featured_image_url: '' })} style={{ position: 'absolute', top: 4, right: 4, padding: 4, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer' }}><X size={14} /></button>
                       </div>
-                      <div className="space-y-2">
-                        {/* URL */}
-                        <div className="text-xs text-green-700">
-                          {displaySlug ? `www.little.care/blog/${displaySlug}` : 'www.little.care/blog/...'}
-                        </div>
-                        {/* Title */}
-                        <div className={`text-lg text-blue-600 leading-tight ${(blog.seo_title || blog.title || '').length > 60 ? 'text-red-600' : ''}`}>
-                          {blog.seo_title || blog.title || 'Your blog post title'}
-                        </div>
-                        {/* Description */}
-                        <div className={`text-sm text-gray-600 leading-relaxed ${(blog.seo_description || blog.excerpt || '').length > 160 ? 'text-red-600' : ''}`}>
-                          {blog.seo_description || blog.excerpt || 'Your meta description will appear here...'}
-                        </div>
-                        {/* SEO Score Indicators */}
-                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-                          <div className={`flex items-center gap-1 text-xs ${(blog.seo_title || blog.title || '').length <= 60 && (blog.seo_title || blog.title || '').length >= 30 ? 'text-green-600' : 'text-gray-400'}`}>
-                            {(blog.seo_title || blog.title || '').length <= 60 && (blog.seo_title || blog.title || '').length >= 30 ? (
-                              <CheckCircle2 className="h-3 w-3" />
-                            ) : (
-                              <AlertCircle className="h-3 w-3" />
-                            )}
-                            <span>Title: {(blog.seo_title || blog.title || '').length}/60</span>
-                          </div>
-                          <div className={`flex items-center gap-1 text-xs ${(blog.seo_description || blog.excerpt || '').length <= 160 && (blog.seo_description || blog.excerpt || '').length >= 120 ? 'text-green-600' : 'text-gray-400'}`}>
-                            {(blog.seo_description || blog.excerpt || '').length <= 160 && (blog.seo_description || blog.excerpt || '').length >= 120 ? (
-                              <CheckCircle2 className="h-3 w-3" />
-                            ) : (
-                              <AlertCircle className="h-3 w-3" />
-                            )}
-                            <span>Desc: {(blog.seo_description || blog.excerpt || '').length}/160</span>
-                          </div>
-                          {blog.focus_keyword && (
-                            <div className="flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle2 className="h-3 w-3" />
-                              <span>Keyword set</span>
-                            </div>
-                          )}
-                        </div>
+                    )}
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Author</label>
+                    <input
+                      type="text"
+                      className={styles.settingsInput}
+                      value={blog.author_name ?? defaultAuthorName}
+                      onChange={(e) => onChange({ ...blog, author_name: e.target.value })}
+                      placeholder="Author name"
+                    />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Status</label>
+                    <select
+                      className={styles.settingsInput}
+                      value={blog.status ?? 'draft'}
+                      onChange={(e) => onChange({ ...blog, status: e.target.value })}
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Read time (min)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      className={styles.settingsInput}
+                      value={blog.read_time_minutes ?? 5}
+                      onChange={(e) => onChange({ ...blog, read_time_minutes: parseInt(e.target.value, 10) || 5 })}
+                    />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Tags</label>
+                    <input
+                      id="bec-tag-input"
+                      type="text"
+                      className={styles.settingsInput}
+                      placeholder="Add tag"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    />
+                    <button type="button" onClick={addTag} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                      {(blog.tags || []).map((tag) => (
+                        <span key={tag} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', background: '#eff6ff', color: '#2563eb', borderRadius: 999, fontSize: 12 }}>
+                          {tag}
+                          <button type="button" onClick={() => removeTag(tag)} style={{ marginLeft: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit' }}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {sidebarTab === 'seo' && (
+                <>
+                  <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>SEO</span>
+                  <button type="button" onClick={() => setSeoPreviewOpen((o) => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', marginBottom: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+                    <span>Google Preview</span>
+                    {seoPreviewOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  </button>
+                  {seoPreviewOpen && (
+                    <div className={styles.seoPreviewBox}>
+                      <p className={styles.seoPreviewUrl}>{displaySlug ? `www.example.com/blog/${displaySlug}` : '…'}</p>
+                      <p className={styles.seoPreviewTitle}>{(blog.seo_title || blog.title || 'Your title').slice(0, 60)}</p>
+                      <p className={styles.seoPreviewDesc}>{(blog.seo_description || blog.excerpt || 'Meta description…').slice(0, 160)}</p>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, fontSize: 11 }}>
+                        <span className={(blog.seo_title || blog.title || '').length <= 60 && (blog.seo_title || blog.title || '').length >= 30 ? 'text-green-600' : ''}>Title: {(blog.seo_title || blog.title || '').length}/60</span>
+                        <span className={(blog.seo_description || blog.excerpt || '').length <= 160 && (blog.seo_description || blog.excerpt || '').length >= 120 ? 'text-green-600' : ''}>Desc: {(blog.seo_description || blog.excerpt || '').length}/160</span>
                       </div>
                     </div>
                   )}
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL)</label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500 whitespace-nowrap">little.care/blog/</span>
-                      <input
-                        type="text"
-                        value={displaySlug}
-                        onChange={(e) => {
-                          const newSlug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
-                          onChange({ ...blog, slug: newSlug });
-                        }}
-                        placeholder="auto-generated-from-title"
-                        className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-0.5">Auto-generated from title. Edit if needed.</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Focus keyword</label>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>URL Slug</label>
                     <input
                       type="text"
+                      className={styles.settingsInput}
+                      value={displaySlug}
+                      onChange={(e) => onChange({ ...blog, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-') })}
+                      placeholder="auto-from-title"
+                    />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Meta title (≤60)</label>
+                    <input
+                      type="text"
+                      className={styles.settingsInput}
+                      value={blog.seo_title ?? ''}
+                      onChange={(e) => onChange({ ...blog, seo_title: e.target.value.slice(0, 60) })}
+                      placeholder={blog.title || 'SEO title'}
+                      maxLength={60}
+                    />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Meta description (≤160)</label>
+                    <textarea
+                      className={styles.settingsInput}
+                      value={blog.seo_description ?? ''}
+                      onChange={(e) => onChange({ ...blog, seo_description: e.target.value.slice(0, 160) })}
+                      placeholder={blog.excerpt || 'Meta description'}
+                      maxLength={160}
+                      rows={3}
+                    />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Focus keyword</label>
+                    <input
+                      type="text"
+                      className={styles.settingsInput}
                       value={blog.focus_keyword ?? ''}
                       onChange={(e) => onChange({ ...blog, focus_keyword: e.target.value })}
                       placeholder="e.g. child psychology"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      SEO title
-                      <span className={`ml-2 text-xs ${(blog.seo_title || '').length > 60 ? 'text-red-600' : (blog.seo_title || '').length >= 30 ? 'text-green-600' : 'text-gray-400'}`}>
-                        {(blog.seo_title || '').length > 60 ? 'Too long' : (blog.seo_title || '').length >= 30 ? 'Good' : 'Too short'}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={blog.seo_title ?? ''}
-                      onChange={(e) => onChange({ ...blog, seo_title: e.target.value })}
-                      placeholder={blog.title || 'Max 60 chars'}
-                      maxLength={60}
-                      className={`w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        (blog.seo_title || '').length > 60 ? 'border-red-300' : (blog.seo_title || '').length >= 30 ? 'border-green-300' : 'border-gray-300'
-                      }`}
-                    />
-                    <p className="text-xs text-gray-500 mt-0.5">{ (blog.seo_title || '').length }/60 characters</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Meta description
-                      <span className={`ml-2 text-xs ${(blog.seo_description || '').length > 160 ? 'text-red-600' : (blog.seo_description || '').length >= 120 ? 'text-green-600' : 'text-gray-400'}`}>
-                        {(blog.seo_description || '').length > 160 ? 'Too long' : (blog.seo_description || '').length >= 120 ? 'Good' : 'Too short'}
-                      </span>
-                    </label>
-                    <textarea
-                      value={blog.seo_description ?? ''}
-                      onChange={(e) => onChange({ ...blog, seo_description: e.target.value })}
-                      placeholder={blog.excerpt || 'Max 160 chars'}
-                      maxLength={160}
-                      rows={3}
-                      className={`w-full px-2 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                        (blog.seo_description || '').length > 160 ? 'border-red-300' : (blog.seo_description || '').length >= 120 ? 'border-green-300' : 'border-gray-300'
-                      }`}
-                    />
-                    <p className="text-xs text-gray-500 mt-0.5">{ (blog.seo_description || '').length }/160 characters</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
-                    <div className="flex gap-1 mb-1">
+                  <div className={styles.settingsSection}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                       <input
-                        id="wix-category-input"
-                        type="text"
-                        placeholder="Add category"
-                        className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                        type="checkbox"
+                        checked={blog.no_index !== true}
+                        onChange={(e) => onChange({ ...blog, no_index: !e.target.checked })}
                       />
-                      <button type="button" onClick={addCategory} className="px-2 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-                        Add
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {(blog.categories || []).map((c) => (
-                        <span key={c} className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                          {c}
-                          <button type="button" onClick={() => removeCategory(c)} className="ml-1 text-green-600 hover:text-green-800">×</button>
-                        </span>
-                      ))}
-                    </div>
+                      <span className={styles.settingsLabel} style={{ margin: 0 }}>Index in search engines</span>
+                    </label>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Meta keywords</label>
-                    <div className="flex gap-1 mb-1">
-                      <input
-                        id="wix-meta-keyword-input"
-                        type="text"
-                        placeholder="Add keyword"
-                        className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMetaKeyword())}
-                      />
-                      <button type="button" onClick={addMetaKeyword} className="px-2 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                        Add
-                      </button>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {(blog.meta_keywords || []).map((k) => (
-                        <span key={k} className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
-                          {k}
-                          <button type="button" onClick={() => removeMetaKeyword(k)} className="ml-1 text-gray-600 hover:text-gray-800">×</button>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
-                    <input
-                      type="text"
-                      value={blog.canonical_url ?? ''}
-                      onChange={(e) => onChange({ ...blog, canonical_url: e.target.value })}
-                      placeholder="https://..."
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
+                </>
               )}
-            </>
-          )}
-        </div>
-      </aside>
+            </div>
+          </aside>
 
-      {/* Main: title, excerpt, then document-style editor */}
-      <main className="flex-1 min-w-0 flex flex-col">
-        <div className="space-y-4 mb-6">
-          <input
-            type="text"
-            required
-            value={blog.title ?? ''}
-            onChange={(e) => onChange({ ...blog, title: e.target.value })}
-            placeholder="Post title"
-            className="w-full text-3xl font-bold border-0 border-b-2 border-gray-200 focus:ring-0 focus:border-blue-500 bg-transparent py-3 placeholder:text-gray-400"
-          />
-          <textarea
-            value={blog.excerpt ?? ''}
-            onChange={(e) => onChange({ ...blog, excerpt: e.target.value })}
-            placeholder="Brief description (excerpt)"
-            rows={2}
-            className="w-full text-lg text-gray-600 border-0 border-b border-gray-100 focus:ring-0 focus:border-blue-500 bg-transparent py-2 placeholder:text-gray-400 resize-none"
-          />
+          {/* Main: toolbar + editor */}
+          <div className={styles.mainWrap}>
+            {/* Sticky top toolbar – save selection on mousedown (capture) so it's preserved before browser clears it */}
+            <div
+              className={styles.toolbarWrap}
+              onMouseDownCapture={() => editorRef.current?.saveSelection?.()}
+            >
+              <div className={styles.toolbarGroup} ref={blockTypeDropdownRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className={styles.toolbarSelect}
+                  title="Block type"
+                  style={{ minWidth: 120, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    editorRef.current?.saveSelection?.();
+                    setBlockTypeDropdownOpen((open) => !open);
+                  }}
+                >
+                  <span>{(BLOCK_TYPES.find((o) => o.value === toolbarState.blockType) || BLOCK_TYPES[0]).label}</span>
+                  <ChevronDown size={14} style={{ flexShrink: 0 }} />
+                </button>
+                {blockTypeDropdownOpen && (
+                  <div className={styles.blockTypeDropdownMenu} role="listbox">
+                    {BLOCK_TYPES.map((o) => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        role="option"
+                        aria-selected={toolbarState.blockType === o.value}
+                        className={`${styles.blockTypeDropdownItem} ${toolbarState.blockType === o.value ? styles.toolbarBtnActive : ''}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setBlockTypeDropdownOpen(false);
+                          // Save selection right before setBlockType – ensure we have it before any re-render
+                          editorRef.current?.saveSelection?.();
+                          editorRef.current?.setBlockType?.(o.value);
+                          editorRef.current?.focus?.();
+                        }}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <select
+                  className={styles.toolbarSelect}
+                  style={{ minWidth: 72 }}
+                  title="Font"
+                  onMouseDown={() => editorRef.current?.saveSelection?.()}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    editorRef.current?.restoreSelection?.();
+                    editorRef.current?.focus?.();
+                    if (v) editorRef.current?.applyFontFamily?.(v);
+                    e.target.value = '';
+                  }}
+                >
+                  {FONT_FAMILIES.map((f) => (
+                    <option key={f.value || 'default'} value={f.value}>{f.label}</option>
+                  ))}
+                </select>
+                <select
+                  className={styles.toolbarSelect}
+                  style={{ minWidth: 64 }}
+                  title="Font size"
+                  defaultValue={16}
+                  onMouseDown={() => editorRef.current?.saveSelection?.()}
+                  onChange={(e) => {
+                    const px = Number(e.target.value);
+                    editorRef.current?.restoreSelection?.();
+                    editorRef.current?.focus?.();
+                    editorRef.current?.applyFontSize?.(px);
+                  }}
+                >
+                  {FONT_SIZES.map((px) => (
+                    <option key={px} value={px}>{px}px</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.bold ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('bold'); })} title="Bold"><Bold size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.italic ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('italic'); })} title="Italic"><Italic size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.underline ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('underline'); })} title="Underline"><Underline size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.strike ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('strikeThrough'); })} title="Strikethrough"><Strikethrough size={18} /></button>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.inLink ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.handleAddLink?.(); })} title="Link"><LinkIcon size={18} /></button>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <input type="color" title="Text color" className={styles.toolbarColorInput} onMouseDown={(e) => { e.preventDefault(); editorRef.current?.saveSelection?.(); }} onChange={(e) => { requestAnimationFrame(() => { editorRef.current?.restoreSelection?.(); editorRef.current?.focus?.(); editorRef.current?.applyTextColor?.(e.target.value); }); }} />
+                <input type="color" title="Highlight" className={styles.toolbarColorInput} data-highlight onMouseDown={(e) => { e.preventDefault(); editorRef.current?.saveSelection?.(); }} defaultValue="#fde047" onChange={(e) => { requestAnimationFrame(() => { editorRef.current?.restoreSelection?.(); editorRef.current?.focus?.(); editorRef.current?.applyHighlight?.(e.target.value); }); }} />
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ul' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertUnorderedList')); })} title="Bullet list"><List size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ol' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertOrderedList')); })} title="Numbered list"><ListOrdered size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertChecklist?.(); })} title="Checklist"><CheckSquare size={18} /></button>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={`${styles.toolbarBtn} ${(!toolbarState.alignment || toolbarState.alignment === 'left') ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('left'); })} title="Align left"><AlignLeft size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'center' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('center'); })} title="Center"><AlignCenter size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'right' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('right'); })} title="Align right"><AlignRight size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'justify' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('justify'); })} title="Justify"><AlignJustify size={18} /></button>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('outdent')); })} title="Decrease indent"><IndentDecrease size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('indent')); })} title="Increase indent"><IndentIncrease size={18} /></button>
+              </div>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.undo?.())} title="Undo"><Undo2 size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.redo?.())} title="Redo"><Redo2 size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertDivider?.(); })} title="Divider"><Minus size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertText', false, '😊')); })} title="Emoji"><Smile size={18} /></button>
+              </div>
+            </div>
+
+            {/* Scrollable editor area, centered max-width 800px */}
+            <div className={styles.editorScroll}>
+              <div className={styles.editorInner}>
+                <input
+                  type="text"
+                  required
+                  className={styles.editorTitle}
+                  value={blog.title ?? ''}
+                  onChange={(e) => onChange({ ...blog, title: e.target.value })}
+                  placeholder="Post title"
+                />
+                <textarea
+                  className={styles.editorExcerpt}
+                  value={blog.excerpt ?? ''}
+                  onChange={(e) => onChange({ ...blog, excerpt: e.target.value })}
+                  placeholder="Brief description (excerpt)"
+                  rows={2}
+                />
+                <div className={styles.becDocumentEditorWrap}>
+                  <DocumentStyleEditor
+                    ref={editorRef}
+                    content={blog.content || ''}
+                    onChange={(html) => onChange({ ...blog, content: html })}
+                    onImageUpload={handleImageUpload}
+                    onToolbarStateChange={setToolbarState}
+                    placeholder="Start writing... Type / for blocks"
+                    hideInsertImageBar
+                  />
+                </div>
+                <div className={styles.statsBar}>
+                  <span>{wordCount} words</span>
+                  <span>~{readingTime} min read</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex-1 min-h-[600px] bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <DocumentStyleEditor
-            ref={editorRef}
-            content={blog.content || ''}
-            onChange={(htmlContent) => {
-              // Store HTML content directly
-              onChange({ ...blog, content: htmlContent });
-            }}
-            onImageUpload={handleImageUpload}
-            placeholder="Start writing... Press '/' for commands"
-          />
-        </div>
-        <div className="mt-4 text-xs text-gray-500 flex items-center gap-4">
-          <span>💡 <strong>Tip:</strong> Select text to format • Type "/" to insert blocks • Click image and drag bottom-right corner to resize</span>
-        </div>
-      </main>
+      </div>
     </div>
   );
 });

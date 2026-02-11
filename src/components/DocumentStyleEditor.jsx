@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Bold, 
   Italic, 
@@ -24,22 +25,40 @@ import {
  * - Type "/" to insert blocks
  * - Clean, minimal UI
  */
+/** Toolbar state derived from current selection (Google Docs / Notion style) */
+export const getDefaultToolbarState = () => ({
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  blockType: 'p',
+  inLink: false,
+  linkHref: '',
+  textColor: null,
+  highlight: null,
+  fontSize: null,
+  fontFamily: null,
+  listType: null, // 'ul' | 'ol' | null
+  alignment: null, // 'left' | 'center' | 'right' | 'justify'
+  hasSelection: false,
+});
+
 const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({ 
   content = '', 
   onChange,
   onImageUpload,
-  placeholder = 'Start writing...'
+  placeholder = 'Start writing...',
+  hideInsertImageBar = false,
+  onToolbarStateChange,
 }, ref) {
   const editorRef = useRef(null);
   const savedSelectionRef = useRef(null); // store last cursor/selection in editor so we can insert image there
+  const selectionWhenToolbarShownRef = useRef(null);
+  const toolbarBlockIndexRef = useRef(null); // index of selected block when toolbar opened (survives re-render)
   const skipContentSyncRef = useRef(false); // prevent useEffect from overwriting editor right after we insert image
   const linkRangeRef = useRef(null); // store range when opening link dialog so we can insert link after user fills URL
   const linkElementRef = useRef(null); // when editing existing link, store the <a> element
   const insertionMarkerRef = useRef(null); // marker for image insertion point (survives async upload)
-  
-  useImperativeHandle(ref, () => ({
-    getContent: () => editorRef.current?.innerHTML ?? ''
-  }), []);
   const toolbarRef = useRef(null);
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0, visible: false });
   const [linkDialog, setLinkDialog] = useState({ visible: false, url: '', text: '', isEdit: false });
@@ -47,7 +66,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
   const [slashMenu, setSlashMenu] = useState({ visible: false, position: { top: 0, left: 0 } });
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
   const [selectedText, setSelectedText] = useState('');
+  const [floatingBlockMenuOpen, setFloatingBlockMenuOpen] = useState(false);
+  const [floatingSizeMenuOpen, setFloatingSizeMenuOpen] = useState(false);
   const contextMenuRef = useRef(null);
+  const lastToolbarStateRef = useRef(null);
 
   // Ensure Enter creates <p> tags for proper new lines on frontend
   useEffect(() => {
@@ -78,6 +100,77 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       if (html !== content) onChange?.(html);
     }
   }, [onChange, content]);
+
+  // Compute toolbar state from current selection (context-aware like Google Docs / Notion)
+  const computeToolbarState = useCallback(() => {
+    const editor = editorRef.current;
+    const state = getDefaultToolbarState();
+    if (!editor) return state;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return state;
+    const range = sel.getRangeAt(0);
+    try {
+      if (!editor.contains(range.commonAncestorContainer)) return state;
+    } catch (_) {
+      return state;
+    }
+    state.hasSelection = !range.collapsed;
+    try {
+      state.bold = document.queryCommandState('bold');
+      state.italic = document.queryCommandState('italic');
+      state.underline = document.queryCommandState('underline');
+      state.strike = document.queryCommandState('strikeThrough');
+    } catch (_) {}
+    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+    // Use startContainer so we get the block where the selection starts; then get innermost (leaf) block
+    // so the toolbar shows the real block type (e.g. h4 after changing from p), not a wrapper div (which would show as p).
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    let block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+    if (block && editor.contains(block) && block !== editor) {
+      let inner = block.querySelector(blockSelector);
+      while (inner && inner !== block && block.contains(inner) && inner.contains(range.startContainer)) {
+        block = inner;
+        inner = block.querySelector(blockSelector);
+      }
+    }
+    if (block && block !== editor) {
+      const tag = block.tagName?.toLowerCase();
+      if (tag === 'h1') state.blockType = 'h1';
+      else if (tag === 'h2') state.blockType = 'h2';
+      else if (tag === 'h3') state.blockType = 'h3';
+      else if (tag === 'h4') state.blockType = 'h4';
+      else if (tag === 'blockquote') state.blockType = 'quote';
+      else if (tag === 'pre') state.blockType = 'code';
+      else state.blockType = 'p';
+      const align = block.style?.textAlign || block.getAttribute?.('style')?.match(/text-align:\s*(\w+)/)?.[1];
+      if (align) state.alignment = align;
+      if (tag === 'li') {
+        const list = block.closest?.('ul');
+        state.listType = list ? 'ul' : (block.closest?.('ol') ? 'ol' : null);
+      }
+    }
+    const startEl = range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer;
+    const link = startEl?.closest?.('a');
+    if (link && editor.contains(link)) {
+      state.inLink = true;
+      state.linkHref = link.getAttribute('href') || '';
+    }
+    const span = startEl?.closest?.('span');
+    if (span?.style?.color) state.textColor = span.style.color;
+    if (span?.style?.backgroundColor || span?.style?.background) state.highlight = span.style.backgroundColor || span.style.background;
+    if (span?.style?.fontSize) state.fontSize = span.style.fontSize;
+    if (span?.style?.fontFamily) state.fontFamily = span.style.fontFamily;
+    return state;
+  }, []);
+
+  const syncToolbarState = useCallback(() => {
+    const state = computeToolbarState();
+    const prev = lastToolbarStateRef.current;
+    if (prev && JSON.stringify(prev) === JSON.stringify(state)) return;
+    lastToolbarStateRef.current = state;
+    onToolbarStateChange?.(state);
+  }, [computeToolbarState, onToolbarStateChange]);
 
   // Convert plain text to HTML - like Google Docs: bullets + text on same line, normal spacing
   const plainTextToHtml = useCallback((text) => {
@@ -201,7 +294,17 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     handleInput();
   }, [plainTextToHtml, sanitizePasteHtml, handleInput]);
 
-  // Handle text selection for floating toolbar
+  // Helper: is the node an image or inside an image wrapper (so block-type tooltip should target that block)
+  const isImageOrInImageBlock = useCallback((node, editorEl) => {
+    if (!node || !editorEl?.contains(node)) return false;
+    const el = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    if (!el) return false;
+    if (el.tagName === 'IMG') return true;
+    const wrapper = el.closest?.('.document-editor-image-wrapper') || el.closest?.('div.my-4');
+    return !!(wrapper && editorEl.contains(wrapper));
+  }, []);
+
+  // Handle text selection for floating toolbar (also show when an image is selected so block-type works)
   const handleSelection = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
@@ -210,41 +313,138 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
 
     const range = selection.getRangeAt(0);
+    const editor = editorRef.current;
+    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+
     if (range.collapsed) {
+      if (!editor?.contains(range.commonAncestorContainer)) {
+        setToolbarPosition(prev => ({ ...prev, visible: false }));
+      }
+      return;
+    }
+    if (!editor?.contains(range.commonAncestorContainer)) {
       setToolbarPosition(prev => ({ ...prev, visible: false }));
       return;
     }
 
     const selectedText = selection.toString().trim();
-    if (!selectedText) {
+    const anchorNode = selection.anchorNode;
+    const imageSelected = !selectedText && (anchorNode && isImageOrInImageBlock(anchorNode, editor));
+
+    if (!selectedText && !imageSelected) {
       setToolbarPosition(prev => ({ ...prev, visible: false }));
       return;
     }
 
-    setSelectedText(selectedText);
-    const rect = range.getBoundingClientRect();
-    const editorRect = editorRef.current?.getBoundingClientRect();
-    
-    if (editorRect) {
-      setToolbarPosition({
-        top: rect.top - editorRect.top - 40,
-        left: rect.left - editorRect.left + (rect.width / 2) - 100,
-        visible: true
-      });
+    setSelectedText(selectedText || (imageSelected ? '[Image]' : ''));
+    try {
+      selectionWhenToolbarShownRef.current = range.cloneRange();
+    } catch (_) {
+      selectionWhenToolbarShownRef.current = null;
     }
+    let startNode = range.startContainer;
+    if (startNode.nodeType === Node.TEXT_NODE) startNode = startNode.parentNode;
+    // When image is selected, startContainer may be the img; get the wrapper block (div)
+    if (startNode?.nodeType === Node.ELEMENT_NODE && startNode.tagName === 'IMG') startNode = startNode.parentNode;
+    let block = startNode?.nodeType === Node.ELEMENT_NODE ? startNode.closest?.(blockSelector) : null;
+    if (block && editor?.contains(block) && block !== editor) {
+      let inner = block.querySelector(blockSelector);
+      while (inner && inner !== block && block.contains(inner) && inner.contains(range.startContainer)) {
+        block = inner;
+        inner = block.querySelector(blockSelector);
+      }
+      const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+      const idx = leafBlocks.indexOf(block);
+      toolbarBlockIndexRef.current = idx >= 0 ? idx : null;
+    } else {
+      toolbarBlockIndexRef.current = null;
+    }
+    const rect = range.getBoundingClientRect();
+    const toolbarHeight = 48;
+    const gap = 8;
+    const minLeft = 280;
+    const toolbarHalfWidth = 240;
+    const minTop = 12;
+    let left = rect.left + rect.width / 2;
+    left = Math.max(minLeft, Math.min(left, typeof window !== 'undefined' ? window.innerWidth - toolbarHalfWidth : left));
+    const topAbove = rect.top - toolbarHeight - gap;
+    const top = typeof window !== 'undefined' && topAbove < minTop ? rect.bottom + gap : topAbove;
+    setToolbarPosition({
+      top,
+      left,
+      visible: true,
+      above: topAbove >= minTop
+    });
   }, []);
 
-  // Format text
-  const formatText = useCallback((command, value = null) => {
-    document.execCommand(command, false, value);
-    editorRef.current?.focus();
+  // Restore saved selection and focus editor (so toolbar actions apply to selected text)
+  const restoreSelection = useCallback(() => {
+    const editor = editorRef.current;
+    const saved = savedSelectionRef.current;
+    if (!editor || !saved) return;
+    try {
+      const ancestor = saved.commonAncestorContainer;
+      if (!ancestor || !editor.contains(ancestor)) return;
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(saved.cloneRange());
+        editor.focus();
+      }
+    } catch (_) {}
+  }, []);
+
+  // Restore selection from when the floating toolbar was shown (so block-type change has a range)
+  const restoreToolbarSelection = useCallback(() => {
+    const editor = editorRef.current;
+    const saved = selectionWhenToolbarShownRef.current;
+    if (!editor || !saved) return;
+    try {
+      if (!saved.startContainer || !editor.contains(saved.startContainer)) return;
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(saved.cloneRange());
+        editor.focus();
+      }
+    } catch (_) {}
+  }, []);
+
+  // Run a command with selection restored and editor focused (for toolbar – like Google Docs)
+  // Use current selection if it's still in the editor; otherwise restore from saved (from toolbar mousedown capture)
+  const runWithSelection = useCallback((fn) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+    const sel = window.getSelection();
+    const hasSelectionInEditor = sel?.rangeCount > 0 && (() => {
+      try {
+        const range = sel.getRangeAt(0);
+        return editor.contains(range.commonAncestorContainer);
+      } catch (_) {
+        return false;
+      }
+    })();
+    if (!hasSelectionInEditor) restoreSelection();
+    if (typeof fn === 'function') fn();
     handleInput();
     setToolbarPosition(prev => ({ ...prev, visible: false }));
-  }, [handleInput]);
+    syncToolbarState();
+  }, [handleInput, restoreSelection, syncToolbarState]);
+
+  // Format text (restore selection first so it applies to selected text when called from top toolbar)
+  const formatText = useCallback((command, value = null) => {
+    runWithSelection(() => document.execCommand(command, false, value));
+  }, [runWithSelection]);
 
   // Handle link: add new or edit existing (save range so it works after dialog steals focus)
   const handleAddLink = useCallback(() => {
-    const selection = window.getSelection();
+    let selection = window.getSelection();
+    const inEditor = selection?.rangeCount > 0 && editorRef.current?.contains(selection.getRangeAt(0).commonAncestorContainer);
+    if (!inEditor || (selection.rangeCount > 0 && selection.isCollapsed)) {
+      restoreSelection();
+      selection = window.getSelection();
+    }
     linkElementRef.current = null;
     const anchor = selection?.anchorNode && selection.anchorNode.nodeType === Node.ELEMENT_NODE
       ? selection.anchorNode
@@ -267,7 +467,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       setLinkDialogPosition({ top: toolbarPosition.top, left: toolbarPosition.left });
       setLinkDialog({ visible: true, url: '', text: selection.toString(), isEdit: false });
     }
-  }, [toolbarPosition.top, toolbarPosition.left]);
+  }, [toolbarPosition.top, toolbarPosition.left, restoreSelection]);
 
   const handleSaveLink = useCallback(() => {
     if (!linkDialog.url.trim()) return;
@@ -322,14 +522,43 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
 
   // Save cursor/selection when user interacts with editor (so we can insert image at that position later)
   const saveSelection = useCallback(() => {
+    const editor = editorRef.current;
     const sel = window.getSelection();
-    if (!editorRef.current || !sel || sel.rangeCount === 0) return;
+    if (!editor || !sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
-    if (!range || !editorRef.current.contains(range.commonAncestorContainer)) return;
+    if (!range || !editor.contains(range.commonAncestorContainer)) return;
+    // When editor doesn't have focus (user clicked toolbar/dropdown), don't overwrite – preserve
+    // so setBlockType applies to the right block (e.g. image block when image was selected).
     try {
+      const editorHasFocus = document.activeElement === editor;
+      const hadSaved = savedSelectionRef.current && editor.contains(savedSelectionRef.current.commonAncestorContainer);
+      if (!editorHasFocus && hadSaved) return;
       savedSelectionRef.current = range.cloneRange();
+      // Also save block index for setBlockType fallback when selection is lost
+      const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+      let n = range.startContainer;
+      if (n.nodeType === Node.TEXT_NODE) n = n.parentNode;
+      if (n?.nodeType === Node.ELEMENT_NODE && n.tagName === 'IMG') n = n.parentNode;
+      const block = n?.nodeType === Node.ELEMENT_NODE ? n.closest?.(blockSelector) : null;
+      if (block && editor.contains(block) && block !== editor) {
+        const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+        const idx = leafBlocks.indexOf(block);
+        toolbarBlockIndexRef.current = idx >= 0 ? idx : null;
+      }
     } catch (_) {}
   }, []);
+
+  // Listen to selection/cursor change: save selection, update floating toolbar, sync toolbar state
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      if (editorRef.current && !document.contains(editorRef.current)) return;
+      saveSelection();
+      handleSelection();
+      syncToolbarState();
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, [saveSelection, handleSelection, syncToolbarState]);
 
   const handleContextMenu = useCallback((e) => {
     const target = e.target;
@@ -338,8 +567,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     if (link && editorRef.current?.contains(link)) {
       e.preventDefault();
       linkElementRef.current = link;
-      const rect = editorRef.current.getBoundingClientRect();
-      setLinkDialogPosition({ top: e.clientY - rect.top - 10, left: e.clientX - rect.left });
+      setLinkDialogPosition({ top: e.clientY - 10, left: e.clientX });
       setLinkDialog({
         visible: true,
         url: link.getAttribute('href') || '',
@@ -491,7 +719,397 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     input.click();
   }, [onImageUpload, handleInput, content, onChange]);
 
-  // Insert block from slash menu
+  // Insert image by URL at current/saved selection (e.g. after sidebar upload)
+  const insertImageByUrl = useCallback((imageUrl) => {
+    const editor = editorRef.current;
+    if (!editor || !imageUrl) return;
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = 'Uploaded image';
+    img.setAttribute('draggable', 'false');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'document-editor-image-wrapper my-4';
+    wrapper.title = 'Drag the bottom-right corner to resize. Image stays centered.';
+    wrapper.appendChild(img);
+
+    const sel = window.getSelection();
+    let rangeToUse = null;
+    if (sel && sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      if (editor.contains(r?.commonAncestorContainer)) rangeToUse = r.cloneRange();
+    }
+    if (!rangeToUse && savedSelectionRef.current) {
+      try {
+        const saved = savedSelectionRef.current;
+        if (saved && editor.contains(saved.commonAncestorContainer)) rangeToUse = saved.cloneRange();
+      } catch (_) {}
+    }
+    if (rangeToUse) {
+      try {
+        rangeToUse.collapse(true);
+        const blockSelector = 'p, h1, h2, h3, h4, h5, h6, li, blockquote';
+        let node = rangeToUse.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+        if (block && editor.contains(block)) {
+          rangeToUse.setStartAfter(block);
+          rangeToUse.collapse(true);
+        }
+        rangeToUse.insertNode(wrapper);
+        rangeToUse.collapse(false);
+      } catch (_) {
+        editor.appendChild(wrapper);
+      }
+    } else {
+      editor.appendChild(wrapper);
+    }
+    handleInput();
+  }, [handleInput]);
+
+  // Convert current block to new type (Google Docs style: Paragraph → Heading 1, etc.)
+  const setBlockType = useCallback((type) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    // CRITICAL: Capture saved selections BEFORE focus() - focus triggers selectionchange
+    // which overwrites savedSelectionRef with the new cursor position (often wrong block)
+    let savedRangeClone = null;
+    let savedToolbarRangeClone = null;
+    try {
+      const saved = savedSelectionRef.current;
+      if (saved && saved.commonAncestorContainer && document.contains(saved.commonAncestorContainer) && editor.contains(saved.commonAncestorContainer)) {
+        savedRangeClone = saved.cloneRange();
+      }
+    } catch (_) {}
+    try {
+      const st = selectionWhenToolbarShownRef.current;
+      if (st?.startContainer && document.contains(st.startContainer) && editor.contains(st.startContainer)) {
+        savedToolbarRangeClone = st.cloneRange();
+      }
+    } catch (_) {}
+    // Restore selection: prefer toolbar selection when valid so block-type from floating tooltip
+    // always applies to the block that had the selection when the toolbar appeared (like the / menu).
+    const rangeToRestore = savedToolbarRangeClone || savedRangeClone;
+    if (rangeToRestore) {
+      try {
+        const sel = window.getSelection();
+        if (sel && rangeToRestore.startContainer && document.contains(rangeToRestore.startContainer) && editor.contains(rangeToRestore.startContainer)) {
+          sel.removeAllRanges();
+          sel.addRange(rangeToRestore.cloneRange());
+          editor.focus();
+        }
+      } catch (_) {}
+    } else {
+      restoreSelection();
+    }
+    let range = null;
+    const sel = window.getSelection();
+    if (sel?.rangeCount > 0) {
+      try {
+        const r = sel.getRangeAt(0);
+        if (editor.contains(r.commonAncestorContainer)) range = r;
+      } catch (_) {}
+    }
+    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+    const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+    const isBlockEmpty = (el) => !(el.textContent || '').trim() && (el.innerHTML.replace(/<br\s*\/?>/gi, '').replace(/\s/g, '').length === 0);
+    let blockToReplace = null;
+    // When we restored the toolbar selection (floating tooltip), use block index so only that block changes (like / menu).
+    const fromFloatingToolbar = !!savedToolbarRangeClone;
+    if (fromFloatingToolbar && toolbarBlockIndexRef.current != null && leafBlocks.length > 0) {
+      const idx = toolbarBlockIndexRef.current;
+      if (idx >= 0 && idx < leafBlocks.length) {
+        blockToReplace = leafBlocks[idx];
+        if (isBlockEmpty(blockToReplace)) {
+          const nonEmpty = leafBlocks.filter((b) => !isBlockEmpty(b));
+          blockToReplace = nonEmpty[0] ?? blockToReplace;
+        }
+      }
+    }
+    if (!blockToReplace && range) {
+      // Resolve from current selection (e.g. when called from top toolbar or when image selected)
+      let n = range.startContainer;
+      if (n.nodeType === Node.TEXT_NODE) n = n.parentNode;
+      if (n?.nodeType === Node.ELEMENT_NODE && n.tagName === 'IMG') n = n.parentNode;
+      let startBlock = n?.nodeType === Node.ELEMENT_NODE ? n.closest?.(blockSelector) : null;
+      if (startBlock && editor.contains(startBlock) && startBlock !== editor) {
+        let inner = startBlock.querySelector(blockSelector);
+        while (inner && inner !== startBlock && startBlock.contains(inner) && inner.contains(range.startContainer)) {
+          startBlock = inner;
+          inner = startBlock.querySelector(blockSelector);
+        }
+        blockToReplace = startBlock;
+      }
+      if (blockToReplace && isBlockEmpty(blockToReplace)) {
+        const allBlocks = leafBlocks;
+        const nonEmpty = allBlocks.filter((b) => !isBlockEmpty(b));
+        const idx = allBlocks.indexOf(blockToReplace);
+        if (nonEmpty.length > 0) {
+          const nextNonEmpty = nonEmpty.find((b) => allBlocks.indexOf(b) >= idx) || nonEmpty[nonEmpty.length - 1];
+          const prevNonEmpty = [...nonEmpty].reverse().find((b) => allBlocks.indexOf(b) <= idx) || nonEmpty[0];
+          blockToReplace = prevNonEmpty || nextNonEmpty;
+        }
+      }
+      if (!blockToReplace && range) {
+        let node = range.commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+        if (block && editor.contains(block) && block !== editor) blockToReplace = block;
+      }
+    }
+    if (!blockToReplace && leafBlocks.length > 0) {
+      blockToReplace = leafBlocks.find((b) => !isBlockEmpty(b)) ?? leafBlocks[0];
+    }
+    if (!blockToReplace || blockToReplace === editor) return;
+
+    const applyBlockStyles = (el, blockType) => {
+      el.style.marginTop = '0.35em';
+      el.style.marginBottom = '0.35em';
+      el.style.lineHeight = '1.45';
+      if (blockType === 'h1') {
+        el.style.fontSize = '1.875rem';
+        el.style.fontWeight = '700';
+      } else if (blockType === 'h2') {
+        el.style.fontSize = '1.5rem';
+        el.style.fontWeight = '600';
+      } else if (blockType === 'h3') {
+        el.style.fontSize = '1.25rem';
+        el.style.fontWeight = '600';
+      } else if (blockType === 'h4') {
+        el.style.fontSize = '1.125rem';
+        el.style.fontWeight = '600';
+      } else if (blockType === 'quote') {
+        el.style.borderLeft = '4px solid #d1d5db';
+        el.style.paddingLeft = '1rem';
+        el.style.fontStyle = 'italic';
+        el.style.color = '#4b5563';
+      } else if (blockType === 'code') {
+        el.style.background = '#f3f4f6';
+        el.style.padding = '1rem';
+        el.style.borderRadius = '6px';
+        el.style.overflowX = 'auto';
+        el.style.fontFamily = 'ui-monospace, monospace';
+        el.style.fontSize = '0.875rem';
+      }
+    };
+
+    // Always use manual DOM replace – formatBlock/execCommand is unreliable across browsers/content
+    const tag = type === 'p' ? 'p' : type === 'quote' ? 'blockquote' : type === 'code' ? 'pre' : type;
+    const currentTag = blockToReplace.tagName.toLowerCase();
+    const currentBlockType = currentTag === 'blockquote' ? 'quote' : currentTag === 'pre' ? 'code' : currentTag === 'p' ? 'p' : currentTag;
+
+    // Check if selection covers only part of the block (then we split; only selected part gets new type)
+    // Collapsed cursor = replace whole block; only multi-character selection can trigger split
+    let selectionCoversWholeBlock = true;
+    if (range && !range.collapsed && blockToReplace.contains(range.commonAncestorContainer)) {
+      try {
+        const blockRange = document.createRange();
+        blockRange.selectNodeContents(blockToReplace);
+        const startSame = range.compareBoundaryPoints(Range.START_TO_START, blockRange) <= 0;
+        const endSame = range.compareBoundaryPoints(Range.END_TO_END, blockRange) >= 0;
+        selectionCoversWholeBlock = startSame && endSame;
+      } catch (_) {}
+    }
+
+    if (selectionCoversWholeBlock) {
+      // Replace entire block (existing behavior)
+      const newBlock = document.createElement(tag === 'pre' ? 'pre' : tag);
+      applyBlockStyles(newBlock, type);
+      if (tag === 'pre') {
+        const code = document.createElement('code');
+        code.innerHTML = blockToReplace.innerHTML;
+        newBlock.appendChild(code);
+      } else {
+        newBlock.innerHTML = blockToReplace.innerHTML;
+      }
+      blockToReplace.parentNode?.replaceChild(newBlock, blockToReplace);
+    } else {
+      // Only selected part gets new type: split block into [before][selected as new type][after]
+      try {
+        const selectedFragment = range.extractContents();
+        const blockRange = document.createRange();
+        blockRange.selectNodeContents(blockToReplace);
+        const beforeRange = document.createRange();
+        beforeRange.setStart(blockRange.startContainer, blockRange.startOffset);
+        beforeRange.setEnd(range.startContainer, range.startOffset);
+        const afterRange = document.createRange();
+        afterRange.setStart(range.endContainer, range.endOffset);
+        afterRange.setEnd(blockRange.endContainer, blockRange.endOffset);
+        const afterFragment = afterRange.extractContents();
+        const beforeFragment = beforeRange.extractContents();
+
+        const parent = blockToReplace.parentNode;
+        const insertBeforeNode = blockToReplace.nextSibling;
+
+        const newBlock = document.createElement(tag === 'pre' ? 'pre' : tag);
+        applyBlockStyles(newBlock, type);
+        if (tag === 'pre') {
+          const code = document.createElement('code');
+          while (selectedFragment.firstChild) code.appendChild(selectedFragment.firstChild);
+          newBlock.appendChild(code);
+        } else {
+          while (selectedFragment.firstChild) newBlock.appendChild(selectedFragment.firstChild);
+        }
+
+        const blocksToInsert = [];
+        if (beforeFragment.firstChild) {
+          const beforeBlock = document.createElement(blockToReplace.tagName.toLowerCase() === 'pre' ? 'pre' : blockToReplace.tagName.toLowerCase());
+          applyBlockStyles(beforeBlock, currentBlockType);
+          if (beforeBlock.tagName.toLowerCase() === 'pre') {
+            const code = document.createElement('code');
+            while (beforeFragment.firstChild) code.appendChild(beforeFragment.firstChild);
+            beforeBlock.appendChild(code);
+          } else {
+            while (beforeFragment.firstChild) beforeBlock.appendChild(beforeFragment.firstChild);
+          }
+          blocksToInsert.push(beforeBlock);
+        }
+        blocksToInsert.push(newBlock);
+        if (afterFragment.firstChild) {
+          const afterBlock = document.createElement(blockToReplace.tagName.toLowerCase() === 'pre' ? 'pre' : blockToReplace.tagName.toLowerCase());
+          applyBlockStyles(afterBlock, currentBlockType);
+          if (afterBlock.tagName.toLowerCase() === 'pre') {
+            const code = document.createElement('code');
+            while (afterFragment.firstChild) code.appendChild(afterFragment.firstChild);
+            afterBlock.appendChild(code);
+          } else {
+            while (afterFragment.firstChild) afterBlock.appendChild(afterFragment.firstChild);
+          }
+          blocksToInsert.push(afterBlock);
+        }
+
+        parent.removeChild(blockToReplace);
+        for (let i = blocksToInsert.length - 1; i >= 0; i--) {
+          parent.insertBefore(blocksToInsert[i], insertBeforeNode);
+        }
+      } catch (splitErr) {
+        // Fallback: replace whole block
+        const newBlock = document.createElement(tag === 'pre' ? 'pre' : tag);
+        applyBlockStyles(newBlock, type);
+        if (tag === 'pre') {
+          const code = document.createElement('code');
+          code.innerHTML = blockToReplace.innerHTML;
+          newBlock.appendChild(code);
+        } else {
+          newBlock.innerHTML = blockToReplace.innerHTML;
+        }
+        blockToReplace.parentNode?.replaceChild(newBlock, blockToReplace);
+      }
+    }
+    skipContentSyncRef.current = true;
+    handleInput();
+    setTimeout(() => { skipContentSyncRef.current = false; }, 0);
+  }, [restoreSelection, handleInput]);
+
+  // Apply font size to selection (wrap in span; works for heading and paragraph)
+  // Use same line-height as font-size so selection highlight height matches the reduced text
+  const applyFontSize = useCallback((px) => {
+    runWithSelection(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) return;
+      try {
+        const fragment = range.extractContents();
+        const span = document.createElement('span');
+        span.style.fontSize = `${px}px`;
+        span.style.lineHeight = `${px}px`;
+        while (fragment.firstChild) span.appendChild(fragment.firstChild);
+        range.insertNode(span);
+        range.setStartAfter(span);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch (_) {}
+    });
+  }, [runWithSelection]);
+
+  // Apply font family to selection
+  const applyFontFamily = useCallback((font) => {
+    runWithSelection(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) return;
+      const span = document.createElement('span');
+      span.style.fontFamily = font;
+      try {
+        range.surroundContents(span);
+      } catch (_) {}
+    });
+  }, [runWithSelection]);
+
+  // Apply text color to selection (inline)
+  const applyTextColor = useCallback((color) => {
+    runWithSelection(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) return;
+      const span = document.createElement('span');
+      span.style.color = color;
+      try {
+        range.surroundContents(span);
+      } catch (_) {}
+    });
+  }, [runWithSelection]);
+
+  // Apply highlight (background) to selection
+  const applyHighlight = useCallback((color) => {
+    runWithSelection(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (range.collapsed) return;
+      const span = document.createElement('span');
+      span.style.backgroundColor = color;
+      try {
+        range.surroundContents(span);
+      } catch (_) {}
+    });
+  }, [runWithSelection]);
+
+  // Apply alignment to current block (block-level, like Google Docs)
+  const setAlignment = useCallback((align) => {
+    runWithSelection(() => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      let node = range.commonAncestorContainer;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+      const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+      const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+      if (block && editor.contains(block) && block !== editor) {
+        block.style.textAlign = align;
+      }
+    });
+  }, [runWithSelection]);
+
+  // Insert checklist (list with checkbox-style bullets)
+  const insertChecklist = useCallback(() => {
+    runWithSelection(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      const ul = document.createElement('ul');
+      ul.className = 'document-editor-checklist';
+      ul.setAttribute('data-type', 'checklist');
+      const li = document.createElement('li');
+      li.innerHTML = '☐ ';
+      li.contentEditable = 'true';
+      ul.appendChild(li);
+      range.deleteContents();
+      range.insertNode(ul);
+      sel.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.setStart(li, 0);
+      newRange.collapse(true);
+      sel.addRange(newRange);
+    });
+  }, [runWithSelection]);
+
+  // Insert block from slash menu (same flow: use current selection, delete contents, insert new block)
   const insertBlock = useCallback((type) => {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
@@ -500,6 +1118,9 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       block.className = 'my-4';
       
       switch (type) {
+        case 'p':
+          block.innerHTML = '<p>Paragraph</p>';
+          break;
         case 'h1':
           block.innerHTML = '<h1 class="text-4xl font-bold mb-4">Heading 1</h1>';
           break;
@@ -509,6 +1130,9 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         case 'h3':
           block.innerHTML = '<h3 class="text-2xl font-semibold mb-2">Heading 3</h3>';
           break;
+        case 'h4':
+          block.innerHTML = '<h4 class="text-xl font-semibold mb-2">Heading 4</h4>';
+          break;
         case 'ul':
           block.innerHTML = '<ul><li>List item</li></ul>';
           break;
@@ -517,6 +1141,9 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           break;
         case 'quote':
           block.innerHTML = '<blockquote class="border-l-4 border-gray-300 pl-4 italic my-4">Quote</blockquote>';
+          break;
+        case 'code':
+          block.innerHTML = '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4"><code>Code block</code></pre>';
           break;
         case 'image':
           setSlashMenu({ visible: false, position: { top: 0, left: 0 } });
@@ -534,12 +1161,80 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setSlashMenu({ visible: false, position: { top: 0, left: 0 } });
   }, [insertImageAtSelection, handleInput]);
 
+  // Tooltip block-type change: find block from saved toolbar range (no restore – selection is often lost on click).
+  // Uses selectionWhenToolbarShownRef + toolbarBlockIndexRef so it works like the / menu target.
+  const setBlockTypeFromTooltip = useCallback((type) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+    let block = null;
+    const savedRange = selectionWhenToolbarShownRef.current;
+    if (savedRange) {
+      try {
+        const startContainer = savedRange.startContainer;
+        if (startContainer && document.contains(startContainer) && editor.contains(startContainer)) {
+          let node = startContainer;
+          if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+          if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
+          block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+          if (block && editor.contains(block) && block !== editor) {
+            let inner = block.querySelector(blockSelector);
+            while (inner && inner !== block && block.contains(inner) && inner.contains(savedRange.startContainer)) {
+              block = inner;
+              inner = block.querySelector(blockSelector);
+            }
+          } else {
+            block = null;
+          }
+        }
+      } catch (_) {}
+    }
+    if (!block && toolbarBlockIndexRef.current != null) {
+      const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+      const idx = toolbarBlockIndexRef.current;
+      if (idx >= 0 && idx < leafBlocks.length) block = leafBlocks[idx];
+    }
+    if (!block || block === editor) {
+      setFloatingBlockMenuOpen(false);
+      return;
+    }
+    const applyBlockStyles = (el, blockType) => {
+      el.style.marginTop = '0.35em';
+      el.style.marginBottom = '0.35em';
+      el.style.lineHeight = '1.45';
+      if (blockType === 'h1') { el.style.fontSize = '1.875rem'; el.style.fontWeight = '700'; }
+      else if (blockType === 'h2') { el.style.fontSize = '1.5rem'; el.style.fontWeight = '600'; }
+      else if (blockType === 'h3') { el.style.fontSize = '1.25rem'; el.style.fontWeight = '600'; }
+      else if (blockType === 'h4') { el.style.fontSize = '1.125rem'; el.style.fontWeight = '600'; }
+      else if (blockType === 'quote') { el.style.borderLeft = '4px solid #d1d5db'; el.style.paddingLeft = '1rem'; el.style.fontStyle = 'italic'; el.style.color = '#4b5563'; }
+      else if (blockType === 'code') { el.style.background = '#f3f4f6'; el.style.padding = '1rem'; el.style.borderRadius = '6px'; el.style.overflowX = 'auto'; el.style.fontFamily = 'ui-monospace, monospace'; el.style.fontSize = '0.875rem'; }
+    };
+    const tag = type === 'p' ? 'p' : type === 'quote' ? 'blockquote' : type === 'code' ? 'pre' : type;
+    const newBlock = document.createElement(tag === 'pre' ? 'pre' : tag);
+    applyBlockStyles(newBlock, type);
+    if (tag === 'pre') {
+      const code = document.createElement('code');
+      code.innerHTML = block.innerHTML;
+      newBlock.appendChild(code);
+    } else {
+      newBlock.innerHTML = block.innerHTML;
+    }
+    block.parentNode?.replaceChild(newBlock, block);
+    skipContentSyncRef.current = true;
+    handleInput();
+    setTimeout(() => { skipContentSyncRef.current = false; }, 0);
+    setToolbarPosition((prev) => ({ ...prev, visible: false }));
+    setFloatingBlockMenuOpen(false);
+  }, [handleInput]);
+
   // Close menus on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (toolbarRef.current && !toolbarRef.current.contains(e.target) && 
           editorRef.current && !editorRef.current.contains(e.target)) {
         setToolbarPosition(prev => ({ ...prev, visible: false }));
+        setFloatingBlockMenuOpen(false);
+        setFloatingSizeMenuOpen(false);
       }
       if (!e.target.closest('.slash-menu')) {
         setSlashMenu(prev => ({ ...prev, visible: false }));
@@ -553,87 +1248,301 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [contextMenu.visible]);
 
+  const undo = useCallback(() => {
+    document.execCommand('undo', false, null);
+    editorRef.current?.focus();
+    handleInput();
+  }, [handleInput]);
+
+  const redo = useCallback(() => {
+    document.execCommand('redo', false, null);
+    editorRef.current?.focus();
+    handleInput();
+  }, [handleInput]);
+
+  const insertDivider = useCallback(() => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const hr = document.createElement('hr');
+      hr.className = 'document-editor-hr';
+      hr.style.cssText = 'border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;';
+      range.deleteContents();
+      range.insertNode(hr);
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      hr.parentNode?.insertBefore(p, hr.nextSibling);
+      selection.removeAllRanges();
+      handleInput();
+    }
+  }, [handleInput]);
+
+  useImperativeHandle(ref, () => ({
+    getContent: () => editorRef.current?.innerHTML ?? '',
+    getToolbarState: computeToolbarState,
+    formatText,
+    runWithSelection,
+    setBlockType,
+    setAlignment,
+    applyFontSize,
+    applyFontFamily,
+    applyTextColor,
+    applyHighlight,
+    insertChecklist,
+    insertBlock,
+    insertImageAtSelection,
+    insertImageByUrl,
+    undo,
+    redo,
+    insertDivider,
+    handleAddLink,
+    saveSelection,
+    restoreSelection,
+    focus: () => editorRef.current?.focus()
+  }), [computeToolbarState, formatText, runWithSelection, setBlockType, setAlignment, applyFontSize, applyFontFamily, applyTextColor, applyHighlight, insertChecklist, insertBlock, insertImageAtSelection, insertImageByUrl, undo, redo, insertDivider, handleAddLink, saveSelection, restoreSelection]);
+
   const blockOptions = [
+    { type: 'p', label: 'Paragraph', icon: Type },
     { type: 'h1', label: 'Heading 1', icon: Heading1 },
     { type: 'h2', label: 'Heading 2', icon: Heading2 },
     { type: 'h3', label: 'Heading 3', icon: Heading3 },
+    { type: 'h4', label: 'Heading 4', icon: Type },
     { type: 'ul', label: 'Bullet List', icon: List },
     { type: 'ol', label: 'Numbered List', icon: List },
     { type: 'quote', label: 'Quote', icon: Quote },
+    { type: 'code', label: 'Code Block', icon: Type },
     { type: 'image', label: 'Image', icon: ImageIcon },
   ];
 
-  return (
-    <div className="relative w-full">
-      {/* Floating Toolbar */}
-      {toolbarPosition.visible && (
-        <div
-          ref={toolbarRef}
-          className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-1 flex items-center gap-1"
-          style={{
-            top: `${toolbarPosition.top}px`,
-            left: `${toolbarPosition.left}px`,
-            transform: 'translateX(-50%)'
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => formatText('bold')}
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Bold"
-          >
-            <Bold className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => formatText('italic')}
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Italic"
-          >
-            <Italic className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => formatText('underline')}
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Underline"
-          >
-            <Underline className="h-4 w-4" />
-          </button>
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-          <button
-            type="button"
-            onClick={handleAddLink}
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Add Link"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </button>
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-          <button
-            type="button"
-            onClick={() => { setToolbarPosition(prev => ({ ...prev, visible: false })); insertImageAtSelection(); }}
-            className="p-2 hover:bg-gray-100 rounded"
-            title="Insert image"
-          >
-            <ImageIcon className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+  const blockTypeLabels = { '': 'Paragraph', p: 'Paragraph', h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', h4: 'Heading 4', quote: 'Quote', code: 'Code' };
+  const blockTypeOptions = ['', 'h1', 'h2', 'h3', 'h4', 'quote', 'code'];
+  const fontSizeOptions = [12, 14, 16, 18, 20, 24, 32];
 
-      {/* Insert image bar - always visible */}
-      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200">
+  const floatingToolbarEl = toolbarPosition.visible && (
+    <div
+      ref={toolbarRef}
+      style={{
+        position: 'fixed',
+        top: `${toolbarPosition.top}px`,
+        left: `${toolbarPosition.left}px`,
+        transform: toolbarPosition.above !== false ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+        zIndex: 9999,
+        background: '#fff',
+        border: '1px solid #e5e7eb',
+        borderRadius: 8,
+        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+        padding: 8,
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 4,
+        maxWidth: '95vw'
+      }}
+    >
+      {/* Block type – custom dropdown */}
+      <div style={{ position: 'relative' }}>
         <button
           type="button"
-          onClick={insertImageAtSelection}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
-          title="Insert image at cursor"
+          style={{
+            height: 32,
+            padding: '0 8px',
+            fontSize: 14,
+            border: '1px solid #e5e7eb',
+            borderRadius: 6,
+            cursor: 'pointer',
+            background: '#fff',
+            minWidth: 100,
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 4
+          }}
+          title="Block type"
+          onMouseDown={(e) => { e.preventDefault(); setFloatingSizeMenuOpen(false); setFloatingBlockMenuOpen(prev => !prev); }}
         >
-          <ImageIcon className="h-4 w-4" />
-          <span>Insert image</span>
+          <span>{blockTypeLabels[lastToolbarStateRef.current?.blockType ?? 'p'] ?? 'Paragraph'}</span>
+          <span style={{ color: '#9ca3af', fontSize: 10 }}>▾</span>
         </button>
-        <span className="text-xs text-gray-400">or type / and choose Image</span>
+        {floatingBlockMenuOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: '100%',
+              marginTop: 4,
+              padding: '4px 0',
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: 6,
+              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+              zIndex: 10001,
+              minWidth: 120
+            }}
+          >
+            {blockTypeOptions.map((v) => (
+              <button
+                key={v || 'p'}
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '6px 12px',
+                  textAlign: 'left',
+                  fontSize: 14,
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer'
+                }}
+                onMouseDown={(e) => { e.preventDefault(); setBlockTypeFromTooltip(v || 'p'); }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                {blockTypeLabels[v] ?? 'Paragraph'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+      {/* Font size – custom dropdown */}
+      <div style={{ position: 'relative' }}>
+        <button
+          type="button"
+          style={{
+            height: 32,
+            padding: '0 8px',
+            fontSize: 14,
+            border: '1px solid #e5e7eb',
+            borderRadius: 6,
+            cursor: 'pointer',
+            background: '#fff',
+            width: 64,
+            textAlign: 'left'
+          }}
+          title="Font size"
+          onMouseDown={(e) => { e.preventDefault(); setFloatingBlockMenuOpen(false); setFloatingSizeMenuOpen(prev => !prev); }}
+        >
+          Size ▾
+        </button>
+        {floatingSizeMenuOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: '100%',
+              marginTop: 4,
+              padding: '4px 0',
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: 6,
+              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+              zIndex: 10001,
+              minWidth: 80
+            }}
+          >
+            {fontSizeOptions.map((px) => (
+              <button
+                key={px}
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '6px 12px',
+                  textAlign: 'left',
+                  fontSize: 14,
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer'
+                }}
+                onMouseDown={(e) => { e.preventDefault(); applyFontSize(px); setFloatingSizeMenuOpen(false); }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                {px}px
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{ width: 1, height: 24, background: '#e5e7eb', margin: '0 2px' }} />
+      <button
+        type="button"
+        onClick={() => formatText('bold')}
+        style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        title="Bold"
+      ><Bold size={16} /></button>
+      <button
+        type="button"
+        onClick={() => formatText('italic')}
+        style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        title="Italic"
+      ><Italic size={16} /></button>
+      <button
+        type="button"
+        onClick={() => formatText('underline')}
+        style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        title="Underline"
+      ><Underline size={16} /></button>
+      <div style={{ width: 1, height: 24, background: '#e5e7eb', margin: '0 2px' }} />
+      <button
+        type="button"
+        onClick={handleAddLink}
+        style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        title="Link"
+      ><LinkIcon size={16} /></button>
+      <input
+        type="color"
+        style={{ width: 32, height: 32, padding: 0, border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer' }}
+        title="Text color"
+        onMouseDown={(e) => e.preventDefault()}
+        onChange={(e) => applyTextColor(e.target.value)}
+      />
+      <input
+        type="color"
+        style={{ width: 32, height: 32, padding: 0, border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer' }}
+        title="Highlight"
+        defaultValue="#fde047"
+        onMouseDown={(e) => e.preventDefault()}
+        onChange={(e) => applyHighlight(e.target.value)}
+      />
+      <div style={{ width: 1, height: 24, background: '#e5e7eb', margin: '0 2px' }} />
+      <button
+        type="button"
+        onClick={() => { setToolbarPosition(prev => ({ ...prev, visible: false })); insertImageAtSelection(); }}
+        style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer' }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = '#f3f4f6'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        title="Insert image"
+      ><ImageIcon size={16} /></button>
+    </div>
+  );
+
+  return (
+    <div className="relative w-full">
+      {/* Floating Toolbar - portaled to body so it stays on top of sidebar and doesn't clip */}
+      {typeof document !== 'undefined' && floatingToolbarEl && createPortal(floatingToolbarEl, document.body)}
+
+      {/* Insert image bar - hidden when parent provides its own (e.g. blog sidebar) */}
+      {!hideInsertImageBar && (
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200">
+          <button
+            type="button"
+            onClick={insertImageAtSelection}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300 transition-colors"
+            title="Insert image at cursor"
+          >
+            <ImageIcon className="h-4 w-4" />
+            <span>Insert image</span>
+          </button>
+          <span className="text-xs text-gray-400">or type / and choose Image</span>
+        </div>
+      )}
 
       {/* Right-click context menu: Add link, Insert image */}
       {contextMenu.visible && (
@@ -667,14 +1576,16 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         </div>
       )}
 
-      {/* Link Dialog */}
-      {linkDialog.visible && (
-        <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4"
+      {/* Link Dialog - portaled so it stays on top when opened from floating toolbar */}
+      {linkDialog.visible && typeof document !== 'undefined' && createPortal(
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4"
           style={{
+            position: 'fixed',
             top: `${linkDialogPosition.top}px`,
             left: `${linkDialogPosition.left}px`,
-            transform: 'translateX(-50%)',
-            minWidth: '300px'
+            transform: 'translate(-50%, 0)',
+            minWidth: '300px',
+            zIndex: 10000
           }}
         >
           <div className="space-y-2">
@@ -715,7 +1626,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Slash Menu */}
@@ -823,6 +1735,20 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
             pointer-events: none;
           }
+          .document-editor ul.document-editor-checklist {
+            list-style: none !important;
+            padding-left: 0 !important;
+          }
+          .document-editor ul.document-editor-checklist li {
+            list-style: none !important;
+            padding-left: 1.5rem !important;
+            position: relative !important;
+          }
+          .document-editor ul.document-editor-checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+          }
         `
       }} />
 
@@ -835,7 +1761,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         onPaste={handlePaste}
         onMouseUp={(e) => { saveSelection(); handleSelection(e); }}
         onKeyUp={(e) => { saveSelection(); handleSelection(e); }}
-        onFocus={saveSelection}
+        onFocus={() => { saveSelection(); syncToolbarState(); }}
         onKeyDown={handleKeyDown}
         onContextMenu={handleContextMenu}
         className="document-editor w-full min-h-[500px] p-8 text-gray-800 focus:outline-none

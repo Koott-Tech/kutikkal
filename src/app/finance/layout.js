@@ -69,7 +69,9 @@ export default function FinanceLayout({ children }) {
       try {
         setIsLoadingStats(true);
         
-        // Always send current month dates in IST
+        // Use full current month (start to end of month) for header stats so sidebar shows
+        // month totals. Using "month to date" (start to today) caused zeros when all sessions
+        // fall after today's date in the month.
         const getCurrentMonthDates = () => {
           const now = new Date();
           const istString = now.toLocaleString('en-US', {
@@ -80,6 +82,7 @@ export default function FinanceLayout({ children }) {
           });
           const [month, day, year] = istString.split('/').map(Number);
           const startOfMonth = new Date(year, month - 1, 1);
+          const endOfMonth = new Date(year, month, 0); // last day of current month
           
           const formatDateToIST = (date) => {
             const istStr = date.toLocaleString('en-US', {
@@ -94,7 +97,7 @@ export default function FinanceLayout({ children }) {
           
           return {
             from: formatDateToIST(startOfMonth),
-            to: formatDateToIST(now)
+            to: formatDateToIST(endOfMonth)
           };
         };
         

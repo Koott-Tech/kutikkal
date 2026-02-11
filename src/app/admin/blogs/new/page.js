@@ -33,7 +33,8 @@ const initialBlogState = (userName = '') => ({
 export default function NewBlogPage() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
   const { showError, showSuccess } = useNotification();
-  const { toggleSidebar } = useAdminSidebar() || {};
+  const { toggleSidebar, isSidebarOpen } = useAdminSidebar() || {};
+  const adminSidebarCollapsed = isSidebarOpen === false;
   const router = useRouter();
   const [blog, setBlog] = useState(() => initialBlogState(user?.name || ''));
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -152,7 +153,7 @@ export default function NewBlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-4 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link
@@ -163,7 +164,7 @@ export default function NewBlogPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Create New Blog</h1>
+                <div className="font-semibold text-gray-900" style={{ fontSize: '1.25rem' }} role="heading" aria-level={2}>Create New Blog</div>
                 <p className="text-sm text-gray-500">Add a new blog post</p>
               </div>
             </div>
@@ -182,7 +183,7 @@ export default function NewBlogPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
           <div className="min-h-[60vh]">
             <BlogEditorWix
@@ -194,6 +195,7 @@ export default function NewBlogPage() {
               uploadProgress={uploadingImage}
               defaultAuthorName={user?.name}
               featuredImagePreview={imagePreview}
+              adminSidebarCollapsed={adminSidebarCollapsed}
             />
           </div>
           <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">

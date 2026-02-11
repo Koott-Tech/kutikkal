@@ -15,7 +15,8 @@ export default function EditBlogPage() {
   const id = params?.id;
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
   const { showError, showSuccess } = useNotification();
-  const { toggleSidebar } = useAdminSidebar() || {};
+  const { toggleSidebar, isSidebarOpen } = useAdminSidebar() || {};
+  const adminSidebarCollapsed = isSidebarOpen === false;
   const router = useRouter();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -189,7 +190,7 @@ export default function EditBlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-4 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link
@@ -219,7 +220,7 @@ export default function EditBlogPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
           <div className="min-h-[60vh]">
             <BlogEditorWix
@@ -231,6 +232,7 @@ export default function EditBlogPage() {
               uploadProgress={uploadingImage}
               defaultAuthorName={user?.name}
               featuredImagePreview={imagePreview}
+              adminSidebarCollapsed={adminSidebarCollapsed}
             />
           </div>
           <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">

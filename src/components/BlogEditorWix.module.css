@@ -1,0 +1,514 @@
+/* Blog CMS Editor - scoped design system. No dependency on global CSS. */
+
+/* Design tokens */
+.root {
+  --bec-primary: #2563eb;
+  --bec-text: #0f172a;
+  --bec-border: #e5e7eb;
+  --bec-bg: #ffffff;
+  --bec-hover: #f8fafc;
+  --bec-radius: 0.5rem;
+  --bec-radius-xl: 0.75rem;
+  --bec-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+  --bec-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--bec-text);
+  background: var(--bec-bg);
+}
+
+/* 3-section layout */
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.layoutRow {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* When admin sidebar is collapsed, blog editor expands */
+.rootExpanded .sidebar {
+  width: 280px;
+  min-width: 280px;
+}
+.rootExpanded .editorInner {
+  max-width: 1000px;
+}
+
+/* Left sidebar: 220-250px */
+.sidebar {
+  width: 235px;
+  min-width: 235px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  background: var(--bec-bg);
+  border-right: 1px solid var(--bec-border);
+  box-shadow: var(--bec-shadow);
+  border-radius: 0  var(--bec-radius-xl) 0 0;
+  overflow: hidden;
+}
+
+.sidebarNav {
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+  background: var(--bec-hover);
+  border-right: 1px solid var(--bec-border);
+}
+
+.sidebarNavBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--bec-text);
+  border-radius: var(--bec-radius);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebarNavBtn:hover {
+  background: var(--bec-border);
+  color: var(--bec-text);
+}
+
+.sidebarNavBtnActive {
+  background: var(--bec-primary);
+  color: white;
+}
+
+.sidebarPanel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  min-width: 0;
+}
+
+.sidebarPanelTitle {
+  display: block;
+  font-size: 14px !important;
+  font-weight: 600;
+  color: var(--bec-text);
+  margin: 0 0 10px 0;
+}
+
+/* Add panel: Image upload only */
+.addImageZone {
+  border: 2px dashed var(--bec-border);
+  border-radius: var(--bec-radius-xl);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bec-hover);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.addImageZone:hover {
+  border-color: var(--bec-primary);
+  background: #eff6ff;
+}
+
+.addImageZoneDragging {
+  border-color: var(--bec-primary);
+  background: #eff6ff;
+}
+
+.addImageZoneDisabled {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.addImageZoneIcon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 8px;
+  color: var(--bec-primary);
+}
+
+.addImageZoneText {
+  font-size: 13px;
+  color: var(--bec-text);
+  margin-bottom: 4px;
+}
+
+.addImageZoneHint {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Top toolbar - always on top of the editor */
+.toolbarWrap {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bec-bg);
+  border-bottom: 1px solid var(--bec-border);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  box-shadow: var(--bec-shadow);
+  order: -1;
+}
+
+.toolbarGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  border-right: 1px solid var(--bec-border);
+}
+
+.toolbarGroup:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.toolbarBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--bec-text);
+  border-radius: var(--bec-radius);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.toolbarBtn:hover {
+  background: var(--bec-hover);
+  color: var(--bec-primary);
+}
+
+.toolbarBtnActive {
+  background: #eff6ff;
+  color: var(--bec-primary);
+}
+
+.toolbarColorInput {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  cursor: pointer;
+  background: transparent;
+}
+
+.toolbarColorInput[data-highlight] {
+  background: #fde047;
+}
+
+.toolbarSelect {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  background: var(--bec-bg);
+  color: var(--bec-text);
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.toolbarSelect:focus {
+  outline: none;
+  border-color: var(--bec-primary);
+}
+
+.blockTypeDropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 2px;
+  min-width: 160px;
+  background: var(--bec-bg);
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  box-shadow: var(--bec-shadow-md);
+  z-index: 50;
+  padding: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.blockTypeDropdownItem {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  color: var(--bec-text);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.blockTypeDropdownItem:hover {
+  background: var(--bec-hover);
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--bec-border);
+  margin: 0 4px;
+}
+
+/* Main editor area */
+.mainWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editorScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+}
+
+.editorInner {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--bec-bg);
+  border-radius: var(--bec-radius-xl);
+  box-shadow: var(--bec-shadow);
+  padding: 32px;
+  min-height: 500px;
+}
+
+/* Title & excerpt in main area */
+.editorTitle {
+  width: 100%;
+  font-size: 2rem;
+  font-weight: 700;
+  border: none;
+  border-bottom: 2px solid var(--bec-border);
+  padding: 12px 0;
+  margin-bottom: 16px;
+  background: transparent;
+  color: var(--bec-text);
+  font-family: inherit;
+  outline: none;
+}
+
+.editorTitle:focus {
+  border-bottom-color: var(--bec-primary);
+}
+
+.editorTitle::placeholder {
+  color: #94a3b8;
+}
+
+.editorExcerpt {
+  width: 100%;
+  font-size: 1.125rem;
+  border: none;
+  border-bottom: 1px solid var(--bec-border);
+  padding: 8px 0 16px;
+  margin-bottom: 24px;
+  background: transparent;
+  color: #475569;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+
+.editorExcerpt:focus {
+  border-bottom-color: var(--bec-primary);
+}
+
+.editorExcerpt::placeholder {
+  color: #94a3b8;
+}
+
+/* Settings panel (optional) */
+.settingsSection {
+  margin-bottom: 16px;
+}
+
+.settingsLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bec-text);
+  margin-bottom: 6px;
+}
+
+.settingsInput {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  background: var(--bec-bg);
+  color: var(--bec-text);
+  box-sizing: border-box;
+}
+
+.settingsInput:focus {
+  outline: none;
+  border-color: var(--bec-primary);
+}
+
+/* SEO panel */
+.seoPreviewBox {
+  background: #f8fafc;
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.seoPreviewTitle {
+  font-size: 16px;
+  color: var(--bec-primary);
+  margin: 0 0 4px 0;
+}
+
+.seoPreviewDesc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.seoPreviewUrl {
+  font-size: 12px;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+/* Word count / reading time */
+.statsBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Responsive: collapsible sidebar on tablet */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layoutRow {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-height: 40vh;
+    flex-direction: column;
+  }
+
+  .sidebarNav {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .toolbarWrap {
+    flex-wrap: wrap;
+    padding: 6px 8px;
+  }
+
+  .editorInner {
+    padding: 20px;
+  }
+}
+
+/* Scoped document editor content (no global CSS dependency) */
+.becDocumentEditorWrap {
+  min-height: 400px;
+}
+
+.becDocumentEditorWrap :global(.document-editor) {
+  min-height: 400px;
+  padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--bec-text);
+  line-height: 1.6;
+  outline: none;
+}
+
+.becDocumentEditorWrap :global(.document-editor ul),
+.becDocumentEditorWrap :global(.document-editor ol) {
+  list-style-position: outside;
+  padding-left: 1.25rem;
+  margin: 0.35rem 0;
+}
+
+.becDocumentEditorWrap :global(.document-editor ul) {
+  list-style-type: disc;
+}
+
+.becDocumentEditorWrap :global(.document-editor ol) {
+  list-style-type: decimal;
+}
+
+.becDocumentEditorWrap :global(.document-editor li) {
+  margin: 0;
+  padding: 0 0 2px 0;
+  line-height: 1.5;
+}
+
+.becDocumentEditorWrap :global(.document-editor a),
+.becDocumentEditorWrap :global(.document-editor .document-editor-link) {
+  color: var(--bec-primary);
+  text-decoration: underline;
+}
+
+.becDocumentEditorWrap :global(.document-editor .document-editor-image-wrapper),
+.becDocumentEditorWrap :global(.document-editor div.my-4:has(> img:only-child)) {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: min(100%, 720px);
+  min-width: 200px;
+  min-height: 60px;
+  resize: both;
+  overflow: auto;
+  position: relative;
+}
+
+.becDocumentEditorWrap :global(.document-editor .document-editor-image-wrapper img),
+.becDocumentEditorWrap :global(.document-editor div.my-4:has(> img:only-child) img) {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  display: block;
+  border-radius: var(--bec-radius);
+  box-shadow: var(--bec-shadow);
+}

@@ -452,10 +452,14 @@ export default function BlogPost({ slug }) {
       <div className="max-w-6xl mx-auto px-10 sm:px-12 lg:px-20 xl:px-24 pt-24 pb-12">
         {/* Title & Metadata */}
         <header className="mb-8">
-          <h3 className="font-semibold mb-4">
+          <h2 className="font-semibold mb-4">
             {blogPost.title}
-          </h3>
-          
+          </h2>
+          {blogPost.excerpt && (
+            <h3 className="font-medium text-gray-600 mb-4">
+              {blogPost.excerpt}
+            </h3>
+          )}
           <div className="flex items-center space-x-6 mb-6">
             <span className="p2">
               By <span className="font-medium">{blogPost.author_name}</span>
