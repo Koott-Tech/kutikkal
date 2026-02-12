@@ -15,7 +15,8 @@ import {
   Quote,
   Type,
   X,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 
 /**
@@ -64,11 +65,12 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
   const [linkDialog, setLinkDialog] = useState({ visible: false, url: '', text: '', isEdit: false });
   const [linkDialogPosition, setLinkDialogPosition] = useState({ top: 0, left: 0 });
   const [slashMenu, setSlashMenu] = useState({ visible: false, position: { top: 0, left: 0 } });
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, onImage: false });
   const [selectedText, setSelectedText] = useState('');
   const [floatingBlockMenuOpen, setFloatingBlockMenuOpen] = useState(false);
   const [floatingSizeMenuOpen, setFloatingSizeMenuOpen] = useState(false);
   const contextMenuRef = useRef(null);
+  const contextMenuImageWrapperRef = useRef(null);
   const lastToolbarStateRef = useRef(null);
 
   // Ensure Enter creates <p> tags for proper new lines on frontend
@@ -80,6 +82,32 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
   }, []);
 
+  // Move block elements (p, h1, etc.) out of image wrappers so text never overlaps the image
+  const normalizeImageWrappers = useCallback((editor) => {
+    if (!editor) return false;
+    const wrappers = editor.querySelectorAll?.('.document-editor-image-wrapper') || [];
+    const blockTags = /^(P|DIV|H[1-6]|BLOCKQUOTE|PRE|UL|OL|LI)$/;
+    let changed = false;
+    wrappers.forEach((wrapper) => {
+      wrapper.setAttribute('contenteditable', 'false');
+      const toMove = [];
+      wrapper.childNodes.forEach((child) => {
+        if (child.nodeType !== Node.ELEMENT_NODE) return;
+        if (child.tagName === 'IMG') return;
+        if (blockTags.test(child.tagName) || (child.tagName === 'DIV' && child.querySelector?.('img'))) {
+          toMove.push(child);
+        }
+      });
+      toMove.forEach((node) => {
+        wrapper.removeChild(node);
+        if (wrapper.nextSibling) editor.insertBefore(node, wrapper.nextSibling);
+        else editor.appendChild(node);
+        changed = true;
+      });
+    });
+    return changed;
+  }, []);
+
   // Initialize editor content (don't overwrite right after we inserted image - parent state may not have updated yet)
   // When skipContentSyncRef is true we only skip; do NOT clear it here (only the insert-image flow clears it)
   useEffect(() => {
@@ -87,19 +115,28 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     if (editorRef.current) {
       if (content && content !== editorRef.current.innerHTML) {
         editorRef.current.innerHTML = content;
+        if (normalizeImageWrappers(editorRef.current)) {
+          const fixed = editorRef.current.innerHTML;
+          if (fixed !== content) onChange?.(fixed);
+        }
       } else if (!content && !editorRef.current.innerHTML) {
         editorRef.current.innerHTML = '';
       }
     }
-  }, [content]);
+  }, [content, normalizeImageWrappers, onChange]);
 
   // Handle content changes
   const handleInput = useCallback(() => {
     if (editorRef.current) {
+      if (normalizeImageWrappers(editorRef.current)) {
+        const html = editorRef.current.innerHTML;
+        if (html !== content) onChange?.(html);
+        return;
+      }
       const html = editorRef.current.innerHTML;
       if (html !== content) onChange?.(html);
     }
-  }, [onChange, content]);
+  }, [onChange, content, normalizeImageWrappers]);
 
   // Compute toolbar state from current selection (context-aware like Google Docs / Notion)
   const computeToolbarState = useCallback(() => {
@@ -577,14 +614,58 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       setContextMenu(prev => ({ ...prev, visible: false }));
       return;
     }
+    let wrapper = null;
+    if (target.tagName === 'IMG') wrapper = target.parentElement;
+    else wrapper = target.closest?.('.document-editor-image-wrapper');
+    if (wrapper?.classList?.contains?.('document-editor-image-wrapper') && wrapper.querySelector?.('img') && editorRef.current?.contains(wrapper)) {
+      e.preventDefault();
+      contextMenuImageWrapperRef.current = wrapper;
+      setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: true });
+      return;
+    }
     // Right-click elsewhere: show action context menu and save cursor so image/link insert here
     e.preventDefault();
+    contextMenuImageWrapperRef.current = null;
     saveSelection();
-    setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: false });
   }, [saveSelection]);
+
+  // Handle Enter inside image wrapper: insert new paragraph after image so text goes below, not inside the image div
+  const ensureEnterAfterImageWrapper = useCallback((e) => {
+    if (e.key !== 'Enter' || !editorRef.current) return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
+    const wrapper = node?.nodeType === Node.ELEMENT_NODE
+      ? (node.closest?.('.document-editor-image-wrapper') || node.closest?.('div.my-4'))
+      : null;
+    if (!wrapper || !editorRef.current.contains(wrapper)) return;
+    const onlyImg = wrapper.children?.length === 1 && wrapper.querySelector?.('img') === wrapper.children[0];
+    if (!onlyImg) return;
+    e.preventDefault();
+    const editor = editorRef.current;
+    const next = wrapper.nextSibling;
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    if (next) editor.insertBefore(p, next);
+    else editor.appendChild(p);
+    const newRange = document.createRange();
+    newRange.setStart(p, 0);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    handleInput();
+  }, [handleInput]);
 
   // Handle "/" for slash menu
   const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      ensureEnterAfterImageWrapper(e);
+      if (e.defaultPrevented) return;
+    }
     if (e.key === '/' && editorRef.current) {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
@@ -601,7 +682,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         });
       }
     }
-  }, [handleInput]);
+  }, [handleInput, ensureEnterAfterImageWrapper]);
 
   // Insert image at saved cursor/selection (so it works between any content, even after file dialog opens)
   // Uses a DOM marker so the insertion point survives the async upload (selection is lost when file dialog opens).
@@ -689,6 +770,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           const wrapper = document.createElement('div');
           wrapper.className = 'document-editor-image-wrapper my-4';
           wrapper.title = 'Drag the bottom-right corner to resize. Image stays centered.';
+          wrapper.setAttribute('contenteditable', 'false');
           wrapper.appendChild(img);
 
           const marker = editorEl.querySelector('[data-insertion-marker]');
@@ -699,6 +781,16 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           } else {
             editorEl.appendChild(wrapper);
           }
+
+          const nextP = document.createElement('p');
+          nextP.innerHTML = '<br>';
+          if (wrapper.nextSibling) editorEl.insertBefore(nextP, wrapper.nextSibling);
+          else editorEl.appendChild(nextP);
+          const r = document.createRange();
+          r.setStart(nextP, 0);
+          r.collapse(true);
+          window.getSelection()?.removeAllRanges();
+          window.getSelection()?.addRange(r);
 
           handleInput();
           setTimeout(() => {
@@ -730,24 +822,33 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     const wrapper = document.createElement('div');
     wrapper.className = 'document-editor-image-wrapper my-4';
     wrapper.title = 'Drag the bottom-right corner to resize. Image stays centered.';
+    wrapper.setAttribute('contenteditable', 'false');
     wrapper.appendChild(img);
+
+    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+    const leafBlocks = () => Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
 
     const sel = window.getSelection();
     let rangeToUse = null;
     if (sel && sel.rangeCount > 0) {
-      const r = sel.getRangeAt(0);
-      if (editor.contains(r?.commonAncestorContainer)) rangeToUse = r.cloneRange();
+      try {
+        const r = sel.getRangeAt(0);
+        if (r && editor.contains(r.commonAncestorContainer)) rangeToUse = r.cloneRange();
+      } catch (_) {}
     }
     if (!rangeToUse && savedSelectionRef.current) {
       try {
         const saved = savedSelectionRef.current;
-        if (saved && editor.contains(saved.commonAncestorContainer)) rangeToUse = saved.cloneRange();
+        if (saved?.commonAncestorContainer && document.contains(saved.commonAncestorContainer) && editor.contains(saved.commonAncestorContainer)) {
+          rangeToUse = saved.cloneRange();
+        }
       } catch (_) {}
     }
+
+    let inserted = false;
     if (rangeToUse) {
       try {
         rangeToUse.collapse(true);
-        const blockSelector = 'p, h1, h2, h3, h4, h5, h6, li, blockquote';
         let node = rangeToUse.startContainer;
         if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
         const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
@@ -756,13 +857,93 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           rangeToUse.collapse(true);
         }
         rangeToUse.insertNode(wrapper);
-        rangeToUse.collapse(false);
-      } catch (_) {
-        editor.appendChild(wrapper);
-      }
-    } else {
-      editor.appendChild(wrapper);
+        inserted = true;
+      } catch (_) {}
     }
+    if (!inserted) {
+      const idx = toolbarBlockIndexRef.current;
+      const blocks = leafBlocks();
+      const block = idx != null && idx >= 0 && idx < blocks.length ? blocks[idx] : null;
+      if (block && block.parentNode) {
+        block.after(wrapper);
+        inserted = true;
+      }
+    }
+    if (!inserted) editor.appendChild(wrapper);
+
+    const nextP = document.createElement('p');
+    nextP.innerHTML = '<br>';
+    if (wrapper.nextSibling) editor.insertBefore(nextP, wrapper.nextSibling);
+    else editor.appendChild(nextP);
+    const r = document.createRange();
+    r.setStart(nextP, 0);
+    r.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(r);
+    handleInput();
+  }, [handleInput]);
+
+  // Remove the currently selected image (floating toolbar "Remove image" button)
+  const removeSelectedImage = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    let range = null;
+    const sel = window.getSelection();
+    if (sel?.rangeCount > 0 && editor.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+      range = sel.getRangeAt(0);
+    }
+    if (!range && selectionWhenToolbarShownRef.current) {
+      try {
+        const saved = selectionWhenToolbarShownRef.current;
+        if (saved?.startContainer && editor.contains(saved.startContainer)) range = saved;
+      } catch (_) {}
+    }
+    if (!range && savedSelectionRef.current) {
+      try {
+        const saved = savedSelectionRef.current;
+        if (saved?.commonAncestorContainer && editor.contains(saved.commonAncestorContainer)) range = saved;
+      } catch (_) {}
+    }
+    if (!range) return;
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+    if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
+    const wrapper = node?.nodeType === Node.ELEMENT_NODE
+      ? (node.closest?.('.document-editor-image-wrapper') || node.closest?.('div.my-4'))
+      : null;
+    if (!wrapper || !wrapper.querySelector?.('img') || !editor.contains(wrapper)) return;
+    const next = wrapper.nextSibling;
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    if (next) editor.insertBefore(p, next);
+    else editor.appendChild(p);
+    wrapper.remove();
+    const r = document.createRange();
+    r.setStart(p, 0);
+    r.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(r);
+    setToolbarPosition(prev => ({ ...prev, visible: false }));
+    handleInput();
+  }, [handleInput]);
+
+  // Remove image by wrapper ref (used when "Remove image" is clicked from context menu)
+  const removeImageByWrapperRef = useCallback(() => {
+    const editor = editorRef.current;
+    const wrapper = contextMenuImageWrapperRef.current;
+    if (!editor || !wrapper || !wrapper.parentNode || !editor.contains(wrapper)) return;
+    const next = wrapper.nextSibling;
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    if (next) editor.insertBefore(p, next);
+    else editor.appendChild(p);
+    wrapper.remove();
+    contextMenuImageWrapperRef.current = null;
+    const r = document.createRange();
+    r.setStart(p, 0);
+    r.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(r);
     handleInput();
   }, [handleInput]);
 
@@ -1520,6 +1701,21 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
         title="Insert image"
       ><ImageIcon size={16} /></button>
+      {selectedText === '[Image]' && (
+        <>
+          <div style={{ width: 1, height: 24, background: '#e5e7eb', margin: '0 2px' }} />
+          <button
+            type="button"
+            onClick={() => removeSelectedImage()}
+            style={{ padding: 8, background: 'transparent', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#dc2626' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}
+            title="Remove image"
+          >
+            <Trash2 size={16} />
+          </button>
+        </>
+      )}
     </div>
   );
 
@@ -1544,13 +1740,27 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         </div>
       )}
 
-      {/* Right-click context menu: Add link, Insert image */}
+      {/* Right-click context menu: Add link, Insert image, Remove image (when on image) */}
       {contextMenu.visible && (
         <div
           ref={contextMenuRef}
           className="fixed z-[100] bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[180px]"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
+          {contextMenu.onImage && (
+            <button
+              type="button"
+              onClick={() => {
+                setContextMenu(prev => ({ ...prev, visible: false }));
+                removeImageByWrapperRef();
+              }}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600"
+            >
+              <Trash2 className="h-4 w-4 text-red-600" />
+              Remove image
+            </button>
+          )}
+          {contextMenu.onImage && <div className="border-t border-gray-100 my-1" />}
           <button
             type="button"
             onClick={() => {
@@ -1697,21 +1907,24 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           .document-editor .document-editor-link:hover {
             color: #1d1733 !important;
           }
-          /* Resizable, center-aligned image wrapper */
+          /* Image wrapper: constrained so it never overflows; content below stays in flow */
           .document-editor .document-editor-image-wrapper,
           .document-editor div.my-4:has(> img:only-child) {
             display: block !important;
+            margin: 1rem auto !important;
             margin-left: auto !important;
             margin-right: auto !important;
             width: 100%;
             max-width: min(100%, 720px);
+            max-height: min(70vh, 520px);
             min-width: 200px;
             min-height: 60px;
             resize: both;
-            overflow: auto;
+            overflow: hidden;
             padding: 0;
             box-sizing: border-box;
             position: relative;
+            contain: layout;
           }
           /* Resize grip hint in bottom-right (drag this corner to resize) */
           .document-editor .document-editor-image-wrapper::after,
@@ -1728,8 +1941,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           .document-editor .document-editor-image-wrapper img,
           .document-editor div.my-4:has(> img:only-child) img {
             width: 100% !important;
-            height: auto !important;
+            height: 100% !important;
             max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important;
             display: block !important;
             border-radius: 0.5rem;
             box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);

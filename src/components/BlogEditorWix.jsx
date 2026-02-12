@@ -230,6 +230,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                   <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Add</span>
                   <div
                     className={`${styles.addImageZone} ${isDragging ? styles.addImageZoneDragging : ''} ${uploadProgress ? styles.addImageZoneDisabled : ''}`}
+                    onMouseDown={() => editorRef.current?.saveSelection?.()}
                     onClick={onAddZoneClick}
                     onDrop={onAddZoneDrop}
                     onDragOver={onAddZoneDragOver}

@@ -281,8 +281,8 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
   }
 
   return (
-    <section className="mt-16 pt-8 border-t border-gray-200">
-      <div className="blog-content">
+    <section className="mt-16 pt-8 border-t border-gray-200" aria-label="You might also like">
+      <div className="related-posts">
         <h6 className="text-2xl font-semibold text-gray-900 mb-6">
           You might also like
         </h6>
@@ -497,29 +497,75 @@ export default function BlogPost({ slug }) {
         {blogPost.featured_image_url && (
           <div className="mb-8">
             <div className="flex justify-center">
-              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden">
-              <img
-                src={normalizeImageUrl(blogPost.featured_image_url || '')}
-            alt={blogPost.title}
+              <div className="w-full max-w-[960px] rounded-2xl overflow-hidden">
+                <img
+                  src={normalizeImageUrl(blogPost.featured_image_url || '')}
+                  alt={blogPost.title}
                   className="w-full h-auto object-cover"
-          />
-        </div>
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Content */}
-        <div className="blog-content">
+        {/* Blog body: content first, then "You might also like" below (no overlap) */}
+        <div className="blog-post-body w-full">
+        <div className="blog-content w-full">
           <style dangerouslySetInnerHTML={{
             __html: `
+              /* Same block spacing as blog CMS editor (document-editor) for correct line breaks */
+              .blog-content .document-editor p {
+                display: block !important;
+                margin-top: 0 !important;
+                margin-bottom: 1rem !important;
+                line-height: 1.75 !important;
+              }
+              .blog-content .document-editor h1 { display: block !important; margin-top: 1.5rem !important; margin-bottom: 1rem !important; }
+              .blog-content .document-editor h2 { display: block !important; margin-top: 1.25rem !important; margin-bottom: 0.75rem !important; }
+              .blog-content .document-editor h3 { display: block !important; margin-top: 1rem !important; margin-bottom: 0.5rem !important; }
+              .blog-content .document-editor h4, .blog-content .document-editor h5, .blog-content .document-editor h6 { display: block !important; margin-top: 0.75rem !important; margin-bottom: 0.5rem !important; }
+              .blog-content .document-editor div { display: block !important; margin-top: 0 !important; margin-bottom: 1rem !important; }
+              .blog-content .document-editor blockquote { display: block !important; margin: 1rem 0 !important; }
+              .blog-content .document-editor pre { display: block !important; margin: 1rem 0 !important; }
+              .blog-content .document-editor > *:first-child { margin-top: 0 !important; }
+              .blog-content .document-editor > *:last-child { margin-bottom: 0 !important; }
+              .blog-content .document-editor ul,
+              .blog-content .document-editor ol {
+                display: block !important;
+                margin: 0.35rem 0 !important;
+                padding-left: 1.25rem !important;
+              }
+              .blog-content .document-editor ul { list-style-type: disc !important; }
+              .blog-content .document-editor ol { list-style-type: decimal !important; }
+              .blog-content .document-editor li { display: list-item !important; margin: 0 0 1px 0 !important; line-height: 1.5 !important; }
               .blog-content p,
-              .blog-content div {
+              .blog-content div,
+              .blog-content h1,
+              .blog-content h2,
+              .blog-content h3,
+              .blog-content h4,
+              .blog-content h5,
+              .blog-content h6,
+              .blog-content blockquote,
+              .blog-content-html p,
+              .blog-content-html div,
+              .blog-content-html h1,
+              .blog-content-html h2,
+              .blog-content-html h3,
+              .blog-content-html h4,
+              .blog-content-html h5,
+              .blog-content-html h6,
+              .blog-content-html blockquote,
+              .blog-content-html pre {
                 display: block !important;
                 margin-bottom: 1rem !important;
                 line-height: 1.75 !important;
               }
               .blog-content p:last-child,
-              .blog-content div:last-child {
+              .blog-content div:last-child,
+              .blog-content-html p:last-of-type,
+              .blog-content-html div:last-of-type,
+              .blog-content-html > *:last-child {
                 margin-bottom: 0 !important;
               }
               .blog-content br {
@@ -603,25 +649,27 @@ export default function BlogPost({ slug }) {
           {blogPost.structured_content && blogPost.structured_content.length > 0 ? (
             <StructuredContentRenderer content={blogPost.structured_content} />
           ) : (
-          <div 
-              className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ 
-              __html: (() => {
-                const html = blogPost.content || '';
-                // If content has no block elements, newlines won't show; convert \n to <br>
-                if (html && !/<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(html) && /\n/.test(html)) {
-                  return html.replace(/\n/g, '<br>');
-                }
-                return html;
-              })()
-            }}
-                        />
+            <div
+              className="blog-content-html document-editor"
+              data-block-content="true"
+              style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.75 }}
+              dangerouslySetInnerHTML={{
+                __html: (() => {
+                  const raw = blogPost.content || '';
+                  if (!raw.trim()) return '';
+                  if (!/<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(raw) && /\n/.test(raw)) {
+                    return raw.replace(/\n/g, '<br>');
+                  }
+                  return raw;
+                })()
+              }}
+            />
           )}
         </div>
 
-        {/* Latest Blogs Suggestions */}
+        {/* You might also like – always after the blog content */}
         <LatestBlogsSection blogs={latestBlogs.slice(0, 2)} currentSlug={slug} />
-
+        </div>
       </div>
     </article>
     </>
