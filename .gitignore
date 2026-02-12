@@ -6,6 +6,12 @@
 # Testing
 /coverage
 
+# Playwright (e2e test output and cache — do not push)
+/test-results/
+/playwright-report/
+/blob-report/
+/.playwright/
+
 # Next.js
 /.next/
 /out/
