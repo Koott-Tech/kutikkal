@@ -71,6 +71,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
   const [floatingSizeMenuOpen, setFloatingSizeMenuOpen] = useState(false);
   const contextMenuRef = useRef(null);
   const contextMenuImageWrapperRef = useRef(null);
+  const draggedImageBlockRef = useRef(null);
   const lastToolbarStateRef = useRef(null);
 
   // Ensure Enter creates <p> tags for proper new lines on frontend
@@ -82,61 +83,47 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
   }, []);
 
-  // Move block elements (p, h1, etc.) out of image wrappers so text never overlaps the image
-  const normalizeImageWrappers = useCallback((editor) => {
-    if (!editor) return false;
-    const wrappers = editor.querySelectorAll?.('.document-editor-image-wrapper') || [];
-    const blockTags = /^(P|DIV|H[1-6]|BLOCKQUOTE|PRE|UL|OL|LI)$/;
-    let changed = false;
-    wrappers.forEach((wrapper) => {
-      wrapper.setAttribute('contenteditable', 'false');
-      const toMove = [];
-      wrapper.childNodes.forEach((child) => {
-        if (child.nodeType !== Node.ELEMENT_NODE) return;
-        if (child.tagName === 'IMG') return;
-        if (blockTags.test(child.tagName) || (child.tagName === 'DIV' && child.querySelector?.('img'))) {
-          toMove.push(child);
-        }
-      });
-      toMove.forEach((node) => {
-        wrapper.removeChild(node);
-        if (wrapper.nextSibling) editor.insertBefore(node, wrapper.nextSibling);
-        else editor.appendChild(node);
-        changed = true;
-      });
-    });
-    return changed;
-  }, []);
-
   // Initialize editor content (don't overwrite right after we inserted image - parent state may not have updated yet)
-  // When skipContentSyncRef is true we only skip; do NOT clear it here (only the insert-image flow clears it)
   useEffect(() => {
     if (skipContentSyncRef.current) return;
     if (editorRef.current) {
       if (content && content !== editorRef.current.innerHTML) {
         editorRef.current.innerHTML = content;
-        if (normalizeImageWrappers(editorRef.current)) {
-          const fixed = editorRef.current.innerHTML;
-          if (fixed !== content) onChange?.(fixed);
-        }
       } else if (!content && !editorRef.current.innerHTML) {
         editorRef.current.innerHTML = '';
       }
+      const editor = editorRef.current;
+      editor.querySelectorAll?.('.doc-editor-img-block, .document-editor-image-wrapper').forEach((el) => {
+        el.setAttribute('data-draggable-image', 'true');
+        if (!el.querySelector('.doc-editor-img-overlay')) {
+          const overlay = document.createElement('div');
+          overlay.className = 'doc-editor-img-overlay';
+          overlay.setAttribute('draggable', 'true');
+          overlay.setAttribute('contenteditable', 'false');
+          const first = el.querySelector('img');
+          if (first) first.after(overlay);
+          else el.appendChild(overlay);
+        }
+        let handle = el.querySelector('.doc-editor-img-drag-handle');
+        if (!handle) {
+          handle = document.createElement('div');
+          handle.className = 'doc-editor-img-drag-handle';
+          handle.setAttribute('draggable', 'true');
+          handle.setAttribute('contenteditable', 'false');
+          handle.textContent = '⋮⋮ Drag to move';
+          el.appendChild(handle);
+        }
+      });
     }
-  }, [content, normalizeImageWrappers, onChange]);
+  }, [content]);
 
   // Handle content changes
   const handleInput = useCallback(() => {
     if (editorRef.current) {
-      if (normalizeImageWrappers(editorRef.current)) {
-        const html = editorRef.current.innerHTML;
-        if (html !== content) onChange?.(html);
-        return;
-      }
       const html = editorRef.current.innerHTML;
       if (html !== content) onChange?.(html);
     }
-  }, [onChange, content, normalizeImageWrappers]);
+  }, [onChange, content]);
 
   // Compute toolbar state from current selection (context-aware like Google Docs / Notion)
   const computeToolbarState = useCallback(() => {
@@ -331,14 +318,14 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     handleInput();
   }, [plainTextToHtml, sanitizePasteHtml, handleInput]);
 
-  // Helper: is the node an image or inside an image wrapper (so block-type tooltip should target that block)
+  // Helper: is the node an image or inside an image block (floating toolbar / remove)
   const isImageOrInImageBlock = useCallback((node, editorEl) => {
     if (!node || !editorEl?.contains(node)) return false;
     const el = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
     if (!el) return false;
     if (el.tagName === 'IMG') return true;
-    const wrapper = el.closest?.('.document-editor-image-wrapper') || el.closest?.('div.my-4');
-    return !!(wrapper && editorEl.contains(wrapper));
+    const block = el.closest?.('.doc-editor-img-block') || el.closest?.('.document-editor-image-wrapper');
+    return !!(block && editorEl.contains(block));
   }, []);
 
   // Handle text selection for floating toolbar (also show when an image is selected so block-type works)
@@ -616,8 +603,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
     let wrapper = null;
     if (target.tagName === 'IMG') wrapper = target.parentElement;
-    else wrapper = target.closest?.('.document-editor-image-wrapper');
-    if (wrapper?.classList?.contains?.('document-editor-image-wrapper') && wrapper.querySelector?.('img') && editorRef.current?.contains(wrapper)) {
+    else wrapper = target.closest?.('.doc-editor-img-block') || target.closest?.('.document-editor-image-wrapper');
+    if (wrapper && (wrapper.classList?.contains('doc-editor-img-block') || wrapper.classList?.contains('document-editor-image-wrapper')) && wrapper.querySelector?.('img') && editorRef.current?.contains(wrapper)) {
       e.preventDefault();
       contextMenuImageWrapperRef.current = wrapper;
       setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: true });
@@ -631,41 +618,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
   }, [saveSelection]);
 
   // Handle Enter inside image wrapper: insert new paragraph after image so text goes below, not inside the image div
-  const ensureEnterAfterImageWrapper = useCallback((e) => {
-    if (e.key !== 'Enter' || !editorRef.current) return;
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0);
-    let node = range.startContainer;
-    if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
-    if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
-    const wrapper = node?.nodeType === Node.ELEMENT_NODE
-      ? (node.closest?.('.document-editor-image-wrapper') || node.closest?.('div.my-4'))
-      : null;
-    if (!wrapper || !editorRef.current.contains(wrapper)) return;
-    const onlyImg = wrapper.children?.length === 1 && wrapper.querySelector?.('img') === wrapper.children[0];
-    if (!onlyImg) return;
-    e.preventDefault();
-    const editor = editorRef.current;
-    const next = wrapper.nextSibling;
-    const p = document.createElement('p');
-    p.innerHTML = '<br>';
-    if (next) editor.insertBefore(p, next);
-    else editor.appendChild(p);
-    const newRange = document.createRange();
-    newRange.setStart(p, 0);
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
-    handleInput();
-  }, [handleInput]);
-
   // Handle "/" for slash menu
   const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Enter') {
-      ensureEnterAfterImageWrapper(e);
-      if (e.defaultPrevented) return;
-    }
     if (e.key === '/' && editorRef.current) {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
@@ -682,21 +636,121 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         });
       }
     }
-  }, [handleInput, ensureEnterAfterImageWrapper]);
+  }, [handleInput]);
 
-  // Insert image at saved cursor/selection (so it works between any content, even after file dialog opens)
-  // Uses a DOM marker so the insertion point survives the async upload (selection is lost when file dialog opens).
+  // Create a simple image block: overlay + handle both draggable so image area shows grab and is grabbable.
+  const createImageBlock = useCallback((imageUrl) => {
+    const div = document.createElement('div');
+    div.className = 'doc-editor-img-block';
+    div.setAttribute('contenteditable', 'false');
+    div.setAttribute('data-draggable-image', 'true');
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = 'Image';
+    img.setAttribute('draggable', 'false');
+    div.appendChild(img);
+    const overlay = document.createElement('div');
+    overlay.className = 'doc-editor-img-overlay';
+    overlay.setAttribute('draggable', 'true');
+    overlay.setAttribute('contenteditable', 'false');
+    div.appendChild(overlay);
+    const handle = document.createElement('div');
+    handle.className = 'doc-editor-img-drag-handle';
+    handle.setAttribute('draggable', 'true');
+    handle.setAttribute('contenteditable', 'false');
+    handle.textContent = '⋮⋮ Drag to move';
+    div.appendChild(handle);
+    return div;
+  }, []);
+
+  const addParagraphAfterBlock = useCallback((block) => {
+    const editor = editorRef.current;
+    if (!editor || !block?.parentNode) return;
+    const p = document.createElement('p');
+    p.innerHTML = '<br>';
+    if (block.nextSibling) editor.insertBefore(p, block.nextSibling);
+    else editor.appendChild(p);
+    const r = document.createRange();
+    r.setStart(p, 0);
+    r.collapse(true);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(r);
+    handleInput();
+  }, [handleInput]);
+
+  const IMAGE_BLOCK_SELECTOR = '.doc-editor-img-block, .document-editor-image-wrapper';
+  const DROP_BLOCK_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, blockquote, li, .doc-editor-img-block, .document-editor-image-wrapper';
+
+  const handleImageDragStart = useCallback((e) => {
+    const block = e.target.closest?.(IMAGE_BLOCK_SELECTOR);
+    if (!block || !editorRef.current?.contains(block)) return;
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', ''); // required for Firefox
+    draggedImageBlockRef.current = block;
+    block.classList.add('doc-editor-img-dragging');
+  }, []);
+
+  const handleImageDragOver = useCallback((e) => {
+    if (!draggedImageBlockRef.current) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleImageDrop = useCallback((e) => {
+    const dragged = draggedImageBlockRef.current;
+    const editor = editorRef.current;
+    if (!dragged || !editor) return;
+    e.preventDefault();
+
+    // Compute insertion position based on mouse Y relative to all blocks,
+    // so we can drop BETWEEN paragraphs/headings/images – not just top/bottom.
+    const blocks = Array.from(
+      editor.querySelectorAll(DROP_BLOCK_SELECTOR)
+    ).filter((b) => b !== dragged && editor.contains(b));
+
+    if (blocks.length === 0) {
+      editor.appendChild(dragged);
+    } else {
+      const y = e.clientY;
+      let insertBefore = null;
+      for (const block of blocks) {
+        const rect = block.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (y < mid) {
+          insertBefore = block;
+          break;
+        }
+      }
+      if (insertBefore && insertBefore.parentNode) {
+        insertBefore.parentNode.insertBefore(dragged, insertBefore);
+      } else {
+        editor.appendChild(dragged);
+      }
+    }
+
+    dragged.classList.remove('doc-editor-img-dragging');
+    draggedImageBlockRef.current = null;
+    handleInput();
+  }, [handleInput]);
+
+  const handleImageDragEnd = useCallback((e) => {
+    const block = e.target.closest?.(IMAGE_BLOCK_SELECTOR);
+    if (block) block.classList.remove('doc-editor-img-dragging');
+    draggedImageBlockRef.current = null;
+  }, []);
+
+  // Insert image at saved cursor/selection (file dialog – marker survives async upload)
   const insertImageAtSelection = useCallback(() => {
     const editor = editorRef.current;
     if (!editor || !onImageUpload) return;
 
-    // Remove any leftover marker from a previous insert
     const existingMarker = editor.querySelector('[data-insertion-marker]');
     if (existingMarker) existingMarker.remove();
 
     const sel = window.getSelection();
     let rangeToUse = null;
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       const r = sel.getRangeAt(0);
       if (editor.contains(r?.commonAncestorContainer)) rangeToUse = r.cloneRange();
     }
@@ -707,7 +761,6 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       } catch (_) {}
     }
 
-    // Place a marker at the insertion point so we can find it after the async upload
     if (rangeToUse) {
       try {
         rangeToUse.collapse(true);
@@ -727,19 +780,14 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       } catch (_) {}
     }
 
-    // Prevent content sync from overwriting editor (and the marker) during upload
     skipContentSyncRef.current = true;
-
-    // If user cancels the file dialog, clean up marker and flag (onchange won't run)
     const cancelCleanup = () => {
       const m = insertionMarkerRef.current;
-      if (m && m.parentNode) m.remove();
+      if (m?.parentNode) m.remove();
       insertionMarkerRef.current = null;
       skipContentSyncRef.current = false;
     };
-    const cancelTimer = setTimeout(() => {
-      window.addEventListener('focus', cancelCleanup, { once: true });
-    }, 300);
+    const cancelTimer = setTimeout(() => window.addEventListener('focus', cancelCleanup, { once: true }), 300);
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -748,89 +796,51 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       window.clearTimeout(cancelTimer);
       window.removeEventListener('focus', cancelCleanup);
       const file = e.target.files?.[0];
-      if (!file) {
-        cancelCleanup();
-        return;
-      }
+      if (!file) { cancelCleanup(); return; }
       try {
         const result = await onImageUpload(file);
-        if (!editorRef.current) {
-          skipContentSyncRef.current = false;
-          return;
-        }
+        if (!editorRef.current) { skipContentSyncRef.current = false; return; }
         const editorEl = editorRef.current;
-        // Accept imageUrl from data, or from data.uploadedImages[0] (backend upload-multiple shape)
         const imageUrl = result?.data?.imageUrl
           || (result?.data?.uploadedImages?.[0] && (result.data.uploadedImages[0].imageUrl || result.data.uploadedImages[0].url));
         if (result?.success && imageUrl) {
-          const img = document.createElement('img');
-          img.src = imageUrl;
-          img.alt = 'Uploaded image';
-          img.setAttribute('draggable', 'false');
-          const wrapper = document.createElement('div');
-          wrapper.className = 'document-editor-image-wrapper my-4';
-          wrapper.title = 'Drag the bottom-right corner to resize. Image stays centered.';
-          wrapper.setAttribute('contenteditable', 'false');
-          wrapper.appendChild(img);
-
+          const block = createImageBlock(imageUrl);
           const marker = editorEl.querySelector('[data-insertion-marker]');
-          if (marker && marker.parentNode) {
-            marker.parentNode.insertBefore(wrapper, marker);
+          if (marker?.parentNode) {
+            marker.parentNode.insertBefore(block, marker);
             marker.remove();
             insertionMarkerRef.current = null;
           } else {
-            editorEl.appendChild(wrapper);
+            editorEl.appendChild(block);
           }
-
-          const nextP = document.createElement('p');
-          nextP.innerHTML = '<br>';
-          if (wrapper.nextSibling) editorEl.insertBefore(nextP, wrapper.nextSibling);
-          else editorEl.appendChild(nextP);
-          const r = document.createRange();
-          r.setStart(nextP, 0);
-          r.collapse(true);
-          window.getSelection()?.removeAllRanges();
-          window.getSelection()?.addRange(r);
-
-          handleInput();
+          addParagraphAfterBlock(block);
           setTimeout(() => {
-            if (editorRef.current) {
-              const html = editorRef.current.innerHTML;
-              if (html !== content) onChange?.(html);
-            }
+            if (editorRef.current && editorRef.current.innerHTML !== content) onChange?.(editorRef.current.innerHTML);
             skipContentSyncRef.current = false;
           }, 0);
         } else {
           skipContentSyncRef.current = false;
         }
-      } catch (error) {
-        console.error('Error uploading image:', error);
+      } catch (err) {
+        console.error(err);
         skipContentSyncRef.current = false;
       }
     };
     input.click();
-  }, [onImageUpload, handleInput, content, onChange]);
+  }, [onImageUpload, handleInput, content, onChange, createImageBlock, addParagraphAfterBlock]);
 
-  // Insert image by URL at current/saved selection (e.g. after sidebar upload)
+  // Insert image by URL at current/saved selection (e.g. sidebar upload)
   const insertImageByUrl = useCallback((imageUrl) => {
     const editor = editorRef.current;
     if (!editor || !imageUrl) return;
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = 'Uploaded image';
-    img.setAttribute('draggable', 'false');
-    const wrapper = document.createElement('div');
-    wrapper.className = 'document-editor-image-wrapper my-4';
-    wrapper.title = 'Drag the bottom-right corner to resize. Image stays centered.';
-    wrapper.setAttribute('contenteditable', 'false');
-    wrapper.appendChild(img);
+    const block = createImageBlock(imageUrl);
 
     const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
     const leafBlocks = () => Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
 
     const sel = window.getSelection();
     let rangeToUse = null;
-    if (sel && sel.rangeCount > 0) {
+    if (sel?.rangeCount > 0) {
       try {
         const r = sel.getRangeAt(0);
         if (r && editor.contains(r.commonAncestorContainer)) rangeToUse = r.cloneRange();
@@ -851,37 +861,28 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         rangeToUse.collapse(true);
         let node = rangeToUse.startContainer;
         if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
-        const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
-        if (block && editor.contains(block)) {
-          rangeToUse.setStartAfter(block);
+        const targetBlock = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+        if (targetBlock && editor.contains(targetBlock)) {
+          rangeToUse.setStartAfter(targetBlock);
           rangeToUse.collapse(true);
         }
-        rangeToUse.insertNode(wrapper);
+        rangeToUse.insertNode(block);
         inserted = true;
       } catch (_) {}
     }
     if (!inserted) {
       const idx = toolbarBlockIndexRef.current;
       const blocks = leafBlocks();
-      const block = idx != null && idx >= 0 && idx < blocks.length ? blocks[idx] : null;
-      if (block && block.parentNode) {
-        block.after(wrapper);
+      const targetBlock = idx != null && idx >= 0 && idx < blocks.length ? blocks[idx] : null;
+      if (targetBlock?.parentNode) {
+        targetBlock.after(block);
         inserted = true;
       }
     }
-    if (!inserted) editor.appendChild(wrapper);
+    if (!inserted) editor.appendChild(block);
 
-    const nextP = document.createElement('p');
-    nextP.innerHTML = '<br>';
-    if (wrapper.nextSibling) editor.insertBefore(nextP, wrapper.nextSibling);
-    else editor.appendChild(nextP);
-    const r = document.createRange();
-    r.setStart(nextP, 0);
-    r.collapse(true);
-    window.getSelection()?.removeAllRanges();
-    window.getSelection()?.addRange(r);
-    handleInput();
-  }, [handleInput]);
+    addParagraphAfterBlock(block);
+  }, [handleInput, createImageBlock, addParagraphAfterBlock]);
 
   // Remove the currently selected image (floating toolbar "Remove image" button)
   const removeSelectedImage = useCallback(() => {
@@ -909,7 +910,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
     if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
     const wrapper = node?.nodeType === Node.ELEMENT_NODE
-      ? (node.closest?.('.document-editor-image-wrapper') || node.closest?.('div.my-4'))
+      ? (node.closest?.('.doc-editor-img-block') || node.closest?.('.document-editor-image-wrapper'))
       : null;
     if (!wrapper || !wrapper.querySelector?.('img') || !editor.contains(wrapper)) return;
     const next = wrapper.nextSibling;
@@ -1907,48 +1908,73 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           .document-editor .document-editor-link:hover {
             color: #1d1733 !important;
           }
-          /* Image wrapper: constrained so it never overflows; content below stays in flow */
-          .document-editor .document-editor-image-wrapper,
-          .document-editor div.my-4:has(> img:only-child) {
+          /* Simple image block: centered, whole block shows grab cursor and is draggable. */
+          .document-editor .doc-editor-img-block,
+          .document-editor .document-editor-image-wrapper {
             display: block !important;
+            position: relative !important;
             margin: 1rem auto !important;
             margin-left: auto !important;
             margin-right: auto !important;
-            width: 100%;
-            max-width: min(100%, 720px);
-            max-height: min(70vh, 520px);
-            min-width: 200px;
-            min-height: 60px;
-            resize: both;
-            overflow: hidden;
-            padding: 0;
-            box-sizing: border-box;
-            position: relative;
-            contain: layout;
-          }
-          /* Resize grip hint in bottom-right (drag this corner to resize) */
-          .document-editor .document-editor-image-wrapper::after,
-          .document-editor div.my-4:has(> img:only-child)::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            border-width: 0 0 14px 14px;
-            border-style: solid;
-            border-color: transparent transparent rgba(0,0,0,0.25) transparent;
-            pointer-events: none;
-          }
-          .document-editor .document-editor-image-wrapper img,
-          .document-editor div.my-4:has(> img:only-child) img {
+            padding: 0 !important;
+            max-width: min(100%, 720px) !important;
             width: 100% !important;
-            height: 100% !important;
-            max-width: 100% !important;
-            max-height: 100% !important;
-            object-fit: contain !important;
+            max-height: 400px !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            cursor: grab !important;
+          }
+          .document-editor .doc-editor-img-block:active,
+          .document-editor .document-editor-image-wrapper:active {
+            cursor: grabbing !important;
+          }
+          .document-editor .doc-editor-img-block img,
+          .document-editor .document-editor-image-wrapper img {
             display: block !important;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-            pointer-events: none;
+            width: 100% !important;
+            height: auto !important;
+            max-height: 400px !important;
+            object-fit: contain !important;
+            border-radius: 0.5rem !important;
+            pointer-events: none !important;
+          }
+          .document-editor .doc-editor-img-overlay {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 32px !important;
+            cursor: grab !important;
+            z-index: 1 !important;
+          }
+          .document-editor .doc-editor-img-overlay:active {
+            cursor: grabbing !important;
+          }
+          .document-editor .doc-editor-img-drag-handle {
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 2 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 6px 10px !important;
+            margin: 0 !important;
+            font-size: 12px !important;
+            color: #374151 !important;
+            background: rgba(243, 244, 246, 0.95) !important;
+            border-top: 1px solid #e5e7eb !important;
+            cursor: grab !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+          }
+          .document-editor .doc-editor-img-drag-handle:active {
+            cursor: grabbing !important;
+          }
+          .document-editor .doc-editor-img-block.doc-editor-img-dragging,
+          .document-editor .document-editor-image-wrapper.doc-editor-img-dragging {
+            opacity: 0.6 !important;
           }
           .document-editor ul.document-editor-checklist {
             list-style: none !important;
@@ -1979,6 +2005,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         onFocus={() => { saveSelection(); syncToolbarState(); }}
         onKeyDown={handleKeyDown}
         onContextMenu={handleContextMenu}
+        onDragStart={handleImageDragStart}
+        onDragOver={handleImageDragOver}
+        onDrop={handleImageDrop}
+        onDragEnd={handleImageDragEnd}
         className="document-editor w-full min-h-[500px] p-8 text-gray-800 focus:outline-none
           [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:text-gray-900
           [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2]:text-gray-900

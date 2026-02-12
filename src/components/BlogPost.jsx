@@ -1,7 +1,7 @@
 "use client";
 
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import backendApi from "@/lib/backendApi";
@@ -349,6 +349,7 @@ const formatDate = (dateString) => {
 
 export default function BlogPost({ slug }) {
   const router = useRouter();
+  const blogContentRef = useRef(null);
   const [blogPost, setBlogPost] = useState(null);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -359,6 +360,21 @@ export default function BlogPost({ slug }) {
     loadBlogPost();
     loadLatestBlogs();
   }, [slug]);
+
+  // Frontend: remove drag UI and disable drag (drag only in CMS editor)
+  useEffect(() => {
+    if (!blogPost) return;
+    const root = blogContentRef.current;
+    if (!root) return;
+    const stripDragUI = () => {
+      root.querySelectorAll('.doc-editor-img-block, .document-editor-image-wrapper').forEach((el) => {
+        el.setAttribute('draggable', 'false');
+        el.querySelectorAll('.doc-editor-img-drag-handle, .doc-editor-img-overlay').forEach((c) => c.remove());
+      });
+    };
+    const t = setTimeout(stripDragUI, 0);
+    return () => clearTimeout(t);
+  }, [blogPost]);
 
   useEffect(() => {
     if (notFound) {
@@ -510,7 +526,7 @@ export default function BlogPost({ slug }) {
 
         {/* Blog body: content first, then "You might also like" below (no overlap) */}
         <div className="blog-post-body w-full">
-        <div className="blog-content w-full">
+        <div ref={blogContentRef} className="blog-content w-full">
           <style dangerouslySetInnerHTML={{
             __html: `
               /* Same block spacing as blog CMS editor (document-editor) for correct line breaks */
@@ -643,6 +659,37 @@ export default function BlogPost({ slug }) {
               }
               .blog-content a:hover {
                 color: #1d1733 !important;
+              }
+              .blog-content .doc-editor-img-block,
+              .blog-content .document-editor-image-wrapper {
+                display: block !important;
+                margin: 1rem auto !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                max-width: min(100%, 720px) !important;
+                max-height: 400px !important;
+                overflow: hidden !important;
+                cursor: default !important;
+              }
+              .blog-content .doc-editor-img-drag-handle,
+              .blog-content .doc-editor-img-overlay,
+              .blog-content-html .doc-editor-img-drag-handle,
+              .blog-content-html .doc-editor-img-overlay {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                pointer-events: none !important;
+              }
+              .blog-content .doc-editor-img-block img,
+              .blog-content .document-editor-image-wrapper img {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                max-height: 400px !important;
+                object-fit: contain !important;
+                border-radius: 0.5rem !important;
               }
             `
           }} />
