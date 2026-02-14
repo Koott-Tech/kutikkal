@@ -79,6 +79,16 @@ const handleResponse = async (response, options = {}) => {
       }
       
       if ((response.status === 401 || response.status === 403) && !isAuthEndpoint) {
+        // 403 from CSRF (Origin/Referer check) must not clear auth - it's a config issue, not a session issue.
+        // In production, backend returns 403 when ALLOWED_ORIGINS doesn't include the frontend origin.
+        const isCsrfFailure = response.status === 403 && (
+          (error?.message && (error.message.includes('CSRF') || error.message.includes('ALLOWED_ORIGINS'))) ||
+          (error?.error && String(error.error).includes('CSRF'))
+        );
+        if (isCsrfFailure) {
+          throw new Error(error?.message || error?.error || 'CSRF validation failed. Ensure the backend ALLOWED_ORIGINS includes this site\'s URL.');
+        }
+
         // Check if it's a token expiration error
         const isTokenExpired = error.error === 'Token expired' || 
                               error.error === 'bad_jwt' || 
