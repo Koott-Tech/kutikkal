@@ -260,16 +260,17 @@ export default function DoctorsPage() {
     }
   };
 
-  // Drag and drop handlers
+  // Drag and drop handlers (only the grip handle starts the drag)
   const handleDragStart = (e, index) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', e.target);
-    e.target.style.opacity = '0.5';
+    e.dataTransfer.setData('text/plain', String(index));
+    const card = e.currentTarget.closest('[data-doctor-card]');
+    if (card) card.style.opacity = '0.5';
   };
 
   const handleDragEnd = (e) => {
-    e.target.style.opacity = '1';
+    document.querySelectorAll('[data-doctor-card]').forEach((el) => { el.style.opacity = '1'; });
     setDraggedIndex(null);
   };
 
@@ -450,26 +451,30 @@ export default function DoctorsPage() {
           return (
           <div
             key={doctor.id}
-              draggable={!isUpdatingOrder}
-              onDragStart={(e) => handleDragStart(e, filteredIndex)}
-              onDragEnd={handleDragEnd}
+              data-doctor-card
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, filteredIndex)}
               className={`bg-white border-2 transition-all p-6 w-full rounded-[10px] ${
                 isDragging 
-                  ? 'opacity-50 border-blue-400 shadow-lg cursor-grabbing' 
-                  : 'border-gray-200 shadow-sm hover:shadow-md cursor-move hover:border-gray-300'
+                  ? 'opacity-50 border-blue-400 shadow-lg' 
+                  : 'border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
               } ${isUpdatingOrder ? 'opacity-60 pointer-events-none' : ''}`}
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-start gap-4">
-                  {/* Order Number and Drag Handle */}
+                  {/* Order Number and Drag Handle – only this area is draggable */}
                   <div className="flex flex-col items-center gap-2 flex-shrink-0">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-300">
                       <span className="text-blue-700 font-bold text-base">{displayOrder}</span>
                     </div>
-                    <div className="p-1 rounded hover:bg-gray-100 transition-colors">
-                      <GripVertical className="h-5 w-5 text-gray-500 cursor-grab active:cursor-grabbing" />
+                    <div
+                      draggable={!isUpdatingOrder}
+                      onDragStart={(e) => handleDragStart(e, filteredIndex)}
+                      onDragEnd={handleDragEnd}
+                      className="p-2 rounded border-2 border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100 transition-colors cursor-grab active:cursor-grabbing touch-none select-none"
+                      title="Drag to reorder"
+                    >
+                      <GripVertical className="h-5 w-5 text-gray-500" />
                     </div>
                   </div>
                   

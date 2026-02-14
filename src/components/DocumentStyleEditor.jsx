@@ -11,6 +11,7 @@ import {
   Heading2,
   Heading3,
   List,
+  ListOrdered,
   Image as ImageIcon,
   Quote,
   Type,
@@ -617,15 +618,47 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: false });
   }, [saveSelection]);
 
-  // Handle Enter inside image wrapper: insert new paragraph after image so text goes below, not inside the image div
-  // Handle "/" for slash menu
+  // Handle Enter: in list, empty bullet -> exit list and start normal paragraph. Handle "/" for slash menu.
   const handleKeyDown = useCallback((e) => {
-    if (e.key === '/' && editorRef.current) {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    if (e.key === 'Enter') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const li = range.startContainer.nodeType === Node.TEXT_NODE
+          ? range.startContainer.parentElement?.closest?.('li')
+          : range.startContainer.closest?.('li');
+        if (li && editor.contains(li)) {
+          const list = li.closest?.('ul') || li.closest?.('ol');
+          const isEmpty = !li.textContent?.trim() || (li.childNodes.length === 1 && li.querySelector('br'));
+          if (list && isEmpty) {
+            e.preventDefault();
+            const p = document.createElement('p');
+            p.innerHTML = '<br>';
+            if (list.nextSibling) editor.insertBefore(p, list.nextSibling);
+            else editor.appendChild(p);
+            li.remove();
+            if (!list.querySelector('li')) list.remove();
+            const r = document.createRange();
+            r.setStart(p, 0);
+            r.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(r);
+            handleInput();
+            return;
+          }
+        }
+      }
+    }
+
+    if (e.key === '/' && editor) {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
-        const editorRect = editorRef.current.getBoundingClientRect();
+        const editorRect = editor.getBoundingClientRect();
         
         setSlashMenu({
           visible: true,
@@ -1489,8 +1522,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     { type: 'h2', label: 'Heading 2', icon: Heading2 },
     { type: 'h3', label: 'Heading 3', icon: Heading3 },
     { type: 'h4', label: 'Heading 4', icon: Type },
-    { type: 'ul', label: 'Bullet List', icon: List },
-    { type: 'ol', label: 'Numbered List', icon: List },
+    { type: 'ul', label: 'Bullet list', icon: List },
+    { type: 'ol', label: 'Numbered list', icon: ListOrdered },
     { type: 'quote', label: 'Quote', icon: Quote },
     { type: 'code', label: 'Code Block', icon: Type },
     { type: 'image', label: 'Image', icon: ImageIcon },
