@@ -409,17 +409,30 @@ export default function PsychologistAvailability() {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  // Format recurring block time range (e.g. "11:00 AM – 3:00 PM" for slots 11–14)
+  // Format recurring block time: show range only if slots are continuous (e.g. 8,9,10,11); else list specific slots (e.g. 8, 9, 1 PM)
   const formatRecurringBlockTimeRange = (block) => {
     const slots = block?.time_slots || [];
     if (slots.length === 0) return '';
-    const start = formatTimeForDisplay(slots[0]);
-    const lastSlot = slots[slots.length - 1];
-    const lastMatch = String(lastSlot).match(/^(\d{1,2}):(\d{2})/);
-    const endHour = lastMatch ? parseInt(lastMatch[1], 10) + 1 : 0;
-    const endStr = `${String(endHour).padStart(2, '0')}:${lastMatch ? lastMatch[2] : '00'}`;
-    const end = formatTimeForDisplay(endStr);
-    return `${start} – ${end}`;
+    const parseMinutes = (s) => {
+      const m = String(s).trim().match(/^(\d{1,2}):(\d{2})/);
+      return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : -1;
+    };
+    const withMins = slots.map((s) => ({ s, m: parseMinutes(s) })).filter((x) => x.m >= 0);
+    if (withMins.length === 0) return '';
+    withMins.sort((a, b) => a.m - b.m);
+    const minutes = withMins.map((x) => x.m);
+    const isContinuous = minutes.every((m, i) => i === 0 || m - minutes[i - 1] === 60);
+    if (isContinuous && minutes.length > 0) {
+      const firstSlot = withMins[0].s;
+      const lastSlot = withMins[withMins.length - 1].s;
+      const start = formatTimeForDisplay(firstSlot);
+      const lastMatch = String(lastSlot).match(/^(\d{1,2}):(\d{2})/);
+      const endHour = lastMatch ? parseInt(lastMatch[1], 10) + 1 : 0;
+      const endStr = `${String(endHour).padStart(2, '0')}:${lastMatch ? lastMatch[2] : '00'}`;
+      const end = formatTimeForDisplay(endStr);
+      return `${start} – ${end}`;
+    }
+    return withMins.map((x) => formatTimeForDisplay(x.s)).join(', ');
   };
 
   if (isLoading) {
