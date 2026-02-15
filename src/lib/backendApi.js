@@ -34,11 +34,16 @@ const detectRegion = () => {
 const getTimeoutForRequest = (endpoint) => {
   const isPaymentEndpoint = endpoint.includes('/payment/');
   const isRescheduleEndpoint = endpoint.includes('/reschedule') || endpoint.includes('/reschedule-request');
+  const isRecurringBlocksEndpoint = endpoint.includes('/recurring-blocks');
   const region = detectRegion();
   
   // Payment and reschedule endpoints always get 30s
   if (isPaymentEndpoint || isRescheduleEndpoint) {
     return 30000;
+  }
+  // Recurring blocks: multiple GCal API calls + DB upsert + sync availability — can exceed 15s
+  if (isRecurringBlocksEndpoint) {
+    return 45000;
   }
   
   // High-latency regions get 25s, others get 15s

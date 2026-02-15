@@ -6,7 +6,8 @@ import { useNotification } from "../contexts/NotificationContext";
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const WEEKDAY_INDICES = [1, 2, 3, 4, 5];
 const WEEKEND_INDICES = [0, 6];
-const TIME_OPTIONS = Array.from({ length: 15 }, (_, i) => `${String(i + 8).padStart(2, '0')}:00`);
+// Match default availability: 8 AM–9 PM (14 slots; last slot 9 PM = 21:00, no 10 PM)
+const TIME_OPTIONS = Array.from({ length: 14 }, (_, i) => `${String(i + 8).padStart(2, '0')}:00`);
 
 function formatTimeLabel(timeStr) {
   if (!timeStr) return '';

@@ -48,6 +48,8 @@ export default function PsychologistAvailability() {
   // Custom unblock confirm popup: { id, label } or null
   const [unblockConfirmBlock, setUnblockConfirmBlock] = useState(null);
   const [isUnblocking, setIsUnblocking] = useState(false);
+  const [showUnblockAllConfirm, setShowUnblockAllConfirm] = useState(false);
+  const [isUnblockingAll, setIsUnblockingAll] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -386,6 +388,24 @@ export default function PsychologistAvailability() {
     }
   };
 
+  const handleUnblockAllRecurringBlocks = async () => {
+    if (!recurringBlocks.length) return;
+    setIsUnblockingAll(true);
+    try {
+      for (const block of recurringBlocks) {
+        await psychologistApi.deleteRecurringBlock(block.id);
+      }
+      showSuccess(`All ${recurringBlocks.length} recurring block(s) removed – those days are available again`);
+      setShowUnblockAllConfirm(false);
+      await loadRecurringBlocks();
+      await loadAvailability();
+    } catch (err) {
+      showError(err.message || 'Failed to unblock all');
+    } finally {
+      setIsUnblockingAll(false);
+    }
+  };
+
   const formatTimeForDisplay = (time) => {
     // If time already contains AM/PM, return as-is (already formatted)
     if (typeof time === 'string' && (time.includes('AM') || time.includes('PM') || time.includes('am') || time.includes('pm'))) {
@@ -710,30 +730,43 @@ export default function PsychologistAvailability() {
         {recurringBlocks.length === 0 ? (
           <p className="text-sm text-gray-500">No recurring blocks. Add one to block a day every week (e.g. leave). Unblock later to re-enable.</p>
         ) : (
-          <ul className="space-y-2">
-            {recurringBlocks.map((block) => (
-              <li
-                key={block.id}
-                className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 border border-gray-200"
-              >
-                <span className="text-sm font-medium text-gray-800">
-                  Every {DAY_NAMES[block.day_of_week] ?? block.day_of_week}
-                  {block.block_entire_day
-                    ? ' – Full day blocked'
-                    : ` – ${formatRecurringBlockTimeRange(block)}`}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setUnblockConfirmBlock({ id: block.id, label: `Every ${DAY_NAMES[block.day_of_week] ?? block.day_of_week}${block.block_entire_day ? ' – Full day' : ` – ${formatRecurringBlockTimeRange(block)}`}` })}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100"
-                  title="Unblock – re-enable this day for future weeks"
+          <>
+            <ul className="space-y-2">
+              {recurringBlocks.map((block) => (
+                <li
+                  key={block.id}
+                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 border border-gray-200"
                 >
-                  <Unlock className="h-4 w-4" />
-                  Unblock
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <span className="text-sm font-medium text-gray-800">
+                    Every {DAY_NAMES[block.day_of_week] ?? block.day_of_week}
+                    {block.block_entire_day
+                      ? ' – Full day blocked'
+                      : ` – ${formatRecurringBlockTimeRange(block)}`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setUnblockConfirmBlock({ id: block.id, label: `Every ${DAY_NAMES[block.day_of_week] ?? block.day_of_week}${block.block_entire_day ? ' – Full day' : ` – ${formatRecurringBlockTimeRange(block)}`}` })}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100"
+                    title="Unblock – re-enable this day for future weeks"
+                  >
+                    <Unlock className="h-4 w-4" />
+                    Unblock
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowUnblockAllConfirm(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-md hover:bg-amber-100"
+                title="Remove all recurring blocks – all those days will be available again"
+              >
+                <Unlock className="h-4 w-4" />
+                Unblock all
+              </button>
+            </div>
+          </>
         )}
       </div>
 
@@ -822,6 +855,92 @@ export default function PsychologistAvailability() {
               </button>
             </div>
             {isUnblocking && (
+              <style>{`
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+              `}</style>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Unblock all recurring blocks confirm */}
+      {showUnblockAllConfirm && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 50,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            background: 'rgba(0,0,0,0.4)'
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+              width: '100%',
+              maxWidth: 360,
+              padding: 20
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111827', marginBottom: 8 }}>
+              Unblock all recurring blocks?
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: '#4b5563', marginBottom: 20 }}>
+              All {recurringBlocks.length} block(s) will be removed. Those days will be available again for future weeks.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', alignItems: 'center' }}>
+              <button
+                type="button"
+                disabled={isUnblockingAll}
+                onClick={() => setShowUnblockAllConfirm(false)}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 8,
+                  background: '#fff',
+                  color: '#374151',
+                  cursor: isUnblockingAll ? 'not-allowed' : 'pointer',
+                  opacity: isUnblockingAll ? 0.6 : 1
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isUnblockingAll}
+                onClick={handleUnblockAllRecurringBlocks}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: 'none',
+                  borderRadius: 8,
+                  background: isUnblockingAll ? '#b45309' : '#b45309',
+                  color: '#fff',
+                  cursor: isUnblockingAll ? 'wait' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}
+              >
+                {isUnblockingAll ? (
+                  <>
+                    <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} />
+                    <span>Unblocking all...</span>
+                  </>
+                ) : (
+                  'Unblock all'
+                )}
+              </button>
+            </div>
+            {isUnblockingAll && (
               <style>{`
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
               `}</style>
