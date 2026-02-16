@@ -1,16 +1,19 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const [isFindCareOpen, setIsFindCareOpen] = useState(false);
   const [isForProvidersOpen, setIsForProvidersOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileFindCareOpen, setIsMobileFindCareOpen] = useState(false);
   const [isMobileForProvidersOpen, setIsMobileForProvidersOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const handleBlogClick = () => {
     router.push('/blog');
@@ -72,6 +75,73 @@ export default function Header() {
   const handleLoginClick = () => {
     router.push('/login');
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    if (user?.role === 'admin' || user?.role === 'superadmin') {
+      router.push('/admin');
+    } else if (user?.role === 'psychologist') {
+      router.push('/psychologist');
+    } else if (user?.role === 'finance') {
+      router.push('/finance');
+    } else {
+      router.push('/profile');
+    }
+    setIsUserMenuOpen(false);
+  };
+
+  const getRoleDisplayName = (role) => {
+    const roleMap = {
+      'admin': 'Admin',
+      'superadmin': 'Super Admin',
+      'psychologist': 'Psychologist',
+      'finance': 'Finance',
+      'client': 'Client',
+      'user': 'User'
+    };
+    return roleMap[role] || role;
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return 'User';
+    
+    // For admins, show email
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      return user.email;
+    }
+    
+    // For psychologists, show name from profile
+    if (user.role === 'psychologist' && user.profile) {
+      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+    }
+    
+    // For clients, show name from profile
+    if (user.role === 'client' && user.profile) {
+      return `${user.profile.first_name} ${user.profile.last_name}`.trim();
+    }
+    
+    // Fallback to email if no name available
+    return user.email || 'User';
+  };
+
+  const getUserInitial = () => {
+    if (!user) return 'U';
+    
+    const displayName = getUserDisplayName();
+    
+    // For admins, use first letter of email
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      return displayName.charAt(0).toUpperCase();
+    }
+    
+    // For others, use first letter of name
+    return displayName.charAt(0).toUpperCase();
   };
 
   return (
@@ -493,9 +563,80 @@ export default function Header() {
                   )}
                 </div>
 
+          {/* Right: Actions */}
+          <div className="flex items-center gap-4">
+            {isAuthenticated() ? (
+              /* Logged in user menu */
+              <div className="relative">
+                <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+                >
+                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-indigo-700 font-semibold text-sm">
+                      {getUserInitial()}
+                    </span>
+                  </div>
+                  <span>{getUserDisplayName()}</span>
+                  <ChevronUpIcon className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* User dropdown menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
+                    <div className="px-4 pb-3 border-b border-gray-200">
+                      <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                      <div className="text-xs text-indigo-600 font-medium mt-1">
+                        {getRoleDisplayName(user?.role)}
+                      </div>
+                    </div>
+                    <div className="px-4 pt-3 space-y-2">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full text-left py-2 px-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left py-2 px-2 text-sm text-red-600 hover:bg-red-50 rounded-md cursor-pointer"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Login button for non-authenticated users */
+              <button 
+                onClick={handleLoginClick}
+                className="hidden md:inline-flex items-center gap-1 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
+              >
+                <span>Login</span>
+              </button>
+            )}
+            <button className="inline-flex items-center rounded-full bg-indigo-700 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-indigo-800">
+              Get started
+            </button>
 
+            {/* Mobile menu button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
 
-                {/* Blog */}
+          {/* Mobile menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-50">
+              <div className="p-4 space-y-4">
+                {/* Mobile Blog */}
                 <div className="py-2 border-b border-gray-100">
                   <div 
                     className="cursor-pointer hover:bg-gray-50 rounded-md px-4 py-1.5"
@@ -505,7 +646,7 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Login */}
+                {/* Mobile Login */}
                 <div className="py-2 border-b border-gray-100">
                   <div className="flex items-center justify-between cursor-pointer hover:bg-gray-50 rounded-md px-4 py-1.5">
                     <span className="text-lg font-medium text-gray-900">Login</span>
@@ -515,7 +656,7 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Get Started Button */}
+                {/* Mobile Get Started Button */}
                 <div className="py-3 px-4">
                   <button 
                     onClick={handleGetStartedClick}
@@ -527,8 +668,8 @@ export default function Header() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

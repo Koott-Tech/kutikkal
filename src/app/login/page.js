@@ -1,19 +1,66 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
+import { authApi } from "../../lib/backendApi";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
+  const { login } = useAuth();
+  
+  // Get return URL from query parameters
+  const [returnUrl, setReturnUrl] = useState("");
+  
+  useEffect(() => {
+    // Get return URL from query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnUrlParam = urlParams.get('returnUrl');
+    if (returnUrlParam) {
+      setReturnUrl(returnUrlParam);
+    }
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", { email, password });
-    // Redirect to profile page after successful login
-    router.push('/profile');
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Use our backend API
+      const data = await authApi.login({ email, password });
+
+      // Use the auth context to login
+      login(data.data.user, data.data.token);
+
+      // If there's a return URL and user is a client, redirect there
+      if (returnUrl && data.data.user.role === 'client') {
+        router.push(returnUrl);
+      } else {
+        // Redirect based on user role
+        if (data.data.user.role === 'admin' || data.data.user.role === 'superadmin') {
+          router.push('/admin');
+        } else if (data.data.user.role === 'psychologist') {
+          router.push('/psychologist');
+        } else if (data.data.user.role === 'finance') {
+          router.push('/finance');
+        } else if (data.data.user.role === 'client') {
+          // Clients go to guide page to browse and book therapists
+          router.push('/guide');
+        } else {
+          router.push('/profile');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackToHome = () => {
@@ -276,25 +323,42 @@ export default function LoginPage() {
               </button>
             </div>
 
-                         {/* Sign In Button */}
-             <button
-               type="submit"
-               style={{
-                 background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                 color: "white",
-                 border: "none",
-                 borderRadius: "0.5rem",
-                 padding: "0.875rem 1rem",
-                 fontSize: "1rem",
-                 fontWeight: "600",
-                 cursor: "pointer",
-                 transition: "transform 0.2s",
-                 marginTop: "0.5rem"
-               }}
-              onMouseEnter={(e) => e.target.style.transform = "translateY(-1px)"}
-              onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+            {/* Error Display */}
+            {error && (
+              <div style={{
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                color: "#dc2626",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.875rem",
+                marginTop: "0.5rem"
+              }}>
+                {error}
+              </div>
+            )}
+
+            {/* Sign In Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#9ca3af" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                border: "none",
+                borderRadius: "0.5rem",
+                padding: "0.875rem 1rem",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                transition: "transform 0.2s",
+                marginTop: "0.5rem",
+                opacity: isLoading ? 0.7 : 1
+              }}
+              onMouseEnter={(e) => !isLoading && (e.target.style.transform = "translateY(-1px)")}
+              onMouseLeave={(e) => !isLoading && (e.target.style.transform = "translateY(0)")}
             >
-              Sign in
+              {isLoading ? "Signing in..." : "Sign in"}
             </button>
 
                          {/* Divider */}
@@ -357,6 +421,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <button
                 type="button"
+                onClick={() => router.push('/register')}
                 style={{
                   background: "none",
                   border: "none",
@@ -367,6 +432,16 @@ export default function LoginPage() {
               >
                 Sign up
               </button>
+            </div>
+            
+            {/* Registration Info */}
+            <div style={{
+              textAlign: "center",
+              marginTop: "0.5rem",
+              fontSize: "0.75rem",
+              color: "#9ca3af"
+            }}>
+              Only clients can create accounts. Psychologists, admins, and superadmins are created by administrators.
             </div>
           </form>
         </div>
