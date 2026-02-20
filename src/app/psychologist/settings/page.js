@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { psychologistApi } from "../../../lib/backendApi";
 import { 
@@ -42,6 +42,9 @@ export default function PsychologistSettings() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  // Track initial profile (API payload shape) so we only send changed fields on save
+  const initialProfileRef = useRef(null);
+
   useEffect(() => {
     if (user && user.profile) {
       // Parse phone number to extract country code and number
@@ -56,8 +59,13 @@ export default function PsychologistSettings() {
         countryCode = '+91';
         phoneNumberOnly = phoneNumber.substring(2);
       }
-      
-      setProfile({
+
+      const areaArr = Array.isArray(user.profile.area_of_expertise)
+        ? user.profile.area_of_expertise
+        : (user.profile.area_of_expertise || '').split(',').map(s => s.trim()).filter(Boolean);
+      const fullPhone = countryCode + phoneNumberOnly;
+
+      const nextProfile = {
         first_name: user.profile.first_name || '',
         last_name: user.profile.last_name || '',
         email: user.email || '',
@@ -70,7 +78,20 @@ export default function PsychologistSettings() {
           ? user.profile.area_of_expertise.join(', ') 
           : user.profile.area_of_expertise || '',
         description: user.profile.description || ''
-      });
+      };
+      setProfile(nextProfile);
+
+      // Store initial API payload shape for diffing (only send changed fields on save)
+      initialProfileRef.current = {
+        first_name: nextProfile.first_name,
+        last_name: nextProfile.last_name,
+        phone: fullPhone,
+        ug_college: nextProfile.ug_college,
+        pg_college: nextProfile.pg_college,
+        phd_college: nextProfile.phd_college,
+        area_of_expertise: areaArr,
+        description: nextProfile.description || ''
+      };
       
       // Check if Google Calendar is connected
       checkCalendarStatus();
@@ -410,34 +431,59 @@ export default function PsychologistSettings() {
       // Combine country code and phone number for storage
       const fullPhoneNumber = profile.country_code + profile.phone;
       
-      // Prepare profile data for API call
-      const profileData = {
-        ...profile,
-        phone: fullPhoneNumber
+      // Ensure area_of_expertise is an array (API expects array; form may store comma-separated string)
+      const areaOfExpertise = Array.isArray(profile.area_of_expertise)
+        ? profile.area_of_expertise
+        : (profile.area_of_expertise || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+      // Build current payload in same shape as API
+      const currentPayload = {
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        phone: fullPhoneNumber,
+        ug_college: profile.ug_college,
+        pg_college: profile.pg_college,
+        phd_college: profile.phd_college || '',
+        area_of_expertise: areaOfExpertise,
+        description: profile.description || ''
       };
+
+      // Send only changed fields (partial update)
+      const initial = initialProfileRef.current || {};
+      const changedFields = {};
+      for (const key of Object.keys(currentPayload)) {
+        const curr = currentPayload[key];
+        const prev = initial[key];
+        const same = Array.isArray(curr) && Array.isArray(prev)
+          ? JSON.stringify(curr) === JSON.stringify(prev)
+          : curr === prev;
+        if (!same) changedFields[key] = curr;
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        setSuccess('No changes to save.');
+        return;
+      }
+
+      console.log('🔍 Profile data being sent (changed fields only):', changedFields);
       
-      // Remove country_code from the data sent to API
-      delete profileData.country_code;
+      await psychologistApi.updateProfile(changedFields);
       
-      console.log('🔍 Profile data being sent:', profileData);
-      
-      // Make API call to update profile
-      await psychologistApi.updateProfile(profileData);
+      // Update initial ref so next save only diffs from this state
+      initialProfileRef.current = { ...initial, ...changedFields };
       
       setSuccess('Profile updated successfully!');
     } catch (err) {
       console.error('Profile update error:', err);
-      console.error('Error details:', err.response?.data || err.message);
-      
-      // Extract specific validation errors if available
-      let errorMessage = 'Failed to update profile. Please try again.';
-      if (err.response?.data?.details) {
-        const validationErrors = err.response.data.details.map(error => error.msg).join(', ');
-        errorMessage = `Validation errors: ${validationErrors}`;
-      } else if (err.message) {
-        errorMessage = err.message;
+      // Validation details are attached by backendApi on 400 (err.details)
+      let errorMessage = err.message || 'Failed to update profile. Please try again.';
+      if (err.details && Array.isArray(err.details) && err.details.length > 0) {
+        const validationErrors = err.details.map((d) => d.msg || d.message).join('. ');
+        errorMessage = validationErrors;
       }
-      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -640,15 +686,15 @@ export default function PsychologistSettings() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <BookOpen className="inline h-4 w-4 mr-1" />
-                  Professional Description
+                  Professional Description *
                 </label>
                 <textarea
                   name="description"
                   value={profile.description}
                   onChange={handleInputChange}
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe your professional background, approach to therapy, and what makes you unique as a therapist..."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Describe the doctor's expertise and experience..."
                 />
                 <p className="mt-1 text-xs text-gray-500">This will be visible to potential clients</p>
               </div>

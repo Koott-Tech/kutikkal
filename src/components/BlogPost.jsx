@@ -7,6 +7,19 @@ import Link from "next/link";
 import backendApi from "@/lib/backendApi";
 import BlogMetaTags from "./BlogMetaTags";
 
+// Extract text content from block - handles string, object { text/content }, or array of nodes
+const getBlockContent = (block) => {
+  const raw = block?.content;
+  if (typeof raw === 'string') return raw;
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return raw.text ?? raw.content ?? '';
+  }
+  if (Array.isArray(raw)) {
+    return raw.map((n) => (typeof n === 'string' ? n : n?.text ?? n?.content ?? '')).join('');
+  }
+  return block?.title ?? '';
+};
+
 // Structured Content Renderer Component
 const StructuredContentRenderer = ({ content }) => {
   if (!Array.isArray(content)) {
@@ -50,8 +63,9 @@ const StructuredContentRenderer = ({ content }) => {
                            return trimmedUrl;
                          };
 
-                         const parseInlineLinks = (text) => {
-                           if (!text) return [{ type: 'text', content: text }];
+                         const parseInlineLinks = (rawText) => {
+                           const text = rawText != null ? String(rawText) : '';
+                           if (!text) return [{ type: 'text', content: '' }];
                            
                            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
                            const parts = [];
@@ -85,10 +99,10 @@ const StructuredContentRenderer = ({ content }) => {
                              });
                            }
                            
-                           return parts.length > 0 ? parts : [{ type: 'text', content: text }];
+                           return parts.length > 0 ? parts : [{ type: 'text', content: text ?? '' }];
                          };
                          
-                         const parts = parseInlineLinks(block.content);
+                         const parts = parseInlineLinks(getBlockContent(block));
                          return parts.map((part, partIndex) => {
                            if (part.type === 'link') {
                              return (
@@ -106,7 +120,7 @@ const StructuredContentRenderer = ({ content }) => {
                                </a>
                              );
                            }
-                           return <span key={partIndex}>{part.content}</span>;
+                           return <span key={partIndex}>{part.content ?? ''}</span>;
                          });
                        })()}
                      </p>
@@ -179,9 +193,10 @@ const StructuredContentRenderer = ({ content }) => {
                 });
               }
               
-              return parts.length > 0 ? parts : [{ type: 'text', content: text }];
+              return parts.length > 0 ? parts : [{ type: 'text', content: text ?? '' }];
             };
-            const headingParts = parseInlineLinks(block.content);
+            const headingText = String(getBlockContent(block) ?? '');
+            const headingParts = parseInlineLinks(headingText);
             return (
               <HeadingTag key={index} className="mb-4 mt-8 font-semibold text-gray-900">
                 {headingParts.map((part, partIndex) => {
@@ -201,7 +216,7 @@ const StructuredContentRenderer = ({ content }) => {
                       </a>
                     );
                   }
-                  return <span key={partIndex}>{part.content}</span>;
+                  return <span key={partIndex}>{part.content ?? ''}</span>;
                 })}
               </HeadingTag>
             );
@@ -611,47 +626,65 @@ export default function BlogPost({ slug }) {
               .blog-content ol ol {
                 margin: 0.5rem 0 !important;
               }
-              .blog-content h1 {
+              .blog-content h1,
+              .blog-content-html h1 {
                 font-size: 2.5rem !important;
                 line-height: 1.2 !important;
                 font-weight: 700 !important;
                 margin-top: 2rem !important;
                 margin-bottom: 1rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
-              .blog-content h2 {
+              .blog-content h2,
+              .blog-content-html h2 {
                 font-size: 2rem !important;
                 line-height: 1.3 !important;
                 font-weight: 700 !important;
                 margin-top: 1.75rem !important;
                 margin-bottom: 0.875rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
-              .blog-content h3 {
+              .blog-content h3,
+              .blog-content-html h3 {
                 font-size: 1.75rem !important;
                 line-height: 1.4 !important;
                 font-weight: 600 !important;
                 margin-top: 1.5rem !important;
                 margin-bottom: 0.75rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
-              .blog-content h4 {
+              .blog-content h4,
+              .blog-content-html h4 {
                 font-size: 1.5rem !important;
                 line-height: 1.4 !important;
                 font-weight: 600 !important;
                 margin-top: 1.25rem !important;
                 margin-bottom: 0.625rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
-              .blog-content h5 {
+              .blog-content h5,
+              .blog-content-html h5 {
                 font-size: 1.25rem !important;
                 line-height: 1.5 !important;
                 font-weight: 600 !important;
                 margin-top: 1rem !important;
                 margin-bottom: 0.5rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
-              .blog-content h6 {
+              .blog-content h6,
+              .blog-content-html h6 {
                 font-size: 1.125rem !important;
                 line-height: 1.5 !important;
                 font-weight: 600 !important;
                 margin-top: 0.875rem !important;
                 margin-bottom: 0.5rem !important;
+                overflow: visible !important;
+                visibility: visible !important;
               }
               .blog-content a {
                 color: #3f2e73 !important;
@@ -693,25 +726,25 @@ export default function BlogPost({ slug }) {
               }
             `
           }} />
-          {blogPost.structured_content && blogPost.structured_content.length > 0 ? (
-            <StructuredContentRenderer content={blogPost.structured_content} />
-          ) : (
-            <div
-              className="blog-content-html document-editor"
-              data-block-content="true"
-              style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.75 }}
-              dangerouslySetInnerHTML={{
-                __html: (() => {
-                  const raw = blogPost.content || '';
-                  if (!raw.trim()) return '';
-                  if (!/<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(raw) && /\n/.test(raw)) {
-                    return raw.replace(/\n/g, '<br>');
-                  }
-                  return raw;
-                })()
-              }}
-            />
-          )}
+          {(() => {
+            // Prefer HTML content when it has block structure (from BlogEditorWix/CMS) so headings display correctly
+            const hasHtmlBlocks = blogPost.content && /<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(blogPost.content);
+            const useStructured = !hasHtmlBlocks && blogPost.structured_content && blogPost.structured_content.length > 0;
+            const raw = blogPost.content || '';
+            const htmlContent = !raw.trim() ? '' : !/<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(raw) && /\n/.test(raw) ? raw.replace(/\n/g, '<br>') : raw;
+
+            if (useStructured) {
+              return <StructuredContentRenderer content={blogPost.structured_content} />;
+            }
+            return (
+              <div
+                className="blog-content-html document-editor"
+                data-block-content="true"
+                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.75 }}
+                dangerouslySetInnerHTML={{ __html: htmlContent }}
+              />
+            );
+          })()}
         </div>
 
         {/* You might also like – always after the blog content */}

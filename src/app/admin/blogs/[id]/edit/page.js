@@ -65,6 +65,7 @@ export default function EditBlogPage() {
           status: b.status,
           tags: b.tags || [],
           categories: b.categories || [],
+          meta_keywords: b.meta_keywords || [],
           read_time_minutes: b.read_time_minutes || 5,
           slug: b.slug || '',
           seo_title: b.seo_title || b.title,

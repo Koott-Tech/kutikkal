@@ -342,9 +342,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
 
     if (range.collapsed) {
-      if (!editor?.contains(range.commonAncestorContainer)) {
-        setToolbarPosition(prev => ({ ...prev, visible: false }));
-      }
+      setToolbarPosition(prev => ({ ...prev, visible: false }));
       return;
     }
     if (!editor?.contains(range.commonAncestorContainer)) {
@@ -618,7 +616,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: false });
   }, [saveSelection]);
 
-  // Handle Enter: in list, empty bullet -> exit list and start normal paragraph. Handle "/" for slash menu.
+  // Handle Enter: in list, empty bullet -> exit list and start normal paragraph.
+  // In heading/blockquote -> new line should be paragraph by default. Handle "/" for slash menu.
   const handleKeyDown = useCallback((e) => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -627,9 +626,13 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        const li = range.startContainer.nodeType === Node.TEXT_NODE
-          ? range.startContainer.parentElement?.closest?.('li')
-          : range.startContainer.closest?.('li');
+        const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+
+        // In list: empty bullet -> exit to paragraph
+        const li = block?.tagName === 'LI' ? block : null;
         if (li && editor.contains(li)) {
           const list = li.closest?.('ul') || li.closest?.('ol');
           const isEmpty = !li.textContent?.trim() || (li.childNodes.length === 1 && li.querySelector('br'));
@@ -637,6 +640,11 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             e.preventDefault();
             const p = document.createElement('p');
             p.innerHTML = '<br>';
+            p.style.fontSize = '1rem';
+            p.style.lineHeight = '1.75';
+            p.style.fontWeight = 'normal';
+            p.style.marginTop = '0';
+            p.style.marginBottom = '1rem';
             if (list.nextSibling) editor.insertBefore(p, list.nextSibling);
             else editor.appendChild(p);
             li.remove();
@@ -646,6 +654,32 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             r.collapse(true);
             selection.removeAllRanges();
             selection.addRange(r);
+            handleInput();
+            return;
+          }
+        }
+
+        // In heading or blockquote: new line -> paragraph (don't continue as H1/H2/blockquote)
+        if (block && editor.contains(block) && block !== editor) {
+          const tag = block.tagName?.toLowerCase();
+          if (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4' || tag === 'h5' || tag === 'h6' || tag === 'blockquote') {
+            e.preventDefault();
+            const p = document.createElement('p');
+            p.innerHTML = '<br>';
+            // Force paragraph-only cursor height (no heading size/gap)
+            p.style.fontSize = '1rem';
+            p.style.lineHeight = '1.75';
+            p.style.fontWeight = 'normal';
+            p.style.marginTop = '0';
+            p.style.marginBottom = '1rem';
+            if (block.nextSibling) editor.insertBefore(p, block.nextSibling);
+            else editor.appendChild(p);
+            const r = document.createRange();
+            r.setStart(p, 0);
+            r.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(r);
+            editor.focus();
             handleInput();
             return;
           }
@@ -701,6 +735,11 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     if (!editor || !block?.parentNode) return;
     const p = document.createElement('p');
     p.innerHTML = '<br>';
+    p.style.fontSize = '1rem';
+    p.style.lineHeight = '1.75';
+    p.style.fontWeight = 'normal';
+    p.style.marginTop = '0';
+    p.style.marginBottom = '1rem';
     if (block.nextSibling) editor.insertBefore(p, block.nextSibling);
     else editor.appendChild(p);
     const r = document.createRange();
@@ -1442,6 +1481,30 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setFloatingBlockMenuOpen(false);
   }, [handleInput]);
 
+  // Get the <ol> that contains the toolbar selection (for "Start at" control)
+  const getOlContainingToolbarSelection = useCallback(() => {
+    const editor = editorRef.current;
+    const saved = selectionWhenToolbarShownRef.current;
+    if (!editor || !saved) return null;
+    try {
+      let node = saved.startContainer;
+      if (node?.nodeType === Node.TEXT_NODE) node = node.parentNode;
+      const ol = node?.closest?.('ol');
+      return ol && editor.contains(ol) ? ol : null;
+    } catch (_) {
+      return null;
+    }
+  }, []);
+
+  // Set the start number of the ordered list containing the toolbar selection
+  const setOrderedListStart = useCallback((startNum) => {
+    const ol = getOlContainingToolbarSelection();
+    if (!ol) return;
+    const n = Math.max(1, parseInt(startNum, 10) || 1);
+    ol.setAttribute('start', String(n));
+    handleInput();
+  }, [getOlContainingToolbarSelection, handleInput]);
+
   // Close menus on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1618,6 +1681,32 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           </div>
         )}
       </div>
+      {/* Numbered list start – only when block type is ol */}
+      {lastToolbarStateRef.current?.blockType === 'ol' && (() => {
+        let listStart = 1;
+        const ol = getOlContainingToolbarSelection();
+        if (ol) listStart = Math.max(1, parseInt(ol.getAttribute('start'), 10) || 1);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 12, color: '#6b7280' }}>Start:</span>
+            <input
+              type="number"
+              min={1}
+              value={listStart}
+              onChange={(e) => setOrderedListStart(e.target.value)}
+              onMouseDown={(e) => e.preventDefault()}
+              style={{
+                width: 48,
+                padding: '4px 6px',
+                fontSize: 13,
+                border: '1px solid #e5e7eb',
+                borderRadius: 6
+              }}
+              title="List start number"
+            />
+          </div>
+        );
+      })()}
       {/* Font size – custom dropdown */}
       <div style={{ position: 'relative' }}>
         <button

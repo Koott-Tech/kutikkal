@@ -177,6 +177,26 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   };
   const removeTag = (t) => onChange({ ...blog, tags: (blog.tags || []).filter((x) => x !== t) });
 
+  const addCategory = () => {
+    const input = document.getElementById('bec-category-input');
+    const v = input?.value?.trim();
+    if (v && !(blog.categories || []).includes(v)) {
+      onChange({ ...blog, categories: [...(blog.categories || []), v] });
+      if (input) input.value = '';
+    }
+  };
+  const removeCategory = (c) => onChange({ ...blog, categories: (blog.categories || []).filter((x) => x !== c) });
+
+  const addMetaKeyword = () => {
+    const input = document.getElementById('bec-meta-keyword-input');
+    const v = input?.value?.trim();
+    if (v && !(blog.meta_keywords || []).includes(v)) {
+      onChange({ ...blog, meta_keywords: [...(blog.meta_keywords || []), v] });
+      if (input) input.value = '';
+    }
+  };
+  const removeMetaKeyword = (k) => onChange({ ...blog, meta_keywords: (blog.meta_keywords || []).filter((x) => x !== k) });
+
   const wordCount = useMemo(() => {
     const html = blog.content ?? '';
     const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -315,20 +335,39 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                     />
                   </div>
                   <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Category</label>
+                    <input
+                      id="bec-category-input"
+                      type="text"
+                      className={styles.settingsInput}
+                      placeholder="Add category"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
+                    />
+                    <button type="button" onClick={addCategory} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <div className={styles.tagChipWrap}>
+                      {(blog.categories || []).map((cat) => (
+                        <span key={cat} className={styles.tagChip}>
+                          {cat}
+                          <button type="button" onClick={() => removeCategory(cat)} className={styles.tagChipRemove}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.settingsSection}>
                     <label className={styles.settingsLabel}>Tags</label>
                     <input
                       id="bec-tag-input"
                       type="text"
                       className={styles.settingsInput}
-                      placeholder="Add tag"
+                      placeholder="Add tag (Enter to add)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     />
                     <button type="button" onClick={addTag} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                    <div className={styles.tagChipWrap}>
                       {(blog.tags || []).map((tag) => (
-                        <span key={tag} style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', background: '#eff6ff', color: '#2563eb', borderRadius: 999, fontSize: 12 }}>
+                        <span key={tag} className={styles.tagChip}>
                           {tag}
-                          <button type="button" onClick={() => removeTag(tag)} style={{ marginLeft: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit' }}>×</button>
+                          <button type="button" onClick={() => removeTag(tag)} className={styles.tagChipRemove}>×</button>
                         </span>
                       ))}
                     </div>
@@ -348,7 +387,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       <p className={styles.seoPreviewUrl}>{displaySlug ? `www.example.com/blog/${displaySlug}` : '…'}</p>
                       <p className={styles.seoPreviewTitle}>{(blog.seo_title || blog.title || 'Your title').slice(0, 60)}</p>
                       <p className={styles.seoPreviewDesc}>{(blog.seo_description || blog.excerpt || 'Meta description…').slice(0, 160)}</p>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, fontSize: 11 }}>
+                      <div className={styles.seoPreviewStats}>
                         <span className={(blog.seo_title || blog.title || '').length <= 60 && (blog.seo_title || blog.title || '').length >= 30 ? 'text-green-600' : ''}>Title: {(blog.seo_title || blog.title || '').length}/60</span>
                         <span className={(blog.seo_description || blog.excerpt || '').length <= 160 && (blog.seo_description || blog.excerpt || '').length >= 120 ? 'text-green-600' : ''}>Desc: {(blog.seo_description || blog.excerpt || '').length}/160</span>
                       </div>
@@ -395,6 +434,25 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       onChange={(e) => onChange({ ...blog, focus_keyword: e.target.value })}
                       placeholder="e.g. child psychology"
                     />
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Meta keywords (SEO)</label>
+                    <input
+                      id="bec-meta-keyword-input"
+                      type="text"
+                      className={styles.settingsInput}
+                      placeholder="Add keyword (Enter to add)"
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMetaKeyword())}
+                    />
+                    <button type="button" onClick={addMetaKeyword} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <div className={styles.tagChipWrap}>
+                      {(blog.meta_keywords || []).map((kw) => (
+                        <span key={kw} className={styles.tagChip}>
+                          {kw}
+                          <button type="button" onClick={() => removeMetaKeyword(kw)} className={styles.tagChipRemove}>×</button>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   <div className={styles.settingsSection}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>

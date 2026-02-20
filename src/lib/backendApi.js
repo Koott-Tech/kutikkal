@@ -134,10 +134,13 @@ const handleResponse = async (response, options = {}) => {
         }
       }
       
-      // For login/register endpoints, we already handled them above, so this shouldn't be reached
-      // But just in case, preserve the original error message from backend
+      // Preserve backend message and attach validation details for 400 so UI can show them
       const errorMsg = error?.message || error?.error || `HTTP error! status: ${response.status}`;
-      throw new Error(errorMsg);
+      const err = new Error(errorMsg);
+      if (response.status === 400 && error?.details && Array.isArray(error.details)) {
+        err.details = error.details;
+      }
+      throw err;
     } catch (parseError) {
       // If this is already an Error object (from our throw above), re-throw it immediately
       // This preserves the original error message from the backend

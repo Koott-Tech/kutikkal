@@ -375,6 +375,39 @@
   border-color: var(--bec-primary);
 }
 
+.tagChipWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 999px;
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tagChipRemove {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+}
+
 /* SEO panel */
 .seoPreviewBox {
   background: #f8fafc;
@@ -382,12 +415,26 @@
   border-radius: var(--bec-radius);
   padding: 12px;
   margin-bottom: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.seoPreviewUrl {
+  font-size: 12px;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 
 .seoPreviewTitle {
   font-size: 16px;
   color: var(--bec-primary);
   margin: 0 0 4px 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 .seoPreviewDesc {
@@ -395,12 +442,21 @@
   color: #64748b;
   margin: 0;
   line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.seoPreviewUrl {
-  font-size: 12px;
-  color: #0f172a;
-  margin: 0 0 8px 0;
+.seoPreviewStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+  min-width: 0;
 }
 
 /* Word count / reading time */
