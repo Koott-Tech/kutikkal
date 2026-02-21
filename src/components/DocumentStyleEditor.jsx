@@ -84,12 +84,30 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
   }, []);
 
+  // Normalize HTML: convert empty headings/blockquotes/divs to paragraphs (SEO + proper line gaps)
+  const normalizeBlankBlocksToParagraphs = useCallback((html) => {
+    if (!html || typeof html !== 'string') return html;
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const sel = 'h1, h2, h3, h4, h5, h6, blockquote';
+    doc.querySelectorAll?.(sel)?.forEach((el) => {
+      const text = (el.textContent || '').trim();
+      const onlyBr = el.querySelectorAll?.('br')?.length >= 1 && !text;
+      if (!text && (onlyBr || el.childNodes.length === 0)) {
+        const p = doc.createElement('p');
+        p.innerHTML = '<br>';
+        el.parentNode?.replaceChild(p, el);
+      }
+    });
+    return doc.body?.innerHTML ?? html;
+  }, []);
+
   // Initialize editor content (don't overwrite right after we inserted image - parent state may not have updated yet)
   useEffect(() => {
     if (skipContentSyncRef.current) return;
     if (editorRef.current) {
       if (content && content !== editorRef.current.innerHTML) {
-        editorRef.current.innerHTML = content;
+        const normalized = normalizeBlankBlocksToParagraphs(content);
+        editorRef.current.innerHTML = normalized || content;
       } else if (!content && !editorRef.current.innerHTML) {
         editorRef.current.innerHTML = '';
       }
@@ -116,7 +134,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         }
       });
     }
-  }, [content]);
+  }, [content, normalizeBlankBlocksToParagraphs]);
 
   // Handle content changes
   const handleInput = useCallback(() => {
@@ -254,11 +272,19 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }).join('');
   }, []);
 
-  // Sanitize pasted HTML: allow safe block and inline elements
+  // Check if element is empty/blank (no meaningful content - good for line gaps)
+  const isBlankBlock = (el) => {
+    const text = (el.textContent || '').trim();
+    const hasOnlyBr = el.querySelectorAll?.('br')?.length === el.childNodes?.length;
+    return !text && (hasOnlyBr || el.childNodes.length === 0);
+  };
+
+  // Sanitize pasted HTML: allow safe block and inline elements. Convert empty headings/blockquotes to paragraphs (SEO).
   const sanitizePasteHtml = useCallback((html) => {
     if (!html || typeof html !== 'string') return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const allowedTags = ['p', 'div', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'blockquote'];
+    const headingOrQuote = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
     const walk = (node) => {
       if (node.nodeType === Node.TEXT_NODE) return node.cloneNode(true);
       if (node.nodeType !== Node.ELEMENT_NODE) return null;
@@ -271,9 +297,15 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         });
         return frag.childNodes.length ? frag : null;
       }
-      const el = document.createElement(tag);
-      if (tag === 'a' && node.getAttribute('href')) el.setAttribute('href', node.getAttribute('href'));
-      
+      // Empty headings, blockquotes -> paragraph (avoid SEO pollution, proper line gaps)
+      const isBlank = isBlankBlock(node);
+      const useTag = headingOrQuote.includes(tag) && isBlank ? 'p' : tag;
+      const el = document.createElement(useTag);
+      if (tag === 'a' && node.getAttribute('href') && useTag === 'a') el.setAttribute('href', node.getAttribute('href'));
+      if (useTag === 'p' && isBlank) {
+        el.innerHTML = '<br>';
+        return el;
+      }
       [...node.childNodes].forEach((child) => {
         const c = walk(child);
         if (c) el.appendChild(c);
@@ -1989,9 +2021,18 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         </div>
       )}
 
-      {/* Editor Styles - compact bullet lists, no extra space (override pasted margins) */}
+      {/* Editor Styles - paragraph line gaps, compact lists, no extra space (override pasted margins) */}
       <style dangerouslySetInnerHTML={{
         __html: `
+          .document-editor p {
+            margin-top: 0 !important;
+            margin-bottom: 1rem !important;
+            line-height: 1.75 !important;
+          }
+          .document-editor p:empty,
+          .document-editor p:has(> br:only-child) {
+            min-height: 1.75em !important;
+          }
           .document-editor ul,
           .document-editor ol {
             list-style-position: outside !important;
