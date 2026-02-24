@@ -52,7 +52,11 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
   placeholder = 'Start writing...',
   hideInsertImageBar = false,
   onToolbarStateChange,
+  /** When set (e.g. "[data-blog-cms-editor]"), all editor styles are scoped to this selector so the CMS does not rely on global CSS. */
+  scopeSelector = '',
 }, ref) {
+  const sel = scopeSelector ? `${scopeSelector} .document-editor` : '.document-editor';
+  const useScopedStylesOnly = Boolean(scopeSelector);
   const editorRef = useRef(null);
   const savedSelectionRef = useRef(null); // store last cursor/selection in editor so we can insert image there
   const selectionWhenToolbarShownRef = useRef(null);
@@ -2021,59 +2025,63 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         </div>
       )}
 
-      {/* Editor Styles - paragraph line gaps, compact lists, no extra space (override pasted margins) */}
+      {/* Editor Styles – scoped when scopeSelector set (blog CMS uses no global CSS) */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          .document-editor p {
+          ${sel} p {
             margin-top: 0 !important;
             margin-bottom: 1rem !important;
             line-height: 1.75 !important;
           }
-          .document-editor p:empty,
-          .document-editor p:has(> br:only-child) {
-            min-height: 1.75em !important;
+          ${sel} p:empty,
+          ${sel} p:has(> br:only-child) {
+            min-height: 1em !important;
           }
-          .document-editor ul,
-          .document-editor ol {
+          ${sel} h1 { font-size: 2.5rem !important; line-height: 1.2 !important; font-weight: 700 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; display: block !important; }
+          ${sel} h2 { font-size: 2rem !important; line-height: 1.3 !important; font-weight: 700 !important; margin-top: 1.75rem !important; margin-bottom: 0.875rem !important; display: block !important; }
+          ${sel} h3 { font-size: 1.75rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.5rem !important; margin-bottom: 0.75rem !important; display: block !important; }
+          ${sel} h4 { font-size: 1.5rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.25rem !important; margin-bottom: 0.625rem !important; display: block !important; }
+          ${sel} h5 { font-size: 1.25rem !important; line-height: 1.5 !important; font-weight: 600 !important; margin-top: 1rem !important; margin-bottom: 0.5rem !important; display: block !important; }
+          ${sel} h6 { font-size: 1.125rem !important; line-height: 1.5 !important; font-weight: 600 !important; margin-top: 0.875rem !important; margin-bottom: 0.5rem !important; display: block !important; }
+          ${sel} > *:first-child { margin-top: 0 !important; }
+          ${sel} > *:last-child { margin-bottom: 0 !important; }
+          ${sel} ul,
+          ${sel} ol {
             list-style-position: outside !important;
             padding-left: 1.25rem !important;
             margin: 0.35rem 0 !important;
             display: block !important;
           }
-          .document-editor ul { list-style-type: disc !important; }
-          .document-editor ol { list-style-type: decimal !important; }
-          .document-editor li {
+          ${sel} ul { list-style-type: disc !important; }
+          ${sel} ol { list-style-type: decimal !important; }
+          ${sel} li {
             display: list-item !important;
             margin: 0 !important;
             padding: 0 0 1px 0 !important;
             line-height: 1.5 !important;
             list-style-position: outside !important;
           }
-          /* Override pasted inline styles that add extra space */
-          .document-editor ul li[style],
-          .document-editor ol li[style] {
+          ${sel} ul li[style],
+          ${sel} ol li[style] {
             margin: 0 !important;
             padding: 0 0 1px 0 !important;
           }
-          /* Pasted content often has p/div inside li - remove their margin so no extra gap */
-          .document-editor li p,
-          .document-editor li div {
+          ${sel} li p,
+          ${sel} li div {
             margin: 0 !important;
             padding: 0 !important;
           }
-          /* Links: brand color (same as Get Started button) */
-          .document-editor a,
-          .document-editor .document-editor-link {
+          ${sel} a,
+          ${sel} .document-editor-link {
             color: #3f2e73 !important;
             text-decoration: underline !important;
           }
-          .document-editor a:hover,
-          .document-editor .document-editor-link:hover {
+          ${sel} a:hover,
+          ${sel} .document-editor-link:hover {
             color: #1d1733 !important;
           }
-          /* Simple image block: centered, whole block shows grab cursor and is draggable. */
-          .document-editor .doc-editor-img-block,
-          .document-editor .document-editor-image-wrapper {
+          ${sel} .doc-editor-img-block,
+          ${sel} .document-editor-image-wrapper {
             display: block !important;
             position: relative !important;
             margin: 1rem auto !important;
@@ -2087,12 +2095,12 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             box-sizing: border-box !important;
             cursor: grab !important;
           }
-          .document-editor .doc-editor-img-block:active,
-          .document-editor .document-editor-image-wrapper:active {
+          ${sel} .doc-editor-img-block:active,
+          ${sel} .document-editor-image-wrapper:active {
             cursor: grabbing !important;
           }
-          .document-editor .doc-editor-img-block img,
-          .document-editor .document-editor-image-wrapper img {
+          ${sel} .doc-editor-img-block img,
+          ${sel} .document-editor-image-wrapper img {
             display: block !important;
             width: 100% !important;
             height: auto !important;
@@ -2101,7 +2109,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             border-radius: 0.5rem !important;
             pointer-events: none !important;
           }
-          .document-editor .doc-editor-img-overlay {
+          ${sel} .doc-editor-img-overlay {
             position: absolute !important;
             top: 0 !important;
             left: 0 !important;
@@ -2110,10 +2118,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             cursor: grab !important;
             z-index: 1 !important;
           }
-          .document-editor .doc-editor-img-overlay:active {
-            cursor: grabbing !important;
-          }
-          .document-editor .doc-editor-img-drag-handle {
+          ${sel} .doc-editor-img-drag-handle {
             position: absolute !important;
             bottom: 0 !important;
             left: 0 !important;
@@ -2132,27 +2137,44 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             user-select: none !important;
             -webkit-user-select: none !important;
           }
-          .document-editor .doc-editor-img-drag-handle:active {
-            cursor: grabbing !important;
-          }
-          .document-editor .doc-editor-img-block.doc-editor-img-dragging,
-          .document-editor .document-editor-image-wrapper.doc-editor-img-dragging {
+          ${sel} .doc-editor-img-block.doc-editor-img-dragging,
+          ${sel} .document-editor-image-wrapper.doc-editor-img-dragging {
             opacity: 0.6 !important;
           }
-          .document-editor ul.document-editor-checklist {
+          ${sel} ul.document-editor-checklist {
             list-style: none !important;
             padding-left: 0 !important;
           }
-          .document-editor ul.document-editor-checklist li {
+          ${sel} ul.document-editor-checklist li {
             list-style: none !important;
             padding-left: 1.5rem !important;
             position: relative !important;
           }
-          .document-editor ul.document-editor-checklist li::before {
+          ${sel} ul.document-editor-checklist li::before {
             content: '☐';
             position: absolute;
             left: 0;
           }
+          ${useScopedStylesOnly ? `
+          ${sel} blockquote {
+            border-left: 4px solid #d1d5db !important;
+            padding-left: 1rem !important;
+            font-style: italic !important;
+            margin: 1rem 0 !important;
+            color: #374151 !important;
+          }
+          ${sel} img {
+            max-width: 100% !important;
+            height: auto !important;
+            border-radius: 0.5rem !important;
+            margin: 1rem 0 !important;
+          }
+          ${sel}:empty::before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+          }
+          ` : ''}
         `
       }} />
 
@@ -2172,15 +2194,13 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         onDragOver={handleImageDragOver}
         onDrop={handleImageDrop}
         onDragEnd={handleImageDragEnd}
-        className="document-editor w-full min-h-[500px] p-8 text-gray-800 focus:outline-none
-          [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:text-gray-900
-          [&_h2]:text-3xl [&_h2]:font-semibold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2]:text-gray-900
-          [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-gray-900
+        className={`document-editor w-full min-h-[500px] p-8 text-gray-800 focus:outline-none ${useScopedStylesOnly ? '' : `
           [&_p]:mb-4 [&_p]:leading-relaxed [&_p]:text-base
           [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-gray-700
           [&_a]:underline [&_a]:cursor-pointer
           [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_img]:shadow-sm
-          [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none"
+          [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none
+        `}`}
         data-placeholder={placeholder}
         style={{
           whiteSpace: 'pre-wrap',

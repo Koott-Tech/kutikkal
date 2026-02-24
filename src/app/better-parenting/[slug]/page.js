@@ -257,7 +257,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
                   <div style={{ position: 'absolute', left: 18, bottom: 18, zIndex: 2, display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
                     <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>{name}</div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                      {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? doc.area_of_expertise.slice(0, 2) : ['Child Therapy']).map((exp, i) => (
+                      {(doc.area_of_expertise && Array.isArray(doc.area_of_expertise) && doc.area_of_expertise.length > 0 ? doc.area_of_expertise.slice(0, 1) : ['Child Therapy']).map((exp, i) => (
                         <span
                           key={i}
                           style={{
@@ -312,22 +312,25 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
                         <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
                         {`${(doc.experience_years || 3)}+ yrs Experience`}
                       </span>
-                      <span
-                        style={{
-                          background: 'rgba(255,255,255,0.22)',
-                          color: '#fff',
-                          borderRadius: 16,
-                          padding: '0.18em 0.5em',
-                          fontWeight: 400,
-                          fontSize: '0.9rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                          backdropFilter: 'blur(0.5px)',
-                          WebkitBackdropFilter: 'blur(0.5px)',
-                          border: '1.5px solid rgba(255,255,255,0.18)'
-                        }}
-                      >
-                        📚 Consultant Psychologist
-                      </span>
+                      {/* Designation chip (same as online-child-psychologist, with book emoji) */}
+                      {doc.designation || doc.specialization ? (
+                        <span
+                          style={{
+                            background: 'rgba(255,255,255,0.22)',
+                            color: '#fff',
+                            borderRadius: 16,
+                            padding: '0.18em 0.5em',
+                            fontWeight: 400,
+                            fontSize: '0.9rem',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                            backdropFilter: 'blur(0.5px)',
+                            WebkitBackdropFilter: 'blur(0.5px)',
+                            border: '1.5px solid rgba(255,255,255,0.18)'
+                          }}
+                        >
+                          📚 {doc.designation || doc.specialization}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>

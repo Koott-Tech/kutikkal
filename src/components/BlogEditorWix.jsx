@@ -611,7 +611,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                   placeholder="Brief description (excerpt)"
                   rows={2}
                 />
-                <div className={styles.becDocumentEditorWrap}>
+                <div className={styles.becDocumentEditorWrap} data-blog-cms-editor>
                   <DocumentStyleEditor
                     ref={editorRef}
                     content={blog.content || ''}
@@ -620,6 +620,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                     onToolbarStateChange={setToolbarState}
                     placeholder="Start writing... Type / for blocks"
                     hideInsertImageBar
+                    scopeSelector="[data-blog-cms-editor]"
                   />
                 </div>
                 <div className={styles.statsBar}>
