@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import Image from "next/image";
+import { normalizeImageUrlWithSize } from '@/utils/urlNormalizer';
 
 export default function TherapistCarousel({ therapists = [] }) {
   const containerRef = useRef(null);
@@ -123,7 +124,11 @@ export default function TherapistCarousel({ therapists = [] }) {
         className="therapist-cards-stack"
       >
         {therapists.map((doc, idx) => {
-          const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
+          const imageSrc = normalizeImageUrlWithSize(
+            doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp',
+            400,
+            80
+          );
           const name = doc.name || doc.first_name || 'Therapist';
           // Create slug from doctor name
           const nameSlug = name
@@ -139,19 +144,16 @@ export default function TherapistCarousel({ therapists = [] }) {
               className="therapist-card-item block"
             >
               <div className="guide-video-card h-[380px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm cursor-pointer relative">
-                <img 
-                  src={imageSrc} 
-                  alt={name} 
-                  width={400}
-                  height={380}
+                <Image
+                  src={imageSrc}
+                  alt={name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
                   style={{ 
-                    width: '100%', 
-                    height: '100%', 
                     objectFit: 'cover',
                     aspectRatio: '400/380'
-                  }} 
-                  loading="lazy"
-                  decoding="async"
+                  }}
+                  priority={false}
                 />
           <div
             style={{

@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '@/lib/backendApi';
-import { Calendar, RefreshCw, ExternalLink, Clock } from 'lucide-react';
+import { Calendar, RefreshCw, ExternalLink, Clock, CheckCircle } from 'lucide-react';
 
 const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose }) => {
   const [events, setEvents] = useState([]);
+  const [availability, setAvailability] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -13,32 +14,40 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
   const [hasGoogleCalendar, setHasGoogleCalendar] = useState(false);
 
   useEffect(() => {
-    fetchCalendarEvents();
+    fetchCalendarAndAvailability();
   }, [psychologistId, currentMonth]);
 
-  const fetchCalendarEvents = async () => {
+  const fetchCalendarAndAvailability = async () => {
+    if (!psychologistId) return;
     try {
       setLoading(true);
       setError(null);
 
       const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
       const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
 
-      const response = await adminApi.getPsychologistCalendarEvents(
-        psychologistId,
-        startDate.toISOString().split('T')[0],
-        endDate.toISOString().split('T')[0]
-      );
+      const [eventsRes, availabilityRes] = await Promise.all([
+        adminApi.getPsychologistCalendarEvents(psychologistId, startStr, endStr),
+        adminApi.getPsychologistAvailabilityForReschedule(psychologistId, startStr, endStr),
+      ]);
 
-      if (response && response.success) {
-        setEvents(response.data.events || []);
-        setHasGoogleCalendar(response.data.hasGoogleCalendar);
+      if (eventsRes && eventsRes.success) {
+        setEvents(eventsRes.data.events || []);
+        setHasGoogleCalendar(!!eventsRes.data.hasGoogleCalendar);
       } else {
         setError('Failed to fetch calendar events');
       }
-    } catch (error) {
-      console.error('Error fetching calendar events:', error);
-      setError('Failed to fetch calendar events');
+
+      if (availabilityRes && availabilityRes.success && availabilityRes.data?.availability) {
+        setAvailability(availabilityRes.data.availability);
+      } else {
+        setAvailability([]);
+      }
+    } catch (err) {
+      console.error('Error fetching calendar/availability:', err);
+      setError('Failed to fetch calendar and availability');
     } finally {
       setLoading(false);
     }
@@ -52,13 +61,18 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
     });
   };
 
+  const getMonthName = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startingDayOfWeek = new Date(year, month, 1).getDay();
-    
-    return { daysInMonth, startingDayOfWeek, year, month };
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay();
+    return { daysInMonth, startingDay, year, month };
   };
 
   const getEventsForDate = (date) => {
@@ -67,6 +81,11 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
       const eventDate = event.start.dateTime || event.start.date;
       return eventDate.startsWith(dateStr);
     });
+  };
+
+  const getAvailabilityForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return availability.find(d => d.date === dateStr) || null;
   };
 
   const getEventColor = (summary, source) => {
@@ -123,23 +142,24 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
             </div>
           )}
 
-          {/* Calendar Status */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          {/* Calendar & availability status */}
+          <div className="mb-4 p-3 rounded-md border" style={{ backgroundColor: 'rgba(63, 46, 115, 0.08)', borderColor: 'rgba(63, 46, 115, 0.2)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Calendar className="h-4 w-4 text-blue-600 mr-2" />
-                <span className="text-sm text-blue-800">
-                  {hasGoogleCalendar ? 'Google Calendar Connected' : 'Google Calendar Not Connected'}
+                <Calendar className="h-4 w-4 mr-2" style={{ color: '#3f2e73' }} />
+                <span className="text-sm" style={{ color: '#3f2e73' }}>
+                  {hasGoogleCalendar ? 'Google Calendar connected' : 'Google Calendar not connected'} · Availability loaded for this month
                 </span>
               </div>
               <button
-                onClick={fetchCalendarEvents}
+                onClick={fetchCalendarAndAvailability}
                 disabled={loading}
-                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                className="text-xs flex items-center gap-1 font-medium hover:opacity-80 disabled:opacity-60"
+                style={{ color: '#3f2e73' }}
               >
                 {loading ? (
                   <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-transparent border-t-current"></div>
                     Loading...
                   </>
                 ) : (
@@ -152,84 +172,100 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
             </div>
           </div>
 
-          {/* Month Calendar View */}
+          {/* Month Calendar View - same design as therapist individual (booking) page */}
           <div className="mb-6">
-            <div className="bg-white border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              {/* Month navigation */}
+              <div className="flex items-center justify-between mb-2">
                 <button
                   onClick={() => navigateMonth(-1)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 18l-6-6 6-6" />
                   </svg>
                 </button>
-                <h3 className="text-lg font-semibold">
-                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </h3>
+                <p className="text-sm font-semibold text-gray-800">{getMonthName(currentMonth)}</p>
                 <button
                   onClick={() => navigateMonth(1)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
               </div>
-              
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
+
+              {/* Calendar grid - S M T W T F S headers like therapist page */}
+              <div className="grid grid-cols-7 gap-1 mb-4">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                  <div key={`header-${index}`} className="text-center text-xs font-medium text-gray-500 py-1">
                     {day}
                   </div>
                 ))}
-                
                 {(() => {
-                  const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentMonth);
-                  const days = [];
-                  
-                  // Empty cells before first day
-                  for (let i = 0; i < startingDayOfWeek; i++) {
-                    days.push(
-                      <div key={`empty-${i}`} className="aspect-square p-1"></div>
-                    );
+                  const { daysInMonth, startingDay, year, month } = getDaysInMonth(currentMonth);
+                  const today = new Date();
+                  const isCurrentMonth = currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear();
+                  const calendarDays = [];
+
+                  for (let i = 0; i < startingDay; i++) {
+                    calendarDays.push(<div key={`empty-${i}`} className="text-center py-1 text-xs" />);
                   }
-                  
-                  // Days of month
+
                   for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
                     const eventsForDay = getEventsForDate(date);
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    const isSelected = date.toDateString() === selectedDate.toDateString();
-                    
-                    days.push(
-                      <button
+                    const dayAvailability = getAvailabilityForDate(date);
+                    const hasAvailableSlots = dayAvailability?.available_slots?.length > 0;
+                    const isToday = isCurrentMonth && day === today.getDate();
+                    const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentMonth.getMonth() && selectedDate.getFullYear() === currentMonth.getFullYear();
+
+                    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    todayStart.setHours(0, 0, 0, 0);
+                    date.setHours(0, 0, 0, 0);
+                    const isPastDate = date < todayStart;
+                    const isAvailable = !isPastDate;
+
+                    const hasEvents = eventsForDay.length > 0;
+                    const shouldHighlightAvailable = hasAvailableSlots && !hasEvents && !isPastDate;
+
+                    calendarDays.push(
+                      <div
                         key={day}
-                        onClick={() => setSelectedDate(date)}
-                        className={`aspect-square p-1 text-sm rounded-lg transition-colors ${
-                          isToday ? 'bg-blue-100 font-bold' : ''
-                        } ${
-                          isSelected ? 'ring-2 ring-blue-500' : ''
-                        } ${
-                          eventsForDay.length > 0 ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
+                        onClick={() => isAvailable && setSelectedDate(new Date(year, month, day))}
+                        className={`text-center py-1 rounded-lg transition-all duration-200 text-xs cursor-pointer border ${
+                          isSelected
+                            ? 'bg-[#3f2e73] text-white font-bold shadow-lg border-[#3f2e73]'
+                            : isToday && shouldHighlightAvailable
+                              ? 'bg-[#6d5ba8] text-white font-semibold shadow-md border-[#6d5ba8]'
+                              : isToday
+                                ? 'bg-[#eae4ff] text-[#3f2e73] font-semibold border-[#d8ccff]'
+                                : shouldHighlightAvailable
+                                  ? 'bg-[#f0edff] text-[#3f2e73] font-semibold border-[#3f2e73] hover:bg-[#e3dcff]'
+                                  : hasEvents && !isPastDate
+                                    ? 'bg-red-50 text-red-700 font-semibold border-red-200 hover:bg-red-100'
+                                    : isPastDate
+                                      ? 'text-gray-300 cursor-not-allowed border-transparent'
+                                      : 'text-[#3f2e73] border-transparent hover:bg-[#f6f3ff]'
                         }`}
+                        title={hasEvents ? 'Has bookings/events' : shouldHighlightAvailable ? 'Available for booking' : isPastDate ? 'Past date' : 'No slots'}
                       >
-                        <div className="flex flex-col items-center justify-center h-full">
-                          <span className={eventsForDay.length > 0 ? 'text-red-700 font-semibold' : ''}>{day}</span>
-                          {eventsForDay.length > 0 && (
-                            <div className="flex gap-0.5 mt-0.5">
-                              {eventsForDay.slice(0, 3).map((_, i) => (
-                                <div key={i} className="w-1 h-1 bg-red-500 rounded-full"></div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </button>
+                        {day}
+                        {shouldHighlightAvailable && (
+                          <div
+                            className={`w-2 h-2 rounded-full mx-auto mt-1 shadow-sm ${
+                              isSelected ? 'bg-[#f0edff]' : isToday && shouldHighlightAvailable ? 'bg-white' : 'bg-[#3f2e73]'
+                            }`}
+                          />
+                        )}
+                        {hasEvents && !shouldHighlightAvailable && !isSelected && (
+                          <div className="w-2 h-2 rounded-full mx-auto mt-1 bg-red-400" />
+                        )}
+                      </div>
                     );
                   }
-                  
-                  return days;
+                  return calendarDays;
                 })()}
               </div>
             </div>
@@ -291,6 +327,33 @@ const PsychologistCalendarView = ({ psychologistId, psychologistName, onClose })
                 <div className="text-center py-6 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600">No events on this date</p>
                 </div>
+              );
+            })()}
+          </div>
+
+          {/* Available slots for selected date */}
+          <div className="bg-white border rounded-lg p-4 mt-4">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" style={{ color: '#3f2e73' }} />
+              Available times — {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </h4>
+            {(() => {
+              const dayAvailability = getAvailabilityForDate(selectedDate);
+              const slots = dayAvailability?.available_slots || [];
+              return slots.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {slots.map((time, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-[#3f2e73]/10 text-[#3f2e73] border border-[#3f2e73]/20"
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      {time}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No available slots on this date</p>
               );
             })()}
           </div>

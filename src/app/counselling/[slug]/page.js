@@ -12,7 +12,8 @@ import HelpFaq from '@/components/HelpFaq';
 import CounsellingNotFound from '@/components/CounsellingNotFound';
 import ScrollToTop from '@/components/ScrollToTop';
 import TherapistCarousel from '@/components/TherapistCarousel';
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { normalizeImageUrl, normalizeImageUrlWithSize } from '@/utils/urlNormalizer';
+import Image from "next/image";
 
 // Force dynamic rendering and disable caching so edits reflect immediately
 export const dynamic = 'force-dynamic';
@@ -202,7 +203,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           title: serviceData.hero_title || 'Counseling',
           subtext: serviceData.hero_subtext || '',
           ctaText: serviceData.hero_cta_text || '',
-          imageUrl: normalizeImageUrl(serviceData.hero_image_url || ''),
+          imageUrl: normalizeImageUrlWithSize(serviceData.hero_image_url || '', 1200, 80),
           features: [
             serviceData.hero_point_1,
             serviceData.hero_point_2,
@@ -234,7 +235,11 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
+            const imageSrc = normalizeImageUrlWithSize(
+              doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp',
+              400,
+              80
+            );
             const name = doc.name || doc.first_name || 'Therapist';
             // Create slug from doctor name
             const nameSlug = name
@@ -246,19 +251,16 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
             return (
               <a key={idx} href={`/online-child-psychologist/${nameSlug}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
-                  <img 
-                    src={imageSrc} 
-                    alt={name} 
-                    width={400}
-                    height={360}
+                  <Image
+                    src={imageSrc}
+                    alt={name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
                     style={{ 
-                      width: '100%', 
-                      height: '100%', 
                       objectFit: 'cover',
                       aspectRatio: '400/360'
-                    }} 
-                    loading="lazy"
-                    decoding="async"
+                    }}
+                    priority={false}
                   />
                   <div
                     style={{
@@ -341,7 +343,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
         cmsData={{
           title: serviceData.benefits_title,
           benefits: serviceData.benefits || [],
-          benefitsImageUrl: normalizeImageUrl(serviceData.benefits_image_url || '')
+          benefitsImageUrl: normalizeImageUrlWithSize(serviceData.benefits_image_url || '', 800, 75)
         }}
       />
       </div>
@@ -351,7 +353,7 @@ export default async function CounsellingDynamicPage({ params, searchParams }) {
           cmsData={{
             title: serviceData.types_title,
             types: serviceData.types || [],
-            rightImageUrl: normalizeImageUrl(serviceData.right_image_url || ''),
+            rightImageUrl: normalizeImageUrlWithSize(serviceData.right_image_url || '', 900, 80),
             buttonText: 'Get started'
           }}
         />

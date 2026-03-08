@@ -636,7 +636,7 @@ export default function AuthModal({
                       value={signup.childName} 
                       onChange={(e)=>setSignup(s=>({...s, childName: e.target.value}))} 
                       className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:ring-2 focus:ring-[#3f2e73]" 
-                      placeholder="Child Name" 
+                      placeholder="Child Name (Optional)" 
                     />
                   </div>
                   

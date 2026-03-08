@@ -8,37 +8,37 @@ const teamMembers = [
   { 
     name: "Dr. Albin Eldhose", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Albin.webp",
+    image: "/api/images/static-files/Albin.webp",
     description: "A Clinical Psychologist and Sex Therapist with more than 10 years of experience working with both individuals and couples. The work blends evidence-based practices with a nuanced understanding of how people think, feel, and relate. The focus is on mental health concerns, relationship challenges, intimacy difficulties, and the emotional struggles that often stay unspoken."
   },
   { 
     name: "Dr. Aswathy Balan", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Balan.webp",
+    image: "/api/images/static-files/Aswathy Balan.webp",
     description: "A certified psychiatrist with an MD and 7+ years of clinical experience. The work focuses on mood, anxiety, and personality disorders, guided by a calm, evidence-based approach. Care extends beyond the clinic, with active involvement in community awareness programs that make mental health easier to understand and talk about."
   },
   { 
     name: "Dr. Thaniya K Leela", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Thaniya.webp",
+    image: "/api/images/static-files/Thaniya.webp",
     description: "With a Ph.D. in Psychology and an M.Phil. from UiB, Norway, backed by 7+ years of experience. The work supports adolescents, women, parents, and couples as they navigate the moments in life that feel confusing, overwhelming, or heavy. Using a trauma-informed approach, the focus is on creating a space that feels safe enough for people to open up, heal, build resilience, and grow at their own pace."
   },
   { 
     name: "Aswathy Sambath", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Sambath.webp",
+    image: "/api/images/static-files/Aswathy Sambath.webp",
     description: "A registered Clinical Psychologist with an M.Phil. and 8+ years of experience. The work spans individual, relationship, and family counseling, helping people untangle emotional knots and understand themselves with more clarity. The approach stays collaborative and empathetic, creating space for clients to explore what they feel, why it matters, and how they can move toward healthier patterns in their lives and relationships."
   },
   { 
     name: "Dr. Athullya Nair", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Athullya.webp",
+    image: "/api/images/static-files/Athullya.webp",
     description: "With 12+ years of experience, offering support to individuals, couples, and families through clinical supervision, assessments, and therapy. The approach stays compassionate and collaborative, creating steady space for people to understand themselves better, work through what feels difficult, and move toward healing with clarity and confidence. The goal is to help every person feel seen, supported, and capable of rebuilding the parts of life that matter most."
   },
   { 
     name: "Dr. Gayathri V", 
     title: "Advisory Board Member", 
-    image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Gayathri.webp",
+    image: "/api/images/static-files/Gayathri.webp",
     description: "Experienced Consultant Psychiatrist and Professor at KMCH, Palakkad, with a solid foundation in clinical care, teaching, and research. The work centers on adult psychiatry, CBT, and community mental health awareness, offering guidance that's both clear and grounded. The aim is to support people with practical, thoughtful care while helping the wider community understand mental health with more openness and ease."
   },
 ];

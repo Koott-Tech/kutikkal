@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { X, FileText, Calendar } from "lucide-react";
+import { X, FileText, Calendar, Loader2, User } from "lucide-react";
 
 export default function SessionCompletionModal({ 
   isOpen, 
   onClose, 
   session, 
-  onSubmit 
+  onSubmit,
+  wide = false,
+  /** When true (e.g. admin), summary, report, and private notes are optional */
+  fieldsOptional = false
 }) {
   // Initialize completion_date with scheduled_date (default to scheduled date)
   const [formData, setFormData] = useState({
@@ -48,19 +51,19 @@ export default function SessionCompletionModal({
 
   const validateForm = () => {
     const newErrors = {};
-    
+    if (fieldsOptional) {
+      setErrors(newErrors);
+      return true;
+    }
     if (!formData.summary.trim()) {
       newErrors.summary = "Summary is required";
     }
-    
     if (!formData.report.trim()) {
       newErrors.report = "Report is required";
     }
-    
     if (!formData.summary_notes.trim()) {
       newErrors.summary_notes = "Summary notes are required";
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -104,55 +107,72 @@ export default function SessionCompletionModal({
 
   if (!isOpen) return null;
 
+  const formatSessionTime = () => {
+    if (!session?.scheduled_time) return "";
+    const [hours, minutes] = session.scheduled_time.split(":");
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes || "00"} ${ampm}`;
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={isSubmitting ? undefined : handleClose} aria-hidden="true" />
+      <div className={`relative w-full max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden ${wide ? 'max-w-4xl' : 'max-w-2xl'}`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <div>
-            <div style={{ fontSize: '18px', fontWeight: '600', lineHeight: '1.5rem' }} className="text-gray-900">
-              Complete Session
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
+              <FileText className="h-5 w-5" />
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Submit session summary, report, and notes
-            </p>
+            <div>
+              <div className="text-sm font-semibold text-slate-900" role="heading" aria-level={1}>
+                Complete Session
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {fieldsOptional ? 'Summary, report, and private notes are optional.' : 'Submit summary, report, and private notes'}
+              </p>
+            </div>
           </div>
           <button
+            type="button"
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors disabled:opacity-50"
             disabled={isSubmitting}
+            aria-label="Close"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Session Info */}
         {session && (
-          <div className="px-6 py-4 bg-white border-b border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Client</label>
-                <p className="text-sm text-gray-900 mt-1">
-                  {session.client?.first_name} {session.client?.last_name}
-                </p>
+          <div className="px-6 py-4 border-b border-slate-200 bg-white">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                Session
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Child</label>
-                <p className="text-sm text-gray-900 mt-1">
-                  {session.client?.child_name} {session.client?.child_age ? `(${session.client.child_age} years)` : ''}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Session Date</label>
-                <p className="text-sm text-gray-900 mt-1">
-                  {new Date(session.scheduled_date).toLocaleDateString()} at {(() => {
-                    const [hours, minutes] = session.scheduled_time.split(':');
-                    const hour = parseInt(hours);
-                    const ampm = hour >= 12 ? 'PM' : 'AM';
-                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                    return `${displayHour}:${minutes} ${ampm}`;
-                  })()}
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Client</p>
+                  <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 flex items-center gap-2">
+                    <User className="h-4 w-4 text-slate-400 shrink-0" />
+                    {session.client?.first_name} {session.client?.last_name}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Child</p>
+                  <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                    {session.client?.child_name || "—"} {session.client?.child_age ? `(${session.client.child_age}y)` : ""}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Date & time</p>
+                  <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                    {session.scheduled_date ? new Date(session.scheduled_date).toLocaleDateString() : "—"} at {formatSessionTime() || "—"}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -160,116 +180,108 @@ export default function SessionCompletionModal({
 
         {/* Form */}
         <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
+          <form id="session-completion-form" onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
             {/* Summary */}
-            <div className="border-b border-gray-200 pb-6">
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Session Summary <span className="text-red-500">*</span>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                Session summary {!fieldsOptional && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-xs text-gray-500 mb-3">Visible to client</p>
+              <p className="text-xs text-slate-500 mb-2">Visible to client</p>
               <textarea
                 value={formData.summary}
                 onChange={(e) => handleInputChange("summary", e.target.value)}
-                placeholder="Provide a brief summary of the session that the client can read..."
-                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
-                  errors.summary ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                placeholder="Brief summary the client can read..."
+                className={`w-full h-28 px-3 py-2.5 border rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] ${
+                  errors.summary ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-slate-200"
                 }`}
                 disabled={isSubmitting}
               />
-              {errors.summary && (
-                <p className="text-sm text-red-600 mt-1">{errors.summary}</p>
-              )}
+              {errors.summary && <p className="text-xs text-red-600 mt-1.5">{errors.summary}</p>}
             </div>
 
             {/* Report */}
-            <div className="border-b border-gray-200 pb-6">
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Session Report <span className="text-red-500">*</span>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                Session report {!fieldsOptional && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-xs text-gray-500 mb-3">Visible to client</p>
+              <p className="text-xs text-slate-500 mb-2">Visible to client</p>
               <textarea
                 value={formData.report}
                 onChange={(e) => handleInputChange("report", e.target.value)}
-                placeholder="Provide a detailed report of the session findings and recommendations..."
-                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
-                  errors.report ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                placeholder="Findings and recommendations..."
+                className={`w-full h-28 px-3 py-2.5 border rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] ${
+                  errors.report ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-slate-200"
                 }`}
                 disabled={isSubmitting}
               />
-              {errors.report && (
-                <p className="text-sm text-red-600 mt-1">{errors.report}</p>
-              )}
+              {errors.report && <p className="text-xs text-red-600 mt-1.5">{errors.report}</p>}
             </div>
 
-            {/* Summary Notes */}
-            <div className="border-b border-gray-200 pb-6">
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Private Summary Notes <span className="text-red-500">*</span>
+            {/* Private notes */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                Private summary notes {!fieldsOptional && <span className="text-red-500">*</span>}
               </label>
-              <p className="text-xs text-gray-500 mb-3">Private notes visible only to you</p>
+              <p className="text-xs text-slate-500 mb-2">Visible only to you</p>
               <textarea
                 value={formData.summary_notes}
                 onChange={(e) => handleInputChange("summary_notes", e.target.value)}
-                placeholder="Add private notes about the session that only you can see..."
-                className={`w-full h-32 px-4 py-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
-                  errors.summary_notes ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                placeholder="Private notes for your reference..."
+                className={`w-full h-28 px-3 py-2.5 border rounded-lg resize-none text-sm focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] ${
+                  errors.summary_notes ? "border-red-500 focus:ring-red-500/20 focus:border-red-500" : "border-slate-200"
                 }`}
                 disabled={isSubmitting}
               />
-              {errors.summary_notes && (
-                <p className="text-sm text-red-600 mt-1">{errors.summary_notes}</p>
-              )}
+              {errors.summary_notes && <p className="text-xs text-red-600 mt-1.5">{errors.summary_notes}</p>}
             </div>
 
-            {/* Completion Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Completion Date <span className="text-red-500">*</span>
+            {/* Completion date */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
+                Completion date <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-gray-500 mb-3">Select the date when this session was completed (defaults to scheduled date)</p>
+              <p className="text-xs text-slate-500 mb-2">Date this session was completed</p>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <input
                   type="date"
                   value={formData.completion_date}
                   onChange={(e) => handleInputChange("completion_date", e.target.value)}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 ${
-                    errors.completion_date ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                  className={`w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] ${
+                    errors.completion_date ? "border-red-500" : "border-slate-200"
                   }`}
                   disabled={isSubmitting}
                   required
                 />
               </div>
-              {errors.completion_date && (
-                <p className="text-sm text-red-600 mt-1">{errors.completion_date}</p>
-              )}
+              {errors.completion_date && <p className="text-xs text-red-600 mt-1.5">{errors.completion_date}</p>}
             </div>
           </form>
         </div>
 
-        {/* Action Buttons - Fixed at bottom */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/30 flex-shrink-0">
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="px-4 py-2 text-sm font-medium text-[#3f2e73] bg-white border border-[#3f2e73]/40 rounded-lg hover:bg-[#3f2e73]/10 transition-colors"
             disabled={isSubmitting}
           >
             Cancel
           </button>
           <button
             type="submit"
-            onClick={handleSubmit}
+            form="session-completion-form"
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-lg hover:bg-gray-800 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-white bg-[#3f2e73] hover:bg-[#1d1733] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSubmitting ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Completing...</span>
-              </div>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Completing…
+              </>
             ) : (
-              "Complete Session"
+              "Complete session"
             )}
           </button>
         </div>

@@ -1,6 +1,6 @@
 import BlogTeaser from '@/components/BlogTeaser';
 import HeroSection from '@/components/HeroSection';
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { normalizeImageUrl, normalizeImageUrlWithSize } from '@/utils/urlNormalizer';
 import LogosStrip from '@/components/LogosStrip';
 import HelpFaq from '@/components/HelpFaq';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -11,6 +11,7 @@ import InfoCards from '@/components/InfoCards';
 import VideosShowcase from '@/components/VideosShowcase';
 import Reviews from '@/components/Reviews';
 import TherapistCarousel from '@/components/TherapistCarousel';
+import Image from "next/image";
 
 const removeAssessmentSpecialist = (docs = []) => {
   const assessmentEmail = (process.env.NEXT_PUBLIC_FREE_ASSESSMENT_PSYCHOLOGIST_EMAIL || 'assessment.koott@gmail.com').toLowerCase();
@@ -177,7 +178,7 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Better Parenting');
   const subtext = data?.hero_subtext || '';
-  const imageUrl = normalizeImageUrl(data?.hero_image_url || '');
+  const imageUrl = normalizeImageUrlWithSize(data?.hero_image_url || '', 1200, 80);
   const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
   const therapistsHeading = data?.therapists_heading || 'Your journey to a happier, calmer home begins here.';
 
@@ -217,7 +218,11 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
         {/* Desktop/tablet grid */}
         <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-4 md:gap-y-6 justify-items-stretch mt-8" style={{ columnGap: '2rem' }}>
           {displayTherapists.map((doc, idx) => {
-            const imageSrc = normalizeImageUrl(doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp');
+            const imageSrc = normalizeImageUrlWithSize(
+              doc.cover_image_url || doc.profile_picture_url || '/mainlogo.webp',
+              400,
+              80
+            );
             const name = doc.name || doc.first_name || 'Therapist';
             // Create slug from doctor name
             const nameSlug = name
@@ -229,19 +234,16 @@ export default async function BetterParentingDynamicPage({ params, searchParams 
             return (
               <a key={idx} href={`/online-child-psychologist/${nameSlug}`} className="block">
                 <div className="guide-video-card h-[360px] w-full rounded-[10px] overflow-hidden border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:scale-105 cursor-pointer relative">
-                  <img 
-                    src={imageSrc} 
-                    alt={name} 
-                    width={400}
-                    height={360}
+                  <Image
+                    src={imageSrc}
+                    alt={name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
                     style={{ 
-                      width: '100%', 
-                      height: '100%', 
                       objectFit: 'cover',
                       aspectRatio: '400/360'
-                    }} 
-                    loading="lazy"
-                    decoding="async"
+                    }}
+                    priority={false}
                   />
                   <div
                     style={{

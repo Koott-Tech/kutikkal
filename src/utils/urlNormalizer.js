@@ -143,3 +143,31 @@ export function normalizeImageUrls(data, imageFields = ['hero_image_url', 'og_im
   return normalized;
 }
 
+/**
+ * Normalize an image URL and optionally append width/quality query params
+ * for Supabase image transformations via the /api/images proxy.
+ * Only applies width/quality when the normalized URL points at /api/images/...;
+ * other URLs (local assets, external origins) are returned unchanged.
+ *
+ * @param {string} url - Original image URL
+ * @param {number} width - Desired width in pixels
+ * @param {number} [quality=75] - Desired quality (1–100)
+ * @returns {string} URL with optional ?width=&quality= params
+ */
+export function normalizeImageUrlWithSize(url, width, quality = 75) {
+  const base = normalizeImageUrl(url);
+  if (!base || typeof base !== 'string') return base;
+
+  // Only append sizing params for our image proxy (Supabase-backed)
+  if (!base.startsWith('/api/images/')) {
+    return base;
+  }
+
+  const safeWidth = width && width > 0 ? Math.min(width, 4000) : null;
+  if (!safeWidth) return base;
+
+  const safeQuality = quality && quality > 0 && quality <= 100 ? quality : 75;
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}width=${safeWidth}&quality=${safeQuality}`;
+}
+

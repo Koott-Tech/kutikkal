@@ -201,8 +201,14 @@ export default function AdminEditSessionModal({
     try {
       setIsLoadingData(true);
       const response = await adminApi.getPsychologists({ limit: 1000 });
-      if (response.success && response.data?.users) {
-        setPsychologists(response.data.users);
+      if (response?.success) {
+        // Backend returns an array for /admin/psychologists (not wrapped in { users })
+        const list = Array.isArray(response.data)
+          ? response.data
+          : response.data?.users || [];
+        setPsychologists(list);
+      } else {
+        console.warn('Failed to load psychologists:', response);
       }
     } catch (err) {
       console.error('Error loading psychologists:', err);

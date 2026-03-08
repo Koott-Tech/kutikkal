@@ -30,6 +30,21 @@ export default function AdminRescheduleModal({
   const [psychologistAvailability, setPsychologistAvailability] = useState({});
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  // Calendar helpers (match client dashboard style)
+  const getMonthName = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay();
+    return { daysInMonth, startingDay };
+  };
+
   // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen && session) {
@@ -37,20 +52,22 @@ export default function AdminRescheduleModal({
       setSelectedTime('');
       setReason('');
       setError(null);
+      // Reset calendar to current month
+      setCurrentDate(new Date());
       fetchPsychologistAvailability();
     }
   }, [isOpen, session]);
 
-  const fetchPsychologistAvailability = async () => {
+  const fetchPsychologistAvailability = async (baseDate = currentDate) => {
     if (!session?.psychologist_id) return;
 
     setIsLoadingAvailability(true);
     setError(null);
 
     try {
-      // Get current month and next month
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
+      // Get current month and next month based on provided date
+      const year = baseDate.getFullYear();
+      const month = baseDate.getMonth();
       
       const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
       const endDate = `${year}-${String(month + 2).padStart(2, '0')}-01`;
@@ -181,9 +198,29 @@ export default function AdminRescheduleModal({
     return slots.includes(time);
   };
 
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
+  const handleDateSelect = (day) => {
+    // Convert selected day in current month to YYYY-MM-DD string
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const dateObj = new Date(year, month, day);
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    setSelectedDate(dateStr);
     setSelectedTime(''); // Reset time when date changes
+  };
+
+  const handlePrevMonth = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    setCurrentDate(newDate);
+    fetchPsychologistAvailability(newDate);
+  };
+
+  const handleNextMonth = () => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    setCurrentDate(newDate);
+    fetchPsychologistAvailability(newDate);
   };
 
   const handleTimeSelect = (time) => {
@@ -194,16 +231,15 @@ export default function AdminRescheduleModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+        {/* Header - fixed */}
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-gray-200 bg-white">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-[#3f2e73]/10 rounded-lg">
+              <Calendar className="h-5 w-5 text-[#3f2e73]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Reschedule Session</h2>
-              <p className="text-sm text-gray-600">Select a new date and time for this session</p>
+              <div role="heading" aria-level={2} className="text-sm font-medium text-gray-900 leading-snug">Reschedule Session</div>
             </div>
           </div>
           <button
@@ -214,31 +250,32 @@ export default function AdminRescheduleModal({
           </button>
         </div>
 
-        {/* Session Info */}
-        <div className="p-6 bg-gray-50 border-b border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-3">
-              <User className="h-5 w-5 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">Client</p>
-                <p className="text-sm text-gray-900">
-                  {session.clients?.child_name || `${session.clients?.first_name} ${session.clients?.last_name}`}
+        {/* Session Info - fixed */}
+        <div className="flex-shrink-0 px-5 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex items-center space-x-2">
+              <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-700">Client</p>
+                <p className="text-sm text-gray-900 truncate">
+                  {session.client?.child_name ||
+                    `${session.client?.first_name || ''} ${session.client?.last_name || ''}`.trim()}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <User className="h-5 w-5 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">Psychologist</p>
-                <p className="text-sm text-gray-900">
-                  {session.psychologists?.first_name} {session.psychologists?.last_name}
+            <div className="flex items-center space-x-2">
+              <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-700">Psychologist</p>
+                <p className="text-sm text-gray-900 truncate">
+                  {session.psychologist?.first_name} {session.psychologist?.last_name}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <CalendarDays className="h-5 w-5 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-700">Current Schedule</p>
+            <div className="flex items-center space-x-2">
+              <CalendarDays className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-700">Current Schedule</p>
                 <p className="text-sm text-gray-900">
                   {formatDate(session.scheduled_date)} at {formatTime(session.scheduled_time)}
                 </p>
@@ -247,113 +284,171 @@ export default function AdminRescheduleModal({
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        {/* Content - scrollable only this section */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {isLoadingAvailability ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#3f2e73]" />
               <span className="ml-2 text-gray-600">Loading availability...</span>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-                    <p className="text-red-800">{error}</p>
+            <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left: Calendar */}
+              <div className="lg:sticky lg:top-0">
+                {error && (
+                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center">
+                      <AlertCircle className="h-4 w-4 text-red-400 mr-2 flex-shrink-0" />
+                      <p className="text-red-800 text-sm">{error}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Date Selection */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Select Date</h3>
-                <div className="grid grid-cols-7 gap-2">
-                  {Object.keys(psychologistAvailability).map((date) => {
-                    const dayAvailability = psychologistAvailability[date];
-                    const isSelected = selectedDate === date;
-                    const hasAvailableSlots = dayAvailability?.is_available && 
-                      dayAvailability.available_slots?.length > 0;
-
-                    return (
-                      <button
-                        key={date}
-                        onClick={() => handleDateSelect(date)}
-                        disabled={!hasAvailableSlots}
-                        className={`
-                          p-3 text-center rounded-lg border transition-colors
-                          ${isSelected 
-                            ? 'bg-blue-600 text-white border-blue-600' 
-                            : hasAvailableSlots
-                              ? 'bg-white text-gray-900 border-gray-300 hover:bg-blue-50 hover:border-blue-300'
-                              : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                          }
-                        `}
+                )}
+                <div role="heading" aria-level={3} className="text-xs font-semibold text-gray-900 mb-3">Select Date (IST)</div>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 w-full max-w-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <button
+                      type="button"
+                      onClick={handlePrevMonth}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    <h6 className="text-xs font-semibold text-gray-800">
+                      {getMonthName(currentDate)}
+                    </h6>
+                    <button
+                      type="button"
+                      onClick={handleNextMonth}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                      <div
+                        key={`header-${index}`}
+                        className="text-center text-[10px] font-medium text-gray-500 py-1"
                       >
-                        <div className="text-sm font-medium">
-                          {new Date(date).getDate()}
-                        </div>
-                        <div className="text-xs">
-                          {new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
-                        </div>
-                        {hasAvailableSlots && (
-                          <div className="text-xs mt-1">
-                            {dayAvailability.available_slots.length} slots
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {(() => {
+                      const { daysInMonth, startingDay } = getDaysInMonth(currentDate);
+                      const today = new Date();
+                      const todayY = today.getFullYear();
+                      const todayM = today.getMonth();
+                      const todayD = today.getDate();
+                      const cells = [];
+                      for (let i = 0; i < startingDay; i++) {
+                        cells.push(<div key={`empty-${i}`} className="py-1" />);
+                      }
+                      for (let day = 1; day <= daysInMonth; day++) {
+                        const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const dayStr = String(day).padStart(2, '0');
+                        const dateStr = `${year}-${month}-${dayStr}`;
+                        const isToday = year === todayY && dateObj.getMonth() === todayM && day === todayD;
+                        const isSelected = selectedDate === dateStr;
+                        const startOfToday = new Date(todayY, todayM, todayD);
+                        const startOfCell = new Date(year, dateObj.getMonth(), day);
+                        const isPastDate = startOfCell < startOfToday;
+                        const availability = psychologistAvailability[dateStr];
+                        const hasSlots =
+                          !!availability &&
+                          availability.is_available &&
+                          Array.isArray(availability.available_slots) &&
+                          availability.available_slots.length > 0;
+                        const isClickable = !isPastDate && hasSlots;
+                        let baseClasses = 'text-center py-1 rounded-lg text-xs transition-colors border ';
+                        if (isSelected) {
+                          baseClasses += 'bg-[#3f2e73] text-white border-[#3f2e73] font-semibold shadow';
+                        } else if (isClickable && isToday) {
+                          baseClasses += 'bg-[#3f2e73]/10 text-[#3f2e73] border-[#3f2e73]/40 font-semibold cursor-pointer hover:bg-[#3f2e73]/20';
+                        } else if (isClickable) {
+                          baseClasses += 'bg-white text-gray-900 border-gray-300 cursor-pointer hover:bg-[#3f2e73]/5 hover:border-[#3f2e73]/40';
+                        } else if (isPastDate) {
+                          baseClasses += 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed';
+                        } else {
+                          baseClasses += 'bg-white text-gray-400 border-gray-200 cursor-not-allowed';
+                        }
+                        cells.push(
+                          <button
+                            key={`day-${day}`}
+                            type="button"
+                            onClick={() => isClickable && handleDateSelect(day)}
+                            disabled={!isClickable}
+                            className={baseClasses}
+                          >
+                            <div className="text-[11px] font-medium">{day}</div>
+                            {hasSlots && (
+                              <div className="w-1.5 h-1.5 rounded-full mx-auto mt-1 bg-[#3f2e73]" />
+                            )}
+                          </button>
+                        );
+                      }
+                      return cells;
+                    })()}
+                  </div>
                 </div>
               </div>
 
-              {/* Time Selection */}
-              {selectedDate && (
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Select Time</h3>
-                  <div className="grid grid-cols-4 gap-2">
-                    {getAvailableSlots(selectedDate).map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => handleTimeSelect(time)}
-                        className={`
-                          p-3 text-center rounded-lg border transition-colors
-                          ${selectedTime === time
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-900 border-gray-300 hover:bg-blue-50 hover:border-blue-300'
-                          }
-                        `}
-                      >
-                        {formatTime(time)}
-                      </button>
-                    ))}
+              {/* Right: Time slots + Reason */}
+              <div className="space-y-4">
+                {selectedDate && (
+                  <div>
+                    <div role="heading" aria-level={3} className="text-xs font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-500" />
+                      Select Time (IST)
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+                      {getAvailableSlots(selectedDate).map((time) => (
+                        <button
+                          key={time}
+                          onClick={() => handleTimeSelect(time)}
+                          className={`
+                            py-2.5 text-center rounded-lg border text-sm transition-colors
+                            ${selectedTime === time
+                              ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                              : 'bg-white text-gray-900 border-gray-300 hover:bg-[#3f2e73]/5 hover:border-[#3f2e73]/40'
+                            }
+                          `}
+                        >
+                          {formatTime(time)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for Reschedule (Optional)
+                  </label>
+                  <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Enter reason for rescheduling..."
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-[#3f2e73] text-sm resize-none"
+                    rows={3}
+                  />
                 </div>
-              )}
-
-              {/* Reason */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for Reschedule (Optional)
-                </label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Enter reason for rescheduling..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={3}
-                />
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+        {/* Footer - fixed, always visible */}
+        <div className="flex-shrink-0 flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-200 bg-gray-50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
           >
             Cancel
           </button>
@@ -361,10 +456,10 @@ export default function AdminRescheduleModal({
             onClick={handleReschedule}
             disabled={!selectedDate || !selectedTime || isLoading}
             className={`
-              px-4 py-2 rounded-lg transition-colors flex items-center space-x-2
+              px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium
               ${!selectedDate || !selectedTime || isLoading
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-[#3f2e73] text-white hover:bg-[#1d1733]'
               }
             `}
           >

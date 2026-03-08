@@ -8,11 +8,7 @@ import {
   Calendar, 
   TrendingUp,
   Activity,
-  Clock,
   RefreshCw,
-  AlertTriangle,
-  XCircle,
-  DollarSign,
   AlertCircle,
   CheckCircle,
   CalendarCheck,
@@ -32,14 +28,6 @@ export default function AdminDashboard() {
     totalDoctors: 0,
     totalBookings: 0,
     recentBookings: 0,
-    failures: {
-      paymentFailures: 0,
-      pendingPayments: 0,
-      successfulPayments: 0,
-      cancelledSessions: 0,
-      noShowSessions: 0,
-      totalPayments: 0
-    },
     bookingStatuses: {
       upcoming: 0,
       rescheduled: 0,
@@ -48,7 +36,6 @@ export default function AdminDashboard() {
       noShow: 0,
       cancelled: 0
     },
-    failureRate: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -207,14 +194,6 @@ export default function AdminDashboard() {
         newStats = { 
           ...newStats, 
           ...platformStats.data,
-          failures: platformStats.data?.failures || {
-            paymentFailures: 0,
-            pendingPayments: 0,
-            successfulPayments: 0,
-            cancelledSessions: 0,
-            noShowSessions: 0,
-            totalPayments: 0
-          },
           bookingStatuses: platformStats.data?.bookingStatuses || {
             upcoming: 0,
             rescheduled: 0,
@@ -223,24 +202,15 @@ export default function AdminDashboard() {
             noShow: 0,
             cancelled: 0
           },
-          failureRate: platformStats.data?.failureRate || 0
         };
       } else {
         console.warn('Platform stats response format unexpected:', platformStats);
         newStats = {
           ...newStats,
-          totalUsers: platformStats?.data?.totalClients || platformStats?.data?.totalUsers || 0, // Use totalClients if available, fallback to totalUsers
+          totalUsers: platformStats?.data?.totalClients || platformStats?.data?.totalUsers || 0,
           totalClients: platformStats?.data?.totalClients || platformStats?.data?.totalUsers || 0,
           totalDoctors: platformStats?.data?.totalDoctors || 0,
           totalBookings: platformStats?.data?.totalBookings || 0,
-          failures: platformStats?.data?.failures || {
-            paymentFailures: 0,
-            pendingPayments: 0,
-            successfulPayments: 0,
-            cancelledSessions: 0,
-            noShowSessions: 0,
-            totalPayments: 0
-          },
           bookingStatuses: platformStats?.data?.bookingStatuses || {
             upcoming: 0,
             booked: 0,
@@ -249,8 +219,7 @@ export default function AdminDashboard() {
             completed: 0,
             noShow: 0,
             cancelled: 0
-          },
-          failureRate: platformStats?.data?.failureRate || 0
+          }
         };
       }
 
@@ -312,7 +281,7 @@ export default function AdminDashboard() {
       title: 'Total Clients',
       value: stats.totalUsers,
       icon: Users,
-      color: 'bg-blue-500',
+      color: 'bg-[#3f2e73]',
       description: 'Registered clients on the platform'
     },
     {
@@ -338,53 +307,12 @@ export default function AdminDashboard() {
     }
   ];
 
-  const failureCards = [
-    {
-      title: 'Successful Payments',
-      value: stats.failures?.successfulPayments || 0,
-      icon: CheckCircle,
-      color: 'bg-green-500',
-      description: 'Completed and processed payments',
-      subValue: stats.failures?.totalPayments > 0 
-        ? `${((stats.failures?.successfulPayments || 0) / stats.failures.totalPayments * 100).toFixed(1)}% success rate`
-        : 'No payments yet'
-    },
-    {
-      title: 'Payment Failures',
-      value: stats.failures?.paymentFailures || 0,
-      icon: XCircle,
-      color: 'bg-red-500',
-      description: `Failed payment attempts`,
-      subValue: stats.failures?.totalPayments > 0 
-        ? `${((stats.failures?.paymentFailures || 0) / stats.failures.totalPayments * 100).toFixed(1)}% failure rate`
-        : 'No payments yet'
-    },
-    {
-      title: 'Pending Payments',
-      value: stats.failures?.pendingPayments || 0,
-      icon: Clock,
-      color: 'bg-yellow-500',
-      description: 'Payments awaiting processing',
-      subValue: 'Requires attention'
-    },
-    {
-      title: 'Cancelled Sessions',
-      value: stats.failures?.cancelledSessions || 0,
-      icon: AlertTriangle,
-      color: 'bg-orange-500',
-      description: 'Sessions that were cancelled',
-      subValue: stats.totalBookings > 0 
-        ? `${((stats.failures?.cancelledSessions || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
-        : ''
-    }
-  ];
-
   const bookingStatusCards = [
     {
       title: 'Upcoming Bookings',
       value: stats.bookingStatuses?.upcoming || 0,
       icon: CalendarCheck,
-      color: 'bg-blue-500',
+      color: 'bg-[#3f2e73]',
       description: 'All confirmed future sessions',
       subValue: stats.totalBookings > 0 
         ? `${((stats.bookingStatuses?.upcoming || 0) / stats.totalBookings * 100).toFixed(1)}% of total`
@@ -433,7 +361,7 @@ export default function AdminDashboard() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -468,7 +396,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
     </div>
   );
   }
@@ -523,7 +451,7 @@ export default function AdminDashboard() {
           return (
             <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 sm:p-3 rounded-lg ${stat.color} text-white flex-shrink-0`}>
+                <div className="p-2 sm:p-3 rounded-lg bg-[#3f2e73] text-white flex-shrink-0">
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <p className="text-xs sm:text-sm font-medium text-gray-600">{stat.title}</p>
@@ -534,48 +462,11 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Payment & Session Metrics */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h6>Payment & Session Metrics</h6>
-            <p className="text-sm text-gray-600 mt-1">Monitor payment status, cancellations, and session issues</p>
-          </div>
-          <button
-            onClick={handleRefresh}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Refresh data"
-          >
-            <RefreshCw className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {failureCards.map((card, index) => {
-            const Icon = card.icon;
-            return (
-              <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${card.color} text-white flex-shrink-0`}>
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
-                </div>
-                <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
-                {card.subValue && (
-                  <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Booking Status Metrics */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h6>Booking Status Metrics</h6>
-            <p className="text-sm text-gray-600 mt-1">Monitor session statuses and booking health</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -591,15 +482,12 @@ export default function AdminDashboard() {
             return (
               <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${card.color} text-white flex-shrink-0`}>
+                  <div className="p-2 rounded-lg bg-[#3f2e73] text-white flex-shrink-0">
                     <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
                   <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
                 </div>
-                <p className="text-2xl font-bold text-gray-900 mb-1">{card.value}</p>
-                {card.subValue && (
-                  <p className="text-xs font-medium text-gray-700">{card.subValue}</p>
-                )}
+                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
               </div>
             );
           })}
@@ -611,10 +499,9 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-          <h6>Recent Activity</h6>
-              <p className="text-sm text-gray-600 mt-1">Today's bookings</p>
+              <h6>Recent Activity</h6>
             </div>
-          <a href="/admin/bookings" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
+          <a href="/admin/bookings" className="text-xs sm:text-sm text-[#3f2e73] hover:text-[#1d1733]">
             View All
           </a>
         </div>
@@ -647,7 +534,9 @@ export default function AdminDashboard() {
 
               return (
                 <div key={booking.id} className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-4 w-4 text-gray-400 mr-2 sm:mr-3 flex-shrink-0" />
+                  <div className="p-1.5 rounded-lg bg-[#3f2e73]/10 mr-2 sm:mr-3 flex-shrink-0">
+                    <Calendar className="h-4 w-4 text-[#3f2e73]" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
                       Booking: {clientName} with {psychologistName}

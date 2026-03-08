@@ -73,6 +73,13 @@ export async function GET(request, { params }) {
     
     console.log('   Final filename to use:', filename);
 
+    // Parse optional image transformation parameters
+    const url = new URL(request.url);
+    const widthParam = url.searchParams.get('width');
+    const qualityParam = url.searchParams.get('quality');
+    const requestedWidth = widthParam ? parseInt(widthParam, 10) || null : null;
+    const requestedQuality = qualityParam ? parseInt(qualityParam, 10) || null : null;
+
     // Whitelist allowed buckets for security
     const allowedBuckets = [
       'counselling-images',
@@ -134,23 +141,33 @@ export async function GET(request, { params }) {
     let imageUrl = null;
     let signedUrlError = null;
 
-    // Try signed URL only for smaller files, or if direct download check failed
-    if (!useDirectDownload) {
-      console.log('🔑 Attempting to create signed URL for:', filename);
-      const { data: signedUrlData, error: signedUrlErr } = await supabaseAdmin.storage
-        .from(bucket)
-        .createSignedUrl(filename, 3600); // 1 hour expiration
-      
-      signedUrlError = signedUrlErr;
-      
-      if (!signedUrlError && signedUrlData?.signedUrl) {
-        imageUrl = signedUrlData.signedUrl;
-        console.log('✅ Using signed URL for bucket:', bucket);
-        // Log first 150 chars of signed URL for debugging (without exposing full token)
-        const urlPreview = imageUrl.length > 150 ? imageUrl.substring(0, 150) + '...' : imageUrl;
-        console.log('   Signed URL preview:', urlPreview);
-      } else {
-        signedUrlError = signedUrlErr || new Error('No signed URL returned');
+    // If a width is requested, use Supabase image transformation endpoint
+    if (requestedWidth) {
+      const safeWidth = Math.max(1, Math.min(requestedWidth, 4000)); // basic guard
+      const quality = requestedQuality && requestedQuality > 0 && requestedQuality <= 100 ? requestedQuality : 75;
+      const projectBaseUrl = supabaseUrl.replace(/\/+$/, '');
+      const encodedPath = encodeURIComponent(filename).replace(/%2F/g, '/');
+      imageUrl = `${projectBaseUrl}/storage/v1/render/image/public/${bucket}/${encodedPath}?width=${safeWidth}&quality=${quality}`;
+      console.log('✅ Using Supabase image transformation URL for:', filename, '→ width:', safeWidth, 'quality:', quality);
+    } else {
+      // Try signed URL only for smaller files, or if direct download check failed
+      if (!useDirectDownload) {
+        console.log('🔑 Attempting to create signed URL for:', filename);
+        const { data: signedUrlData, error: signedUrlErr } = await supabaseAdmin.storage
+          .from(bucket)
+          .createSignedUrl(filename, 3600); // 1 hour expiration
+        
+        signedUrlError = signedUrlErr;
+        
+        if (!signedUrlError && signedUrlData?.signedUrl) {
+          imageUrl = signedUrlData.signedUrl;
+          console.log('✅ Using signed URL for bucket:', bucket);
+          // Log first 150 chars of signed URL for debugging (without exposing full token)
+          const urlPreview = imageUrl.length > 150 ? imageUrl.substring(0, 150) + '...' : imageUrl;
+          console.log('   Signed URL preview:', urlPreview);
+        } else {
+          signedUrlError = signedUrlErr || new Error('No signed URL returned');
+        }
       }
     }
 
@@ -232,10 +249,10 @@ export async function GET(request, { params }) {
         
         console.log(`   ✅ Direct download succeeded: ${(imageBuffer.byteLength / 1024).toFixed(2)} KB`);
         
-        // For large files (>2MB), disable Next.js caching to avoid cache errors
+        // For large files (>2MB), adjust CDN caching but keep it enabled
         const isLargeFile = imageBuffer.byteLength > 2 * 1024 * 1024;
         const cacheControl = isLargeFile 
-          ? 'public, max-age=86400, s-maxage=0' // Disable CDN cache for large files
+          ? 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400'
           : 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400';
         
         return new NextResponse(imageBuffer, {
@@ -285,6 +302,38 @@ export async function GET(request, { params }) {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unable to read error response');
+          const isTransformNotEnabled = response.status === 403 &&
+            (errorText.includes('FeatureNotEnabled') || errorText.includes('feature not enabled'));
+
+          // Supabase Image Transformations not enabled for this tenant (403 FeatureNotEnabled) → fall back to original file (no error log)
+          if (isTransformNotEnabled) {
+            try {
+              const { data: fileData, error: downloadError } = await supabaseAdmin.storage
+                .from(bucket)
+                .download(filename);
+              if (!downloadError && fileData) {
+                const buf = await fileData.arrayBuffer();
+                if (buf && buf.byteLength > 0) {
+                  const ext = filename.split('.').pop()?.toLowerCase();
+                  const contentTypeMap = { webp: 'image/webp', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml', avif: 'image/avif' };
+                  const contentType = contentTypeMap[ext] || 'image/jpeg';
+                  return new NextResponse(buf, {
+                    status: 200,
+                    headers: {
+                      'Content-Type': contentType,
+                      'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400',
+                      'X-Content-Type-Options': 'nosniff',
+                    },
+                  });
+                }
+              }
+            } catch (fallbackErr) {
+              console.error('   Fallback download failed:', fallbackErr?.message);
+            }
+            return new NextResponse('Image transformation not available and fallback failed', { status: 503 });
+          }
+
+          // Log fetch errors only when not the expected transformation fallback
           console.error(`❌ Image fetch failed: ${response.status} ${response.statusText} for ${filename}`);
           console.error(`   Response body: ${errorText.substring(0, 200)}`);
           console.error(`   Signed URL (first 100 chars): ${imageUrl.substring(0, 100)}...`);
@@ -325,10 +374,10 @@ export async function GET(request, { params }) {
                 };
                 const contentType = contentTypeMap[ext] || 'image/jpeg';
                 
-                // For large files (>2MB), disable Next.js caching to avoid cache errors
+                // For large files (>2MB), adjust CDN caching but keep it enabled
                 const isLargeFile = imageBuffer.byteLength > 2 * 1024 * 1024;
                 const cacheControl = isLargeFile 
-                  ? 'public, max-age=86400, s-maxage=0' // Disable CDN cache for large files
+                  ? 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400'
                   : 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400';
                 
                 return new NextResponse(imageBuffer, {

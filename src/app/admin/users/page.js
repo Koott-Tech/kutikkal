@@ -8,7 +8,6 @@ import {
   Trash2, 
   Eye, 
   Search,
-  Filter,
   User,
   Mail,
   Calendar,
@@ -39,7 +38,6 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -171,9 +169,7 @@ export default function UsersPage() {
                          fullName.includes(searchTerm.toLowerCase()) ||
                          email.includes(searchTerm.toLowerCase());
     
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    
-    return matchesSearch && matchesRole;
+    return matchesSearch;
   });
   
   const handlePageChange = (newPage) => {
@@ -181,13 +177,11 @@ export default function UsersPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const roles = [...new Set(users.map(u => u.role).filter(Boolean))];
-
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -211,7 +205,7 @@ export default function UsersPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -225,7 +219,7 @@ export default function UsersPage() {
           <div className="flex items-center gap-3">
             <h6>Users Management</h6>
             {totalUsers > 0 && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-[#3f2e73]/10 text-[#3f2e73] rounded-full text-sm font-medium">
                 {totalUsers} {totalUsers === 1 ? 'User' : 'Users'}
               </span>
             )}
@@ -236,7 +230,7 @@ export default function UsersPage() {
         </div>
         <button
           onClick={handleAddUser}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add User
@@ -245,32 +239,15 @@ export default function UsersPage() {
 
       {/* Filters and Search */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-gray-400" />
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Roles</option>
-              {roles.map(role => (
-                <option key={role} value={role}>{role}</option>
-              ))}
-            </select>
-          </div>
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
+          />
         </div>
       </div>
 
@@ -407,16 +384,16 @@ export default function UsersPage() {
           <Users className="mx-auto h-12 w-12 text-gray-400" />
           <h6>No users found</h6>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || filterRole !== 'all' 
-              ? 'Try adjusting your search or filter criteria.'
+            {searchTerm 
+              ? 'Try adjusting your search criteria.'
               : 'Get started by adding your first user.'
             }
           </p>
-          {!searchTerm && filterRole === 'all' && (
+          {!searchTerm && (
             <div className="mt-6">
               <button
                 onClick={handleAddUser}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add User
@@ -431,8 +408,17 @@ export default function UsersPage() {
         <UserModal
           isOpen={isUserModalOpen}
           onClose={handleUserModalClose}
-          onSuccess={handleUserModalSuccess}
+          onSave={async (userData) => {
+            // Decide between create and update based on editingUser
+            if (editingUser && editingUser.id) {
+              await adminApi.updateUser(editingUser.id, userData);
+            } else {
+              await adminApi.createUser(userData);
+            }
+            handleUserModalSuccess();
+          }}
           user={editingUser}
+          mode={editingUser ? 'edit' : 'add'}
         />
       )}
 
@@ -460,66 +446,81 @@ export default function UsersPage() {
         disabled={!!deletingUserId}
       />
 
-      {/* Full Profile Modal */}
+      {/* Full Profile Modal (View) */}
       {isFullProfileOpen && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Header - Stands out with blue background */}
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-5 flex items-center justify-between rounded-t-lg">
-              <div>
-                <h6 className="text-xl font-bold text-white">
-                  {selectedUser.name || 
-                   (selectedUser.profile?.first_name && selectedUser.profile?.last_name 
-                    ? `${selectedUser.profile.first_name} ${selectedUser.profile.last_name}`.trim()
-                    : selectedUser.profile?.first_name || 
-                      selectedUser.profile?.child_name || 
-                      selectedUser.email?.split('@')[0] || 
-                      'User Profile')}
-                </h6>
-                <p className="text-sm text-blue-100 mt-1 capitalize font-medium">{selectedUser.role || 'User'}</p>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-[#3f2e73]" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-800 tracking-tight" role="heading" aria-level={1}>
+                    {selectedUser.name ||
+                     (selectedUser.profile?.first_name && selectedUser.profile?.last_name
+                       ? `${selectedUser.profile.first_name} ${selectedUser.profile.last_name}`.trim()
+                       : selectedUser.profile?.first_name ||
+                         selectedUser.profile?.child_name ||
+                         selectedUser.email?.split('@')[0] ||
+                         'User Profile')}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 capitalize">{selectedUser.role || 'User'}</p>
+                </div>
               </div>
               <button
                 onClick={() => setIsFullProfileOpen(false)}
-                className="text-white hover:text-blue-100 transition-colors p-1.5 rounded-lg hover:bg-blue-800"
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-200/80"
                 aria-label="Close modal"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 space-y-6">
+            {/* Content - labels outside, data in input-style boxes */}
+            <div className="p-6 space-y-5">
               {/* Basic Information */}
-              <div className="bg-gray-50 rounded-lg p-5">
-                <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Basic Information</h6>
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                  Basic Information
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Email</label>
-                    <p className="text-sm text-gray-900 font-medium">{selectedUser.email || 'Not provided'}</p>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedUser.email || 'Not provided'}
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Phone Number</label>
-                    <p className="text-sm text-gray-900 font-medium">{selectedUser.profile?.phone_number || 'Not provided'}</p>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Phone Number</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedUser.profile?.phone_number || 'Not provided'}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Child Information (for clients) */}
               {selectedUser.role === 'client' && (selectedUser.profile?.child_name || selectedUser.profile?.child_age) && (
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Child Information</h6>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                  <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                    Child Information
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Child Name</label>
-                      <p className="text-sm text-gray-900 font-medium">{selectedUser.profile?.child_name || 'Not provided'}</p>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Child Name</label>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                        {selectedUser.profile?.child_name || 'Not provided'}
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Child Age</label>
-                      <p className="text-sm text-gray-900 font-medium">
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Child Age</label>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
                         {selectedUser.profile?.child_age ? `${selectedUser.profile.child_age} years old` : 'Not provided'}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -527,34 +528,38 @@ export default function UsersPage() {
 
               {/* Account Information */}
               {selectedUser.created_at && (
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <h6 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Account Information</h6>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                  <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                    Account Information
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Member Since</label>
-                      <p className="text-sm text-gray-900 font-medium">
-                        {new Date(selectedUser.created_at).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Member Since</label>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                        {new Date(selectedUser.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
                         })}
-                      </p>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Account Status</label>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Account Status</label>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200">
                 <button
                   onClick={() => setIsFullProfileOpen(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
                 >
                   Close
                 </button>
@@ -563,7 +568,7 @@ export default function UsersPage() {
                     setIsFullProfileOpen(false);
                     handleEditUser(selectedUser);
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors text-sm font-medium"
                 >
                   Edit Profile
                 </button>

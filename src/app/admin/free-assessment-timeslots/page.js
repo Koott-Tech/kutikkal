@@ -33,6 +33,7 @@ export default function FreeAssessmentTimeslotsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
   
   // Removed modal/form states in favor of calendar-based editing
 
@@ -663,8 +664,15 @@ export default function FreeAssessmentTimeslotsPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h6>Free Assessment Timeslots</h6>
-            <p className="text-lg text-gray-600">Manage available time slots for free assessments</p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsAvailabilityModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] transition-colors"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Manage Availability
+          </button>
         </div>
 
         {/* Messages */}
@@ -686,260 +694,9 @@ export default function FreeAssessmentTimeslotsPage() {
           </div>
         )}
 
-        {/* Calendar-based Timeslot Management */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h6 className="mb-6 flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Calendar-based Timeslot Management
-          </h6>
-          
-          {/* Step Indicator */}
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex items-center space-x-4">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                1
-              </div>
-              <div className="w-8 h-1 bg-gray-200"></div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>
-                2
-              </div>
-            </div>
-          </div>
-          
-          {/* Step 1: Date Selection */}
-          {step === 1 && (
-            <div className="text-center">
-              <h6>Step 1: Select a Date</h6>
-              
-              {/* Simple Calendar */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-xs mx-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={handlePrevMonth}
-                    className={`p-2 rounded-lg transition-colors ${
-                      canGoToPrevMonth() && !loading
-                        ? 'hover:bg-gray-100 cursor-pointer'
-                        : 'opacity-50 cursor-not-allowed'
-                    }`}
-                    disabled={!canGoToPrevMonth() || loading}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <h4 className="text-lg font-semibold text-gray-800">
-                    {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </h4>
-                  <button
-                    onClick={handleNextMonth}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    disabled={loading}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Days of Week */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                    <div key={`day-header-${index}`} className="text-center text-xs font-medium text-gray-500 py-1">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Calendar Days */}
-                <div className="grid grid-cols-7 gap-1">
-                  {(() => {
-                    const { daysInMonth, startingDay } = getDaysInMonth(currentDate);
-                    const calendarDays = [];
-                    
-                    // Add empty cells for days before the first day of the month
-                    for (let i = 0; i < startingDay; i++) {
-                      calendarDays.push(
-                        <div key={`empty-${i}`} className="h-8"></div>
-                      );
-                    }
-                    
-                    // Add days of the month
-                    for (let day = 1; day <= daysInMonth; day++) {
-                      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                      const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-                      const today = new Date();
-                      const isToday = isCurrentMonth && 
-                                     day === today.getDate() && 
-                                     currentDate.getMonth() === today.getMonth() &&
-                                     currentDate.getFullYear() === today.getFullYear();
-                      
-                      // Check if this date is in the past
-                      const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                      const year = calendarDate.getFullYear();
-                      const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
-                      const dayStr = String(calendarDate.getDate()).padStart(2, '0');
-                      const dateStr = `${year}-${month}-${dayStr}`;
-                      const isPast = isPastDate(dateStr);
-                      const isAvailable = !isPast && isCurrentMonth;
-                      
-                      const dateAvailability = availabilityData[dateStr];
-                      
-                      // Only show green if this date has been configured through the calendar (has timeSlots)
-                      const hasTimeslots = dateAvailability && dateAvailability.timeSlots;
-
-                      calendarDays.push(
-                        <div
-                          key={`day-${day}`}
-                          onClick={() => {
-                            if (isAvailable) {
-                              handleDateSelect(day);
-                            }
-                          }}
-                          className={`text-center py-1 rounded-lg transition-all duration-200 text-xs ${
-                            isAvailable 
-                              ? 'cursor-pointer hover:bg-gray-100' 
-                              : 'cursor-not-allowed opacity-50'
-                          } ${
-                            hasTimeslots && isAvailable
-                              ? 'bg-green-500 text-white hover:bg-green-600' 
-                              : isToday && isAvailable
-                                ? 'bg-blue-100 text-blue-700 font-semibold'
-                                : isAvailable
-                                  ? 'text-gray-700' 
-                                  : 'text-gray-300 bg-gray-50'
-                          }`}
-                          title={
-                            hasTimeslots && isAvailable
-                              ? 'Timeslots configured - Click to edit' 
-                              : isAvailable 
-                                ? 'Click to select' 
-                                : 'Past date - Cannot select'
-                          }
-                        >
-                          {day}
-                          {hasTimeslots && isAvailable && (
-                            <div className="w-1 h-1 bg-white rounded-full mx-auto mt-1"></div>
-                          )}
-                        </div>
-                      );
-                    }
-                    
-                    return calendarDays;
-                  })()}
-                </div>
-              </div>
-              
-              <p className="text-sm text-gray-600 mt-4">Click on any future date to select it</p>
-            </div>
-          )}
-          
-          {/* Step 2: Time Selection */}
-          {step === 2 && selectedDate && (
-            <div className="text-center">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                Step 2: Select Time Slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-              </h4>
-              
-              {/* Time Periods */}
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleSelectAllDefaultSlots}
-                    className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition-colors"
-                  >
-                    Select All Default Slots
-                  </button>
-                </div>
-                {Object.entries(timeSlots)
-                  .filter(([, times]) => times.length > 0)
-                  .map(([period, times]) => {
-                    // Filter out past time slots if the selected date is today
-                    const today = new Date();
-                    const selectedDateStr = selectedDate ? 
-                      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` : 
-                      null;
-                    const isToday = selectedDateStr && 
-                      selectedDate.toDateString() === today.toDateString();
-                    
-                    const availableTimes = isToday 
-                      ? times.filter(time => !isPastTime(time, selectedDateStr))
-                      : times;
-                    
-                    // Don't show the period if all times are past
-                    if (availableTimes.length === 0) {
-                      return null;
-                    }
-                    
-                    return (
-                      <div key={period} className="bg-gray-50 rounded-lg p-4">
-                        <h6 className="mb-3 capitalize">{period}</h6>
-                        <div className="grid grid-cols-2 gap-2">
-                          {availableTimes.map(time => {
-                            const timeKey = `${period}:${time}`;
-                            const isSelected = selectedTimes.includes(timeKey);
-                            
-                            return (
-                              <button
-                                key={timeKey}
-                                type="button"
-                                onClick={() => handleTimeSelect(timeKey)}
-                                className={`p-2 text-xs rounded-lg border transition-colors ${
-                                  isSelected
-                                    ? 'bg-blue-500 text-white border-blue-500'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
-                                }`}
-                              >
-                                {time}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })
-                  .filter(Boolean)}
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex justify-center space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedDate(null);
-                    setSelectedTimes([]);
-                    setStep(1);
-                  }}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Back to Date Selection
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={goToNextDate}
-                  disabled={selectedTimes.length === 0 || loading}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Saving...' : 'Next Date'}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={saveCurrentDateAvailability}
-                  disabled={selectedTimes.length === 0 || loading}
-                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Saving...' : 'Save & Finish'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Current Availability Display */}
         {Object.keys(availabilityData).length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h6>Current Availability</h6>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(availabilityData)
@@ -995,7 +752,7 @@ export default function FreeAssessmentTimeslotsPage() {
                           <button
                             type="button"
                             onClick={() => handleEditDate(dateStr)}
-                            className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                            className="text-[#3f2e73] hover:text-[#1d1733] text-xs font-medium"
                           >
                             Edit
                           </button>
@@ -1077,7 +834,7 @@ export default function FreeAssessmentTimeslotsPage() {
                         {a.meetLink ? (
                           <button
                             onClick={() => window.open(a.meetLink, '_blank', 'noopener')}
-                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded hover:bg-[#1d1733] transition-colors"
                           >
                             Copy Meet
                           </button>
@@ -1092,6 +849,296 @@ export default function FreeAssessmentTimeslotsPage() {
             </div>
           )}
         </div>
+
+        {/* Availability Modal */}
+        {isAvailabilityModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/80">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-[#3f2e73]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>
+                      Manage Free Assessment Availability
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Configure which dates and time slots are open for free assessments.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAvailabilityModalOpen(false)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+          {/* Step Indicator */}
+                <div className="flex items-center justify-center mb-5">
+            <div className="flex items-center space-x-4">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                      step >= 1 ? 'bg-[#3f2e73] text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                1
+              </div>
+                    <div className="w-8 h-px bg-slate-200" />
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                      step >= 2 ? 'bg-[#3f2e73] text-white' : 'bg-slate-200 text-slate-500'
+              }`}>
+                2
+              </div>
+            </div>
+          </div>
+          
+          {/* Step 1: Date Selection */}
+          {step === 1 && (
+            <div className="text-center">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                      Step 1 · Select a Date
+                    </div>
+
+                    {/* Calendar */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 max-w-xs mx-auto">
+                      <div className="flex items-center justify-between mb-3">
+                  <button
+                          type="button"
+                    onClick={handlePrevMonth}
+                    className={`p-2 rounded-lg transition-colors ${
+                      canGoToPrevMonth() && !loading
+                              ? 'hover:bg-slate-100 cursor-pointer'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                    disabled={!canGoToPrevMonth() || loading}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                        <div className="text-xs font-medium text-slate-900">
+                    {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </div>
+                  <button
+                          type="button"
+                    onClick={handleNextMonth}
+                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    disabled={loading}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* Days of Week */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                          <div key={`day-header-${index}`} className="text-center text-[10px] font-medium text-slate-500 py-0.5">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Calendar Days */}
+                <div className="grid grid-cols-7 gap-1">
+                  {(() => {
+                    const { daysInMonth, startingDay } = getDaysInMonth(currentDate);
+                    const calendarDays = [];
+                    
+                          // Empty cells before first day
+                    for (let i = 0; i < startingDay; i++) {
+                      calendarDays.push(
+                              <div key={`empty-${i}`} className="h-7" />
+                      );
+                    }
+                    
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                      const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+                      const today = new Date();
+                            const isToday =
+                              isCurrentMonth &&
+                                     day === today.getDate() && 
+                                     currentDate.getMonth() === today.getMonth() &&
+                                     currentDate.getFullYear() === today.getFullYear();
+                      
+                      const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                      const year = calendarDate.getFullYear();
+                      const month = String(calendarDate.getMonth() + 1).padStart(2, '0');
+                      const dayStr = String(calendarDate.getDate()).padStart(2, '0');
+                      const dateStr = `${year}-${month}-${dayStr}`;
+                      const isPast = isPastDate(dateStr);
+                      const isAvailable = !isPast && isCurrentMonth;
+                      
+                      const dateAvailability = availabilityData[dateStr];
+                      const hasTimeslots = dateAvailability && dateAvailability.timeSlots;
+
+                      calendarDays.push(
+                        <div
+                          key={`day-${day}`}
+                          onClick={() => {
+                            if (isAvailable) {
+                              handleDateSelect(day);
+                            }
+                          }}
+                                className={`text-center py-1.5 rounded-lg text-[11px] transition-all ${
+                            isAvailable 
+                                    ? 'cursor-pointer hover:bg-slate-100'
+                              : 'cursor-not-allowed opacity-50'
+                          } ${
+                            hasTimeslots && isAvailable
+                              ? 'bg-green-500 text-white hover:bg-green-600' 
+                              : isToday && isAvailable
+                                ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-semibold'
+                                : isAvailable
+                                        ? 'text-slate-700'
+                                        : 'text-slate-300 bg-slate-50'
+                          }`}
+                          title={
+                            hasTimeslots && isAvailable
+                                    ? 'Timeslots configured – Click to edit'
+                              : isAvailable 
+                                ? 'Click to select' 
+                                      : 'Past date – Cannot select'
+                          }
+                        >
+                          {day}
+                          {hasTimeslots && isAvailable && (
+                                  <div className="w-1 h-1 bg-white rounded-full mx-auto mt-1" />
+                          )}
+                        </div>
+                      );
+                    }
+                    
+                    return calendarDays;
+                  })()}
+                </div>
+              </div>
+              
+                    <p className="text-xs text-slate-500 mt-3">
+                      Click on any future date to configure or edit free assessment slots.
+                    </p>
+            </div>
+          )}
+          
+          {/* Step 2: Time Selection */}
+          {step === 2 && selectedDate && (
+            <div className="text-center">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                      Step 2 · Select Time Slots for{' '}
+                      <span className="text-slate-900">
+                        {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+              
+              {/* Time Periods */}
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSelectAllDefaultSlots}
+                          className="px-3 py-2 text-[11px] font-medium text-white bg-[#3f2e73] rounded-lg shadow hover:bg-[#1d1733] transition-colors"
+                  >
+                    Select All Default Slots
+                  </button>
+                </div>
+                {Object.entries(timeSlots)
+                  .filter(([, times]) => times.length > 0)
+                  .map(([period, times]) => {
+                    const today = new Date();
+                          const selectedDateStr = selectedDate
+                            ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+                            : null;
+                          const isToday =
+                            selectedDateStr &&
+                      selectedDate.toDateString() === today.toDateString();
+                    
+                    const availableTimes = isToday 
+                      ? times.filter(time => !isPastTime(time, selectedDateStr))
+                      : times;
+                    
+                    if (availableTimes.length === 0) {
+                      return null;
+                    }
+                    
+                    return (
+                            <div key={period} className="bg-slate-50 rounded-lg p-4">
+                              <div className="mb-3 text-xs font-medium text-slate-700 capitalize">
+                                {period}
+                              </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {availableTimes.map(time => {
+                            const timeKey = `${period}:${time}`;
+                            const isSelected = selectedTimes.includes(timeKey);
+                            
+                            return (
+                              <button
+                                key={timeKey}
+                                type="button"
+                                onClick={() => handleTimeSelect(timeKey)}
+                                      className={`p-2 text-[11px] rounded-lg border transition-colors ${
+                                  isSelected
+                                    ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                                          : 'bg-white text-slate-700 border-slate-200 hover:border-[#3f2e73]/40'
+                                }`}
+                              >
+                                {time}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })
+                  .filter(Boolean)}
+              </div>
+              
+              {/* Action Buttons */}
+                    <div className="flex justify-center gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(null);
+                    setSelectedTimes([]);
+                    setStep(1);
+                  }}
+                        className="px-5 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm"
+                >
+                  Back to Date Selection
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={goToNextDate}
+                  disabled={selectedTimes.length === 0 || loading}
+                        className="px-5 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed text-sm"
+                >
+                  {loading ? 'Saving...' : 'Next Date'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={saveCurrentDateAvailability}
+                  disabled={selectedTimes.length === 0 || loading}
+                        className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed text-sm"
+                >
+                  {loading ? 'Saving...' : 'Save & Finish'}
+                </button>
+              </div>
+            </div>
+          )}
+
+                {!selectedDate && step === 2 && (
+                  <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 text-sm text-center">
+                    Select a date to see available time slots.
+          </div>
+        )}
+                            </div>
+                          </div>
+            </div>
+          )}
       </div>
 
       {/* Modals removed: editing is done directly via calendar selection */}

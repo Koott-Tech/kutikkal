@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Minus, FileText, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Plus, Minus, FileText } from 'lucide-react';
 import { publicApi } from '@/lib/backendApi';
 
 // Helper to normalize possible image fields and relative URLs
@@ -69,6 +69,8 @@ export default function DoctorModal({
     description: '',
     designation: '',
     price: '',
+    psychiatrist15Price: '',
+    psychiatrist30Price: '',
     experience_years: '',
     display_order: '',
     packages: [
@@ -381,6 +383,8 @@ export default function DoctorModal({
         },
         description: doctor.description || '',
         price: doctor.price || doctor.individual_session_price || '',
+        psychiatrist15Price: doctor.psychiatrist_15min_price || '',
+        psychiatrist30Price: doctor.psychiatrist_30min_price || '',
         experience_years: doctor.experience_years || '',
         display_order: doctor.display_order !== null && doctor.display_order !== undefined ? String(doctor.display_order) : '',
         packages: [
@@ -1072,10 +1076,8 @@ export default function DoctorModal({
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
     if (mode === 'add' && !formData.password.trim()) newErrors.password = 'Password is required';
     if (!formData.experience_years || formData.experience_years < 0) newErrors.experience_years = 'Years of experience is required and must be 0 or greater';
-    // Only require availability when adding a new doctor, not when editing (can be added via daily availability adder)
-    if (mode === 'add' && Object.keys(availabilityData).length === 0) {
-      newErrors.availability = 'Please set at least one availability slot. Click on "Set Availability" below to add your available times.';
-    }
+    // Availability is optional in both add and edit (can be set via daily availability adder)
+    // (no validation for availability)
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -1114,6 +1116,8 @@ export default function DoctorModal({
         designation: formData.designation?.trim() || null,
         experience_years: parseInt(formData.experience_years) || 0,
         price: formData.price ? Number(formData.price) : undefined,
+        psychiatrist_15min_price: formData.psychiatrist15Price ? Number(formData.psychiatrist15Price) : undefined,
+        psychiatrist_30min_price: formData.psychiatrist30Price ? Number(formData.psychiatrist30Price) : undefined,
         display_order: (() => {
           const orderValue = formData.display_order;
           if (!orderValue) return null;
@@ -1208,27 +1212,28 @@ export default function DoctorModal({
 
   if (!isOpen) return null;
 
+  const sectionHeading = 'text-sm font-semibold text-slate-700 tracking-tight mb-3';
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="sticky top-0 z-10 flex-shrink-0 bg-white/95 backdrop-blur border-b border-slate-200 px-6 py-4">
           <div className="flex justify-between items-center">
-            <p className="font-bold text-gray-800">
+            <p className="text-sm font-semibold text-slate-800 tracking-tight">
               {mode === 'add' ? 'Add New Doctor' : 'Edit Doctor'}
             </p>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-[#3f2e73] hover:bg-[#3f2e73]/10 transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Personal Information */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1238,8 +1243,8 @@ export default function DoctorModal({
                 type="text"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                  errors.firstName ? 'border-red-400' : 'border-slate-200'
                 }`}
                 placeholder="Enter first name"
               />
@@ -1256,8 +1261,8 @@ export default function DoctorModal({
                 type="text"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                  errors.lastName ? 'border-red-400' : 'border-slate-200'
                 }`}
                 placeholder="Enter last name"
               />
@@ -1274,7 +1279,7 @@ export default function DoctorModal({
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-28 rounded-md border border-gray-300 px-3 py-2 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-28 rounded-lg border border-slate-200 px-3 py-2 bg-slate-50 outline-none focus:ring-2 focus:ring-[#3f2e73]/20 text-sm"
                 >
                   <option value="+91">🇮🇳 +91</option>
                 </select>
@@ -1282,8 +1287,8 @@ export default function DoctorModal({
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^\d]/g, ''))}
-                  className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                    errors.phone ? 'border-red-400' : 'border-slate-200'
                   }`}
                   placeholder="Enter phone number"
                   inputMode="tel"
@@ -1302,8 +1307,8 @@ export default function DoctorModal({
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                  errors.email ? 'border-red-400' : 'border-slate-200'
                 }`}
                 placeholder="Enter email address"
               />
@@ -1320,7 +1325,7 @@ export default function DoctorModal({
                 type="text"
                 value={formData.designation}
                 onChange={(e) => handleInputChange('designation', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="e.g., Consultant Psychologist"
               />
             </div>
@@ -1334,12 +1339,12 @@ export default function DoctorModal({
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <div className="px-3 py-2 border border-gray-300 rounded-md bg-green-50">
+                        <div className="px-3 py-2 border border-slate-200 rounded-lg bg-[#3f2e73]/5">
                           <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm text-green-700 font-medium">Password is set and secure</span>
+                            <div className="w-2 h-2 bg-[#3f2e73] rounded-full"></div>
+                            <span className="text-sm text-[#3f2e73] font-medium">Password is set and secure</span>
                           </div>
-                          <p className="text-xs text-green-600 mt-1">
+                          <p className="text-xs text-[#3f2e73]/80 mt-1">
                             Password is encrypted and cannot be displayed for security reasons
                           </p>
                         </div>
@@ -1347,7 +1352,7 @@ export default function DoctorModal({
                       <button
                         type="button"
                         onClick={() => setShowPasswordReset(!showPasswordReset)}
-                        className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm font-medium transition-colors whitespace-nowrap"
+                        className="px-4 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
                       >
                         {showPasswordReset ? 'Cancel Reset' : 'Reset Password'}
                       </button>
@@ -1359,7 +1364,7 @@ export default function DoctorModal({
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="Enter new password"
                       />
                       <p className="text-xs text-gray-600">
@@ -1373,7 +1378,7 @@ export default function DoctorModal({
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Enter password"
@@ -1383,29 +1388,30 @@ export default function DoctorModal({
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
             </div>
-        </div>
+          </div>
+          </div>
 
         {/* Cover Image */}
-        <div>
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Cover Image</h3>
+        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+          <div className={sectionHeading} role="heading" aria-level={3}>Cover Image</div>
           <div className="flex items-center space-x-4">
             {formData.coverImage ? (
               <div className="relative">
                 <img
                   src={formData.coverImage}
                   alt="Cover image preview"
-                  className="w-64 h-36 rounded-lg object-cover border-2 border-gray-300"
+                  className="w-64 h-36 rounded-lg object-cover border-2 border-slate-200"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage('coverImage')}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                  className="absolute -top-2 -right-2 bg-[#3f2e73] text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-[#1d1733] transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="w-64 h-36 rounded-lg bg-gray-200 flex items-center justify-center">
+              <div className="w-64 h-36 rounded-lg bg-slate-100 flex items-center justify-center">
                 <FileText className="w-12 h-12 text-gray-400" />
               </div>
             )}
@@ -1414,7 +1420,7 @@ export default function DoctorModal({
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleImageUpload('coverImage', e.target.files[0])}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#3f2e73]/10 file:text-[#3f2e73] hover:file:bg-[#3f2e73]/20"
               />
               <p className="text-xs text-gray-500 mt-1">Recommended: 16:9 ratio, max 5MB</p>
             </div>
@@ -1422,8 +1428,8 @@ export default function DoctorModal({
         </div>
 
         {/* Education */}
-        <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Education</h3>
+        <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <div className={sectionHeading} role="heading" aria-level={3}>Education</div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1433,7 +1439,7 @@ export default function DoctorModal({
                   type="text"
                   value={formData.education.ug}
                   onChange={(e) => handleEducationChange('ug', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
                     errors.ug ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="e.g., Psychology, Stanford University"
@@ -1451,7 +1457,7 @@ export default function DoctorModal({
                   type="text"
                   value={formData.education.pg}
                   onChange={(e) => handleEducationChange('pg', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
                     errors.pg ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="e.g., Clinical Psychology, Harvard"
@@ -1469,7 +1475,7 @@ export default function DoctorModal({
                   type="text"
                   value={formData.education.mphil}
                   onChange={(e) => handleEducationChange('mphil', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                   placeholder="e.g., Clinical Psychology, Oxford"
                 />
               </div>
@@ -1482,7 +1488,7 @@ export default function DoctorModal({
                   type="text"
                   value={formData.education.phd}
                   onChange={(e) => handleEducationChange('phd', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                   placeholder="e.g., Clinical Psychology, Yale"
                 />
               </div>
@@ -1490,15 +1496,15 @@ export default function DoctorModal({
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Professional Description *
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows="3"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
                 errors.description ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Describe the doctor's expertise and experience..."
@@ -1509,12 +1515,12 @@ export default function DoctorModal({
           </div>
 
           {/* FAQ Section */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Frequently Asked Questions (Optional)</h3>
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <div className={sectionHeading} role="heading" aria-level={3}>Frequently Asked Questions (Optional)</div>
             <p className="text-sm text-gray-600 mb-4">Add up to 3 FAQ questions and answers that will appear on the therapist profile page.</p>
             
             {/* FAQ 1 */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="mb-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 FAQ Question 1
               </label>
@@ -1522,7 +1528,7 @@ export default function DoctorModal({
                 type="text"
                 value={formData.faq_question_1}
                 onChange={(e) => handleInputChange('faq_question_1', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm mb-3"
                 placeholder="e.g., What makes your approach to therapy unique?"
               />
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1532,13 +1538,13 @@ export default function DoctorModal({
                 value={formData.faq_answer_1}
                 onChange={(e) => handleInputChange('faq_answer_1', e.target.value)}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="Enter the answer to the first FAQ question..."
               />
             </div>
 
             {/* FAQ 2 */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="mb-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 FAQ Question 2
               </label>
@@ -1546,7 +1552,7 @@ export default function DoctorModal({
                 type="text"
                 value={formData.faq_question_2}
                 onChange={(e) => handleInputChange('faq_question_2', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm mb-3"
                 placeholder="e.g., How do you help hesitant clients?"
               />
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1556,13 +1562,13 @@ export default function DoctorModal({
                 value={formData.faq_answer_2}
                 onChange={(e) => handleInputChange('faq_answer_2', e.target.value)}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="Enter the answer to the second FAQ question..."
               />
             </div>
 
             {/* FAQ 3 */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="mb-6 p-4 border border-slate-200 rounded-lg bg-slate-50">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 FAQ Question 3
               </label>
@@ -1570,7 +1576,7 @@ export default function DoctorModal({
                 type="text"
                 value={formData.faq_question_3}
                 onChange={(e) => handleInputChange('faq_question_3', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm mb-3"
                 placeholder="e.g., What's most important in successful therapy?"
               />
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1580,50 +1586,89 @@ export default function DoctorModal({
                 value={formData.faq_answer_3}
                 onChange={(e) => handleInputChange('faq_answer_3', e.target.value)}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="Enter the answer to the third FAQ question..."
               />
             </div>
           </div>
 
           {/* Pricing */}
-          <div>
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Pricing</h3>
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <div className={sectionHeading} role="heading" aria-level={3}>Pricing</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Individual Price per Session (₹) *
-                </label>
-                <input
-                  type="text"
-                  value={formData.price || ''}
-                  onChange={(e) => {
-                    // Only allow numbers
-                    const value = e.target.value.replace(/[^0-9]/g, '');
-                    handleInputChange('price', value);
-                  }}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.price ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="150"
-                />
-                {errors.price && (
-                  <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Price will be stored in the description field temporarily
-                </p>
-              </div>
+              {/* Generic individual price: only for non-psychiatrists */}
+              {!(formData.designation || '').toLowerCase().includes('psychiatrist') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Individual Price per Session (₹) *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.price || ''}
+                    onChange={(e) => {
+                      // Only allow numbers
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      handleInputChange('price', value);
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                      errors.price ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="150"
+                  />
+                  {errors.price && (
+                    <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Price will be stored in the description field temporarily
+                  </p>
+                </div>
+              )}
+
+              {/* Psychiatrist-specific individual durations */}
+              {(formData.designation || '').toLowerCase().includes('psychiatrist') && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Psychiatrist 15 min Session Price (₹)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.psychiatrist15Price || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        handleInputChange('psychiatrist15Price', value);
+                      }}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
+                      placeholder="e.g. 800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Psychiatrist 30 min Session Price (₹)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.psychiatrist30Price || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        handleInputChange('psychiatrist30Price', value);
+                      }}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
+                      placeholder="e.g. 1200"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Packages Section */}
             <div className="mt-6">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-md font-medium text-gray-700">Session Packages</h4>
+                <div className={sectionHeading} role="heading" aria-level={4}>Session Packages</div>
                 <button
                   type="button"
                   onClick={addPackage}
-                  className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                  className="px-3 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Add Package
@@ -1632,15 +1677,15 @@ export default function DoctorModal({
               
               <div className="space-y-4">
                 {ensurePackageIds(formData.packages).map((pkg, index) => (
-                  <div key={pkg.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div key={pkg.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
                     <div className="flex items-center justify-between mb-3">
-                      <h5 className="font-medium text-gray-800">
+                      <div className="text-sm font-medium text-slate-800">
                         Package {index + 1}
-                      </h5>
+                      </div>
                       <button
                         type="button"
                         onClick={() => removePackage(index)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
+                        className="text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -1664,7 +1709,7 @@ export default function DoctorModal({
                               updatePackage(index, 'price', '');
                             }
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         >
                           <option value="">Select Package</option>
                           {availablePackages
@@ -1687,7 +1732,7 @@ export default function DoctorModal({
                           type="number"
                           value={pkg.sessions}
                           disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 text-gray-600"
                         />
                       </div>
                       
@@ -1703,19 +1748,19 @@ export default function DoctorModal({
                             const value = e.target.value.replace(/[^0-9]/g, '');
                             updatePackage(index, 'price', value);
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                           placeholder="150"
                         />
                       </div>
                     </div>
                     
                     {index > 0 && pkg.sessions > 1 && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                      <div className="mt-3 p-3 bg-[#3f2e73]/10 rounded-lg">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-blue-700">
+                          <span className="text-[#3f2e73]">
                             Total Package Price: ₹{(pkg.price * pkg.sessions).toFixed(2)}
                           </span>
-                          <span className="text-green-600 font-medium">
+                          <span className="text-[#3f2e73] font-medium">
                             Save: ₹{((formData.price * pkg.sessions) - (pkg.price * pkg.sessions)).toFixed(2)}
                           </span>
                         </div>
@@ -1732,15 +1777,15 @@ export default function DoctorModal({
           </div>
 
           {/* Experience */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Years of Experience *
             </label>
             <input
               type="number"
               value={formData.experience_years}
               onChange={(e) => handleInputChange('experience_years', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
                 errors.experience_years ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="5"
@@ -1754,8 +1799,8 @@ export default function DoctorModal({
           </div>
 
           {/* Display Order */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Display Order
             </label>
             <input
@@ -1768,7 +1813,7 @@ export default function DoctorModal({
                   handleInputChange('display_order', value);
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
               placeholder="e.g., 1, 2, 3, 10..."
               min="1"
               step="1"
@@ -1780,13 +1825,13 @@ export default function DoctorModal({
 
 
           {/* Specializations */}
-          <div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-gray-800">Specializations</h3>
+              <div className={sectionHeading} role="heading" aria-level={3}>Specializations</div>
               <button
                 type="button"
                 onClick={addSpecialization}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                className="px-3 py-1 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 inline mr-1" />
                 Add Specialization
@@ -1800,14 +1845,14 @@ export default function DoctorModal({
                     type="text"
                     value={spec}
                     onChange={(e) => handleSpecializationChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                     placeholder="e.g., Anxiety, Depression"
                   />
                   {formData.specializations.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeSpecialization(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      className="p-2 text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -1821,13 +1866,13 @@ export default function DoctorModal({
           </div>
 
           {/* Languages */}
-          <div className="mt-6">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 mt-6">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-gray-800">Languages</h3>
+              <div className={sectionHeading} role="heading" aria-level={3}>Languages</div>
               <button
                 type="button"
                 onClick={addLanguage}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                className="px-3 py-1 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 inline mr-1" />
                 Add Language
@@ -1840,14 +1885,14 @@ export default function DoctorModal({
                     type="text"
                     value={language}
                     onChange={(e) => handleLanguageChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                     placeholder="e.g., English"
                   />
                   {formData.languages.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeLanguage(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      className="p-2 text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -1858,13 +1903,13 @@ export default function DoctorModal({
           </div>
 
           {/* Personality Traits */}
-          <div className="mt-6">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 mt-6">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-gray-800">Personality Traits</h3>
+              <div className={sectionHeading} role="heading" aria-level={3}>Personality Traits</div>
               <button
                 type="button"
                 onClick={addPersonality}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
+                className="px-3 py-1 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors text-sm"
               >
                 <Plus className="w-4 h-4 inline mr-1" />
                 Add Trait
@@ -1877,14 +1922,14 @@ export default function DoctorModal({
                     type="text"
                     value={p}
                     onChange={(e) => handlePersonalityChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                     placeholder="e.g., Energetic, Calm, Empathetic"
                   />
                   {formData.personalities.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removePersonality(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      className="p-2 text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -1894,328 +1939,26 @@ export default function DoctorModal({
             </div>
           </div>
 
-          {/* Simple Step-by-Step Availability */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-800">Set Doctor Availability</h3>
-              {mode === 'add' && Object.keys(availabilityData).length === 0 && (
-                <span className="text-red-500 text-sm font-medium">⚠️ Required</span>
-              )}
-              {mode === 'edit' && Object.keys(availabilityData).length === 0 && (
-                <span className="text-gray-500 text-sm font-medium">ℹ️ Optional - Can be added via daily availability adder</span>
-              )}
-            </div>
-            
-            {/* Step Indicator */}
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex items-center space-x-4">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  1
-                </div>
-                <div className="w-8 h-1 bg-gray-200"></div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  2
-                </div>
-                <div className="w-8 h-1 bg-gray-200"></div>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 3 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  3
-                </div>
-              </div>
-            </div>
-            
-            {/* Step 1: Date Selection */}
-            {step === 1 && (
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Step 1: Select a Date</h4>
-                
-                {/* Simple Calendar */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-xs mx-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.preventDefault(); handlePrevMonth(); }}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h4 className="text-lg font-semibold text-gray-800">
-                      {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.preventDefault(); handleNextMonth(); }}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  {/* Days of Week */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                      <div key={`day-header-${index}`} className="text-center text-xs font-medium text-gray-500 py-1">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Calendar Days */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {(() => {
-                      const { daysInMonth, startingDay } = getDaysInMonth(currentDate);
-                      const calendarDays = [];
-                      
-                      // Add empty cells for days before the first day of the month
-                      for (let i = 0; i < startingDay; i++) {
-                        calendarDays.push(
-                          <div key={`empty-${i}`} className="h-8"></div>
-                        );
-                      }
-                      
-                      // Add days of the month
-                      for (let day = 1; day <= daysInMonth; day++) {
-                        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                        const today = new Date();
-                        const isSameMonthAsToday =
-                          currentDate.getFullYear() === today.getFullYear() &&
-                          currentDate.getMonth() === today.getMonth();
-                        const isToday = isSameMonthAsToday && day === today.getDate();
-                        // Allow selecting any day in months other than the current month; in the current month, only allow today or future days
-                        const isAvailable = !isSameMonthAsToday || day >= today.getDate();
-                        
-                        const isSet = Object.keys(availabilityData).some(dateStr => {
-                          // Use IST timezone for calendar date comparison
-                          const calendarDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-                          const istCalendarDate = new Date(calendarDate.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5.5 hours for IST
-                          const istCalendarDateStr = istCalendarDate.toISOString().split('T')[0];
-                          return dateStr === istCalendarDateStr;
-                        });
-
-                        calendarDays.push(
-                          <div
-                            key={`day-${day}`}
-                            onClick={() => isAvailable && handleDateSelect(day)}
-                            className={`text-center py-1 rounded-lg transition-all duration-200 text-xs cursor-pointer ${
-                              isSet
-                                ? 'bg-green-500 text-white' 
-                                : isToday
-                                  ? 'bg-blue-100 text-blue-700 font-semibold'
-                                  : isAvailable
-                                    ? 'hover:bg-gray-100 text-gray-700' 
-                                    : 'text-gray-300 cursor-not-allowed'
-                            }`}
-                            title={isSet ? 'Availability set' : isAvailable ? 'Click to select' : 'Past date'}
-                          >
-                            {day}
-                            {isSet && (
-                              <div className="w-1 h-1 bg-white rounded-full mx-auto mt-1"></div>
-                            )}
-                          </div>
-                        );
-                      }
-                      
-                      return calendarDays;
-                    })()}
-                  </div>
-                </div>
-                
-                <p className="text-sm text-gray-600 mt-4">Click on any future date to select it</p>
-              </div>
-            )}
-            
-            {/* Step 2: Time Selection */}
-            {step === 2 && selectedDate && (
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                  Step 2: Select Time Slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                </h4>
-                
-                {/* Time Periods */}
-                <div className="max-w-md mx-auto space-y-4">
-                  {Object.entries(timeSlots).map(([period, times]) => (
-                    <div key={period} className="bg-gray-50 rounded-lg p-4">
-                      <h5 className="text-sm font-medium text-gray-700 mb-3 capitalize">{period}</h5>
-                      <div className="grid grid-cols-2 gap-2">
-                        {times.map(time => {
-                          const timeKey = `${period}:${time}`;
-                          const isSelected = selectedTimes.includes(timeKey);
-                          
-                          return (
-                            <button
-                              key={timeKey}
-                              type="button"
-                              onClick={() => handleTimeSelect(timeKey)}
-                              className={`p-2 text-xs rounded-lg border transition-colors ${
-                                isSelected
-                                  ? 'bg-blue-500 text-white border-blue-500'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
-                              }`}
-                            >
-                              {time}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex justify-center space-x-4 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedDate(null);
-                      setSelectedTimes([]);
-                      setStep(1);
-                    }}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Back to Date Selection
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={goToNextDate}
-                    disabled={selectedTimes.length === 0}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Next Date
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={saveCurrentDateAvailability}
-                    disabled={selectedTimes.length === 0}
-                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                    >
-                    Save & Finish
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Step 3: Review & Save */}
-            {step === 3 && (
-              <div className="text-center">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Step 3: Review & Save</h4>
-                
-                {Object.keys(availabilityData).length > 0 ? (
-                  <div className="max-w-md mx-auto">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <p className="text-green-800 font-medium">
-                        {Object.keys(availabilityData).length} date{Object.keys(availabilityData).length > 1 ? 's' : ''} with availability set!
-                      </p>
-                    </div>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                    >
-                      Add More Dates
-                    </button>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-red-600 font-medium mb-2">⚠️ No availability set yet</p>
-                    <p className="text-gray-600 mb-4">You must set at least one availability slot to add this doctor.</p>
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                    >
-                      Set Availability Now
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-            {/* Current Availability Display */}
-            {Object.keys(availabilityData).length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-lg font-medium text-gray-800 mb-3">Current Availability</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(availabilityData).map(([dateStr, data]) => {
-                    // Ensure data has the expected structure
-                    if (!data || !data.timeSlots) {
-                      console.warn('Invalid availability data for date:', dateStr, data);
-                      return null;
-                    }
-                    
-                    const date = new Date(dateStr);
-                    const allSlots = [
-                      ...(data.timeSlots.morning || []),
-                      ...(data.timeSlots.noon || []),
-                      ...(data.timeSlots.evening || []),
-                      ...(data.timeSlots.night || [])
-                    ];
-                    const sortedSlots = sortAndFormatTimeSlots(allSlots);
-                    
-                    return (
-                      <div key={dateStr} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="flex justify-between items-start mb-2">
-                          <h5 className="font-medium text-green-800">
-                            {date.toLocaleDateString('en-US', { 
-                              weekday: 'long', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
-                          </h5>
-                          <button
-                            type="button"
-                            onClick={() => removeAvailability(dateStr)}
-                            className="text-red-500 hover:text-red-700 text-sm"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="space-y-1">
-                          {sortedSlots.map((displayText, slotIndex) => (
-                            <span key={`${dateStr}-${slotIndex}`} className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs mr-1 mb-1">
-                              {displayText}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }).filter(Boolean)}
-                </div>
-              </div>
-            )}
-
-            {errors.availability && (
-              <p className="text-red-500 text-sm mt-2">{errors.availability}</p>
-            )}
-
           {/* Submit Error */}
           {errors.submit && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
               <p className="text-red-600 text-sm">{errors.submit}</p>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-[#3f2e73] bg-white border border-[#3f2e73]/40 rounded-lg hover:bg-[#3f2e73]/10 transition-colors text-sm font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium shadow-sm"
             >
               {isSubmitting ? 'Saving...' : mode === 'add' ? 'Add Doctor' : 'Update Doctor'}
             </button>

@@ -227,7 +227,7 @@ export default function PsychologistDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -281,7 +281,7 @@ export default function PsychologistDashboard() {
           <div className="p-4 sm:p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-[#3f2e73]" />
               </div>
               <div className="ml-4 sm:ml-5 w-0 flex-1 min-w-0">
                 <dl>

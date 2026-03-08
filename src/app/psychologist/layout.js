@@ -71,7 +71,7 @@ export default function PsychologistLayout({ children }) {
         className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200"
         style={!isSidebarOpen ? { boxShadow: '0 2px 8px rgba(63, 46, 115, 0.15)' } : {}}
       >
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-6 min-h-[4.5rem]">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-md hover:bg-gray-100"
@@ -148,8 +148,8 @@ export default function PsychologistLayout({ children }) {
                   href={item.href}
                   className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors ${
                     isActive 
-                      ? 'bg-blue-50 text-blue-700 font-medium' 
-                      : 'hover:bg-blue-50 hover:text-blue-700'
+                      ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                      : 'hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                   }`}
                   onClick={() => {
                     // Close mobile sidebar on navigation
@@ -210,8 +210,8 @@ export default function PsychologistLayout({ children }) {
                   href={item.href}
                   className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors ${
                     isActive 
-                      ? 'bg-blue-50 text-blue-700 font-medium' 
-                      : 'hover:bg-blue-50 hover:text-blue-700'
+                      ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                      : 'hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
@@ -237,8 +237,8 @@ export default function PsychologistLayout({ children }) {
       {/* Main content (push right for desktop left sidebar) */}
       <div className={`lg:ml-64 transition-all duration-300 ease-in-out`}>
         {/* Top bar - Fixed header */}
-        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-64 z-30">
-          <div className="px-6 py-4">
+        <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 fixed top-0 right-0 left-64 z-30 min-h-[4.5rem]">
+          <div className="px-6 py-6">
             <div className="flex items-center justify-between">
               <h6 className="text-lg font-semibold text-gray-800">Psychologist Dashboard</h6>
               {user && (
@@ -252,7 +252,7 @@ export default function PsychologistLayout({ children }) {
         </div>
 
         {/* Page content - Add padding-top to account for fixed header */}
-        <main className="pt-16 lg:pt-16">
+        <main className="pt-24 lg:pt-24">
           {children}
         </main>
       </div>

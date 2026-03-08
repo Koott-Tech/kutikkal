@@ -10,7 +10,7 @@ import TherapistCarousel from '@/components/TherapistCarousel';
 import InfoCards from '@/components/InfoCards';
 import Reviews from '@/components/Reviews';
 import VideosShowcase from '@/components/VideosShowcase';
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { normalizeImageUrl, normalizeImageUrlWithSize } from '@/utils/urlNormalizer';
 
 // No cache for CMS pages - changes reflect immediately
 export const revalidate = 0;
@@ -206,7 +206,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
 
   const title = data?.hero_title || (slug ? slug.replace(/[-_]/g, ' ') : 'Assessment');
   const subtext = data?.hero_subtext || 'Professional assessment to better understand needs and strengths.';
-  const imageUrl = normalizeImageUrl(data?.hero_image_url || '');
+  const imageUrl = normalizeImageUrlWithSize(data?.hero_image_url || '', 1200, 80);
   const heroFeatures = [data?.hero_point_1, data?.hero_point_2, data?.hero_point_3].filter(Boolean);
 
   return (
@@ -253,7 +253,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           cmsData={{ 
             title: data?.benefits_title || 'Why this assessment?', 
             benefits: data?.benefits || [],
-            benefitsImageUrl: normalizeImageUrl(data?.benefits_image_url || '')
+            benefitsImageUrl: normalizeImageUrlWithSize(data?.benefits_image_url || '', 800, 75)
           }} 
         />
       </div>
@@ -263,7 +263,7 @@ export default async function AssessmentDynamicPage({ params, searchParams }) {
           cmsData={{ 
             title: data?.types_title || 'What we evaluate', 
             types: data?.types || [],
-            rightImageUrl: normalizeImageUrl(data?.right_image_url || ''),
+            rightImageUrl: normalizeImageUrlWithSize(data?.right_image_url || '', 900, 80),
             buttonText: data?.types_button_text || 'Get started'
           }} 
         />

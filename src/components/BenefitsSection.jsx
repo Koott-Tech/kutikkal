@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { normalizeImageUrlWithSize } from '@/utils/urlNormalizer';
 
 export default function BenefitsSection({ therapyType = "individual", cmsData = null, showAllBenefits = false, fluid = false, compactSpacing = false }) {
   // Content configuration for different therapy types
@@ -215,12 +215,14 @@ export default function BenefitsSection({ therapyType = "individual", cmsData = 
   } : (content[therapyType] || content.individual);
   
   // Prefer CMS-provided image (support both camelCase and snake_case keys) and fall back to default asset
-  const benefitsImageUrl = normalizeImageUrl(
+  const benefitsImageUrl = normalizeImageUrlWithSize(
     cmsData?.benefitsImageUrl ||
     cmsData?.benefits_image_url ||
     cmsData?.imageUrl ||
     cmsData?.image_url ||
-    '/rightside5th.png'
+    '/rightside5th.png',
+    800,
+    75
   );
   
   const [isExpanded, setIsExpanded] = useState(showAllBenefits);

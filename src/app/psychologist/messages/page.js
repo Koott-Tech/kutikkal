@@ -206,6 +206,16 @@ export default function PsychologistMessagesPage() {
     });
   };
 
+  const formatTimeSlot = (timeStr) => {
+    if (!timeStr || typeof timeStr !== 'string') return '';
+    const parts = timeStr.trim().split(':');
+    const hour = parseInt(parts[0], 10);
+    const minute = parts[1] ? parseInt(parts[1], 10) : 0;
+    if (Number.isNaN(hour)) return '';
+    const d = new Date(2000, 0, 1, hour, minute);
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
   const formatDate = (timestamp) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
       month: 'short',
@@ -219,15 +229,19 @@ export default function PsychologistMessagesPage() {
   };
 
   const getConversationSubtitle = (conversation) => {
-    return `Child: ${conversation.client?.child_name} (${conversation.client?.child_age} years)`;
+    const session = conversation.session;
+    if (!session?.scheduled_date) return '—';
+    const dateStr = formatDate(session.scheduled_date);
+    const timeStr = session.scheduled_time ? formatTimeSlot(session.scheduled_time) : '';
+    return timeStr ? `${dateStr}, ${timeStr}` : dateStr;
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading messages...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-[#3f2e73] mx-auto"></div>
+          <p className="mt-4 text-sm text-slate-500">Loading messages...</p>
         </div>
       </div>
     );
@@ -235,86 +249,111 @@ export default function PsychologistMessagesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <MessageSquare className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 text-lg">{error}</p>
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <div className="text-center px-4">
+          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="h-7 w-7 text-red-400" />
+          </div>
+          <p className="text-slate-700 font-medium">Something went wrong</p>
+          <p className="text-sm text-slate-500 mt-1">{error}</p>
         </div>
       </div>
     );
   }
 
+  const getInitials = (conversation) => {
+    const first = conversation.client?.first_name?.charAt(0) || '';
+    const last = conversation.client?.last_name?.charAt(0) || '';
+    return (first + last).toUpperCase() || '?';
+  };
+
+  const getRelativeTime = (timestamp) => {
+    if (!timestamp) return '';
+    const d = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return formatDate(timestamp);
+  };
+
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h6 className="font-semibold text-gray-900">Messages</h6>
-          <p className="mt-2 text-sm text-gray-700">
-            Communicate with your clients and manage conversations.
-          </p>
-        </div>
-        {showChatScreen && (
-          <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-[#fafafa]">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex items-center justify-between mb-6">
+          <p role="heading" aria-level={1} className="text-base sm:text-lg font-semibold text-slate-900 tracking-tight">Messages</p>
+          {showChatScreen && (
             <button
               onClick={handleBackToConversations}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Conversations
+              <ArrowLeft className="h-4 w-4" />
+              Back
             </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Main Content */}
-      <div className="mt-8">
-        {/* Conversations List */}
-        <div className={`${showChatScreen ? 'hidden' : 'block'} bg-white rounded-lg shadow-sm`}>
-          <div className="p-3 sm:p-4">
-            <h6 className="font-medium text-gray-900 mb-3">Conversations</h6>
-            {isLoading ? (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+        {/* Conversations List - minimal card */}
+        <div className={`${showChatScreen ? 'hidden' : 'block'}`}>
+          {isLoading ? (
+            <div className="flex justify-center py-16">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-[#3f2e73]"></div>
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm p-12 text-center">
+              <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-7 w-7 text-slate-400" />
               </div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                <p>No conversations yet</p>
-                <p className="text-sm mt-2">You'll see conversations here when clients start messaging you.</p>
+              <p className="text-slate-700 font-medium">No conversations yet</p>
+              <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto">When clients message you, they’ll appear here.</p>
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-100">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
               </div>
-            ) : (
-              <div className="space-y-2">
-                {conversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    onClick={() => handleConversationSelect(conversation)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedConversation?.id === conversation.id
-                        ? 'bg-blue-100 border border-blue-300'
-                        : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h6 className="font-medium text-gray-900 truncate">
-                          {getConversationName(conversation)}
-                        </h6>
-                        <p className="text-sm text-gray-500 truncate">
-                          {getConversationSubtitle(conversation)}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(conversation.last_message_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              <ul className="divide-y divide-slate-100">
+                {conversations.map((conversation) => {
+                  const isSelected = selectedConversation?.id === conversation.id;
+                  return (
+                    <li key={conversation.id}>
+                      <button
+                        type="button"
+                        onClick={() => handleConversationSelect(conversation)}
+                        className={`w-full flex items-center gap-4 px-4 py-4 text-left transition-colors duration-150 ${
+                          isSelected
+                            ? 'bg-[#3f2e73]/5'
+                            : 'hover:bg-slate-50/80'
+                        }`}
+                      >
+                        <div className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-medium ${
+                          isSelected ? 'bg-[#3f2e73] text-white' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {getInitials(conversation)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 truncate">
+                            {getConversationName(conversation)}
+                          </p>
+                          <p className="text-sm text-slate-500 truncate mt-0.5">
+                            {getConversationSubtitle(conversation)}
+                          </p>
+                        </div>
+                        <span className="text-xs text-slate-400 flex-shrink-0 tabular-nums">
+                          {getRelativeTime(conversation.last_message_at)}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Chat Screen - Full Height WhatsApp Style */}
@@ -328,8 +367,8 @@ export default function PsychologistMessagesPage() {
               >
                 <ArrowLeft className="h-6 w-6" />
               </button>
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-600" />
+              <div className="w-10 h-10 bg-[#3f2e73]/10 rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-[#3f2e73]" />
               </div>
               <div className="flex-1">
                 <h6 className="font-medium text-gray-900">
@@ -349,7 +388,7 @@ export default function PsychologistMessagesPage() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 min-h-0">
               {isLoading ? (
                 <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3f2e73] mx-auto"></div>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
@@ -370,7 +409,7 @@ export default function PsychologistMessagesPage() {
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                           (message?.sender_type || '') === user?.role
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#3f2e73] text-white'
                             : 'bg-white text-gray-900'
                         }`}
                       >
@@ -393,12 +432,12 @@ export default function PsychologistMessagesPage() {
                   value={newMessage}
                   onChange={handleInputChange}
                   placeholder={`Type a message to ${getConversationName(selectedConversation)}...`}
-                  className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#3f2e73]"
                 />
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || isSending}
-                  className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[#3f2e73] text-white p-2 rounded-full hover:bg-[#1d1733] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="h-4 w-4" />
                 </button>

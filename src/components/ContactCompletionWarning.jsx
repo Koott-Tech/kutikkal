@@ -13,7 +13,7 @@ export default function ContactCompletionWarning({
 
   const handleCompleteProfile = () => {
     onClose();
-    router.push('/profile?tab=contact');
+    router.push('/profile/profile');
   };
 
   if (!isOpen) return null;

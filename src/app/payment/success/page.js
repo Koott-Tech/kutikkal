@@ -1261,34 +1261,33 @@ function PaymentSuccessContent() {
   }
 
   if (error) {
+    const supportEmail = 'hey@little.care';
+    const supportPhone = '+91 95390 07766';
     return (
-      <div style={{ 
-        padding: '50px', 
-        textAlign: 'center', 
-        fontFamily: 'Arial, sans-serif',
-        minHeight: '50vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <h1 style={{ color: '#ef4444' }}>❌ Payment Error</h1>
-        <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '14px' }}>{error}</p>
-        <button
-          onClick={() => router.push('/profile/sessions')}
-          style={{
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            padding: '12px 24px',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: '500'
-          }}
-        >
-          View Sessions
-        </button>
+      <div className="w-full max-w-md mx-auto rounded-2xl border border-slate-200 bg-white shadow-xl p-8 text-center mt-24 px-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-6">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-slate-600 text-sm mb-4">Oops... {error.replace(/\s*Please try again\.?\s*/gi, ' ').trim() || 'Payment failed.'}</p>
+          <p className="text-slate-700 text-sm mb-6 leading-relaxed">
+            Please immediately contact our team through mail or phone for assistance.
+          </p>
+          <div className="space-y-2 mb-6 text-sm">
+            <a href={`mailto:${supportEmail}`} className="block text-[#3f2e73] font-medium hover:underline">
+              {supportEmail}
+            </a>
+            <a href={`tel:+919539007766`} className="block text-[#3f2e73] font-medium hover:underline">
+              {supportPhone}
+            </a>
+          </div>
+          <button
+            onClick={() => router.push('/profile/sessions')}
+            className="w-full px-6 py-3 bg-[#3f2e73] hover:bg-[#1d1733] text-white font-medium rounded-lg transition-colors"
+          >
+            View Sessions
+          </button>
       </div>
     );
   }

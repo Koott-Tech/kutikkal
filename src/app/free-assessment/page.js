@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +13,9 @@ import QuickContactModal from '@/components/QuickContactModal';
 import { clientApi } from '@/lib/backendApi';
 import { isClientContactComplete } from '@/lib/contactValidation';
 import { loadAuthData } from '@/lib/authStorage';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
@@ -175,6 +181,8 @@ export default function FreeAssessmentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // All free assessment times are handled and displayed in IST
   const [showAuth, setShowAuth] = useState(false);
   const [showQuickContact, setShowQuickContact] = useState(false);
   const [pendingBooking, setPendingBooking] = useState(null);
@@ -1121,7 +1129,12 @@ export default function FreeAssessmentPage() {
               {/* Available Time Slots */}
               {selectedDate && (
                 <div className="flex flex-col flex-grow mb-2">
-                  <h6 className="font-semibold text-gray-800 mb-3">Available Time Slots (IST)</h6>
+                  <h6 className="font-semibold text-gray-800 mb-1">
+                    Available Time Slots
+                    <span className="ml-1">
+                      (IST)
+                    </span>
+                  </h6>
                   {loadingTimeslots ? (
                     <div className="flex items-center justify-center py-4 min-h-[200px]">
                       <div className="flex flex-col items-center justify-center">

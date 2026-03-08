@@ -644,40 +644,40 @@ export default function AdminManualBookingModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/80">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Calendar className="h-6 w-6 text-blue-600" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-[#3f2e73]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Create Manual Booking</h2>
-              <p className="text-sm text-gray-500">For edge cases where payment/booking couldn't be completed normally</p>
+              <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>Create Manual Booking</div>
+              <p className="text-xs text-slate-500 mt-0.5">For edge cases where payment/booking couldn't be completed normally</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
         <form id="manual-booking-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
               {error}
             </div>
           )}
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Client Selection/Creation */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   <User className="h-4 w-4 inline mr-1" />
                   Client *
                 </label>
@@ -696,7 +696,7 @@ export default function AdminManualBookingModal({
                       child_age: ''
                     });
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-sm text-[#3f2e73] hover:text-[#1d1733] font-medium"
                 >
                   {isNewClient ? '← Select Existing Client' : '+ New Client'}
                 </button>
@@ -704,11 +704,11 @@ export default function AdminManualBookingModal({
 
               {isNewClient ? (
                 /* New Client Form */
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 space-y-4">
+                <div className="border border-slate-200 rounded-lg p-4 bg-white/60 space-y-4 mt-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Email */}
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Email Address *
                       </label>
                       <input
@@ -716,14 +716,14 @@ export default function AdminManualBookingModal({
                         value={newClientData.email}
                         onChange={(e) => handleNewClientInputChange('email', e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="client@example.com"
                       />
                     </div>
 
                     {/* First Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         First Name *
                       </label>
                       <input
@@ -731,47 +731,89 @@ export default function AdminManualBookingModal({
                         value={newClientData.first_name}
                         onChange={(e) => handleNewClientInputChange('first_name', e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="John"
                       />
                     </div>
 
                     {/* Last Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Last Name
                       </label>
                       <input
                         type="text"
                         value={newClientData.last_name}
                         onChange={(e) => handleNewClientInputChange('last_name', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="Doe (optional)"
                       />
                     </div>
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Phone Number *
                       </label>
                       <div className="flex">
                         <select
                           value={newClientData.country_code}
                           onChange={(e) => handleNewClientInputChange('country_code', e.target.value)}
-                          className="px-3 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="px-3 py-2 border border-slate-200 rounded-l-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm bg-slate-50 min-w-[7rem]"
                         >
-                          <option value="+91">+91</option>
-                          <option value="+1">+1</option>
-                          <option value="+44">+44</option>
-                          <option value="+61">+61</option>
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+966">🇸🇦 +966</option>
+                          <option value="+65">🇸🇬 +65</option>
+                          <option value="+60">🇲🇾 +60</option>
+                          <option value="+61">🇦🇺 +61</option>
+                          <option value="+64">🇳🇿 +64</option>
+                          <option value="+27">🇿🇦 +27</option>
+                          <option value="+33">🇫🇷 +33</option>
+                          <option value="+49">🇩🇪 +49</option>
+                          <option value="+39">🇮🇹 +39</option>
+                          <option value="+34">🇪🇸 +34</option>
+                          <option value="+31">🇳🇱 +31</option>
+                          <option value="+32">🇧🇪 +32</option>
+                          <option value="+41">🇨🇭 +41</option>
+                          <option value="+46">🇸🇪 +46</option>
+                          <option value="+47">🇳🇴 +47</option>
+                          <option value="+45">🇩🇰 +45</option>
+                          <option value="+358">🇫🇮 +358</option>
+                          <option value="+351">🇵🇹 +351</option>
+                          <option value="+353">🇮🇪 +353</option>
+                          <option value="+48">🇵🇱 +48</option>
+                          <option value="+420">🇨🇿 +420</option>
+                          <option value="+36">🇭🇺 +36</option>
+                          <option value="+40">🇷🇴 +40</option>
+                          <option value="+7">🇷🇺 +7</option>
+                          <option value="+81">🇯🇵 +81</option>
+                          <option value="+82">🇰🇷 +82</option>
+                          <option value="+86">🇨🇳 +86</option>
+                          <option value="+852">🇭🇰 +852</option>
+                          <option value="+886">🇹🇼 +886</option>
+                          <option value="+66">🇹🇭 +66</option>
+                          <option value="+62">🇮🇩 +62</option>
+                          <option value="+63">🇵🇭 +63</option>
+                          <option value="+84">🇻🇳 +84</option>
+                          <option value="+880">🇧🇩 +880</option>
+                          <option value="+94">🇱🇰 +94</option>
+                          <option value="+92">🇵🇰 +92</option>
+                          <option value="+977">🇳🇵 +977</option>
+                          <option value="+95">🇲🇲 +95</option>
+                          <option value="+855">🇰🇭 +855</option>
+                          <option value="+856">🇱🇦 +856</option>
+                          <option value="+673">🇧🇳 +673</option>
+                          <option value="+670">🇹🇱 +670</option>
                         </select>
                         <input
                           type="tel"
                           value={newClientData.phone_number}
                           onChange={(e) => handleNewClientInputChange('phone_number', e.target.value.replace(/\D/g, ''))}
                           required
-                          className="flex-1 px-3 py-2 border border-gray-300 border-l-0 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2 border border-slate-200 border-l-0 rounded-r-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                           placeholder="9876543210"
                         />
                       </div>
@@ -779,21 +821,21 @@ export default function AdminManualBookingModal({
 
                     {/* Child Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Child Name
                       </label>
                       <input
                         type="text"
                         value={newClientData.child_name}
                         onChange={(e) => handleNewClientInputChange('child_name', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="Child's name (optional)"
                       />
                     </div>
 
                     {/* Child Age */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Child Age
                       </label>
                       <input
@@ -802,14 +844,14 @@ export default function AdminManualBookingModal({
                         onChange={(e) => handleNewClientInputChange('child_age', e.target.value)}
                         min="1"
                         max="18"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                         placeholder="Age 1-18 (optional)"
                       />
                     </div>
 
                     {/* Client login password (optional) */}
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         <Lock className="h-4 w-4 inline mr-1" />
                         Client login password (optional)
                       </label>
@@ -818,7 +860,7 @@ export default function AdminManualBookingModal({
                           type={showNewClientPassword ? 'text' : 'password'}
                           value={newClientData.password}
                           onChange={(e) => handleNewClientInputChange('password', e.target.value)}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                           placeholder="Leave blank to auto-generate; if set, client uses this to log in"
                         />
                         <button
@@ -847,13 +889,13 @@ export default function AdminManualBookingModal({
                     placeholder="Search client by name or email..."
                     value={searchClient}
                     onChange={(e) => setSearchClient(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg mb-2 focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                   />
                   <select
                     value={clientId}
                     onChange={(e) => setClientId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                   >
                     <option value="">Select a client</option>
                     {filteredClients.map(client => (
@@ -867,8 +909,8 @@ export default function AdminManualBookingModal({
             </div>
 
             {/* Psychologist Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
                 <UserCheck className="h-4 w-4 inline mr-1" />
                 Psychologist *
               </label>
@@ -878,13 +920,13 @@ export default function AdminManualBookingModal({
                   placeholder="Search psychologist by name or email..."
                   value={searchPsychologist}
                   onChange={(e) => setSearchPsychologist(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg mb-2 focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 />
                 <select
                   value={psychologistId}
                   onChange={(e) => setPsychologistId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 >
                   <option value="">Select a psychologist</option>
                   {filteredPsychologists.map(psych => (
@@ -898,15 +940,15 @@ export default function AdminManualBookingModal({
 
             {/* Package Selection (Optional) */}
             {psychologistId && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
                   <Package className="h-4 w-4 inline mr-1" />
                   Package (Optional)
                 </label>
                 <select
                   value={packageId}
                   onChange={(e) => setPackageId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 >
                   <option value="">Individual Session</option>
                   {packages.map(pkg => (
@@ -920,14 +962,13 @@ export default function AdminManualBookingModal({
 
             {/* Date Selection - Calendar */}
             {psychologistId && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
                   <CalendarDays className="h-4 w-4 inline mr-1" />
                   Session Date *
                 </label>
-                
                 {/* Calendar */}
-                <div className="border border-gray-200 rounded-lg p-4 bg-white">
+                <div className="border border-slate-200 rounded-lg p-4 bg-white">
                   {/* Month Navigation */}
                   <div className="flex items-center justify-between mb-3">
                     <button 
@@ -953,7 +994,7 @@ export default function AdminManualBookingModal({
 
                   {loadingAvailability && (
                     <div className="text-center py-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#3f2e73] mx-auto"></div>
                     </div>
                   )}
 
@@ -1007,11 +1048,11 @@ export default function AdminManualBookingModal({
                             }}
                             className={`text-center py-1 rounded-lg transition-all duration-200 text-xs cursor-pointer ${
                               isSelected
-                                ? 'bg-blue-600 text-white font-bold shadow-lg'
+                                ? 'bg-[#3f2e73] text-white font-bold shadow-lg'
                                 : (isToday && isActuallyAvailable)
                                   ? 'bg-green-500 text-white font-semibold shadow-md border-2 border-green-600 hover:bg-green-600'
                                   : isToday
-                                    ? 'bg-blue-100 text-blue-700 font-semibold'
+                                    ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-semibold'
                                   : isActuallyAvailable
                                     ? 'bg-green-500 text-white font-semibold shadow-md border-2 border-green-600 hover:bg-green-600'
                                   : isAvailable
@@ -1040,7 +1081,7 @@ export default function AdminManualBookingModal({
                   if (availableSlots.length > 0) {
                     return (
                       <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                           <Clock className="h-4 w-4 inline mr-1" />
                           Session Time *
                         </label>
@@ -1052,8 +1093,8 @@ export default function AdminManualBookingModal({
                               onClick={() => handleTimeSelect(time)}
                               className={`px-3 py-2 rounded-lg border transition-colors text-xs ${
                                 selectedTime === time
-                                  ? 'bg-blue-600 text-white border-blue-600'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                                  ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                                  : 'bg-white text-gray-700 border-gray-300 hover:border-[#3f2e73]'
                               }`}
                             >
                               {formatTime(time)}
@@ -1085,21 +1126,22 @@ export default function AdminManualBookingModal({
             )}
 
             {!psychologistId && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   <CalendarDays className="h-4 w-4 inline mr-1" />
                   Session Date *
                 </label>
-                <p className="text-sm text-gray-500">Please select a psychologist first</p>
+                <p className="text-sm text-slate-500">Please select a psychologist first</p>
               </div>
             )}
 
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <DollarSign className="h-4 w-4 inline mr-1" />
-                Amount (₹) *
-              </label>
+            {/* Amount & Payment */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  <DollarSign className="h-4 w-4 inline mr-1" />
+                  Amount (₹) *
+                </label>
               <input
                 type="number"
                 value={amount}
@@ -1107,14 +1149,12 @@ export default function AdminManualBookingModal({
                 min="0"
                 step="0.01"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="Enter amount"
               />
-            </div>
-
-            {/* Payment Received Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              </div>
+              <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                 <Calendar className="h-4 w-4 inline mr-1" />
                 Payment Received Date *
               </label>
@@ -1124,14 +1164,12 @@ export default function AdminManualBookingModal({
                 onChange={(e) => setPaymentReceivedDate(e.target.value)}
                 max={(function(){ const n=new Date(); const y=n.getFullYear(); const m=String(n.getMonth()+1).padStart(2,'0'); const d=String(n.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; })()}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">Date when payment was received manually</p>
-            </div>
-
-            {/* Payment Method */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <p className="mt-1 text-xs text-slate-500">Date when payment was received manually</p>
+              </div>
+              <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                 <DollarSign className="h-4 w-4 inline mr-1" />
                 Payment Method *
               </label>
@@ -1139,7 +1177,7 @@ export default function AdminManualBookingModal({
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
               >
                 <option value="cash">Cash</option>
                 <option value="card">Card (Debit/Credit)</option>
@@ -1150,30 +1188,31 @@ export default function AdminManualBookingModal({
                 <option value="cheque">Cheque</option>
                 <option value="other">Other</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">Method used for manual payment</p>
+              <p className="mt-1 text-xs text-slate-500">Method used for manual payment</p>
+              </div>
             </div>
 
             {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                 Notes (Optional)
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
                 placeholder="Any additional notes about this booking..."
               />
             </div>
           </div>
 
           {/* Footer Buttons - Inside Form */}
-          <div className="flex items-center justify-end space-x-3 pt-6 mt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-slate-200 bg-slate-50/30 -mx-6 -mb-6 px-6 pb-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-[#3f2e73] bg-white border border-[#3f2e73]/40 rounded-lg hover:bg-[#3f2e73]/10 transition-colors text-sm font-medium"
               disabled={isLoading}
             >
               Cancel
@@ -1181,7 +1220,7 @@ export default function AdminManualBookingModal({
             <button
               type="submit"
               disabled={isLoading || isLoadingData || isSubmittingRef.current}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium shadow-sm"
               style={{ cursor: (isLoading || isLoadingData || isSubmittingRef.current) ? 'not-allowed' : 'pointer' }}
             >
               {isLoading ? (

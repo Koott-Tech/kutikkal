@@ -459,7 +459,7 @@ export default function PsychologistAvailability() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading availability...</p>
         </div>
       </div>
@@ -482,14 +482,11 @@ export default function PsychologistAvailability() {
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h6 className="font-semibold text-gray-900">Availability Management</h6>
-          <p className="mt-2 text-sm text-gray-700">
-            Set your available time slots for client bookings.
-          </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex flex-wrap gap-2">
           <button
             onClick={cleanupDuplicates}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#3f2e73] focus:ring-offset-2"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Clean Duplicates
@@ -503,7 +500,7 @@ export default function PsychologistAvailability() {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-[#3f2e73] px-3 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-[#1d1733] focus:outline-none focus:ring-2 focus:ring-[#3f2e73] focus:ring-offset-2"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add New Availability
@@ -525,7 +522,7 @@ export default function PsychologistAvailability() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => handleDateFilterChange(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-[#3f2e73]"
               />
               {selectedDate && (
                 <button
@@ -619,8 +616,8 @@ export default function PsychologistAvailability() {
                                 }}
                                 className={`p-2 text-xs sm:text-sm rounded border transition-colors ${
                                   editingAvailability.time_slots.includes(time)
-                                    ? 'bg-blue-500 text-white border-blue-500'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                                    ? 'bg-[#3f2e73] text-white border-[#3f2e73]'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#3f2e73]/50'
                                 }`}
                               >
                                 {formatTimeForDisplay(time)}
@@ -645,7 +642,7 @@ export default function PsychologistAvailability() {
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => openEditMode(day)}
-                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                              className="text-[#3f2e73] hover:text-[#1d1733] p-1 rounded hover:bg-[#3f2e73]/10"
                               title="Edit availability"
                             >
                               <Edit className="h-4 w-4" />

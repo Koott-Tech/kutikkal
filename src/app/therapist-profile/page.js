@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { publicApi } from '../../lib/backendApi';
@@ -14,6 +17,9 @@ import { formatCurrency } from '../../lib/utils';
 // import ContactCompletionWarning from '../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '@/components/AuthModal';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Booking Loading Animation Component
 function BookingLoadingAnimation() {
@@ -205,6 +211,32 @@ const TherapistProfileContent = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+
+  // Viewer timezone (for displaying local times alongside IST-based scheduling)
+  const [userTimeZone, setUserTimeZone] = useState('');
+  const [userZoneCode, setUserZoneCode] = useState('');
+
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      setUserTimeZone(tz);
+      const sample = new Date().toLocaleTimeString('en-US', {
+        timeZone: tz,
+        timeZoneName: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const parts = sample.split(' ');
+      let code = parts[parts.length - 1] || '';
+      if (tz.includes('Kolkata') || tz.includes('Calcutta')) {
+        code = 'IST';
+      }
+      setUserZoneCode(code);
+    } catch (e) {
+      setUserTimeZone('');
+      setUserZoneCode('');
+    }
+  }, []);
   
   // FAQ state
   const [openFAQ, setOpenFAQ] = useState(null);
@@ -582,6 +614,33 @@ const TherapistProfileContent = () => {
     const period = hours24 >= 12 ? 'PM' : 'AM';
     const hours12 = hours24 % 12 || 12;
     return `${hours12}:${minutesPart} ${period}`;
+  };
+
+  // Convert an IST slot (from backend availability) into the viewer's local time
+  const getLocalTimeForSlot = (slot, dateObj) => {
+    if (!slot || !dateObj || !userTimeZone) return null;
+
+    const minutes = getSlotMinutes(slot);
+    if (minutes === null) return null;
+
+    const hours24 = Math.floor(minutes / 60);
+    const minutesPart = minutes % 60;
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    try {
+      const istDateTime = dayjs.tz(
+        `${dateStr} ${String(hours24).padStart(2, '0')}:${String(minutesPart).padStart(2, '0')}`,
+        'YYYY-MM-DD HH:mm',
+        'Asia/Kolkata'
+      );
+      return istDateTime.tz(userTimeZone).format('h:mm A');
+    } catch {
+      return null;
+    }
   };
 
   const isSlotInPast = (slot, date) => {
@@ -2356,7 +2415,12 @@ const TherapistProfileContent = () => {
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 ? (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium text-[#3f2e73]">Available Times (IST):</p>
+                            <p className="text-sm font-medium text-[#3f2e73]">
+                              Available Times
+                              <span className="ml-1">
+                                ({userZoneCode || 'IST'})
+                              </span>
+                            </p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button
@@ -2368,7 +2432,7 @@ const TherapistProfileContent = () => {
                                       : 'border-gray-300 bg-white hover:border-[#3f2e73] text-gray-700'
                                   }`}
                                 >
-                                  {time}
+                                  {getLocalTimeForSlot ? getLocalTimeForSlot(time, selectedDate) || time : time}
                                 </button>
                               ))}
                             </div>
@@ -2427,9 +2491,6 @@ const TherapistProfileContent = () => {
                         <p>Package purchased on {new Date(clientPackage.purchased_at).toLocaleDateString()}</p>
                         <p className="mt-1 font-medium">
                           {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
-                        </p>
-                        <p className="mt-1 text-[#3f2e73] font-medium">
-                          Total paid: {formatCurrency(clientPackage.amount_paid, clientPackage.currency)}
                         </p>
                       </div>
                     </div>

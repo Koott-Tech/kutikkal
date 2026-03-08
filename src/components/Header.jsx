@@ -263,6 +263,26 @@ export default function Header() {
     fetchBetterParentingMenu();
   }, []);
 
+  // Close user name dropdown when clicking outside or on route change
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.user-menu-dropdown')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
+  useEffect(() => {
+    setIsUserMenuOpen(false);
+  }, [pathname]);
+
   // Close submenu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1147,7 +1167,7 @@ export default function Header() {
             <div className="hidden xl:flex items-center gap-4">
             {isAuthenticated() ? (
               /* Logged in user menu */
-              <div className="relative">
+              <div className="relative user-menu-dropdown">
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 text-base font-medium text-gray-800 hover:text-gray-900 cursor-pointer"
@@ -1173,7 +1193,7 @@ export default function Header() {
                 {/* User dropdown menu */}
                 {isUserMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-100 py-4 z-50">
-                    <div className="px-4 pb-3 border-b border-gray-200">
+                    <div className="px-4 pb-3">
                       {!hasRole('client') ? (
                         <>
                       <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>

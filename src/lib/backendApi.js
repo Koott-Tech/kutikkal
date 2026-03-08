@@ -659,6 +659,11 @@ export const psychologistApi = {
     return apiRequest(`/psychologists/sessions?${queryParams}`);
   },
 
+  // Get client's completed session history (for History popup). Private notes only for sessions conducted by current psychologist.
+  async getClientSessionHistory(clientId) {
+    return apiRequest(`/psychologists/clients/${encodeURIComponent(clientId)}/session-history`);
+  },
+
   // Get monthly stats (completed and upcoming sessions)
   async getMonthlyStats() {
     return apiRequest('/psychologists/stats/monthly');
@@ -1046,6 +1051,19 @@ export const adminApi = {
     });
   },
 
+  // Book next package session (admin only) - for clients who prefer admin to book remaining sessions
+  async bookPackageNextSession({ client_id, package_id, scheduled_date, scheduled_time }) {
+    return apiRequest('/admin/bookings/book-package-next-session', {
+      method: 'POST',
+      body: JSON.stringify({ client_id, package_id, scheduled_date, scheduled_time }),
+    });
+  },
+
+  // Get packages with remaining sessions (admin only - for Packages tab)
+  async getPackagesWithRemaining() {
+    return apiRequest('/admin/bookings/packages-with-remaining');
+  },
+
   // Free Assessment Timeslots API
   async getFreeAssessmentTimeslots() {
     return apiRequest('/free-assessment-timeslots');
@@ -1329,6 +1347,11 @@ export const sessionsApi = {
     });
     
     return apiRequest(`/admin/sessions/all?${queryParams}`);
+  },
+
+  // Get single session details by ID (admin only) - for session details modal
+  async getSessionDetails(sessionId) {
+    return apiRequest(`/admin/sessions/${sessionId}`);
   },
 
   // Update session status (admin only)

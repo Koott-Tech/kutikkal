@@ -25,7 +25,7 @@ export default async function sitemap() {
   async function fetchSlugs(path) {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.little.care";
-      const res = await fetch(`${apiBase}${path}?limit=100`, { cache: "no-store" });
+      const res = await fetch(`${apiBase}${path}?limit=100`, { next: { revalidate: 600 } });
       if (!res.ok) return [];
       const data = await res.json();
       const items =
@@ -54,7 +54,7 @@ export default async function sitemap() {
   async function fetchPsychologists() {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.little.care";
-      const res = await fetch(`${apiBase}/api/public/psychologists`, { cache: "no-store" });
+      const res = await fetch(`${apiBase}/api/public/psychologists`, { next: { revalidate: 600 } });
       if (!res.ok) return [];
       const data = await res.json();
       const psychologists = 

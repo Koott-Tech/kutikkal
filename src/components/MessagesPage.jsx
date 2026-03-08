@@ -418,7 +418,8 @@ export default function MessagesPage({ session = null }) {
     if (user?.role === 'client') {
       return `Session: ${formatDate(conversation.session?.scheduled_date)}`;
     } else {
-      return `Child: ${conversation.client?.child_name} (${conversation.client?.child_age} years)`;
+      const age = conversation.client?.child_age;
+      return `Child: ${conversation.client?.child_name || '—'} (${(age != null && age !== '' && String(age).toLowerCase() !== 'pending') ? `${age} years` : 'null'})`;
     }
   };
 

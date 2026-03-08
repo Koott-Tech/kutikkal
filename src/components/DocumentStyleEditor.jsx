@@ -2036,8 +2036,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           ${sel} p:empty,
           ${sel} p:has(> br:only-child) {
             min-height: 1em !important;
+            /* For blank lines (like after an H1), don't add extra bottom margin – keeps cursor gap to a single line height */
+            margin-bottom: 0 !important;
           }
-          ${sel} h1 { font-size: 2.5rem !important; line-height: 1.2 !important; font-weight: 700 !important; margin-top: 2rem !important; margin-bottom: 1rem !important; display: block !important; }
+          ${sel} h1 { font-size: 2.5rem !important; line-height: 1.2 !important; font-weight: 700 !important; margin-top: 2rem !important; margin-bottom: 0.25rem !important; display: block !important; }
           ${sel} h2 { font-size: 2rem !important; line-height: 1.3 !important; font-weight: 700 !important; margin-top: 1.75rem !important; margin-bottom: 0.875rem !important; display: block !important; }
           ${sel} h3 { font-size: 1.75rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.5rem !important; margin-bottom: 0.75rem !important; display: block !important; }
           ${sel} h4 { font-size: 1.5rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.25rem !important; margin-bottom: 0.625rem !important; display: block !important; }

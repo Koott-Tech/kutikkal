@@ -15,7 +15,6 @@ import {
   Menu,
   Home,
   Users,
-  Mail,
   PanelLeftClose,
   PanelLeftOpen
 } from "lucide-react";
@@ -44,7 +43,7 @@ export default function ProfileLayout({ children }) {
   { name: 'Browse Therapists', href: '/online-child-psychologist', icon: Users, show: false },
     { name: 'Sessions', href: '/profile/sessions', icon: Calendar },
     { name: 'Messages', href: '/profile/messages', icon: MessageSquare },
-    { name: 'Contact', href: '/profile/contact', icon: Mail },
+    { name: 'Profile', href: '/profile/profile', icon: User },
     { name: 'Report', href: '/profile/reports', icon: BarChart3 },
     { name: 'Packages', href: '/profile/packages', icon: FileText, show: hasRole('client') },
     { name: 'Receipts', href: '/profile/receipts', icon: Receipt, show: hasRole('client') },
@@ -322,11 +321,12 @@ export default function ProfileLayout({ children }) {
           className="lg:hidden flex h-16 items-center justify-between px-4 bg-white w-full sticky top-0 z-40"
           style={!sidebarOpen ? { boxShadow: '0 2px 8px rgba(63, 46, 115, 0.15)' } : {}}
         >
-          <div className="flex items-center">
+          <div className="flex items-center shrink-0" style={{ maxHeight: '24px' }}>
             <img 
               src="/mainlogo.webp" 
               alt="Little Care Logo" 
-              className="h-8 w-auto hover:opacity-80 transition-opacity"
+              className="w-auto hover:opacity-80 transition-opacity object-contain"
+              style={{ height: '24px', maxHeight: '24px' }}
             />
           </div>
           <button

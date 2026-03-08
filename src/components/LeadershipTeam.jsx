@@ -13,12 +13,12 @@ export default function LeadershipTeam() {
         {
             name: "Faisal Vysam Purath",
             title: "CEO & Founder",
-            image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Faisal.webp"
+            image: "/api/images/static-files/Faisal.webp"
         },
         {
             name: "Aswathy Usha Raman",
             title: "Chief Psychologist",
-            image: "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/public/static-files/Aswathy%20Raman.webp"
+            image: "/api/images/static-files/Aswathy Raman.webp"
         }
     ];
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, Download, Receipt, Clock, User, CreditCard } from 'lucide-react';
+import { Calendar, Download, Receipt, Clock, CreditCard } from 'lucide-react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { clientApi } from '@/lib/backendApi';
 import WheelPagination from '@/components/ui/wheel-pagination';
@@ -151,9 +151,6 @@ export default function ReceiptsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
           <h5 className="text-gray-900 mb-2">Payment Receipts</h5>
-          <p className="text-gray-600">
-            View and download receipts for your completed sessions
-          </p>
         </div>
         <Receipt className="h-8 w-8" style={{ color: '#3f2e73' }} />
       </div>
@@ -179,14 +176,16 @@ export default function ReceiptsPage() {
                     <h6 className="font-semibold text-gray-900 truncate">
                       Session with {receipt.psychologist_name}
                     </h6>
-                    <p className="text-sm text-gray-600">
-                      Receipt #{receipt.receipt_number}
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {receipt.session_type === 'package' && receipt.package_session_count
+                        ? `Package of ${receipt.package_session_count}`
+                        : 'Individual'}
                     </p>
                   </div>
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     <div className="min-w-0">
@@ -216,25 +215,11 @@ export default function ReceiptsPage() {
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500">Payment Status</p>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Paid
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Footer Section */}
                 <div className="border-t pt-4">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p className="break-all"><strong>Transaction ID:</strong> {receipt.transaction_id}</p>
-                      <p><strong>Payment Date:</strong> {formatDate(receipt.payment_date)}</p>
-                    </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3">
                     <button
                       onClick={() => downloadReceipt(receipt)}
                       className="flex items-center gap-2 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium w-full sm:w-auto justify-center"

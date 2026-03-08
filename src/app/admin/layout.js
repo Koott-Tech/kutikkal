@@ -164,7 +164,7 @@ export default function AdminLayout({ children }) {
                   <div key={item.name}>
                     <button
                       onClick={() => setIsCmsMenuOpen(!isCmsMenuOpen)}
-                      className="w-full flex items-center justify-between px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 text-gray-700 rounded-lg hover:bg-[#3f2e73]/10 hover:text-[#3f2e73] transition-colors"
                     >
                       <div className="flex items-center">
                         <Icon className="h-5 w-5 mr-3" />
@@ -189,8 +189,8 @@ export default function AdminLayout({ children }) {
                               href={subItem.href}
                               className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive 
-                                  ? 'bg-blue-100 text-blue-700 font-medium' 
-                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                                  ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                                  : 'text-gray-600 hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                               }`}
                               onClick={() => {
                                 // Close mobile sidebar on navigation
@@ -218,8 +218,8 @@ export default function AdminLayout({ children }) {
                   href={item.href}
                   className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
                     isActive 
-                      ? 'bg-blue-100 text-blue-700 font-medium' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                      ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                      : 'text-gray-700 hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                   }`}
                   onClick={() => {
                     // Close mobile sidebar on navigation
@@ -282,7 +282,7 @@ export default function AdminLayout({ children }) {
                   <div key={item.name}>
                     <button
                       onClick={() => setIsCmsMenuOpen(!isCmsMenuOpen)}
-                      className="w-full flex items-center justify-between px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 text-gray-700 rounded-lg hover:bg-[#3f2e73]/10 hover:text-[#3f2e73] transition-colors"
                     >
                       <div className="flex items-center">
                         <Icon className="h-5 w-5 mr-3" />
@@ -307,8 +307,8 @@ export default function AdminLayout({ children }) {
                               href={subItem.href}
                               className={`flex items-center px-4 py-2 text-sm rounded-lg transition-colors ${
                                 isSubActive 
-                                  ? 'bg-blue-100 text-blue-700 font-medium' 
-                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                                  ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                                  : 'text-gray-600 hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                               }`}
                             >
                               <SubIcon className="h-4 w-4 mr-3" />
@@ -330,8 +330,8 @@ export default function AdminLayout({ children }) {
                   href={item.href}
                   className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
                     isActive 
-                      ? 'bg-blue-100 text-blue-700 font-medium' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                      ? 'bg-[#3f2e73]/10 text-[#3f2e73] font-medium' 
+                      : 'text-gray-700 hover:bg-[#3f2e73]/10 hover:text-[#3f2e73]'
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />

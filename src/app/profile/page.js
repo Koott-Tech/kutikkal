@@ -11,29 +11,22 @@ function ProfileRedirect() {
     const tab = searchParams.get('tab');
     
     if (tab) {
-      // Redirect to the specified tab (e.g., /profile/contact)
-      router.replace(`/profile/${tab}`);
+      // Redirect to the specified tab (e.g., /profile/profile); support legacy tab=contact
+      const path = tab === 'contact' ? 'profile' : tab;
+      router.replace(`/profile/${path}`);
     } else {
       // Default redirect to sessions page
       router.replace('/profile/sessions');
     }
   }, [router, searchParams]);
 
-  // Show minimal loading while redirecting
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
-    </div>
-  );
+  // Don't render a loading spinner here - root PageLoadingOverlay already shows on navigation to avoid double/overlapping loaders
+  return null;
 }
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
-      </div>
-    }>
+    <Suspense fallback={null}>
       <ProfileRedirect />
     </Suspense>
   );

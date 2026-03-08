@@ -60,7 +60,7 @@ export default function PsychologistAssessments() {
     const progress = assessmentProgress[packageKey];
     if (!progress) return null;
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#3f2e73]/10 text-[#3f2e73]">
         {progress.completed}/{progress.total} sessions
       </span>
     );
@@ -318,7 +318,7 @@ export default function PsychologistAssessments() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      booked: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Booked' },
+      booked: { bg: 'bg-[#3f2e73]/10', text: 'text-[#3f2e73]', label: 'Booked' },
       pending: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Pending' },
       completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
       reserved: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Reserved' }
@@ -336,7 +336,7 @@ export default function PsychologistAssessments() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading assessments...</p>
         </div>
       </div>
@@ -378,9 +378,6 @@ export default function PsychologistAssessments() {
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h6 className="font-semibold text-gray-900">Assessments</h6>
-          <p className="mt-2 text-sm text-gray-700">
-            View and manage assessment sessions. This page shows the first session of each assessment package.
-          </p>
         </div>
       </div>
 

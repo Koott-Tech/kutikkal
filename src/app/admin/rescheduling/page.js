@@ -12,6 +12,8 @@ export default function AdminReschedulingPage() {
   const [error, setError] = useState(null);
   const [processingId, setProcessingId] = useState(null);
   const [filter, setFilter] = useState('all'); // 'all', 'pending', 'approved'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [declineReason, setDeclineReason] = useState('');
@@ -33,6 +35,7 @@ export default function AdminReschedulingPage() {
       const response = await adminApi.getRescheduleRequests(status);
       if (response.success) {
         setRescheduleRequests(response.data || []);
+        setCurrentPage(1);
       } else {
         setError('Failed to fetch reschedule requests');
       }
@@ -242,27 +245,44 @@ export default function AdminReschedulingPage() {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73]"></div>
         </div>
       </div>
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(rescheduleRequests.length / itemsPerPage));
+  const paginatedRequests = rescheduleRequests.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Rescheduling Requests</h1>
-          <p className="text-gray-600 mt-1">Manage and respond to reschedule requests from clients</p>
+        {/* Header */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div
+              className="text-sm font-semibold text-gray-900 tracking-tight"
+              role="heading"
+              aria-level={2}
+            >
+              Rescheduling Requests
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              Review and act on client reschedule requests.
+            </p>
+          </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="mb-6 flex gap-2 border-b border-gray-200">
+        <div className="mb-4 flex gap-2 border-b border-gray-200">
           <button
             onClick={() => setFilter('all')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               filter === 'all'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-[#3f2e73] text-[#3f2e73]'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -320,7 +340,7 @@ export default function AdminReschedulingPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {rescheduleRequests.map((request) => {
+                {paginatedRequests.map((request) => {
                   const session = request.session;
                   const info = parseRescheduleInfo(request.message || '', session);
                   const client = request.client || session?.client;
@@ -362,7 +382,7 @@ export default function AdminReschedulingPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleViewDetails(request)}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-[#3f2e73] bg-[#3f2e73]/10 hover:bg-[#3f2e73]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3f2e73]"
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             View
@@ -403,6 +423,32 @@ export default function AdminReschedulingPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {rescheduleRequests.length > itemsPerPage && (
+          <div className="mt-4 flex justify-center items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Prev
+            </button>
+            <span className="text-xs text-gray-600">
+              Page <span className="font-medium text-gray-900">{currentPage}</span> of{' '}
+              <span className="font-medium text-gray-900">{totalPages}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
@@ -465,7 +511,7 @@ export default function AdminReschedulingPage() {
                   
                   {/* Psychologist Info */}
                   {psychologist && (
-                    <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="bg-[#3f2e73]/5 rounded-lg p-4">
                       <h3 className="text-xs font-semibold text-gray-900 mb-2" style={{ fontSize: '0.7rem', fontWeight: '600' }}>Psychologist Information</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 text-sm">
                         <div><span className="text-gray-600">Psychologist:</span> <span className="font-medium text-gray-900">{psychologistName}</span></div>

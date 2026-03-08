@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { adminApi } from '@/lib/backendApi';
 import DoctorModal from '@/components/DoctorModal';
-import PsychologistCalendarView from '@/components/PsychologistCalendarView';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
@@ -112,7 +111,6 @@ export default function DoctorsPage() {
   const [filterSpecialty, setFilterSpecialty] = useState('all');
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [isCalendarViewOpen, setIsCalendarViewOpen] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
 
@@ -225,11 +223,6 @@ export default function DoctorsPage() {
   const openFullProfile = (doctor) => {
     setSelectedDoctor(doctor);
     setIsFullProfileOpen(true);
-  };
-
-  const openCalendarView = (doctor) => {
-    setSelectedDoctor(doctor);
-    setIsCalendarViewOpen(true);
   };
 
   const handleDoctorModalClose = () => {
@@ -358,7 +351,7 @@ export default function DoctorsPage() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -367,7 +360,7 @@ export default function DoctorsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -386,7 +379,7 @@ export default function DoctorsPage() {
         <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-2">
         <button
           onClick={handleAddDoctor}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Doctor
@@ -413,7 +406,7 @@ export default function DoctorsPage() {
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
               />
             </div>
           </div>
@@ -422,7 +415,7 @@ export default function DoctorsPage() {
             <select
               value={filterSpecialty}
               onChange={(e) => setFilterSpecialty(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
             >
               <option value="all">All Specialties</option>
               {specialties.map(specialty => (
@@ -456,7 +449,7 @@ export default function DoctorsPage() {
               onDrop={(e) => handleDrop(e, filteredIndex)}
               className={`bg-white border-2 transition-all p-6 w-full rounded-[10px] ${
                 isDragging 
-                  ? 'opacity-50 border-blue-400 shadow-lg' 
+                  ? 'opacity-50 border-[#3f2e73] shadow-lg' 
                   : 'border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300'
               } ${isUpdatingOrder ? 'opacity-60 pointer-events-none' : ''}`}
           >
@@ -464,8 +457,8 @@ export default function DoctorsPage() {
               <div className="flex items-start gap-4">
                   {/* Order Number and Drag Handle – only this area is draggable */}
                   <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-300">
-                      <span className="text-blue-700 font-bold text-base">{displayOrder}</span>
+                    <div className="w-10 h-10 rounded-full bg-[#3f2e73]/10 flex items-center justify-center border-2 border-[#3f2e73]/40">
+                      <span className="text-[#3f2e73] font-bold text-base">{displayOrder}</span>
                     </div>
                     <div
                       draggable={!isUpdatingOrder}
@@ -495,8 +488,8 @@ export default function DoctorsPage() {
                     {doctor.name || 'No Name'}
                   </h6>
                   <p className="text-sm text-gray-600 mt-1">{doctor.email}</p>
-                  <div className="mt-3 flex items-center gap-4">
-                    <div className="text-sm">
+                  <div className="mt-3 flex items-center gap-4 flex-wrap">
+                    <div className="text-sm flex items-center gap-3">
                       {doctor.active === false ? (
                         <span className="flex items-center text-red-600">
                           <Clock className="h-4 w-4 mr-2" />
@@ -507,11 +500,12 @@ export default function DoctorsPage() {
                           <Clock className="h-4 w-4 mr-2" />
                           Available for sessions
                         </span>
+                      ) : null}
+                      {(doctor.active === false || (doctor.availability && doctor.availability.length > 0)) && <span className="text-gray-400">·</span>}
+                      {doctor.google_calendar_credentials ? (
+                        <span className="text-green-600 text-sm">Calendar connected</span>
                       ) : (
-                        <span className="flex items-center text-gray-500">
-                          <Clock className="h-4 w-4 mr-2" />
-                          No availability schedule set
-                        </span>
+                        <span className="text-gray-500 text-sm">Calendar not connected</span>
                       )}
                     </div>
                     {/* Active Toggle */}
@@ -578,10 +572,6 @@ export default function DoctorsPage() {
                     <Eye className="h-4 w-4 mr-2" />
                     View Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openCalendarView(doctor); }} className="cursor-pointer">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Calendar
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditDoctor(doctor); }} className="cursor-pointer">
                     <Edit className="h-4 w-4 mr-2" />
@@ -619,7 +609,7 @@ export default function DoctorsPage() {
             <div className="mt-6">
               <button
                 onClick={handleAddDoctor}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Doctor
@@ -715,11 +705,21 @@ export default function DoctorsPage() {
                           </span>
                         </div>
                       ))}
+                      <div className="text-sm pt-1">
+                        {selectedDoctor.google_calendar_credentials ? (
+                          <span className="text-green-600">Calendar connected</span>
+                        ) : (
+                          <span className="text-gray-500">Calendar not connected</span>
+                        )}
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex items-center text-gray-500">
-                      <Clock className="h-4 w-4 mr-2" />
-                      <span>No availability schedule set</span>
+                    <div className="text-sm">
+                      {selectedDoctor.google_calendar_credentials ? (
+                        <span className="text-green-600">Calendar connected</span>
+                      ) : (
+                        <span className="text-gray-500">Calendar not connected</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -740,13 +740,13 @@ export default function DoctorsPage() {
                   </div>
 
                   {/* Package Information */}
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="p-4 bg-[#3f2e73]/5 rounded-lg border border-[#3f2e73]/20">
                     <h6>Package Information</h6>
-                    <p className="text-sm text-blue-700">
+                    <p className="text-sm text-[#3f2e73]">
                       Package details and pricing are managed through the packages system. 
                       Individual session pricing is set above and used as the base rate for package calculations.
                     </p>
-                    <div className="mt-2 text-xs text-blue-600">
+                    <div className="mt-2 text-xs text-[#3f2e73]">
                       💡 Packages provide discounts for multiple sessions booked together
                     </div>
                   </div>
@@ -759,7 +759,7 @@ export default function DoctorsPage() {
                       setIsFullProfileOpen(false);
                       handleEditDoctor(selectedDoctor);
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
                   >
                     Edit Profile
                   </button>
@@ -774,18 +774,6 @@ export default function DoctorsPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Calendar View Modal */}
-      {isCalendarViewOpen && selectedDoctor && (
-        <PsychologistCalendarView
-          psychologistId={selectedDoctor.psychologist_id || selectedDoctor.id}
-          psychologistName={selectedDoctor.name || selectedDoctor.email}
-          onClose={() => {
-            setIsCalendarViewOpen(false);
-            setSelectedDoctor(null);
-          }}
-        />
       )}
 
       </div>

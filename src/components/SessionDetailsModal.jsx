@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { X, FileText, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { X, FileText, MessageSquare, Eye, EyeOff, User, Calendar } from 'lucide-react';
+import { getSessionCompletionFields } from '@/utils/sessionCompletionFields';
 
-export default function SessionDetailsModal({ 
-  session, 
-  isOpen, 
+const labelClass = 'block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5';
+const valueBoxClass = 'bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800';
+
+export default function SessionDetailsModal({
+  session,
+  isOpen,
   onClose,
   isPsychologist = false
 }) {
@@ -11,7 +15,10 @@ export default function SessionDetailsModal({
 
   if (!isOpen || !session) return null;
 
+  const { summary, report, privateNotes } = getSessionCompletionFields(session);
+
   const formatDate = (dateString) => {
+    if (!dateString) return '—';
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -21,180 +28,183 @@ export default function SessionDetailsModal({
   };
 
   const formatTime = (timeString) => {
-    if (!timeString) return '';
+    if (!timeString) return '—';
     const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
+    const hour = parseInt(hours, 10);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
+    return `${displayHour}:${(minutes || '00').padStart(2, '0')} ${ampm}`;
   };
 
+  const clientName = [session.client?.first_name, session.client?.last_name].filter(Boolean).join(' ').trim() || '—';
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header — minimal */}
+        <div className="sticky top-0 bg-white border-b border-slate-200 px-5 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <FileText className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">
-              Session Details
-            </h2>
+            <div className="w-9 h-9 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-[#3f2e73]" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-800 tracking-tight" role="heading" aria-level={1}>
+                Session Details
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">#{session.id}</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Session Info */}
-        <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <h3 className="font-medium text-gray-800 mb-4">Session Information</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Client:</span>
-              <span className="ml-2 font-medium text-gray-800">
-                {session.client?.first_name} {session.client?.last_name}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-600">Date:</span>
-              <span className="ml-2 font-medium text-gray-800">
-                {formatDate(session.scheduled_date)}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-600">Time:</span>
-              <span className="ml-2 font-medium text-gray-800">
-                {formatTime(session.scheduled_time)}
-              </span>
-            </div>
-            {session.status === 'rescheduled' && session.original_scheduled_date && (
-              <div className="col-span-2">
-                <span className="text-gray-600">Original scheduled date:</span>
-                <span className="ml-2 font-medium text-amber-700">
-                  {formatDate(session.original_scheduled_date)}
-                </span>
+        <div className="p-5 space-y-5">
+          {/* Client Information (psychologist view) */}
+          {isPsychologist && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" role="heading" aria-level={2}>
+                <User className="w-4 h-4 text-[#3f2e73]" />
+                Client Information
               </div>
-            )}
-            <div>
-              <span className="text-gray-600">Status:</span>
-              <span className={`ml-2 font-medium px-2 py-1 rounded-full text-xs ${
-                session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                session.status === 'booked' ? 'bg-blue-100 text-blue-800' :
-                session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {session.status}
-              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>Name</label>
+                  <div className={valueBoxClass}>{clientName}</div>
+                </div>
+                <div>
+                  <label className={labelClass}>Email</label>
+                  <div className={valueBoxClass}>{session.client?.user?.email || '—'}</div>
+                </div>
+                <div>
+                  <label className={labelClass}>Phone</label>
+                  <div className={valueBoxClass}>{session.client?.phone_number || '—'}</div>
+                </div>
+                <div>
+                  <label className={labelClass}>Child name</label>
+                  <div className={valueBoxClass}>{session.client?.child_name || '—'}</div>
+                </div>
+                <div>
+                  <label className={labelClass}>Child age</label>
+                  <div className={valueBoxClass}>{session.client?.child_age != null ? `${session.client.child_age} years` : '—'}</div>
+                </div>
+              </div>
             </div>
-            {session.price && (
+          )}
+
+          {/* Session Information */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" role="heading" aria-level={2}>
+              <Calendar className="w-4 h-4 text-[#3f2e73]" />
+              Session Information
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <span className="text-gray-600">Price:</span>
-                <span className="ml-2 font-medium text-gray-800">
-                  ${session.price}
-                </span>
+                <label className={labelClass}>Date</label>
+                <div className={valueBoxClass}>{formatDate(session.scheduled_date)}</div>
               </div>
-            )}
-            {session.package && (
               <div>
-                <span className="text-gray-600">Package:</span>
-                <span className="ml-2 font-medium text-gray-800">
-                  {session.package.package_type}
-                </span>
+                <label className={labelClass}>Time</label>
+                <div className={valueBoxClass}>{formatTime(session.scheduled_time)}</div>
               </div>
-            )}
+              <div>
+                <label className={labelClass}>Status</label>
+                <div className={valueBoxClass}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    session.status === 'booked' ? 'bg-[#3f2e73]/10 text-[#3f2e73]' :
+                    session.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                    session.status === 'no_show' ? 'bg-orange-100 text-orange-800' :
+                    session.status === 'rescheduled' ? 'bg-amber-100 text-amber-800' :
+                    'bg-slate-100 text-slate-700'
+                  }`}>
+                    {session.status}
+                  </span>
+                </div>
+              </div>
+              {session.status === 'rescheduled' && session.original_scheduled_date && (
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Original date</label>
+                  <div className={valueBoxClass}>{formatDate(session.original_scheduled_date)}</div>
+                </div>
+              )}
+              {session.package && (
+                <div>
+                  <label className={labelClass}>Package</label>
+                  <div className={valueBoxClass}>{session.package.package_type}</div>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Session Summary */}
+          {summary && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="w-4 h-4 text-[#3f2e73]" />
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider" role="heading" aria-level={2}>Session Summary</div>
+              </div>
+              <div className={`${valueBoxClass} whitespace-pre-wrap`}>{summary}</div>
+              <p className="text-xs text-slate-500 mt-2">Visible to client</p>
+            </div>
+          )}
+
+          {/* Session Report */}
+          {report && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-[#3f2e73]" />
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider" role="heading" aria-level={2}>Session Report</div>
+              </div>
+              <div className={`${valueBoxClass} whitespace-pre-wrap`}>{report}</div>
+              <p className="text-xs text-slate-500 mt-2">Visible to client</p>
+            </div>
+          )}
+
+          {/* Private Notes — therapist only */}
+          {isPsychologist && privateNotes && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#3f2e73]" />
+                  <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider" role="heading" aria-level={2}>Private Notes</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowNotes(!showNotes)}
+                  className="text-xs font-medium text-[#3f2e73] hover:text-[#1d1733]"
+                >
+                  {showNotes ? <><EyeOff className="w-3.5 h-3.5 inline mr-1" /> Hide</> : <><Eye className="w-3.5 h-3.5 inline mr-1" /> Show</>}
+                </button>
+              </div>
+              {showNotes && <div className={`${valueBoxClass} whitespace-pre-wrap`}>{privateNotes}</div>}
+              <p className="text-xs text-slate-500 mt-2">Private — visible only to you and admin</p>
+            </div>
+          )}
+
+          {/* Client Feedback */}
+          {(session.feedback || session.client_feedback) && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="w-4 h-4 text-[#3f2e73]" />
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider" role="heading" aria-level={2}>Client Feedback</div>
+              </div>
+              <div className={valueBoxClass}>
+                {session.feedback || session.client_feedback}
+                {session.rating != null && <p className="text-xs text-slate-500 mt-2">{session.rating} / 5</p>}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Session Summary */}
-        {session.summary && (
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
-              <h3 className="font-medium text-gray-800">Session Summary</h3>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {session.summary}
-              </p>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              This summary is visible to the client
-            </p>
-          </div>
-        )}
-
-        {/* Session Report */}
-        {session.report && (
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="w-5 h-5 text-green-600" />
-              <h3 className="font-medium text-gray-800">Session Report</h3>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {session.report}
-              </p>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              This report is visible to the client
-            </p>
-          </div>
-        )}
-
-        {/* Session Notes - Only visible to psychologists */}
-        {isPsychologist && session.session_notes && (
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                <h3 className="font-medium text-gray-800">Session Notes</h3>
-              </div>
-              <button
-                onClick={() => setShowNotes(!showNotes)}
-                className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 transition-colors"
-              >
-                {showNotes ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                {showNotes ? 'Hide' : 'Show'} Notes
-              </button>
-            </div>
-            
-            {showNotes && (
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {session.session_notes}
-                </p>
-              </div>
-            )}
-            
-            <p className="text-xs text-gray-500 mt-2">
-              These notes are private and only visible to you
-            </p>
-          </div>
-        )}
-
-        {/* Client Feedback */}
-        {session.feedback && (
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-5 h-5 text-green-600" />
-              <h3 className="font-medium text-gray-800">Client Feedback</h3>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {session.feedback}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="p-6 flex justify-end">
+        <div className="px-5 pb-5 pt-2 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
           >
             Close
           </button>

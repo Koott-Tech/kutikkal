@@ -168,10 +168,12 @@ export default function RecurringBlockModal({ isOpen, onClose, onSave }) {
             borderBottom: '1px solid #f1f5f9'
           }}
         >
-          <h2
+          <div
+            role="heading"
+            aria-level={2}
             style={{
               margin: 0,
-              fontSize: '1.125rem',
+              fontSize: '25px',
               fontWeight: 600,
               color: '#0f172a',
               display: 'flex',
@@ -182,7 +184,7 @@ export default function RecurringBlockModal({ isOpen, onClose, onSave }) {
           >
             <Calendar size={18} style={{ color: '#3f2e73', flexShrink: 0 }} />
             Recurring block
-          </h2>
+          </div>
           <button
             type="button"
             onClick={onClose}

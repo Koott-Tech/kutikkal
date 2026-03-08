@@ -1,6 +1,7 @@
 "use client";
 
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -313,10 +314,13 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                 {/* Image Container */}
                 {blog.featured_image_url && (
                   <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
-                    <img
+                    <Image
                       src={normalizeImageUrl(blog.featured_image_url || '')}
                       alt={blog.title}
-                      className="w-full h-full object-contain object-left"
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
+                      className="object-contain object-left"
+                      priority={false}
                     />
                   </div>
                 )}

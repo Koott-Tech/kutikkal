@@ -13,6 +13,9 @@
  */
 
 import React, { useState, useEffect, Suspense, useMemo, useCallback } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { publicApi } from '../../../lib/backendApi';
@@ -27,6 +30,9 @@ import { formatCurrency } from '../../../lib/utils';
 import AuthModal from '../../../components/AuthModal';
 import { normalizeImageUrl } from '../../../utils/urlNormalizer';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Booking Loading Animation Component
 function BookingLoadingAnimation() {
@@ -225,7 +231,7 @@ const TherapistProfileContent = ({ slug, packageId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Calendar state
+  // Calendar state (all times are handled and displayed in IST)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -624,6 +630,8 @@ const TherapistProfileContent = ({ slug, packageId }) => {
     return `${hours12}:${minutesPart} ${period}`;
   };
 
+  // All calendar times are in IST; duration is explained in the package/label, not in the heading.
+
   const isSlotInPast = (slot, date) => {
     if (!slot || !date) return false;
 
@@ -750,6 +758,54 @@ const TherapistProfileContent = ({ slug, packageId }) => {
       doctor.role ||
       ''
     );
+  };
+
+  // Primary personality trait chip text (from admin dashboard)
+  const getPrimaryTrait = (doctor) => {
+    if (!doctor) return null;
+    
+    const rawTraits =
+      doctor.personality_traits ||
+      doctor.personalityTraits ||
+      doctor.personalities ||
+      null;
+
+    let traits = [];
+
+    if (Array.isArray(rawTraits)) {
+      traits = rawTraits;
+    } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
+      traits = rawTraits
+        .split(/[,|/]/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+
+    return traits.length > 0 ? traits[0] : null;
+  };
+
+  // All personality traits as an array (for lists/chips)
+  const getPersonalityTraits = (doctor) => {
+    if (!doctor) return [];
+
+    const rawTraits =
+      doctor.personality_traits ||
+      doctor.personalityTraits ||
+      doctor.personalities ||
+      null;
+
+    if (Array.isArray(rawTraits)) {
+      return rawTraits.filter((t) => typeof t === 'string' && t.trim().length > 0);
+    }
+
+    if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
+      return rawTraits
+        .split(/[,|/]/)
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+
+    return [];
   };
 
   const getDoctorLanguages = (doctor) => {
@@ -1865,11 +1921,11 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                 {selectedDoctor.name || `${selectedDoctor.first_name} ${selectedDoctor.last_name}`}
                 </h2>
               <p className="text-sm text-gray-600" style={{ marginBottom: '0', marginTop: '0', lineHeight: '1.2' }}>
-              {getDoctorDesignation(selectedDoctor)}
+                {getDoctorDesignation(selectedDoctor)}
               </p>
-                <p className="text-sm text-gray-800" style={{ marginTop: '0px', marginBottom: '0', lineHeight: '1.2' }}>
-                  {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
-                </p>
+              <p className="text-sm text-gray-800" style={{ marginTop: '4px', marginBottom: '0', lineHeight: '1.4' }}>
+                {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
+              </p>
               </div>
             <div className="mt-4 space-y-4">
               {renderEducationSection()}
@@ -1957,7 +2013,7 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   <p className="text-lg text-gray-600 ">
                     {getDoctorDesignation(selectedDoctor)}
                   </p>
-                  <p className="text-gray-800 text-sm">
+                  <p className="text-gray-800 text-sm" style={{ marginTop: '6px' }}>
                     <span className="font-medium">
                       {selectedDoctor.price ? `Starts at ₹${selectedDoctor.price}` : 'Pricing available upon request'}
                     </span>
@@ -2029,6 +2085,34 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   </div>
                 </div>
               )}
+              
+              {/* Personality Traits */}
+              {(() => {
+                const traits = getPersonalityTraits(selectedDoctor);
+                if (!traits || traits.length === 0) return null;
+                return (
+                  <div className="p-4 rounded-lg">
+                    <p className="font-semibold text-gray-800 mb-3">Personality Traits</p>
+                    <div className="flex flex-wrap gap-2">
+                      {traits.map((trait, i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 rounded-full text-sm font-medium"
+                          style={{
+                            backgroundColor: '#f3e8ff',
+                            color: '#3f2e73',
+                            border: '1px solid rgba(63,46,115,0.18)',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {trait}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Languages Section */}
               {renderLanguagesSection()}
               
@@ -2224,7 +2308,12 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                         {/* Available Time Slots */}
                         {availableSlots.length > 0 ? (
                           <div className="space-y-2">
-                            <p className="text-sm font-medium text-[#3f2e73]">Available Times (IST):</p>
+                            <p className="text-sm font-medium text-[#3f2e73]">
+                              Available Times
+                              <span className="ml-1">
+                                (IST)
+                              </span>
+                            </p>
                             <div className="grid grid-cols-3 md:grid-cols-5 gap-1">
                               {availableSlots.map((time) => (
                                 <button
@@ -2296,9 +2385,6 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                         <p className="mt-1 font-medium">
                           {clientPackage.remaining_sessions} of {clientPackage.total_sessions} sessions remaining
                         </p>
-                        <p className="mt-1 text-[#3f2e73] font-medium">
-                          Total paid: {formatCurrency(clientPackage.amount_paid, clientPackage.currency)}
-                        </p>
                       </div>
                     </div>
                   </div>
@@ -2307,35 +2393,103 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   <>
                     <p className="text-sm font-medium text-[#3f2e73] mb-3">Select Package</p>
                     
-                    {/* Individual Session Option - Always Available */}
-                    <button
-                      onClick={() => {
-                        setSelectedPackage({
-                          id: 'individual',
-                          name: 'Individual Session',
-                          description: 'One therapy session',
-                          session_count: 1,
-                          price: selectedDoctor.price,
-                          package_type: 'individual',
-                          discount_percentage: 0
-                        });
-                        setSelectedPrice(selectedDoctor.price);
-                        // Clear missing fields message when user selects package
-                        setMissingFields(prev => prev.filter(f => f !== 'Package'));
-                      }}
-                      className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                        selectedPackage?.id === 'individual'
-                          ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
-                          : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="text-left">
-                          <span className="font-semibold text-sm">Individual Session</span>
+                    {/* Individual Session Options */}
+                    {getDoctorDesignation(selectedDoctor).toLowerCase().includes('psychiatrist') ? (
+                      <>
+                        {/* Psychiatrist 15 min individual session */}
+                        <button
+                          onClick={() => {
+                            const price15 = selectedDoctor.psychiatrist_15min_price || selectedDoctor.price;
+                            setSelectedPackage({
+                              id: 'individual-15',
+                              name: 'Individual Session (15 min)',
+                              description: 'One 15-minute psychiatrist session',
+                              session_count: 1,
+                              price: price15,
+                              package_type: 'individual_15',
+                              discount_percentage: 0
+                            });
+                            setSelectedPrice(price15);
+                            setMissingFields(prev => prev.filter(f => f !== 'Package'));
+                          }}
+                          className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                            selectedPackage?.id === 'individual-15'
+                              ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                              : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="text-left">
+                              <span className="font-semibold text-sm">Individual Session (15 min)</span>
+                            </div>
+                            <span className="font-bold text-base">
+                              ₹{selectedDoctor.psychiatrist_15min_price || selectedDoctor.price}
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Psychiatrist 30 min individual session */}
+                        <button
+                          onClick={() => {
+                            const price30 = selectedDoctor.psychiatrist_30min_price || selectedDoctor.price;
+                            setSelectedPackage({
+                              id: 'individual-30',
+                              name: 'Individual Session (30 min)',
+                              description: 'One 30-minute psychiatrist session',
+                              session_count: 1,
+                              price: price30,
+                              package_type: 'individual_30',
+                              discount_percentage: 0
+                            });
+                            setSelectedPrice(price30);
+                            setMissingFields(prev => prev.filter(f => f !== 'Package'));
+                          }}
+                          className={`mt-1 p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                            selectedPackage?.id === 'individual-30'
+                              ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                              : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="text-left">
+                              <span className="font-semibold text-sm">Individual Session (30 min)</span>
+                            </div>
+                            <span className="font-bold text-base">
+                              ₹{selectedDoctor.psychiatrist_30min_price || selectedDoctor.price}
+                            </span>
+                          </div>
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedPackage({
+                            id: 'individual',
+                            name: 'Individual Session',
+                            description: 'One therapy session',
+                            session_count: 1,
+                            price: selectedDoctor.price,
+                            package_type: 'individual',
+                            discount_percentage: 0
+                          });
+                          setSelectedPrice(selectedDoctor.price);
+                          // Clear missing fields message when user selects package
+                          setMissingFields(prev => prev.filter(f => f !== 'Package'));
+                        }}
+                        className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                          selectedPackage?.id === 'individual'
+                            ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                            : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="text-left">
+                            <span className="font-semibold text-sm">Individual Session</span>
+                          </div>
+                          <span className="font-bold text-base">₹{selectedDoctor.price}</span>
                         </div>
-                        <span className="font-bold text-base">₹{selectedDoctor.price}</span>
-                      </div>
-                    </button>
+                      </button>
+                    )}
                     {/* Dynamic Packages from Database */}
                     {loadingPackages ? (
                       <div className="text-center py-4">
@@ -2366,14 +2520,19 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                             }`}
                           >
                             <div className="flex justify-between items-center">
-                              <div className="text-left">
-                                <span className="font-semibold text-sm">{pkg.name}</span>
-                                {pkg.discount_percentage > 0 && (
-                                  <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-1 py-0.5 rounded-full">
-                                    Save {pkg.discount_percentage}%
-                                  </span>
-                                )}
-                              </div>
+                          <div className="text-left">
+                            <span className="font-semibold text-sm">
+                              {pkg.name}
+                              {getDoctorDesignation(selectedDoctor).toLowerCase().includes('psychiatrist') && pkg.session_count > 1
+                                ? ` (${pkg.session_count} × 15 min)`
+                                : ''}
+                            </span>
+                            {pkg.discount_percentage > 0 && (
+                              <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-1 py-0.5 rounded-full">
+                                Save {pkg.discount_percentage}%
+                              </span>
+                            )}
+                          </div>
                               <span className="font-bold text-base">₹{pkg.price}</span>
                             </div>
                           </button>

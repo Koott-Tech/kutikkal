@@ -358,7 +358,7 @@ const Guide = () => {
       const today = new Date();
       const startDate = today.toISOString().split('T')[0]; // Today
       const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 5); // OPTIMIZED: Reduced to 5 days (from 7) for faster queries - we only need 3 slots
+      endDate.setDate(endDate.getDate() + 12); // Look ahead 12 days for upcoming availability
       const endDateStr = endDate.toISOString().split('T')[0];
 
       // Increased timeout to 5 seconds (backend caching should make most requests fast)
@@ -371,13 +371,13 @@ const Guide = () => {
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (response.success && response.data && response.data.data) {
-        // Collect slots across multiple days until we have 3 slots
+        // Collect slots across multiple days until we have 2 slots (max 2 lines)
         // Store slots with their dates so we can display them correctly
         const availabilityArray = response.data.data;
         const collectedSlots = []; // Array of {date, time} objects
         let firstDateWithSlots = null;
         
-        // Loop through dates until we have 3 slots
+        // Loop through dates until we have 2 slots
         for (const day of availabilityArray) {
           // Parse the date string to a Date object
           const [year, month, dayNum] = day.date.split('-');
@@ -407,7 +407,7 @@ const Guide = () => {
             }
             
             // Calculate how many slots we still need
-            const slotsNeeded = 3 - collectedSlots.length;
+            const slotsNeeded = 2 - collectedSlots.length;
             const slotsToAdd = sortedAvailableSlots
               .slice(0, slotsNeeded) // Only take what we need
               .map(slot => ({
@@ -417,8 +417,8 @@ const Guide = () => {
             
             collectedSlots.push(...slotsToAdd);
             
-            // Stop if we have 3 slots
-            if (collectedSlots.length >= 3) {
+            // Stop if we have 2 slots (keeps display to max 2 lines)
+            if (collectedSlots.length >= 2) {
               break;
             }
           }
@@ -427,7 +427,7 @@ const Guide = () => {
         if (collectedSlots.length > 0 && firstDateWithSlots) {
           const result = {
             nextDate: firstDateWithSlots,
-            timeSlots: collectedSlots.slice(0, 3), // Ensure max 3 slots
+            timeSlots: collectedSlots.slice(0, 2), // Ensure max 2 slots (max 2 lines)
             slotsByDate: collectedSlots // Keep date info for each slot
           };
           // No caching - availability can change anytime (bookings, blocks, calendar events)
@@ -2289,7 +2289,8 @@ const Guide = () => {
                 
                 {/* Description */}
                 <p style={{ marginBottom: 8, marginTop: 0, lineHeight: '1.2', whiteSpace: 'pre-line' }}>
-                  {doctors[selected]?.description || "This clinician is passionate about helping people make progress through evidence-based support and compassionate guidance."}
+                  {(doctors[selected]?.description || doctors[selected]?.short_description || '').trim()
+                    || 'No description provided.'}
                 </p>
                 
               </div>

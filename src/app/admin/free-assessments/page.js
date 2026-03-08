@@ -60,6 +60,7 @@ export default function FreeAssessmentsPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState({});
   const [availabilityData, setAvailabilityData] = useState({});
+  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
 
   useEffect(() => {
     loadAssessments();
@@ -308,6 +309,15 @@ export default function FreeAssessmentsPage() {
     });
   };
 
+  // Date without year for listing
+  const formatDateShort = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
@@ -315,9 +325,9 @@ export default function FreeAssessmentsPage() {
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'booked':
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-[#3f2e73]" />;
       default:
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-[#3f2e73]" />;
     }
   };
 
@@ -328,7 +338,7 @@ export default function FreeAssessmentsPage() {
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'booked':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[#3f2e73]/10 text-[#3f2e73]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -537,26 +547,37 @@ export default function FreeAssessmentsPage() {
     }
   };
 
-  // Filter assessments by search term
+  // Normalize status for comparison
+  const normalizeStatus = (s) => (s === 'noshow' ? 'no_show' : (s || ''));
+
+  // Filter by status tab and search term
   const filteredAssessments = assessments.filter(assessment => {
+    const statusMatch = filterStatus === 'all' || normalizeStatus(assessment.status) === filterStatus;
+    if (!statusMatch) return false;
+
     if (!searchTerm) return true;
-    
+
     const clientName = `${assessment.client?.first_name || ''} ${assessment.client?.last_name || ''}`.toLowerCase();
     const clientEmail = assessment.client?.user?.email?.toLowerCase() || '';
-    
-    const matchesSearch = 
+
+    const matchesSearch =
       clientName.includes(searchTerm.toLowerCase()) ||
       clientEmail.includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
 
-  const statuses = ['all', 'booked', 'completed', 'cancelled'];
+  const statusTabs = [
+    { value: 'all', label: 'All' },
+    { value: 'booked', label: 'Booked' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ];
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -571,98 +592,144 @@ export default function FreeAssessmentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h6>Free Assessments Management</h6>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage free assessment sessions across the platform
-            </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsAvailabilityModalOpen(true)}
+            className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] transition-colors"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Manage Availability
+          </button>
         </div>
 
-        {/* Calendar View */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => navigateMonth('prev')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <h3 className="text-lg font-semibold text-gray-900">
-              {getMonthYearString(currentMonth)}
-            </h3>
-            <button
-              onClick={() => navigateMonth('next')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map(day => (
-              <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          <div className="grid grid-cols-7 gap-1">
-            {days.map((day, index) => {
-              const dateKey = getDateKey(day);
-              const dayAssessments = day ? (calendarData[dateKey] || []) : [];
-              const hasAssessments = dayAssessments.length > 0;
-              const hasTimeslots = day ? (availabilityData[dateKey] > 0) : false;
-              
-              return (
-                <div
-                  key={index}
-                  onClick={() => handleDateClick(day)}
-                  className={`
-                    min-h-[60px] p-1 border border-gray-200 rounded cursor-pointer transition-colors
-                    ${!day ? 'bg-gray-50' : ''}
-                    ${isToday(day) ? 'bg-blue-50 border-blue-300' : ''}
-                    ${isSelected(day) ? 'bg-[#3f2e73] text-white border-[#3f2e73]' : 'hover:bg-gray-50'}
-                    ${hasAssessments && !isSelected(day) ? 'bg-green-50 border-green-300' : ''}
-                  `}
-                  title={day && hasTimeslots ? `${availabilityData[dateKey]} timeslot(s) configured` : ''}
+        {/* Availability Modal (Calendar + Timeslot editor) */}
+        {isAvailabilityModalOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/80">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-[#3f2e73]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>
+                      Manage Free Assessment Availability
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Use the calendar to view and configure timeslots for each date.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAvailabilityModalOpen(false)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
                 >
-                  {day && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <div className={`text-xs font-medium ${isSelected(day) ? 'text-white' : 'text-gray-900'}`}>
-                          {day}
-                        </div>
-                        {hasTimeslots && !isSelected(day) && (
-                          <Clock className="h-3 w-3 text-purple-600" title={`${availabilityData[dateKey]} timeslot(s)`} />
-                        )}
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Calendar View */}
+                <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <button
+                      type="button"
+                      onClick={() => navigateMonth('prev')}
+                      className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <div className="text-sm font-semibold text-slate-900">
+                      {getMonthYearString(currentMonth)}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigateMonth('next')}
+                      className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {weekDays.map(day => (
+                      <div key={day} className="text-center text-xs font-semibold text-slate-600 py-1">
+                        {day}
                       </div>
-                      {hasAssessments && (
-                        <div className="mt-1 flex flex-wrap gap-0.5">
-                          {dayAssessments.slice(0, 3).map((assessment, idx) => (
-                            <div
-                              key={idx}
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                isSelected(day) ? 'bg-white' : 
-                                assessment.status === 'completed' ? 'bg-green-500' :
-                                assessment.status === 'cancelled' ? 'bg-red-500' :
-                                'bg-blue-500'
-                              }`}
-                              title={`${assessment.status} - ${assessment.client?.first_name || 'N/A'}`}
-                            />
-                          ))}
-                          {dayAssessments.length > 3 && (
-                            <div className={`text-[8px] ${isSelected(day) ? 'text-white' : 'text-gray-600'}`}>
-                              +{dayAssessments.length - 3}
-                            </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1">
+                    {days.map((day, index) => {
+                      const dateKey = getDateKey(day);
+                      const dayAssessments = day ? (calendarData[dateKey] || []) : [];
+                      const hasAssessments = dayAssessments.length > 0;
+                      const hasTimeslots = day ? (availabilityData[dateKey] > 0) : false;
+
+                      return (
+                        <div
+                          key={index}
+                          onClick={() => handleDateClick(day)}
+                          className={`
+                            min-h-[60px] p-1 border border-slate-200 rounded cursor-pointer transition-colors
+                            ${!day ? 'bg-slate-50' : ''}
+                            ${isToday(day) ? 'bg-[#3f2e73]/5 border-[#3f2e73]/40' : ''}
+                            ${isSelected(day) ? 'bg-[#3f2e73] text-white border-[#3f2e73]' : 'hover:bg-slate-50'}
+                            ${hasAssessments && !isSelected(day) ? 'bg-green-50 border-green-300' : ''}
+                          `}
+                          title={day && hasTimeslots ? `${availabilityData[dateKey]} timeslot(s) configured` : ''}
+                        >
+                          {day && (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <div className={`text-xs font-medium ${isSelected(day) ? 'text-white' : 'text-slate-900'}`}>
+                                  {day}
+                                </div>
+                                {hasTimeslots && !isSelected(day) && (
+                                  <Clock className="h-3 w-3 text-purple-600" title={`${availabilityData[dateKey]} timeslot(s)`} />
+                                )}
+                              </div>
+                              {hasAssessments && (
+                                <div className="mt-1 flex flex-wrap gap-0.5">
+                                  {dayAssessments.slice(0, 3).map((assessment, idx) => (
+                                    <div
+                                      key={idx}
+                                      className={`w-1.5 h-1.5 rounded-full ${
+                                        isSelected(day) ? 'bg-white' : 
+                                        assessment.status === 'completed' ? 'bg-green-500' :
+                                        assessment.status === 'cancelled' ? 'bg-red-500' :
+                                        'bg-[#3f2e73]'
+                                      }`}
+                                      title={`${assessment.status} - ${assessment.client?.first_name || 'N/A'}`}
+                                    />
+                                  ))}
+                                  {dayAssessments.length > 3 && (
+                                    <div className={`text-[8px] ${isSelected(day) ? 'text-white' : 'text-slate-600'}`}>
+                                      +{dayAssessments.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
-                      )}
-                    </>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
-              );
-            })}
+
+                {/* Inline note for using the calendar */}
+                <p className="text-xs text-slate-500">
+                  Click a date to view or edit its timeslots. The timeslot editor will open in a separate popup.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Filters and Search */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -681,14 +748,6 @@ export default function FreeAssessmentsPage() {
                   </span>
                 </>
               )}
-              {filterDate && (
-                <>
-                  {' '}on{' '}
-                  <span className="font-medium text-gray-900">
-                    {new Date(filterDate).toLocaleDateString()}
-                  </span>
-                </>
-              )}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -700,32 +759,40 @@ export default function FreeAssessmentsPage() {
                   placeholder="Search by client name or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
                 />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Statuses</option>
-                {statuses.filter(s => s !== 'all').map(status => (
-                  <option key={status} value={status}>
-                    {status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown'}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
           </div>
+        </div>
+
+        {/* Status Tabs */}
+        <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-1.5">
+          <nav
+            className="flex gap-1 overflow-x-auto"
+            aria-label="Filter free assessments by status"
+          >
+            {statusTabs.map((tab) => {
+              const isActive = filterStatus === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setFilterStatus(tab.value)}
+                  className={`
+                    relative px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap
+                    transition-all duration-200 ease-out
+                    ${isActive
+                      ? 'bg-[#3f2e73] text-white shadow-sm'
+                      : 'text-gray-600 hover:text-[#3f2e73] hover:bg-[#3f2e73]/8 active:bg-[#3f2e73]/12'
+                    }
+                  `}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
         {/* Assessments Table */}
@@ -755,13 +822,8 @@ export default function FreeAssessmentsPage() {
                 {filteredAssessments.map((assessment) => (
                   <tr key={assessment.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          Assessment #{assessment.assessmentNumber}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {formatDate(assessment.scheduled_date)} at {formatTime(assessment.scheduled_time)}
-                        </div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {formatDateShort(assessment.scheduled_date)} at {formatTime(assessment.scheduled_time)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -792,12 +854,9 @@ export default function FreeAssessmentsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {getStatusIcon(assessment.status)}
-                        <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assessment.status)}`}>
-                          {getStatusText(assessment.status)}
-                        </span>
-                      </div>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assessment.status)}`}>
+                        {getStatusText(assessment.status)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
@@ -949,9 +1008,6 @@ export default function FreeAssessmentsPage() {
                 </p>
                 <div className="bg-gray-50 p-3 rounded-lg mb-4">
                   <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Assessment Details</p>
-                  <p className="text-sm text-gray-900">
-                    Assessment #{assessmentToDelete.assessmentNumber}
-                  </p>
                   {assessmentToDelete.client && (
                     <p className="text-sm text-gray-700">
                       Client: {assessmentToDelete.client.first_name} {assessmentToDelete.client.last_name}
@@ -1221,145 +1277,155 @@ export default function FreeAssessmentsPage() {
           </div>
         )}
 
-        {/* Assessment Details Modal */}
+        {/* Assessment Details Modal - same design as bookings page */}
         {isDetailsOpen && selectedAssessment && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 xl:w-2/3 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-lg font-semibold text-gray-900">Free Assessment Details</div>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col border border-slate-200/80">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-[#3f2e73]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>Free Assessment Details</div>
+                    <p className="text-xs text-slate-500 mt-0.5">#{selectedAssessment.id?.slice(0, 8)}</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setIsDetailsOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-              
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                    Assessment Information
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Assessment Number</p>
-                      <p className="text-sm text-gray-900">#{selectedAssessment.assessmentNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Status</p>
-                      <p className="text-sm text-gray-900 capitalize">{selectedAssessment.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Date</p>
-                      <p className="text-sm text-gray-900">{formatDate(selectedAssessment.scheduled_date)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Time</p>
-                      <p className="text-sm text-gray-900">{formatTime(selectedAssessment.scheduled_time)}</p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                    <User className="h-4 w-4 mr-2 text-green-600" />
-                    Client Information
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Name</p>
-                      <p className="text-sm text-gray-900">
-                        {selectedAssessment.client?.first_name} {selectedAssessment.client?.last_name}
-                      </p>
-                    </div>
-                    {selectedAssessment.client?.child_name && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">Child Name</p>
-                        <p className="text-sm text-gray-900">{selectedAssessment.client.child_name}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                    <UserCheck className="h-4 w-4 mr-2 text-purple-600" />
-                    Psychologist Information
-                  </div>
-                  {selectedAssessment.psychologist ? (
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-5">
+                  {/* Assessment Information */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={3}>Assessment Information</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Name</p>
-                        <p className="text-sm text-gray-900">
-                          {selectedAssessment.psychologist.first_name} {selectedAssessment.psychologist.last_name}
-                        </p>
-                      </div>
-                      {selectedAssessment.psychologist.email && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Email</p>
-                          <p className="text-sm text-gray-900">{selectedAssessment.psychologist.email}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-600">Not assigned</p>
-                  )}
-                </div>
-
-                {selectedAssessment.status === 'completed' && (selectedAssessment.feedback || selectedAssessment.rating) && (
-                  <div className="bg-indigo-50 p-3 rounded-lg">
-                    <div className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                      <MessageSquare className="h-4 w-4 mr-2 text-indigo-600" />
-                      Client Feedback
-                    </div>
-                    {selectedAssessment.rating && (
-                      <div className="mb-3">
-                        <p className="text-sm font-medium text-gray-700 mb-1">Rating</p>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`h-5 w-5 ${
-                                star <= selectedAssessment.rating
-                                  ? 'text-yellow-400 fill-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                          <span className="ml-2 text-sm text-gray-600">
-                            ({selectedAssessment.rating} out of 5)
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Status</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusColor(selectedAssessment.status)}`}>
+                            {getStatusText(selectedAssessment.status)}
                           </span>
                         </div>
                       </div>
-                    )}
-                    {selectedAssessment.feedback && (
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Feedback</p>
-                        <p className="text-sm text-gray-900 bg-white p-3 rounded border border-gray-200">
-                          {selectedAssessment.feedback}
-                        </p>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Date</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                          {formatDate(selectedAssessment.scheduled_date)}
+                        </div>
                       </div>
-                    )}
-                    {!selectedAssessment.feedback && !selectedAssessment.rating && (
-                      <p className="text-sm text-gray-500 italic">No feedback provided yet.</p>
-                    )}
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Time</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                          {formatTime(selectedAssessment.scheduled_time)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
 
-                {selectedAssessment.meetLink && (
-                  <div className="bg-yellow-50 p-3 rounded-lg">
-                    <div className="text-sm font-semibold text-gray-900 mb-2">Google Meet Link</div>
-                    <a
-                      href={selectedAssessment.meetLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline break-all"
-                    >
-                      {selectedAssessment.meetLink}
-                    </a>
+                  {/* Client Information */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={3}>Client Information</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Full Name</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                          {selectedAssessment.client?.first_name} {selectedAssessment.client?.last_name}
+                        </div>
+                      </div>
+                      {selectedAssessment.client?.child_name && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Child Name</p>
+                          <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                            {selectedAssessment.client.child_name}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+
+                  {/* Psychologist Information */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                    <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={3}>Psychologist</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Name</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                          {selectedAssessment.psychologist ? `${selectedAssessment.psychologist.first_name} ${selectedAssessment.psychologist.last_name}` : '—'}
+                        </div>
+                      </div>
+                      {selectedAssessment.psychologist?.email && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Email</p>
+                          <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                            {selectedAssessment.psychologist.email}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Client Feedback */}
+                  {selectedAssessment.status === 'completed' && (selectedAssessment.feedback || selectedAssessment.rating) && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4 space-y-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider" role="heading" aria-level={3}>Client Feedback</div>
+                      {selectedAssessment.rating != null && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Rating</p>
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-5 w-5 ${star <= selectedAssessment.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                            <span className="ml-2 text-sm text-slate-600">({selectedAssessment.rating} out of 5)</span>
+                          </div>
+                        </div>
+                      )}
+                      {selectedAssessment.feedback && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Feedback</p>
+                          <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                            {selectedAssessment.feedback}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Meet Link */}
+                  {selectedAssessment.meetLink && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={3}>Google Meet Link</div>
+                      <a
+                        href={selectedAssessment.meetLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-[#3f2e73] hover:bg-[#3f2e73]/5 break-all"
+                      >
+                        {selectedAssessment.meetLink}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/30 flex-shrink-0">
+                <button
+                  onClick={() => setIsDetailsOpen(false)}
+                  className="px-4 py-2 text-[#3f2e73] bg-white border border-[#3f2e73]/40 rounded-lg hover:bg-[#3f2e73]/10 transition-colors text-sm font-medium"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
