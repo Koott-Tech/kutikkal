@@ -173,6 +173,7 @@ export default function UserModal({ isOpen, onClose, onSave, user = null, mode =
         role: resolvedRole,
         is_active: formData.is_active,
         ...(mode === 'add' && { password: formData.password }),
+        ...(mode === 'edit' && formData.password?.trim() && { password: formData.password.trim() }),
         ...(mode === 'edit' && user && { id: user.id })
       };
 

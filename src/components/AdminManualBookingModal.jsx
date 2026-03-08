@@ -103,9 +103,10 @@ export default function AdminManualBookingModal({
     }
   }, [psychologistId, currentDate]);
 
-  // Fetch packages when psychologist changes
+  // Fetch packages when psychologist changes; default to Individual Session
   useEffect(() => {
     if (psychologistId) {
+      setPackageId(''); // Default to Individual Session when psychologist is selected/changed
       fetchPackages();
     } else {
       setPackages([]);
@@ -120,8 +121,15 @@ export default function AdminManualBookingModal({
       if (selectedPackage) {
         setAmount(selectedPackage.price.toString());
       }
+    } else if (psychologistId && !packageId) {
+      // Individual session by default: set amount to psychologist's individual session price
+      const psych = psychologists.find(p => p.id === psychologistId);
+      const individualPrice = psych?.individual_session_price ?? psych?.price;
+      if (individualPrice != null && individualPrice !== '') {
+        setAmount(String(individualPrice));
+      }
     }
-  }, [packageId, packages]);
+  }, [packageId, packages, psychologistId, psychologists]);
 
   const resetForm = () => {
     setIsNewClient(false);
@@ -382,20 +390,23 @@ export default function AdminManualBookingModal({
   };
 
   const convertTo24Hour = (timeString) => {
-    if (!timeString.includes('AM') && !timeString.includes('PM')) {
-      return timeString;
+    if (!timeString || typeof timeString !== 'string') return timeString;
+    const trimmed = timeString.trim();
+    if (!trimmed.includes('AM') && !trimmed.includes('PM')) {
+      // Already 24h: strip seconds if present (backend expects HH:MM)
+      const parts = trimmed.split(':');
+      return parts.length >= 2 ? `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}` : trimmed;
     }
-    const [time, ampm] = timeString.split(' ');
-    const [hours, minutes] = time.split(':');
-    let hour = parseInt(hours);
-    
+    const [time, ampm] = trimmed.split(' ');
+    const [hours, minutes] = (time || '').split(':');
+    let hour = parseInt(hours, 10);
+    const min = (minutes || '00').padStart(2, '0');
     if (ampm === 'AM' && hour === 12) {
       hour = 0;
     } else if (ampm === 'PM' && hour !== 12) {
       hour += 12;
     }
-    
-    return `${hour.toString().padStart(2, '0')}:${minutes}:00`;
+    return `${String(hour).padStart(2, '0')}:${min}`;
   };
 
   const handleSubmit = async (e) => {
@@ -931,7 +942,7 @@ export default function AdminManualBookingModal({
                   <option value="">Select a psychologist</option>
                   {filteredPsychologists.map(psych => (
                     <option key={psych.id} value={psych.id}>
-                      Dr. {psych.first_name} {psych.last_name} {psych.email ? `(${psych.email})` : ''}
+                      {psych.first_name} {psych.last_name}{psych.email ? ` (${psych.email})` : ''}
                     </option>
                   ))}
                 </select>
