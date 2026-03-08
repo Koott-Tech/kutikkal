@@ -158,7 +158,7 @@ export default function FinanceSessionsPage() {
         return 'bg-yellow-100 text-yellow-800';
       case 'booked':
         if (isTimePassed()) {
-          return 'bg-orange-100 text-orange-800';
+          return 'bg-slate-100 text-slate-700';
         }
         return 'bg-blue-100 text-blue-800';
       default:
@@ -184,7 +184,7 @@ export default function FinanceSessionsPage() {
         return 'Rescheduled';
       case 'booked':
         if (isTimePassed()) {
-          return 'No Show';
+          return 'Pending';
         }
         return 'Booked';
       default:

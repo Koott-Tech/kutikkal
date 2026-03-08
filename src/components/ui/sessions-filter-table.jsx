@@ -62,10 +62,11 @@ export default function SessionsFilterTable({
       return sessionDateTime < new Date()
     }
 
-    const displayStatus = status === 'booked' && isTimePassed() ? 'No Show' : status
+    const displayStatus = status === 'booked' && isTimePassed() ? 'Pending' : status
     const variant = displayStatus === 'completed' ? 'secondary' : 
                    displayStatus === 'cancelled' ? 'destructive' : 
-                   displayStatus === 'no_show' ? 'destructive' : 'default'
+                   displayStatus === 'no_show' ? 'destructive' : 
+                   displayStatus === 'Pending' ? 'secondary' : 'default'
 
     return <Badge variant={variant}>{displayStatus}</Badge>
   }

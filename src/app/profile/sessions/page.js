@@ -233,8 +233,9 @@ export default function SessionsPage() {
         return 'bg-orange-100 text-orange-800';
       case 'ongoing':
         return 'bg-blue-100 text-blue-800';
+      case 'pending':
       case 'pending_completion':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-slate-100 text-slate-700';
       case 'no_show':
       case 'noshow':
         return 'bg-red-100 text-red-800';
@@ -313,11 +314,11 @@ export default function SessionsPage() {
       return { status: 'ongoing', label: 'Ongoing', color: 'bg-blue-100 text-blue-800' };
     }
     
-    // Check if session time has passed but not marked
+    // Check if session time has passed but not marked (awaiting completion or no-show)
     if (isSessionExpired(session)) {
       const allowedStatuses = ['booked', 'scheduled', 'rescheduled', 'reschedule_requested'];
       if (allowedStatuses.includes(session.status)) {
-        return { status: 'pending_completion', label: 'Pending Completion', color: 'bg-orange-100 text-orange-800' };
+        return { status: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' };
       }
     }
     
@@ -1008,7 +1009,7 @@ export default function SessionsPage() {
                             </span>
                               );
                             }
-                            if (displayStatus.status === 'pending_completion') {
+                            if ((displayStatus.status === 'pending' || displayStatus.status === 'pending_completion')) {
                               return (
                             <span className="flex-1 text-orange-600 bg-orange-100 px-2 py-1 rounded text-xs text-center">
                                   Pending Completion
@@ -1281,7 +1282,7 @@ export default function SessionsPage() {
                                 </span>
                                   );
                                 }
-                                if (displayStatus.status === 'pending_completion') {
+                                if ((displayStatus.status === 'pending' || displayStatus.status === 'pending_completion')) {
                                   return (
                                 <span className="text-orange-600 bg-orange-100 px-2 py-1 rounded-md text-xs sm:text-sm">
                                       Pending Completion

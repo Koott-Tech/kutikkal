@@ -441,7 +441,7 @@ export default function BookingsPage() {
         return <RefreshCw className="h-4 w-4 text-yellow-500" />;
       case 'booked':
         if (isTimePassed()) {
-          return <AlertCircle className="h-4 w-4 text-orange-500" />;
+          return <Clock className="h-4 w-4 text-slate-500" />;
         }
         return <Clock className="h-4 w-4 text-[#3f2e73]" />;
       default:
@@ -468,7 +468,7 @@ export default function BookingsPage() {
         return 'bg-yellow-100 text-yellow-800';
       case 'booked':
         if (isTimePassed()) {
-          return 'bg-orange-100 text-orange-800';
+          return 'bg-slate-100 text-slate-700';
         }
         return 'bg-[#3f2e73]/10 text-[#3f2e73]';
       default:
@@ -495,7 +495,7 @@ export default function BookingsPage() {
         return 'Rescheduled';
       case 'booked':
         if (isTimePassed()) {
-          return 'No Show';
+          return 'Pending';
         }
         return 'Booked';
       default:
@@ -520,6 +520,16 @@ export default function BookingsPage() {
     });
   };
 
+  const formatBookedAt = (isoString) => {
+    if (!isoString) return '—';
+    return new Date(isoString).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
 
   // Normalize status for comparison (backend may return 'noshow' or 'no_show')
   const normalizeStatus = (s) => (s === 'noshow' ? 'no_show' : (s || ''));
@@ -622,33 +632,6 @@ export default function BookingsPage() {
 
           {/* Filters and Search */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-              <p className="text-sm text-gray-600">
-                Showing{' '}
-                <span className="font-semibold text-gray-900">{displayBookings.length}</span>{' '}
-                of <span className="font-semibold text-gray-900">{totalBookings}</span>{' '}
-                booking{totalBookings !== 1 ? 's' : ''}
-                {filterStatus !== 'all' && filterStatus !== 'packages' && (
-                  <>
-                    {' '}with status{' '}
-                    <span className="font-medium text-gray-900">
-                      {filterStatus === 'no_show'
-                        ? 'No Show'
-                        : filterStatus.replace('_', ' ')}
-                    </span>
-                  </>
-                )}
-                {searchTerm && (
-                  <>
-                    {' '}matching "
-                    <span className="font-medium text-gray-900">
-                      {searchTerm}
-                    </span>
-                    "
-                  </>
-                )}
-              </p>
-            </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
@@ -671,7 +654,7 @@ export default function BookingsPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <p className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">{packagesList.length}</span>{' '}
-            package{packagesList.length !== 1 ? 's' : ''} with remaining sessions to book
+            package{packagesList.length !== 1 ? 's' : ''} — upcoming sessions and book next when eligible
           </p>
         </div>
       )}
@@ -719,10 +702,10 @@ export default function BookingsPage() {
                     Psychologist
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Package
+                    Progress
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Progress
+                    Upcoming sessions
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -742,16 +725,16 @@ export default function BookingsPage() {
                 ) : packagesList.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      No packages with remaining sessions to book.
+                      No packages with sessions.
                     </td>
                   </tr>
                 ) : (
                   packagesList.map((pkg) => {
-                    const raw = (pkg.package?.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
-                    const packageType = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
                     const completed = pkg.package?.completed_sessions ?? 0;
                     const total = pkg.package?.total_sessions ?? pkg.package?.session_count ?? 0;
                     const remaining = pkg.package?.remaining_sessions ?? 0;
+                    const canBookNext = pkg.package?.can_book_next === true;
+                    const upcomingSessions = pkg.upcoming_sessions ?? [];
                     return (
                       <tr key={`${pkg.client_id}-${pkg.package_id}`} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -770,21 +753,34 @@ export default function BookingsPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#3f2e73]/10 text-[#3f2e73]">
-                            {packageType}
-                          </span>
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {completed}/{total} completed · {remaining} remaining
                         </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {upcomingSessions.length === 0 ? (
+                            <span className="text-gray-400">—</span>
+                          ) : (
+                            <ul className="space-y-1">
+                              {upcomingSessions.map((s) => (
+                                <li key={s.id} className="flex items-center gap-1.5">
+                                  <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                                  <span>{formatDate(s.scheduled_date)} at {formatTime(s.scheduled_time)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => openBookNextFromPackage(pkg)}
-                            className="inline-flex items-center px-3 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] transition-colors"
-                          >
-                            Book next session
-                          </button>
+                          {canBookNext ? (
+                            <button
+                              onClick={() => openBookNextFromPackage(pkg)}
+                              className="inline-flex items-center px-3 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] transition-colors"
+                            >
+                              Book next session
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 text-sm">—</span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -809,6 +805,9 @@ export default function BookingsPage() {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Booked at
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -816,7 +815,7 @@ export default function BookingsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center">
+                  <td colSpan={6} className="px-6 py-10 text-center">
                     <div className="inline-flex flex-col items-center gap-3 text-gray-500">
                       <Loader2 className="h-8 w-8 animate-spin text-[#3f2e73]" />
                       <span className="text-sm font-medium">Processing...</span>
@@ -883,21 +882,6 @@ export default function BookingsPage() {
                           {booking.assessment_title}
                         </div>
                       )}
-                      {(booking.package_id || booking.package) && (
-                        <div className="text-xs text-gray-600 mt-1">
-                          {(() => {
-                            const pkg = booking.package || {};
-                            const totalSessions = pkg.total_sessions ?? pkg.session_count ?? 0;
-                            const completedSessions = pkg.completed_sessions;
-                            if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
-                              return `Package: ${completedSessions}/${totalSessions} sessions completed`;
-                            }
-                            if (totalSessions > 0) return `Package: ${totalSessions} sessions`;
-                            const raw = (pkg.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
-                            return `Package: ${raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()}`;
-                          })()}
-                        </div>
-                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -931,6 +915,9 @@ export default function BookingsPage() {
                         {getStatusText(booking.status, booking)}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {formatBookedAt(booking.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center justify-center gap-2">
@@ -1076,11 +1063,19 @@ export default function BookingsPage() {
         </div>
       )}
       
-      {/* Show total count */}
-      {!showPackagesView && displayBookings.length > 0 && (
+      {/* Show total count - under the table */}
+      {!showPackagesView && (displayBookings.length > 0 || totalBookings > 0) && (
         <div className="text-center mt-4 text-sm text-gray-600">
           Showing {displayBookings.length} of {totalBookings} booking{totalBookings !== 1 ? 's' : ''}
-          {searchTerm && ` (filtered by search)`}
+          {filterStatus !== 'all' && filterStatus !== 'packages' && (
+            <>
+              {' '}with status{' '}
+              <span className="font-medium text-gray-900">
+                {filterStatus === 'no_show' ? 'No Show' : filterStatus.replace('_', ' ')}
+              </span>
+            </>
+          )}
+          {searchTerm && ` matching "${searchTerm}"`}
           {totalPages > 1 && ` - Page ${currentPage} of ${totalPages}`}
         </div>
       )}
@@ -1177,6 +1172,12 @@ export default function BookingsPage() {
                         </div>
                       </div>
                     )}
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Booked at</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                        {formatBookedAt(selectedSession.created_at)}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

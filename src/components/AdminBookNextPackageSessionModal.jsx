@@ -60,7 +60,8 @@ export default function AdminBookNextPackageSessionModal({ isOpen, onClose, sess
   const totalSessions = pkg.total_sessions ?? pkg.session_count ?? 0;
   const completedSessions = pkg.completed_sessions ?? 0;
   const remainingSessions = pkg.remaining_sessions ?? Math.max(totalSessions - completedSessions, 0);
-  const packageTypeDisplay = ((pkg.package_type || 'Package').replace(/_\d+$/, '') || 'Package').replace(/^\w/, (c) => c.toUpperCase());
+  const rawType = (pkg.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
+  const packageTypeDisplay = (rawType === 'multi_session' || rawType === 'multisession' ? 'Package' : rawType).replace(/^\w/, (c) => c.toUpperCase());
 
   useEffect(() => {
     if (!isOpen || !psychologistId) return;
