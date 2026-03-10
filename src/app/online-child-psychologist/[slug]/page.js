@@ -873,39 +873,49 @@ const TherapistProfileContent = ({ slug, packageId }) => {
     return [];
   };
 
+  // Theme-aligned bubble colors: each section has its own palette, cycles per bubble
+  const SPECIALIZATION_BUBBLE_COLORS = [
+    { bg: '#f3e8ff', text: '#5b21b6' },
+    { bg: '#ede9fe', text: '#4c1d95' },
+    { bg: '#e0e7ff', text: '#3730a3' },
+    { bg: '#f5f3ff', text: '#3f2e73' }
+  ];
+  const LANGUAGES_BUBBLE_COLORS = [
+    { bg: '#ccfbf1', text: '#0f766e' },
+    { bg: '#cffafe', text: '#0e7490' },
+    { bg: '#d1fae5', text: '#047857' },
+    { bg: '#e0f2fe', text: '#0369a1' }
+  ];
+  const PERSONALITY_BUBBLE_COLORS = [
+    { bg: '#fef3c7', text: '#b45309' },
+    { bg: '#fce7f3', text: '#9d174d' },
+    { bg: '#f3e8ff', text: '#6d28d9' },
+    { bg: '#dcfce7', text: '#15803d' }
+  ];
+
   const renderLanguagesSection = () => {
     const derivedLanguages = getDoctorLanguages(selectedDoctor);
 
-    const testimonialColors = [
-      { bg: 'linear-gradient(135deg, #f5f1ff, #eae4ff)', border: '#e2d8ff' },
-      { bg: 'linear-gradient(135deg, #e4f5ff, #d2ecff)', border: '#b7e1ff' },
-      { bg: 'linear-gradient(135deg, #e8f8f6, #d0f0eb)', border: '#b2e3db' },
-      { bg: 'linear-gradient(135deg, #fef3e6, #fde4ca)', border: '#f9d6af' },
-      { bg: 'linear-gradient(135deg, #fce8f3, #fad0e7)', border: '#f5b3d6' }
-    ];
-
     return (
-      <div className="p-4 rounded-lg pl-0">
-        <p className="font-semibold text-gray-800 mb-2" style={{ lineHeight: '1.1' }}>I speak</p>
+      <div className="p-4 rounded-lg">
+        <p className="font-semibold text-gray-800 mb-3">Languages spoken</p>
         {derivedLanguages.length > 0 ? (
-          <div className="flex flex-wrap gap-2 pl-0" style={{ lineHeight: '1.1' }}>
-            {derivedLanguages.map((language, index) => (
-              <span
-                key={`${language}-${index}`}
-                className="px-3 py-1 text-xs md:text-sm font-medium shadow-sm"
-                style={{
-                  background: testimonialColors[index % testimonialColors.length].bg,
-                  color: '#3f2e73',
-                  border: `1px solid ${testimonialColors[index % testimonialColors.length].border}`,
-                  borderRadius: '10px'
-                }}
-              >
-                {language}
-              </span>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {derivedLanguages.map((language, index) => {
+              const colors = LANGUAGES_BUBBLE_COLORS[index % LANGUAGES_BUBBLE_COLORS.length];
+              return (
+                <div
+                  key={`${language}-${index}`}
+                  className="px-3 py-2 rounded-full text-sm font-medium"
+                  style={{ backgroundColor: colors.bg, color: colors.text }}
+                >
+                  {language}
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 pl-0">Languages not provided</p>
+          <p className="text-sm text-gray-500">Languages not provided</p>
         )}
       </div>
     );
@@ -2077,11 +2087,18 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                 <div className="p-4 rounded-lg">
                   <p className="font-semibold text-gray-800 mb-3">Specialization</p>
                   <div className="flex flex-wrap gap-2">
-                    {selectedDoctor.area_of_expertise.map((spec, i) => (
-                      <div key={i} className="bg-purple-100 text-purple-800 px-3 py-2 rounded-full text-sm font-medium">
-                        {spec}
-                      </div>
-                    ))}
+                    {selectedDoctor.area_of_expertise.map((spec, i) => {
+                      const colors = SPECIALIZATION_BUBBLE_COLORS[i % SPECIALIZATION_BUBBLE_COLORS.length];
+                      return (
+                        <div
+                          key={i}
+                          className="px-3 py-2 rounded-full text-sm font-medium"
+                          style={{ backgroundColor: colors.bg, color: colors.text }}
+                        >
+                          {spec}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -2094,21 +2111,22 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   <div className="p-4 rounded-lg">
                     <p className="font-semibold text-gray-800 mb-3">Personality Traits</p>
                     <div className="flex flex-wrap gap-2">
-                      {traits.map((trait, i) => (
-                        <div
-                          key={i}
-                          className="px-3 py-2 rounded-full text-sm font-medium"
-                          style={{
-                            backgroundColor: '#f3e8ff',
-                            color: '#3f2e73',
-                            border: '1px solid rgba(63,46,115,0.18)',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {trait}
-                        </div>
-                      ))}
+                      {traits.map((trait, i) => {
+                        const colors = PERSONALITY_BUBBLE_COLORS[i % PERSONALITY_BUBBLE_COLORS.length];
+                        return (
+                          <div
+                            key={i}
+                            className="px-3 py-2 rounded-full text-sm font-medium"
+                            style={{
+                              backgroundColor: colors.bg,
+                              color: colors.text,
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {trait}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );

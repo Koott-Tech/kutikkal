@@ -2233,34 +2233,7 @@ const Guide = () => {
                   </p>
                   </div>
 
-                {/* Personality traits list (same chips as card) */}
-                {(() => {
-                  const rawTraits = doctors[selected]?.personality_traits || doctors[selected]?.personalityTraits || doctors[selected]?.personalities || null;
-                  let traits = [];
-                  if (Array.isArray(rawTraits)) {
-                    traits = rawTraits;
-                  } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
-                    traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
-                  }
-                  return traits.length > 0 ? (
-                    <div style={{ marginTop: 2, marginBottom: 6, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {traits.map((trait, i) => (
-                        <span key={`trait_${i}`} style={{
-                          background: '#f0f0f0',
-                          color: '#333',
-                          borderRadius: 16,
-                          padding: '4px 12px',
-                          fontSize: '14px',
-                          fontWeight: 400
-                        }}>
-                          {trait}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null;
-                })()}
-                
-                {/* Specialization (replaces Personality in modal) */}
+                {/* Specialization */}
                 {(() => {
                   const expertiseArray = doctors[selected]?.area_of_expertise && Array.isArray(doctors[selected].area_of_expertise) && doctors[selected].area_of_expertise.length > 0 
                     ? doctors[selected].area_of_expertise 
