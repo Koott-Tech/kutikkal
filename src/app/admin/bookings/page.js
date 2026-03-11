@@ -421,6 +421,24 @@ export default function BookingsPage() {
     setIsBookNextOpen(true);
   };
 
+  const getMeetLink = (session) =>
+    session?.google_meet_link ||
+    session?.google_meet_join_url ||
+    session?.google_meet_start_url ||
+    session?.google_calendar_link;
+
+  const handleOpenMeet = (session) => {
+    const meetUrl = getMeetLink(session);
+    if (!meetUrl) {
+      showError('No Google Meet link is available for this session yet.', 'Meet Link');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const url = meetUrl.startsWith('http') ? meetUrl : `https://${meetUrl}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
 
   const getStatusIcon = (status, booking) => {
     // Check if session time has passed but status is still 'booked'
@@ -942,7 +960,15 @@ export default function BookingsPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
+                          {getMeetLink(booking) && booking.status !== 'completed' && booking.status !== 'cancelled' && (
+                            <>
+                              <DropdownMenuItem onClick={() => handleOpenMeet(booking)} className="cursor-pointer">
+                                <Video className="h-4 w-4 mr-2" />
+                                Open Meet
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
                           <DropdownMenuItem onClick={() => handleEditSession(booking)} className="cursor-pointer">
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
