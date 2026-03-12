@@ -26,7 +26,8 @@ import {
   Trash2,
   MessageSquare,
   MoreVertical,
-  FileText
+  FileText,
+  Video
 } from 'lucide-react';
 import {
   DropdownMenu,
