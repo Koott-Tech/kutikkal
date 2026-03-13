@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { DollarSign, Plus, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
+import { DollarSign, Plus, Edit, Trash2, MoreVertical, X, Loader2, AlertTriangle } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNotification } from '@/contexts/NotificationContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,16 +13,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function FinanceIncome() {
-  const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { showError, showSuccess } = useNotification();
   const [income, setIncome] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingIncome, setEditingIncome] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingIncomeId, setDeletingIncomeId] = useState(null);
+  const [deletingIncome, setDeletingIncome] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [sources, setSources] = useState([]);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -35,38 +33,33 @@ export default function FinanceIncome() {
     notes: ''
   });
 
+  const defaultFormData = {
+    date: new Date().toISOString().split('T')[0],
+    income_source: '',
+    description: '',
+    amount: '',
+    payment_method: 'bank_transfer',
+    reference_number: '',
+    notes: ''
+  };
+
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated()) {
-        router.push('/');
-        return;
-      }
-      
-      if (!hasRole('finance') && !hasRole('admin') && !hasRole('superadmin')) {
-        router.push('/');
-        return;
-      }
-      
-      loadIncome();
-      loadSources();
-    }
-  }, [authLoading, isAuthenticated, hasRole, router]);
+    loadIncome();
+    loadSources();
+  }, []);
 
   const loadIncome = async () => {
     try {
       setIsLoading(true);
-      setError(null);
-
       const response = await financeApi.getIncome();
-      
       if (response.success) {
         setIncome(response.data.income || []);
       } else {
-        setError(response.message || 'Failed to load income');
+        showError(response.message || 'Failed to load income', 'Load Error');
       }
     } catch (err) {
       console.error('Failed to load income:', err);
-      setError('Failed to load income. Please try again.');
+      showError('Failed to load income', 'Load Error');
     } finally {
       setIsLoading(false);
     }
@@ -89,22 +82,15 @@ export default function FinanceIncome() {
       const response = await financeApi.createIncome(formData);
       if (response.success) {
         setShowAddModal(false);
-        setFormData({
-          date: new Date().toISOString().split('T')[0],
-          income_source: '',
-          description: '',
-          amount: '',
-          payment_method: 'bank_transfer',
-          reference_number: '',
-          notes: ''
-        });
+        setFormData(defaultFormData);
         loadIncome();
+        showSuccess('Income entry added successfully', 'Success');
       } else {
-        alert(response.message || 'Failed to create income entry');
+        showError(response.message || 'Failed to create income entry', 'Error');
       }
     } catch (err) {
       console.error('Failed to create income:', err);
-      alert('Failed to create income entry. Please try again.');
+      showError('Failed to create income entry', 'Error');
     }
   };
 
@@ -129,50 +115,48 @@ export default function FinanceIncome() {
       if (response.success) {
         setShowEditModal(false);
         setEditingIncome(null);
-        setFormData({
-          date: new Date().toISOString().split('T')[0],
-          income_source: '',
-          description: '',
-          amount: '',
-          payment_method: 'bank_transfer',
-          reference_number: '',
-          notes: ''
-        });
+        setFormData(defaultFormData);
         loadIncome();
+        showSuccess('Income entry updated successfully', 'Success');
       } else {
-        alert(response.message || 'Failed to update income entry');
+        showError(response.message || 'Failed to update income entry', 'Error');
       }
     } catch (err) {
       console.error('Failed to update income:', err);
-      alert('Failed to update income entry. Please try again.');
+      showError('Failed to update income entry', 'Error');
     }
   };
 
-  const handleDeleteClick = (incomeId) => {
-    setDeletingIncomeId(incomeId);
+  const handleDeleteClick = (item) => {
+    setDeletingIncome(item);
     setShowDeleteConfirm(true);
   };
 
   const handleDeleteConfirm = async () => {
+    if (!deletingIncome) return;
+    setIsDeleting(true);
     try {
-      const response = await financeApi.deleteIncome(deletingIncomeId);
+      const response = await financeApi.deleteIncome(deletingIncome.id);
       if (response.success) {
         setShowDeleteConfirm(false);
-        setDeletingIncomeId(null);
+        setDeletingIncome(null);
         loadIncome();
+        showSuccess('Income entry deleted successfully', 'Success');
       } else {
-        alert(response.message || 'Failed to delete income entry');
+        showError(response.message || 'Failed to delete income entry', 'Error');
       }
     } catch (err) {
       console.error('Failed to delete income:', err);
-      alert('Failed to delete income entry. Please try again.');
+      showError('Failed to delete income entry', 'Error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  if (authLoading || isLoading) {
+  if (isLoading && income.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
@@ -180,181 +164,154 @@ export default function FinanceIncome() {
   const totalIncome = income.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">Income Management</div>
-            <p className="text-xs sm:text-sm text-gray-600">Track and manage company income</p>
+            <div className="text-base font-semibold text-gray-900">Income</div>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
+            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] transition-colors"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Plus className="h-4 w-4 mr-2" />
             Add Income
           </button>
         </div>
 
         {/* Summary Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Income</p>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">₹{totalIncome.toLocaleString('en-IN')}</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="h-5 w-5 text-green-600" />
             </div>
-            <div className="p-3 sm:p-4 rounded-lg bg-green-50 text-green-600">
-              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8" />
-            </div>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Income</p>
+          </div>
+          <div className="text-xl font-semibold text-gray-900">
+            ₹{totalIncome.toLocaleString('en-IN')}
           </div>
         </div>
 
-        {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-            <p className="text-red-700">{error}</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto -mx-3 sm:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        {/* Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {isLoading ? (
                   <tr>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Payment Method</th>
-                      <th className="px-3 sm:px-6 py-2 sm:py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <td colSpan={6} className="px-6 py-10 text-center">
+                      <div className="inline-flex flex-col items-center gap-3 text-gray-500">
+                        <Loader2 className="h-8 w-8 animate-spin text-[#3f2e73]" />
+                        <span className="text-sm font-medium">Processing...</span>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {income.length > 0 ? (
-                    income.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                          {new Date(item.date).toLocaleDateString('en-IN')}
-                        </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                          {item.income_source}
-                        </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
-                          {item.description}
-                        </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-900">
-                          ₹{(item.amount || 0).toLocaleString('en-IN')}
-                        </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-600 capitalize hidden md:table-cell">
-                          {item.payment_method?.replace('_', ' ') || 'N/A'}
-                        </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
-                                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem onClick={() => handleEdit(item)} className="cursor-pointer">
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => handleDeleteClick(item.id)} 
-                                  className="cursor-pointer text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                        No income entries found
+                ) : income.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center">
+                      <DollarSign className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-2 text-sm font-semibold text-gray-900">No income entries found</div>
+                      <p className="mt-1 text-sm text-gray-500">Add your first income entry to get started.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  income.map((item) => (
+                    <tr key={item.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(item.date).toLocaleDateString('en-IN')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.income_source}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {item.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        ₹{(item.amount || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
+                        {item.payment_method?.replace('_', ' ') || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100">
+                              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => handleEdit(item)} className="cursor-pointer">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteClick(item)} 
+                              className="cursor-pointer text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-              </div>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
 
         {/* Add Income Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111827' }}>Add New Income</h2>
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-hidden flex flex-col border border-slate-200/80">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                    <Plus className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 tracking-tight">Add New Income</div>
                 </div>
+                <button onClick={() => setShowAddModal(false)} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Date</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Income Source</label>
-                  <select
-                    value={formData.income_source}
-                    onChange={(e) => setFormData({ ...formData, income_source: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  >
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Income Source</label>
+                  <select value={formData.income_source} onChange={(e) => setFormData({ ...formData, income_source: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent">
                     <option value="">Select source</option>
-                    {sources.map((source) => (
-                      <option key={source.id} value={source.name}>{source.name}</option>
-                    ))}
+                    {sources.map((source) => (<option key={source.id} value={source.name}>{source.name}</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <input
-                    type="text"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
+                  <input type="text" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-                  <input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Amount</label>
+                  <input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required min="0" step="0.01" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                  <select
-                    value={formData.payment_method}
-                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  >
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Payment Method</label>
+                  <select value={formData.payment_method} onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent">
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="cash">Cash</option>
                     <option value="cheque">Cheque</option>
@@ -363,37 +320,16 @@ export default function FinanceIncome() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Reference Number</label>
-                  <input
-                    type="text"
-                    value={formData.reference_number}
-                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Reference Number</label>
+                  <input type="text" value={formData.reference_number} onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Notes</label>
+                  <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
-                  >
-                    Add Income
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                  <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-[#3f2e73] rounded-lg hover:bg-[#1d1733] transition-colors">Add Income</button>
                 </div>
               </form>
             </div>
@@ -402,85 +338,42 @@ export default function FinanceIncome() {
 
         {/* Edit Income Modal */}
         {showEditModal && editingIncome && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111827' }}>Edit Income Entry</h2>
-                  <button
-                    onClick={() => {
-                      setShowEditModal(false);
-                      setEditingIncome(null);
-                      setFormData({
-                        date: new Date().toISOString().split('T')[0],
-                        income_source: '',
-                        description: '',
-                        amount: '',
-                        payment_method: 'bank_transfer',
-                        reference_number: '',
-                        notes: ''
-                      });
-                    }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    ✕
-                  </button>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-hidden flex flex-col border border-slate-200/80">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <Edit className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 tracking-tight">Edit Income Entry</div>
                 </div>
+                <button onClick={() => { setShowEditModal(false); setEditingIncome(null); setFormData(defaultFormData); }} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-              <form onSubmit={handleUpdate} className="p-6 space-y-4">
+              <form onSubmit={handleUpdate} className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Date</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Income Source</label>
-                  <select
-                    value={formData.income_source}
-                    onChange={(e) => setFormData({ ...formData, income_source: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  >
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Income Source</label>
+                  <select value={formData.income_source} onChange={(e) => setFormData({ ...formData, income_source: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent">
                     <option value="">Select source</option>
-                    {sources.map((source) => (
-                      <option key={source.id} value={source.name}>{source.name}</option>
-                    ))}
+                    {sources.map((source) => (<option key={source.id} value={source.name}>{source.name}</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <input
-                    type="text"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
+                  <input type="text" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-                  <input
-                    type="number"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Amount</label>
+                  <input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required min="0" step="0.01" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                  <select
-                    value={formData.payment_method}
-                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  >
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Payment Method</label>
+                  <select value={formData.payment_method} onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent">
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="cash">Cash</option>
                     <option value="cheque">Cheque</option>
@@ -489,49 +382,16 @@ export default function FinanceIncome() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Reference Number</label>
-                  <input
-                    type="text"
-                    value={formData.reference_number}
-                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Reference Number</label>
+                  <input type="text" value={formData.reference_number} onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-                  />
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Notes</label>
+                  <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent" />
                 </div>
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d1f52] transition-colors"
-                  >
-                    Update Income
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEditModal(false);
-                      setEditingIncome(null);
-                      setFormData({
-                        date: new Date().toISOString().split('T')[0],
-                        income_source: '',
-                        description: '',
-                        amount: '',
-                        payment_method: 'bank_transfer',
-                        reference_number: '',
-                        notes: ''
-                      });
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => { setShowEditModal(false); setEditingIncome(null); setFormData(defaultFormData); }} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                  <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-[#3f2e73] rounded-lg hover:bg-[#1d1733] transition-colors">Update Income</button>
                 </div>
               </form>
             </div>
@@ -539,29 +399,84 @@ export default function FinanceIncome() {
         )}
 
         {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-md w-full">
-              <div className="p-6">
-                <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Delete Income Entry</h2>
-                <p className="text-gray-600 mb-6">Are you sure you want to delete this income entry? This action cannot be undone.</p>
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleDeleteConfirm}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDeleteConfirm(false);
-                      setDeletingIncomeId(null);
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
+        {showDeleteConfirm && deletingIncome && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200/80">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 tracking-tight">Delete Income Entry</div>
                 </div>
+                <button
+                  onClick={() => { setShowDeleteConfirm(false); setDeletingIncome(null); }}
+                  disabled={isDeleting}
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors disabled:opacity-50"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-5 space-y-4">
+                <p className="text-sm text-slate-600">
+                  Are you sure you want to delete this income entry? This action cannot be undone.
+                </p>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Source</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                        {deletingIncome.income_source || '—'}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Amount</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-900">
+                        ₹{(deletingIncome.amount || 0).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                    {deletingIncome.description && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Description</p>
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                          {deletingIncome.description}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/30">
+                <button
+                  onClick={() => { setShowDeleteConfirm(false); setDeletingIncome(null); }}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -570,4 +485,3 @@ export default function FinanceIncome() {
     </div>
   );
 }
-

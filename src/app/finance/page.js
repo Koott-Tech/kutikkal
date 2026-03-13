@@ -37,8 +37,6 @@ export default function FinanceDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pendingPayouts, setPendingPayouts] = useState([]);
-  const [isLoadingPayouts, setIsLoadingPayouts] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
   const [isLoadingCharts, setIsLoadingCharts] = useState(false);
   // Date range filter (default to current month in IST)
@@ -98,8 +96,6 @@ export default function FinanceDashboard() {
         return;
       }
       
-      // Load pending payouts (doesn't depend on date range)
-      loadPendingPayouts();
     }
   }, [authLoading, isAuthenticated, hasRole, router]);
 
@@ -339,25 +335,6 @@ export default function FinanceDashboard() {
       console.error('Failed to load charts data:', err);
     } finally {
       setIsLoadingCharts(false);
-    }
-  };
-
-  const loadPendingPayouts = async () => {
-    try {
-      setIsLoadingPayouts(true);
-      const today = new Date();
-      const response = await financeApi.getPendingPayouts({ 
-        month: today.getMonth() + 1, 
-        year: today.getFullYear() 
-      });
-      
-      if (response.success) {
-        setPendingPayouts(response.data.payouts || []);
-      }
-    } catch (err) {
-      console.error('Failed to load pending payouts:', err);
-    } finally {
-      setIsLoadingPayouts(false);
     }
   };
 
@@ -1004,10 +981,10 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
+    <div className="min-h-screen bg-gray-50 px-2 pt-1 pb-2 sm:px-3 sm:pt-2 sm:pb-3 lg:px-4 lg:pt-3 lg:pb-4">
       <div className="max-w-7xl mx-auto">
         {/* Date Range Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 sm:mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-2 sm:mb-3">
           <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-gray-400" />
@@ -1029,49 +1006,44 @@ export default function FinanceDashboard() {
           <ExportButton dateRange={dateRange} />
         </div>
 
-        {/* Row 1: Session Status Counts */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Total</span>
-              <Calendar className="h-5 w-5 text-gray-400" />
+        {/* Row 1: Session Status Counts - full width */}
+        <div className="w-full -mx-2 sm:-mx-3 lg:-mx-4 px-2 sm:px-3 lg:px-4 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 w-full min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Total</span>
+                <Calendar className="h-5 w-5 text-gray-400 flex-shrink-0" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-gray-900">{stats.total_sessions || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Pending </span>
-              <Clock className="h-5 w-5 text-yellow-400" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 w-full min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Pending</span>
+                <Clock className="h-5 w-5 text-yellow-400 flex-shrink-0" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-yellow-700">{stats.pending_sessions || 0}</p>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-yellow-700">{stats.pending_sessions || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Completed </span>
-              <CheckCircle className="h-5 w-5 text-green-400" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 w-full min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Completed</span>
+                <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-green-700">{stats.completed_sessions || 0}</p>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-green-700">{stats.completed_sessions || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Rescheduled</span>
-              <ArrowRightLeft className="h-5 w-5 text-purple-400" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 w-full min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Rescheduled</span>
+                <ArrowRightLeft className="h-5 w-5 text-purple-400 flex-shrink-0" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-purple-700">{stats.rescheduled_sessions || 0}</p>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-purple-700">{stats.rescheduled_sessions || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Reschedule Requested</span>
-              <Clock className="h-5 w-5 text-orange-400" />
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 w-full min-w-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">No Show</span>
+                <XCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-red-700">{stats.no_show_sessions || 0}</p>
             </div>
-            <p className="text-lg sm:text-xl font-semibold text-orange-700">{stats.reschedule_requested_sessions || 0}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">No Show</span>
-              <XCircle className="h-5 w-5 text-red-400" />
-            </div>
-            <p className="text-lg sm:text-xl font-semibold text-red-700">{stats.no_show_sessions || 0}</p>
           </div>
         </div>
 
@@ -1080,16 +1052,12 @@ export default function FinanceDashboard() {
           <StatCard
             title="Total Revenue"
             value={`₹${(stats.total_revenue || 0).toLocaleString('en-IN')}`}
-            change={stats.revenue_change}
-            changeType={stats.revenue_change_type}
             icon={DollarSign}
             color="green"
           />
           <StatCard
             title="Net Profit"
             value={`₹${(stats.net_profit || 0).toLocaleString('en-IN')}`}
-            change={stats.profit_change}
-            changeType={stats.profit_change_type}
             icon={TrendingUp}
             color="purple"
           />
@@ -1168,18 +1136,18 @@ export default function FinanceDashboard() {
         {showCharts && dashboardData?.charts && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Revenue by Type Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 overflow-visible min-h-[240px]">
             <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Revenue by Type</div>
             {revenueByTypeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
-                <PieChart>
+              <ResponsiveContainer width="100%" height={220} minHeight={220} className="overflow-visible">
+                <PieChart margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
                   <Pie
                     data={revenueByTypeData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={{ strokeWidth: 1 }}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={70}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -1196,18 +1164,18 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Commission Breakdown Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 overflow-visible min-h-[240px]">
             <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Commission Breakdown</div>
             {commissionBreakdownData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
-                <PieChart>
+              <ResponsiveContainer width="100%" height={220} minHeight={220} className="overflow-visible">
+                <PieChart margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
                   <Pie
                     data={commissionBreakdownData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={{ strokeWidth: 1 }}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
+                    outerRadius={70}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -1224,21 +1192,18 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Expense by Category Pie Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 overflow-visible min-h-[240px]">
             <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900 mb-4">Expenses by Category</div>
             {expenseByCategoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
-                <PieChart>
+              <ResponsiveContainer width="100%" height={220} minHeight={220} className="overflow-visible">
+                <PieChart margin={{ top: 10, right: 60, bottom: 10, left: 60 }}>
                   <Pie
                     data={expenseByCategoryData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
-                    label={({ category, amount, percent }) => {
-                      const total = expenseByCategoryData.reduce((sum, e) => sum + e.amount, 0);
-                      return `${category}: ${(percent * 100).toFixed(0)}%`;
-                    }}
-                    outerRadius={80}
+                    labelLine={{ strokeWidth: 1 }}
+                    label={({ category, percent }) => `${category}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={70}
                     fill="#8884d8"
                     dataKey="amount"
                     nameKey="category"
@@ -1301,80 +1266,6 @@ export default function FinanceDashboard() {
           </div>
         </div>
         )}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-            <div>
-              <div role="heading" aria-level="3" className="text-[20px] font-medium text-gray-900 mb-1">Pending Payouts</div>
-              <p className="text-xs text-gray-600">Doctors with completed sessions awaiting payout</p>
-            </div>
-            <a
-              href="/finance/payouts"
-              className="text-sm text-[#3f2e73] hover:underline font-medium"
-            >
-              View All →
-            </a>
-          </div>
-          {isLoadingPayouts ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
-            </div>
-          ) : pendingPayouts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pendingPayouts.map((payout) => (
-                <div
-                  key={payout.psychologist_id}
-                  className="bg-gray-50 rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {payout.psychologist?.cover_image_url ? (
-                          <Image
-                            src={normalizeImageUrl(payout.psychologist.cover_image_url)}
-                            alt={`${payout.psychologist.first_name} ${payout.psychologist.last_name}`}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-[#3f2e73] text-white flex items-center justify-center font-semibold text-lg">
-                            {payout.psychologist?.first_name?.[0] || <User className="h-6 w-6" />}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {payout.psychologist?.first_name} {payout.psychologist?.last_name}
-                        </p>
-                        <p className="text-xs text-gray-600">{payout.psychologist?.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-200">
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Total Sessions</div>
-                      <div className="text-lg font-semibold text-gray-900">
-                        {payout.total_sessions || 0}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                        <Wallet className="h-3 w-3" />
-                        Doctor Wallet
-                      </div>
-                      <div className="text-lg font-semibold text-green-700">
-                        ₹{(payout.total_doctor_wallet || payout.net_payout || 0).toLocaleString('en-IN')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">No pending payouts</p>
-          )}
-        </div>
 
         {/* Top Doctors */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
@@ -1406,10 +1297,10 @@ export default function FinanceDashboard() {
           )}
         </div>
 
-        {/* Recent Sessions */}
+        {/* Recent Bookings */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900">Recent Sessions</div>
+            <div role="heading" aria-level="3" className="text-sm font-medium text-gray-900">Recent Bookings</div>
             <a
               href="/finance/sessions"
               className="text-sm text-[#3f2e73] hover:underline font-medium"
@@ -1444,7 +1335,9 @@ export default function FinanceDashboard() {
                         {session.client?.first_name} {session.client?.last_name}
                       </td>
                         <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-600 capitalize">
-                        {session.session_type || 'Individual'}
+                        {session.package_progress
+                          ? `Package (${session.package_progress})`
+                          : (session.session_type || 'Individual')}
                       </td>
                         <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-right font-semibold text-gray-900">
                         ₹{(session.amount || 0).toLocaleString('en-IN')}
@@ -1473,7 +1366,7 @@ export default function FinanceDashboard() {
             </div>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-8">No recent sessions</p>
+            <p className="text-gray-500 text-center py-8">No recent bookings</p>
           )}
         </div>
       </div>

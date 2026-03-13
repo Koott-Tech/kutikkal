@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Edit, Save, X, DollarSign, TrendingUp, Calendar, Wallet, Eye, User, MoreVertical } from 'lucide-react';
+import { Edit, Save, X, DollarSign, TrendingUp, Calendar, Wallet, Eye, User, MoreVertical, Filter } from 'lucide-react';
 import { financeApi } from '@/lib/backendApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNotification } from '@/contexts/NotificationContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import DateRangePicker from '@/components/ui/date-range-picker';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,34 +22,39 @@ const getDoctorImageUrl = (doctor) => {
 };
 
 export default function FinanceDoctors() {
-  const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
-  const router = useRouter();
+  const { showError } = useNotification();
   const [doctors, setDoctors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [editCommissions, setEditCommissions] = useState({}); // { individual: '', package_2: '', package_3: '', ... }
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
+  const [editCommissions, setEditCommissions] = useState({});
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [expandedCards, setExpandedCards] = useState(new Set()); // Track which cards are expanded
+  const [expandedCards, setExpandedCards] = useState(new Set());
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      const [month, , year] = istString.split('/').map(Number);
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) throw new Error('Invalid date');
+      return { from: startOfMonth, to: endOfMonth };
+    } catch {
+      const today = new Date();
+      const s = new Date(today.getFullYear(), today.getMonth(), 1); s.setHours(0,0,0,0);
+      const e = new Date(today.getFullYear(), today.getMonth() + 1, 0); e.setHours(23,59,59,999);
+      return { from: s, to: e };
+    }
+  });
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated()) {
-        router.push('/');
-        return;
-      }
-      
-      if (!hasRole('finance') && !hasRole('admin') && !hasRole('superadmin')) {
-        router.push('/');
-        return;
-      }
-      
-      loadDoctors();
-    }
-  }, [authLoading, isAuthenticated, hasRole, router, selectedMonth, selectedYear]);
+    loadDoctors();
+  }, [dateRange]);
 
   const loadDoctors = async () => {
     try {
@@ -57,8 +62,17 @@ export default function FinanceDoctors() {
       setError(null);
 
       const params = {};
-      if (selectedMonth) params.month = selectedMonth;
-      if (selectedYear) params.year = selectedYear;
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        params.dateFrom = formatDateToIST(dateRange.from);
+        params.dateTo = formatDateToIST(dateRange.to);
+      }
 
       const response = await financeApi.getCommissions(params);
       
@@ -269,62 +283,35 @@ export default function FinanceDoctors() {
     setIsDetailModalOpen(true);
   };
 
-  // Generate month/year options
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const monthOptions = Array.from({ length: 12 }, (_, i) => {
-    const month = i + 1;
-    return { value: month, label: new Date(currentYear, i, 1).toLocaleDateString('en-US', { month: 'long' }) };
-  });
-  const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
-
-  if (authLoading || isLoading) {
+  if (isLoading && doctors.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#3f2e73' }}></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3f2e73]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 sm:p-3 lg:p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-2 sm:mb-3">
-          <div role="heading" aria-level="2" className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-1">
-            Doctor Commission Management
+    <div className="px-4 sm:px-6 lg:px-8 py-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-base font-semibold text-gray-900">Doctors</div>
           </div>
-          <p className="text-xs sm:text-sm text-gray-600">Manage commission amounts and view revenue statistics for each doctor</p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Month</label>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-              >
-                <option value="">All Months</option>
-                {monthOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">Date Range:</span>
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Year</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3f2e73] focus:border-transparent"
-              >
-                <option value="">All Years</option>
-                {yearOptions.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
+            <DateRangePicker
+              selectedRange={dateRange}
+              onSelect={setDateRange}
+            />
           </div>
         </div>
 
@@ -356,7 +343,7 @@ export default function FinanceDoctors() {
                       </div>
 
                       <div className="flex-1">
-                        <div role="heading" aria-level="3" style={{ fontSize: '16px', fontWeight: 600, color: '#111827', margin: 0 }}>
+                        <div className="text-sm font-semibold text-gray-900">
                           {doctor.psychologist?.first_name} {doctor.psychologist?.last_name}
                         </div>
                       </div>
@@ -435,7 +422,7 @@ export default function FinanceDoctors() {
                   {/* Commission Settings Section - Always visible when editing, expandable when viewing */}
                   {editingId === doctor.psychologist_id ? (
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div role="heading" aria-level="4" style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Commission Settings</div>
+                      <div className="text-sm font-semibold text-gray-900 mb-4">Commission Settings</div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Column 1: Individual Session */}
                         <div className="border border-gray-200 rounded-lg p-4">
@@ -580,7 +567,7 @@ export default function FinanceDoctors() {
                     </div>
                   ) : expandedCards.has(doctor.psychologist_id) && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div role="heading" aria-level="4" style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Commission Settings</div>
+                      <div className="text-sm font-semibold text-gray-900 mb-4">Commission Settings</div>
                       <div className="space-y-4">
                         {/* Individual Session Commission */}
                         <div>
@@ -655,165 +642,164 @@ export default function FinanceDoctors() {
 
         {/* Detail Modal */}
         {isDetailModalOpen && selectedDoctor && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {getDoctorImageUrl(selectedDoctor) ? (
-                        <img
-                          src={getDoctorImageUrl(selectedDoctor)}
-                          alt={`${selectedDoctor.psychologist?.first_name} ${selectedDoctor.psychologist?.last_name}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="h-8 w-8 text-gray-500" />
-                      )}
-                    </div>
-                    <div>
-                      <div role="heading" aria-level="2" style={{ fontSize: '20px', fontWeight: 600, color: '#111827', margin: 0 }}>
-                        {selectedDoctor.psychologist?.first_name} {selectedDoctor.psychologist?.last_name}
-                      </div>
-                      <p className="text-sm text-gray-600">{selectedDoctor.psychologist?.email}</p>
-                    </div>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden flex flex-col border border-slate-200/80">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {getDoctorImageUrl(selectedDoctor) ? (
+                      <img
+                        src={getDoctorImageUrl(selectedDoctor)}
+                        alt={`${selectedDoctor.psychologist?.first_name} ${selectedDoctor.psychologist?.last_name}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-gray-500" />
+                    )}
                   </div>
-                  <button
-                    onClick={() => setIsDetailModalOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Commission Settings */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div role="heading" aria-level="3" style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Commission Settings</div>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Individual Session Commission</label>
-                        <p className="text-lg font-semibold text-gray-900 mt-1">
-                          ₹{selectedDoctor.commission_amount_individual || 0}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-600">Package Session Commission</label>
-                        <p className="text-lg font-semibold text-gray-900 mt-1">
-                          ₹{selectedDoctor.commission_amount_package || 0}
-                        </p>
-                      </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900 tracking-tight">
+                      {selectedDoctor.psychologist?.first_name} {selectedDoctor.psychologist?.last_name}
                     </div>
-                  </div>
-
-                  {/* Session Prices */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div role="heading" aria-level="3" style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Session Prices</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Individual Session:</span>
-                        <span className="text-sm font-semibold text-gray-900">
-                          ₹{selectedDoctor.individual_session_price ? selectedDoctor.individual_session_price.toLocaleString('en-IN') : 'N/A'}
-                        </span>
-                      </div>
-                      {selectedDoctor.package_prices && selectedDoctor.package_prices.length > 0 ? (
-                        selectedDoctor.package_prices.map((pkg, idx) => (
-                          <div key={idx} className="flex justify-between">
-                            <span className="text-sm text-gray-600">{pkg.session_count} Session Package:</span>
-                            <span className="text-sm font-semibold text-gray-900">
-                              ₹{pkg.price.toLocaleString('en-IN')} (Full Package)
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Package Sessions:</span>
-                          <span className="text-sm text-gray-400">N/A</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Session Statistics */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div role="heading" aria-level="3" style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Session Statistics</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Individual Sessions:</span>
-                        <span className="text-sm font-semibold text-gray-900">
-                          {selectedDoctor.individual_sessions || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Package Sessions:</span>
-                        <span className="text-sm font-semibold text-gray-900">
-                          {selectedDoctor.package_sessions || 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Sessions:</span>
-                        <span className="text-sm font-semibold text-gray-900">
-                          {selectedDoctor.total_sessions || 0}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Revenue Statistics */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div role="heading" aria-level="3" style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Revenue Statistics</div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Revenue:</span>
-                        <span className="text-sm font-semibold text-gray-900">
-                          ₹{(selectedDoctor.total_revenue || 0).toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-green-700">
-                        <span className="text-sm">To Doctor Wallet:</span>
-                        <span className="text-sm font-semibold">
-                          ₹{(selectedDoctor.total_to_doctor_wallet || 0).toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-blue-700">
-                        <span className="text-sm">Company Commission:</span>
-                        <span className="text-sm font-semibold">
-                          ₹{(selectedDoctor.total_commission_to_company || 0).toLocaleString('en-IN')}
-                        </span>
-                      </div>
-                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">{selectedDoctor.psychologist?.email}</p>
                   </div>
                 </div>
+                <button
+                  onClick={() => setIsDetailModalOpen(false)}
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
 
-                {/* Monthly Breakdown */}
-                {selectedDoctor.monthly_breakdown && selectedDoctor.monthly_breakdown.length > 0 && (
-                  <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                    <div role="heading" aria-level="3" style={{ fontSize: '18px', fontWeight: 600, color: '#111827', marginBottom: '16px' }}>Monthly Breakdown</div>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {selectedDoctor.monthly_breakdown.map((month, idx) => (
-                        <div key={idx} className="border-b border-gray-200 pb-2 last:border-0">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              {new Date(month.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </span>
-                            <span className="text-sm font-semibold text-gray-900">
-                              ₹{(month.total_revenue || 0).toLocaleString('en-IN')}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-600 pl-2">
-                            <span>Wallet: ₹{(month.to_doctor_wallet || 0).toLocaleString('en-IN')}</span>
-                            <span>Company: ₹{(month.commission_to_company || 0).toLocaleString('en-IN')}</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-500 pl-2 mt-1">
-                            <span>Individual: {month.individual_sessions || 0}</span>
-                            <span>Package: {month.package_sessions || 0}</span>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Commission Settings */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Commission Settings</div>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Individual Session</p>
+                          <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-900">
+                            ₹{selectedDoctor.commission_amount_individual || 0}
                           </div>
                         </div>
-                      ))}
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Package Session</p>
+                          <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-900">
+                            ₹{selectedDoctor.commission_amount_package || 0}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Session Prices */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Session Prices</div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-slate-500">Individual:</span>
+                          <span className="text-sm font-medium text-slate-900">
+                            ₹{selectedDoctor.individual_session_price ? selectedDoctor.individual_session_price.toLocaleString('en-IN') : 'N/A'}
+                          </span>
+                        </div>
+                        {selectedDoctor.package_prices && selectedDoctor.package_prices.length > 0 ? (
+                          selectedDoctor.package_prices.map((pkg, idx) => (
+                            <div key={idx} className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                              <span className="text-xs text-slate-500">{pkg.session_count} Sessions:</span>
+                              <span className="text-sm font-medium text-slate-900">₹{pkg.price.toLocaleString('en-IN')}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                            <span className="text-xs text-slate-500">Package:</span>
+                            <span className="text-sm text-slate-400">N/A</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Session Statistics */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Session Statistics</div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-slate-500">Individual:</span>
+                          <span className="text-sm font-medium text-slate-900">{selectedDoctor.individual_sessions || 0}</span>
+                        </div>
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-slate-500">Package:</span>
+                          <span className="text-sm font-medium text-slate-900">{selectedDoctor.package_sessions || 0}</span>
+                        </div>
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-slate-500">Total:</span>
+                          <span className="text-sm font-semibold text-slate-900">{selectedDoctor.total_sessions || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Revenue Statistics */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Revenue Statistics</div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-slate-500">Total Revenue:</span>
+                          <span className="text-sm font-medium text-slate-900">₹{(selectedDoctor.total_revenue || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-green-600">Doctor Wallet:</span>
+                          <span className="text-sm font-medium text-green-700">₹{(selectedDoctor.total_to_doctor_wallet || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex justify-between bg-white border border-slate-200 rounded-lg px-3 py-2">
+                          <span className="text-xs text-blue-600">Company:</span>
+                          <span className="text-sm font-medium text-blue-700">₹{(selectedDoctor.total_commission_to_company || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )}
+
+                  {/* Monthly Breakdown */}
+                  {selectedDoctor.monthly_breakdown && selectedDoctor.monthly_breakdown.length > 0 && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Monthly Breakdown</div>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {selectedDoctor.monthly_breakdown.map((month, idx) => (
+                          <div key={idx} className="bg-white border border-slate-200 rounded-lg px-4 py-3">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm font-medium text-slate-900">
+                                {new Date(month.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <span className="text-sm font-semibold text-slate-900">
+                                ₹{(month.total_revenue || 0).toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-500">
+                              <span>Wallet: ₹{(month.to_doctor_wallet || 0).toLocaleString('en-IN')}</span>
+                              <span>Company: ₹{(month.commission_to_company || 0).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-400 mt-0.5">
+                              <span>Individual: {month.individual_sessions || 0}</span>
+                              <span>Package: {month.package_sessions || 0}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end px-6 py-4 border-t border-slate-200 bg-slate-50/30 flex-shrink-0">
+                <button
+                  onClick={() => setIsDetailModalOpen(false)}
+                  className="px-4 py-2 text-[#3f2e73] bg-white border border-[#3f2e73]/40 rounded-lg hover:bg-[#3f2e73]/10 transition-colors text-sm font-medium"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>

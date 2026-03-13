@@ -897,19 +897,8 @@ export default function SessionsPage() {
                           })()}
                               {((session.package && session.package.package_type) || session.package_id) && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                  {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                    <span>Package ({(() => {
-                                      // For completed sessions, show completed count
-                                      // For booked/upcoming sessions, show completed + 1 (this booked session)
-                                      const completed = session.package.completed_sessions || 0;
-                                      const total = session.package.total_sessions || 0;
-                                      if (session.status === 'completed') {
-                                        return `${completed}/${total}`;
-                                      } else {
-                                        // For booked/scheduled/rescheduled sessions, show booked count (completed + 1)
-                                        return `${Math.min(total, completed + 1)}/${total}`;
-                                      }
-                                    })()})</span>
+                                  {session.package?.session_number && session.package?.total_sessions ? (
+                                    <span>Package ({session.package.session_number}/{session.package.total_sessions})</span>
                                   ) : (
                                 session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                   )}
@@ -1177,19 +1166,8 @@ export default function SessionsPage() {
                                 })()}
                                     {((session.package && session.package.package_type) || session.package_id) && (
                                       <span className="inline-flex items-center px-2 py-1 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                        {session.package?.completed_sessions !== undefined && session.package?.total_sessions ? (
-                                      <span>Package ({(() => {
-                                        // For completed sessions, show completed count
-                                        // For booked/upcoming sessions, show completed + 1 (this booked session)
-                                        const completed = session.package.completed_sessions || 0;
-                                        const total = session.package.total_sessions || 0;
-                                        if (session.status === 'completed') {
-                                          return `${completed}/${total}`;
-                                        } else {
-                                          // For booked/scheduled/rescheduled sessions, show booked count (completed + 1)
-                                          return `${Math.min(total, completed + 1)}/${total}`;
-                                        }
-                                      })()})</span>
+                                        {session.package?.session_number && session.package?.total_sessions ? (
+                                      <span>Package ({session.package.session_number}/{session.package.total_sessions})</span>
                                         ) : (
                                       session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
                                         )}

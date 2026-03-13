@@ -8,7 +8,6 @@ import {
   Eye,
   Clock,
   User,
-  UserCheck,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -31,6 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { adminApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
+import DateRangePicker from '@/components/ui/date-range-picker';
 
 export default function FreeAssessmentsPage() {
   const { showError, showSuccess } = useNotification();
@@ -61,10 +61,30 @@ export default function FreeAssessmentsPage() {
   const [calendarData, setCalendarData] = useState({});
   const [availabilityData, setAvailabilityData] = useState({});
   const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      const [month, , year] = istString.split('/').map(Number);
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) throw new Error('Invalid date');
+      return { from: startOfMonth, to: endOfMonth };
+    } catch {
+      const today = new Date();
+      const s = new Date(today.getFullYear(), today.getMonth(), 1); s.setHours(0,0,0,0);
+      const e = new Date(today.getFullYear(), today.getMonth() + 1, 0); e.setHours(23,59,59,999);
+      return { from: s, to: e };
+    }
+  });
 
   useEffect(() => {
     loadAssessments();
-  }, [filterStatus, filterDate]);
+  }, [filterStatus, filterDate, dateRange]);
 
   useEffect(() => {
     // Build calendar data from assessments
@@ -119,15 +139,22 @@ export default function FreeAssessmentsPage() {
       setIsLoading(true);
       
       const params = {};
-      // Only pass status if it's explicitly set and not 'all'
-      // When 'all' is selected, don't pass status so backend excludes completed by default
-      // If user wants to see completed, they can select 'completed' from dropdown
       if (filterStatus && filterStatus !== 'all') {
         params.status = filterStatus;
       }
-      // If filterStatus is 'all' or not set, backend will exclude completed assessments
       if (filterDate) {
         params.date = filterDate;
+      }
+      if (dateRange && dateRange.from && dateRange.to) {
+        const formatDateToIST = (date) => {
+          const istString = new Date(date).toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+          });
+          const [month, day, year] = istString.split('/');
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        };
+        params.dateFrom = formatDateToIST(dateRange.from);
+        params.dateTo = formatDateToIST(dateRange.to);
       }
 
       const response = await adminApi.getFreeAssessments(params);
@@ -156,7 +183,8 @@ export default function FreeAssessmentsPage() {
             last_name: a.psychologist.last_name,
             email: a.psychologist.email
           } : null,
-          meetLink: a.meetLink
+          meetLink: a.meetLink,
+          created_at: a.created_at || null
         }));
         setAssessments(mappedAssessments);
       } else {
@@ -315,6 +343,17 @@ export default function FreeAssessmentsPage() {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric'
+    });
+  };
+
+  const formatBookedAt = (isoString) => {
+    if (!isoString) return '—';
+    return new Date(isoString).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
     });
   };
 
@@ -591,7 +630,7 @@ export default function FreeAssessmentsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h6>Free Assessments Management</h6>
+            <div className="text-base font-semibold text-gray-900">Free Assessments Management</div>
           </div>
           <button
             type="button"
@@ -731,6 +770,20 @@ export default function FreeAssessmentsPage() {
           </div>
         )}
 
+        {/* Date Range Filter */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 sm:mb-4">
+          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap items-start md:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium text-gray-700">Date Range:</span>
+            </div>
+            <DateRangePicker
+              selectedRange={dateRange}
+              onSelect={setDateRange}
+            />
+          </div>
+        </div>
+
         {/* Filters and Search */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
@@ -808,7 +861,7 @@ export default function FreeAssessmentsPage() {
                     Client
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Psychologist
+                    Booked at
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -839,19 +892,8 @@ export default function FreeAssessmentsPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <UserCheck className="h-4 w-4 text-gray-400 mr-2" />
-                        <div className="text-sm text-gray-900">
-                          {assessment.psychologist ? (
-                            <>
-                              {assessment.psychologist.first_name} {assessment.psychologist.last_name}
-                            </>
-                          ) : (
-                            <span className="text-gray-400">Not assigned</span>
-                          )}
-                        </div>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {formatBookedAt(assessment.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(assessment.status)}`}>
@@ -1193,7 +1235,7 @@ export default function FreeAssessmentsPage() {
         {filteredAssessments.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-            <h6>No free assessments found</h6>
+            <div className="mt-2 text-sm font-semibold text-gray-900">No free assessments found</div>
             <p className="mt-1 text-sm text-gray-500">
               {searchTerm || filterStatus !== 'all' || filterDate
                 ? 'Try adjusting your search or filter criteria.'
@@ -1205,60 +1247,72 @@ export default function FreeAssessmentsPage() {
 
         {/* Mark Complete Confirmation Modal */}
         {isCompleteModalOpen && assessmentToComplete && (
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Mark Assessment as Complete</h3>
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200/80">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-900 tracking-tight">Mark as Complete</div>
+                </div>
                 <button
                   onClick={handleCancelComplete}
                   disabled={isCompleting}
-                  className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors disabled:opacity-50"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              
-              <div className="mb-6">
-                <p className="text-sm text-gray-600 mb-4">
+
+              {/* Content */}
+              <div className="px-6 py-5 space-y-4">
+                <p className="text-sm text-slate-600">
                   Are you sure you want to mark this free assessment as complete?
                 </p>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <div>
-                    <span className="text-xs font-medium text-gray-500">Assessment:</span>
-                    <p className="text-sm text-gray-900">
-                      #{assessmentToComplete.assessmentNumber}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-medium text-gray-500">Client:</span>
-                    <p className="text-sm text-gray-900">
-                      {assessmentToComplete.client?.first_name} {assessmentToComplete.client?.last_name}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-medium text-gray-500">Date & Time:</span>
-                    <p className="text-sm text-gray-900">
-                      {formatDate(assessmentToComplete.scheduled_date)} at {formatTime(assessmentToComplete.scheduled_time)}
-                    </p>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Assessment</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-mono">
+                        #{assessmentToComplete.assessmentNumber}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Client</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                        {assessmentToComplete.client?.first_name} {assessmentToComplete.client?.last_name}
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Date & Time</p>
+                      <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
+                        {formatDate(assessmentToComplete.scheduled_date)} at {formatTime(assessmentToComplete.scheduled_time)}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
+
+                <p className="text-xs text-slate-500">
                   This will send a notification to the client and mark the session as completed.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end space-x-3">
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50/30">
                 <button
                   onClick={handleCancelComplete}
                   disabled={isCompleting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmComplete}
                   disabled={isCompleting}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#3f2e73] rounded-lg hover:bg-[#1d1733] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCompleting ? (
                     <>

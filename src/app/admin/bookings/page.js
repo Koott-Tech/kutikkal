@@ -78,7 +78,26 @@ export default function BookingsPage() {
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalBookings, setTotalBookings] = useState(0);
-  const [dateRange, setDateRange] = useState(null);
+  const [dateRange, setDateRange] = useState(() => {
+    try {
+      const now = new Date();
+      const istString = now.toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      const [month, , year] = istString.split('/').map(Number);
+      const startOfMonth = new Date(year, month - 1, 1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const endOfMonth = new Date(year, month, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      if (isNaN(startOfMonth.getTime()) || isNaN(endOfMonth.getTime())) throw new Error('Invalid date');
+      return { from: startOfMonth, to: endOfMonth };
+    } catch {
+      const today = new Date();
+      const s = new Date(today.getFullYear(), today.getMonth(), 1); s.setHours(0,0,0,0);
+      const e = new Date(today.getFullYear(), today.getMonth() + 1, 0); e.setHours(23,59,59,999);
+      return { from: s, to: e };
+    }
+  });
 
   useEffect(() => {
     if (filterStatus === 'packages') {
@@ -867,16 +886,16 @@ export default function BookingsPage() {
                           if (booking.package_id || booking.package) {
                             const pkg = booking.package || {};
                             const totalSessions = pkg.total_sessions ?? pkg.session_count ?? 0;
-                            const completedSessions = pkg.completed_sessions;
+                            const sessionNumber = pkg.session_number;
                             const raw = (pkg.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
                             const packageType = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
                             const hasTotal = totalSessions > 0;
-                            const hasProgress = hasTotal && completedSessions !== undefined && completedSessions !== null;
+                            const hasSessionNum = hasTotal && sessionNumber !== undefined && sessionNumber !== null;
                             return (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#3f2e73]/10 text-[#3f2e73]">
                                 {packageType}
-                                {hasProgress && <span className="ml-1">({completedSessions}/{totalSessions})</span>}
-                                {hasTotal && !hasProgress && <span className="ml-1">({totalSessions})</span>}
+                                {hasSessionNum && <span className="ml-1">({sessionNumber}/{totalSessions})</span>}
+                                {hasTotal && !hasSessionNum && <span className="ml-1">({totalSessions})</span>}
                               </span>
                             );
                           }
@@ -1167,9 +1186,9 @@ export default function BookingsPage() {
                               const match = String(pkg.package_type).match(/\d+/);
                               if (match) totalSessions = parseInt(match[0], 10);
                             }
-                            const completedSessions = pkg.completed_sessions;
-                            if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
-                              return <>Package <span className="text-slate-600">({completedSessions}/{totalSessions} sessions)</span></>;
+                            const sessionNumber = pkg.session_number;
+                            if (totalSessions > 0 && sessionNumber !== undefined && sessionNumber !== null) {
+                              return <>Package <span className="text-slate-600">(Session {sessionNumber}/{totalSessions})</span></>;
                             }
                             if (totalSessions > 0) return <>Package <span className="text-slate-600">({totalSessions} sessions)</span></>;
                             return 'Package';

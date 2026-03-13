@@ -618,13 +618,12 @@ function PaymentSuccessContent() {
                     packageObject: fullSession.package
                   });
                   
-                  // Create packageInfo if we have package data
-                  // Accept 0 as valid (though it shouldn't happen for real packages)
                   if (totalSessions !== undefined && totalSessions !== null) {
                     packageInfo = {
                       completedSessions: completedSessions,
                       totalSessions: totalSessions,
                       remainingSessions: Math.max(totalSessions - completedSessions, 0),
+                      sessionNumber: fullSession.package.session_number || null,
                       packageType: fullSession.package.package_type || 'Package'
                     };
                     
@@ -761,6 +760,7 @@ function PaymentSuccessContent() {
                         completedSessions: retrySession.package.completed_sessions || 0,
                         totalSessions: totalSessions,
                         remainingSessions: retrySession.package.remaining_sessions || 0,
+                        sessionNumber: retrySession.package.session_number || null,
                         packageType: retrySession.package.package_type || 'Package'
                       };
                       console.log('✅ Fetched package info from retry:', packageInfo);
@@ -982,6 +982,7 @@ function PaymentSuccessContent() {
               completedSessions: session.package.completed_sessions || 0,
               totalSessions: session.package.total_sessions || session.package.session_count || 0,
               remainingSessions: (session.package.total_sessions || session.package.session_count || 0) - (session.package.completed_sessions || 0),
+              sessionNumber: session.package.session_number || null,
               packageType: session.package.package_type || 'Package'
             };
           } else if (session.package_id) {
@@ -1142,6 +1143,7 @@ function PaymentSuccessContent() {
               completedSessions: targetSession.package.completed_sessions || 0,
               totalSessions: targetSession.package.total_sessions || targetSession.package.session_count || 0,
               remainingSessions: (targetSession.package.total_sessions || targetSession.package.session_count || 0) - (targetSession.package.completed_sessions || 0),
+              sessionNumber: targetSession.package.session_number || null,
               packageType: targetSession.package.package_type || 'Package'
             };
           } else if (targetSession.package_id) {
@@ -1485,7 +1487,6 @@ function PaymentSuccessContent() {
                     <strong style={{ color: '#3f2e73' }}>Type:</strong>{' '}
                     <span style={{ color: '#3f2e73' }}>
                       {(() => {
-                        // If we have package info with total sessions, show "Package of X"
                         if (sessionDetails.packageInfo && sessionDetails.packageInfo.totalSessions !== undefined && sessionDetails.packageInfo.totalSessions !== null && sessionDetails.packageInfo.totalSessions > 0) {
                           return `Package of ${sessionDetails.packageInfo.totalSessions}`;
                         }

@@ -140,11 +140,10 @@ export default function SessionsFilterTable({
                             {(() => {
                               const pkg = session.package || {};
                               const totalSessions = pkg.total_sessions || pkg.session_count || 0;
-                              const completedSessions = pkg.completed_sessions;
+                              const sessionNum = pkg.session_number ?? pkg.session_index;
                               
-                              // If we have both values, show completion status
-                              if (totalSessions > 0 && completedSessions !== undefined && completedSessions !== null) {
-                                return ` (${completedSessions}/${totalSessions} completed)`;
+                              if (totalSessions > 0 && sessionNum != null) {
+                                return ` (${sessionNum}/${totalSessions})`;
                               } else if (totalSessions > 0) {
                                 return ` (${totalSessions} sessions)`;
                               }
