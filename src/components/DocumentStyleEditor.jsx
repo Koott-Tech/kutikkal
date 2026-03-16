@@ -652,11 +652,60 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setContextMenu({ visible: true, x: e.clientX, y: e.clientY, onImage: false });
   }, [saveSelection]);
 
-  // Handle Enter: in list, empty bullet -> exit list and start normal paragraph.
-  // In heading/blockquote -> new line should be paragraph by default. Handle "/" for slash menu.
+  // Handle Enter/Backspace: list/heading behavior + slash menu.
+  // - Enter: in list, empty bullet -> exit list and start normal paragraph.
+  //          in heading/blockquote -> new line as paragraph (don't continue heading).
+  // - Backspace: at start of bullet -> unwrap bullet into normal paragraph so it can be deleted/merged naturally.
   const handleKeyDown = useCallback((e) => {
     const editor = editorRef.current;
     if (!editor) return;
+
+    // Custom Backspace behavior inside lists: allow deleting the bullet when caret is at start
+    if (e.key === 'Backspace') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) return; // let browser handle range deletion
+        const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        const block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
+        const li = block?.tagName === 'LI' ? block : null;
+        if (li && editor.contains(li)) {
+          // If caret is at very start of the li, convert it to a normal paragraph so Backspace can remove/merge
+          const atStart = range.startOffset === 0 && !li.previousSibling;
+          if (atStart) {
+            e.preventDefault();
+            const p = document.createElement('p');
+            p.innerHTML = li.innerHTML || '<br>';
+            p.style.fontSize = '1rem';
+            p.style.lineHeight = '1.75';
+            p.style.fontWeight = 'normal';
+            p.style.marginTop = '0';
+            p.style.marginBottom = '1rem';
+            const list = li.closest?.('ul') || li.closest?.('ol');
+            if (list && list.parentNode) {
+              if (list.previousSibling) {
+                list.parentNode.insertBefore(p, list);
+              } else {
+                list.parentNode.insertBefore(p, list);
+              }
+            } else {
+              editor.insertBefore(p, editor.firstChild);
+            }
+            li.remove();
+            if (list && !list.querySelector('li')) list.remove();
+            const r = document.createRange();
+            r.setStart(p, 0);
+            r.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(r);
+            handleInput();
+            return;
+          }
+        }
+      }
+    }
 
     if (e.key === 'Enter') {
       const selection = window.getSelection();
@@ -681,8 +730,16 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             p.style.fontWeight = 'normal';
             p.style.marginTop = '0';
             p.style.marginBottom = '1rem';
-            if (list.nextSibling) editor.insertBefore(p, list.nextSibling);
-            else editor.appendChild(p);
+            // Insert after the list in its current parent so the cursor stays in place
+            if (list.parentNode) {
+              if (list.nextSibling) {
+                list.parentNode.insertBefore(p, list.nextSibling);
+              } else {
+                list.parentNode.appendChild(p);
+              }
+            } else {
+              editor.appendChild(p);
+            }
             li.remove();
             if (!list.querySelector('li')) list.remove();
             const r = document.createRange();
@@ -708,8 +765,16 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             p.style.fontWeight = 'normal';
             p.style.marginTop = '0';
             p.style.marginBottom = '1rem';
-            if (block.nextSibling) editor.insertBefore(p, block.nextSibling);
-            else editor.appendChild(p);
+            // Insert after the heading/blockquote in its current parent so the cursor stays in place
+            if (block.parentNode) {
+              if (block.nextSibling) {
+                block.parentNode.insertBefore(p, block.nextSibling);
+              } else {
+                block.parentNode.appendChild(p);
+              }
+            } else {
+              editor.appendChild(p);
+            }
             const r = document.createRange();
             r.setStart(p, 0);
             r.collapse(true);

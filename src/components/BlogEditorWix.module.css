@@ -629,6 +629,8 @@
   margin: 0 0 0.5rem 0;
   padding: 0;
   line-height: 1.6;
+  /* Keep bullet/numbered list text aligned with paragraph font size inside the editor */
+  font-size: 1rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor a),

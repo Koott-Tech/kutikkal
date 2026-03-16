@@ -630,146 +630,157 @@ export default function DoctorsPage() {
         />
       )}
 
-      {/* Full Profile Modal */}
+      {/* Full Profile Modal (View) - matches Users page design */}
       {isFullProfileOpen && selectedDoctor && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h6>Doctor Profile</h6>
-                <button
-                  onClick={() => setIsFullProfileOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Basic Info */}
-                <div>
-                  <h6>Basic Information</h6>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Name</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedDoctor.name || 'Not provided'}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedDoctor.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Specialty</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedDoctor.specialty || 'Not specified'}</p>
-                    </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Designation</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedDoctor.designation || 'Not specified'}</p>
-                  </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Role</label>
-                      <p className="mt-1 text-sm text-gray-900 capitalize">{selectedDoctor.role}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Individual Session Price</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Experience</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {selectedDoctor.experience_years ? `${selectedDoctor.experience_years} years` : 'Not specified'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Availability */}
-                <div>
-                  <h6>Availability</h6>
-
-                  {selectedDoctor.availability && selectedDoctor.availability.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedDoctor.availability.map((slot, index) => (
-                        <div key={index} className="flex items-center space-x-2 text-sm">
-                          <Clock className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-900">
-                            {slot.date}: {
-                              slot.time_slots && Array.isArray(slot.time_slots) 
-                                ? sortTimeSlotsChronologically(slot.time_slots).join(', ')
-                                : 'Available'
-                            }
-                          </span>
-                        </div>
-                      ))}
-                      <div className="text-sm pt-1">
-                        {selectedDoctor.google_calendar_credentials ? (
-                          <span className="text-green-600">Calendar connected</span>
-                        ) : (
-                          <span className="text-gray-500">Calendar not connected</span>
-                        )}
-                      </div>
-                    </div>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#3f2e73]/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {getDoctorImageUrl(selectedDoctor) ? (
+                    <img
+                      src={getDoctorImageUrl(selectedDoctor)}
+                      alt={selectedDoctor.name || selectedDoctor.email}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="text-sm">
-                      {selectedDoctor.google_calendar_credentials ? (
-                        <span className="text-green-600">Calendar connected</span>
-                      ) : (
-                        <span className="text-gray-500">Calendar not connected</span>
-                      )}
-                    </div>
+                    <UserCheck className="w-5 h-5 text-[#3f2e73]" />
                   )}
                 </div>
-
-                {/* Pricing & Packages */}
                 <div>
-                  <h6>Pricing & Packages</h6>
-                  
-                  {/* Individual Session Pricing */}
-                  <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h6>Individual Session</h6>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-green-700">Price per session</span>
-                      <span className="text-lg font-bold text-green-800">
-                        {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
+                  <div className="text-sm font-semibold text-slate-800 tracking-tight" role="heading" aria-level={1}>
+                    {selectedDoctor.name ||
+                      (selectedDoctor.first_name && selectedDoctor.last_name
+                        ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}`.trim()
+                        : selectedDoctor.psychologist?.first_name && selectedDoctor.psychologist?.last_name
+                          ? `${selectedDoctor.psychologist.first_name} ${selectedDoctor.psychologist.last_name}`.trim()
+                          : selectedDoctor.email?.split('@')[0] || 'Doctor Profile')}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 capitalize">{selectedDoctor.role || selectedDoctor.specialty || 'Psychologist'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFullProfileOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-200/80"
+                aria-label="Close modal"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content - labels outside, data in input-style boxes */}
+            <div className="p-6 space-y-5">
+              {/* Basic Information */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                  Basic Information
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">ID</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 font-mono">
+                      {selectedDoctor.psychologist_id ?? selectedDoctor.id ?? '—'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Name</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.name || (selectedDoctor.first_name && selectedDoctor.last_name ? `${selectedDoctor.first_name} ${selectedDoctor.last_name}`.trim() : selectedDoctor.psychologist ? `${selectedDoctor.psychologist.first_name || ''} ${selectedDoctor.psychologist.last_name || ''}`.trim() : 'Not provided') || 'Not provided'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.email || selectedDoctor.psychologist?.email || 'Not provided'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Specialty</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.specialty || 'Not specified'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Designation</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.designation || 'Not specified'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Experience</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.experience_years ? `${selectedDoctor.experience_years} years` : 'Not specified'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Individual Session Price</label>
+                    <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                      {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Availability */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                  Availability
+                </div>
+                {selectedDoctor.availability && selectedDoctor.availability.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedDoctor.availability.map((slot, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Clock className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                          {slot.date}: {slot.time_slots && Array.isArray(slot.time_slots) ? sortTimeSlotsChronologically(slot.time_slots).join(', ') : 'Available'}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-1">
+                      <span className={`text-xs font-medium ${selectedDoctor.google_calendar_credentials ? 'text-green-600' : 'text-slate-500'}`}>
+                        {selectedDoctor.google_calendar_credentials ? '✓ Calendar connected' : 'Calendar not connected'}
                       </span>
                     </div>
                   </div>
-
-                  {/* Package Information */}
-                  <div className="p-4 bg-[#3f2e73]/5 rounded-lg border border-[#3f2e73]/20">
-                    <h6>Package Information</h6>
-                    <p className="text-sm text-[#3f2e73]">
-                      Package details and pricing are managed through the packages system. 
-                      Individual session pricing is set above and used as the base rate for package calculations.
-                    </p>
-                    <div className="mt-2 text-xs text-[#3f2e73]">
-                      💡 Packages provide discounts for multiple sessions booked together
-                    </div>
+                ) : (
+                  <div className="pt-1">
+                    <span className={`text-xs font-medium ${selectedDoctor.google_calendar_credentials ? 'text-green-600' : 'text-slate-500'}`}>
+                      {selectedDoctor.google_calendar_credentials ? '✓ Calendar connected' : 'Calendar not connected'}
+                    </span>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Actions */}
-                <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      setIsFullProfileOpen(false);
-                      handleEditDoctor(selectedDoctor);
-                    }}
-                    className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors"
-                  >
-                    Edit Profile
-                  </button>
-                  <button
-                    onClick={() => setIsFullProfileOpen(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-                  >
-                    Close
-                  </button>
+              {/* Package Information */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                  Packages
                 </div>
+                <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
+                  Package details and pricing are managed through the packages system. Individual session pricing is used as the base rate for package calculations.
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200">
+                <button
+                  onClick={() => setIsFullProfileOpen(false)}
+                  className="px-4 py-2 text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setIsFullProfileOpen(false);
+                    handleEditDoctor(selectedDoctor);
+                  }}
+                  className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] transition-colors text-sm font-medium"
+                >
+                  Edit Profile
+                </button>
               </div>
             </div>
           </div>

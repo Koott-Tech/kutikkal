@@ -26,7 +26,8 @@ import { validatePassword } from '@/utils/passwordValidation';
 export default function AdminManualBookingModal({ 
   isOpen, 
   onClose, 
-  onBookingSuccess 
+  onBookingSuccess,
+  recordOnly = false  // When true: add session record only, no Meet creation, no notifications; existing client only + optional meet link
 }) {
   const { showError, showSuccess } = useNotification();
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +83,7 @@ export default function AdminManualBookingModal({
   const [selectedDateObj, setSelectedDateObj] = useState(null); // Store as Date object
   const [searchClient, setSearchClient] = useState('');
   const [searchPsychologist, setSearchPsychologist] = useState('');
+  const [meetLink, setMeetLink] = useState(''); // For recordOnly: optional Meet link if created elsewhere
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -161,6 +163,7 @@ export default function AdminManualBookingModal({
     setCurrentDate(new Date());
     setSearchClient('');
     setSearchPsychologist('');
+    setMeetLink('');
     setShowSuccessModal(false);
     setShowFailureModal(false);
     setFailureMessage('');
@@ -431,8 +434,15 @@ export default function AdminManualBookingModal({
 
     let finalClientId = clientId;
 
-    // If creating a new client, create it first
-    if (isNewClient) {
+    // Record-only mode: existing client only
+    if (recordOnly && !clientId) {
+      setError('Please select a client');
+      isSubmittingRef.current = false;
+      return;
+    }
+
+    // If creating a new client (manual booking only), create it first
+    if (!recordOnly && isNewClient) {
       // Validate new client data - only email, first_name, and phone_number are required
       // last_name, child_name, and child_age are optional
       if (!newClientData.email || !newClientData.first_name || !newClientData.phone_number) {
@@ -543,9 +553,10 @@ export default function AdminManualBookingModal({
         return;
       }
     } else {
-      // Validate existing client selection
+      // Validate existing client selection (manual or recordOnly)
       if (!clientId) {
         setError('Please select a client');
+        if (!recordOnly) setIsLoading(false);
         isSubmittingRef.current = false;
         return;
       }
@@ -591,21 +602,23 @@ export default function AdminManualBookingModal({
         payment_method: paymentMethod,
         notes: notes || null
       };
+      if (recordOnly) {
+        bookingData.meet_link = meetLink?.trim() || undefined;
+      }
 
-      console.log('Creating manual booking:', bookingData);
+      console.log(recordOnly ? 'Creating record-only booking:' : 'Creating manual booking:', bookingData);
       console.log('Final client ID being used:', finalClientId);
 
-      const response = await adminApi.createManualBooking(bookingData);
+      const response = recordOnly
+        ? await adminApi.createRecordOnlyBooking(bookingData)
+        : await adminApi.createManualBooking(bookingData);
 
       if (response.success) {
-        console.log('✅ Booking created successfully, showing success modal');
-        // Show success popup
+        console.log(recordOnly ? '✅ Session record added successfully' : '✅ Booking created successfully, showing success modal');
         setShowSuccessModal(true);
         onBookingSuccess?.(response.data);
-        // Close the form modal after a short delay
         setTimeout(() => {
-          console.log('🔓 Resetting submission flag and closing modal');
-          isSubmittingRef.current = false; // Reset before closing
+          isSubmittingRef.current = false;
           onClose();
         }, 1500);
       } else {
@@ -664,8 +677,14 @@ export default function AdminManualBookingModal({
               <Calendar className="h-5 w-5 text-[#3f2e73]" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>Create Manual Booking</div>
-              <p className="text-xs text-slate-500 mt-0.5">For edge cases where payment/booking couldn't be completed normally</p>
+              <div className="text-sm font-semibold text-slate-900 tracking-tight" role="heading" aria-level={2}>
+                {recordOnly ? 'Add session record' : 'Create Manual Booking'}
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {recordOnly
+                  ? 'Record only. No Meet creation, no notifications. Use if the meeting was created elsewhere.'
+                  : 'For edge cases where payment/booking couldn\'t be completed normally'}
+              </p>
             </div>
           </div>
           <button
@@ -692,28 +711,30 @@ export default function AdminManualBookingModal({
                   <User className="h-4 w-4 inline mr-1" />
                   Client *
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsNewClient(!isNewClient);
-                    setClientId('');
-                    setNewClientData({
-                      email: '',
-                      first_name: '',
-                      last_name: '',
-                      phone_number: '',
-                      country_code: '+91',
-                      child_name: '',
-                      child_age: ''
-                    });
-                  }}
-                  className="text-sm text-[#3f2e73] hover:text-[#1d1733] font-medium"
-                >
-                  {isNewClient ? '← Select Existing Client' : '+ New Client'}
-                </button>
+                {!recordOnly && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsNewClient(!isNewClient);
+                      setClientId('');
+                      setNewClientData({
+                        email: '',
+                        first_name: '',
+                        last_name: '',
+                        phone_number: '',
+                        country_code: '+91',
+                        child_name: '',
+                        child_age: ''
+                      });
+                    }}
+                    className="text-sm text-[#3f2e73] hover:text-[#1d1733] font-medium"
+                  >
+                    {isNewClient ? '← Select Existing Client' : '+ New Client'}
+                  </button>
+                )}
               </div>
 
-              {isNewClient ? (
+              {!recordOnly && isNewClient ? (
                 /* New Client Form */
                 <div className="border border-slate-200 rounded-lg p-4 bg-white/60 space-y-4 mt-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1203,6 +1224,23 @@ export default function AdminManualBookingModal({
               </div>
             </div>
 
+            {/* Meet link (record-only): optional if meeting was created elsewhere */}
+            {recordOnly && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Meet link (optional)
+                </label>
+                <input
+                  type="url"
+                  value={meetLink}
+                  onChange={(e) => setMeetLink(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
+                  placeholder="https://meet.google.com/xxx-xxxx-xxx (if created in another email)"
+                />
+                <p className="mt-1 text-xs text-slate-500">Paste the Meet link if the meeting was already created elsewhere</p>
+              </div>
+            )}
+
             {/* Notes */}
             <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
@@ -1247,7 +1285,7 @@ export default function AdminManualBookingModal({
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4" />
-                  <span>Create Booking</span>
+                  <span>{recordOnly ? 'Add record' : 'Create Booking'}</span>
                 </>
               )}
             </button>
@@ -1298,7 +1336,7 @@ export default function AdminManualBookingModal({
                     transition={{ delay: 0.2, duration: 0.4 }}
                     className="text-xl font-semibold text-gray-900 mb-2"
                   >
-                    Booking Created Successfully!
+                    {recordOnly ? 'Session record added' : 'Booking Created Successfully!'}
                   </motion.h3>
                   <motion.p
                     initial={{ opacity: 0, y: 10 }}
@@ -1306,9 +1344,11 @@ export default function AdminManualBookingModal({
                     transition={{ delay: 0.3, duration: 0.4 }}
                     className="text-gray-600 text-sm"
                   >
-                    {isNewClient 
-                      ? 'New client created and manual booking created successfully!'
-                      : 'Manual booking has been created successfully.'}
+                    {recordOnly
+                      ? 'Session record has been added. No notifications were sent.'
+                      : isNewClient 
+                        ? 'New client created and manual booking created successfully!'
+                        : 'Manual booking has been created successfully.'}
                   </motion.p>
                 </div>
 

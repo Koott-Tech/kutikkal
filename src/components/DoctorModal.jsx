@@ -1330,33 +1330,28 @@ export default function DoctorModal({
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {mode === 'edit' ? 'Password' : 'Password *'}
               </label>
               {mode === 'edit' ? (
                 <div className="space-y-3">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1">
-                        <div className="px-3 py-2 border border-slate-200 rounded-lg bg-[#3f2e73]/5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-[#3f2e73] rounded-full"></div>
-                            <span className="text-sm text-[#3f2e73] font-medium">Password is set and secure</span>
-                          </div>
-                          <p className="text-xs text-[#3f2e73]/80 mt-1">
-                            Password is encrypted and cannot be displayed for security reasons
-                          </p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="px-3 py-2 border border-slate-200 rounded-lg bg-[#3f2e73]/5 w-full">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-[#3f2e73] rounded-full flex-shrink-0"></div>
+                          <span className="text-sm text-[#3f2e73] font-medium">Password is set and secure</span>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowPasswordReset(!showPasswordReset)}
-                        className="px-4 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
-                      >
-                        {showPasswordReset ? 'Cancel Reset' : 'Reset Password'}
-                      </button>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordReset(!showPasswordReset)}
+                      className="px-4 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                    >
+                      {showPasswordReset ? 'Cancel Reset' : 'Reset Password'}
+                    </button>
                   </div>
                   {showPasswordReset && (
                     <div className="space-y-2">

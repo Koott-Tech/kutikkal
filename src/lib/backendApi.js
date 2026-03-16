@@ -1051,6 +1051,14 @@ export const adminApi = {
     });
   },
 
+  // Create record-only booking (admin only): session record only, no Meet, no notifications
+  async createRecordOnlyBooking(bookingData) {
+    return apiRequest('/admin/bookings/record-only', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    });
+  },
+
   // Book next package session (admin only) - for clients who prefer admin to book remaining sessions
   async bookPackageNextSession({ client_id, package_id, scheduled_date, scheduled_time }) {
     return apiRequest('/admin/bookings/book-package-next-session', {

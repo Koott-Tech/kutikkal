@@ -60,6 +60,7 @@ export default function BookingsPage() {
   const [sessionDetailsLoading, setSessionDetailsLoading] = useState(false);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [isAddRecordOpen, setIsAddRecordOpen] = useState(false);
   const [isEditSessionOpen, setIsEditSessionOpen] = useState(false);
   const [feedbackToView, setFeedbackToView] = useState(null);
   const [showNoShowConfirm, setShowNoShowConfirm] = useState(false);
@@ -419,9 +420,13 @@ export default function BookingsPage() {
   };
 
   const handleManualBookingSuccess = (newBooking) => {
-    // Add new booking to the list and refresh
     loadBookings();
     showSuccess('Manual booking created successfully!', 'Booking Created');
+  };
+
+  const handleAddRecordSuccess = () => {
+    loadBookings();
+    showSuccess('Session record added successfully.', 'Record Added');
   };
 
   const handleBookNextSuccess = () => {
@@ -643,13 +648,22 @@ export default function BookingsPage() {
         <div>
           <h6>Bookings Management</h6>
         </div>
-        <button
-          onClick={() => setIsManualBookingOpen(true)}
-          className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3f2e73] transition-colors"
-        >
-          <Calendar className="h-4 w-4 mr-2" />
-          Create Manual Booking
-        </button>
+        <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
+          <button
+            onClick={() => setIsManualBookingOpen(true)}
+            className="inline-flex items-center px-4 py-2 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#1d1733] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3f2e73] transition-colors"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Create Manual Booking
+          </button>
+          <button
+            onClick={() => setIsAddRecordOpen(true)}
+            className="inline-flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3f2e73] transition-colors"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Add record
+          </button>
+        </div>
       </div>
 
       {!showPackagesView && (
@@ -1405,6 +1419,14 @@ export default function BookingsPage() {
         isOpen={isManualBookingOpen}
         onClose={() => setIsManualBookingOpen(false)}
         onBookingSuccess={handleManualBookingSuccess}
+      />
+
+      {/* Add record only modal (no Meet, no notifications) */}
+      <AdminManualBookingModal
+        recordOnly
+        isOpen={isAddRecordOpen}
+        onClose={() => setIsAddRecordOpen(false)}
+        onBookingSuccess={handleAddRecordSuccess}
       />
 
       {/* Book next package session modal */}

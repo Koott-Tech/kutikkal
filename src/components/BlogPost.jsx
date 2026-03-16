@@ -623,6 +623,8 @@ export default function BlogPost({ slug }) {
                 display: list-item !important;
                 margin-bottom: 0.5rem !important;
                 line-height: 1.6 !important;
+                /* Force bullet/numbered list text to match body font size, overriding any pasted inline font-size */
+                font-size: 1rem !important;
               }
               .blog-content ul ul,
               .blog-content ol ul,
