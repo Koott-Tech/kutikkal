@@ -9,6 +9,8 @@ export default async function sitemap() {
     "/faq",
     "/free-assessment",
     "/career",
+    "/events",
+    "/events/little-care-summer-workshops-2026",
     "/therapy-agreement", 
     "/privacy-policy", 
     "/terms-and-conditions", 

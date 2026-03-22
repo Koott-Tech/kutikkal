@@ -45,6 +45,7 @@ export default function AdminEditSessionModal({
   // Note: 'noshow' is an inconsistency - use 'no_show' instead
   const availableStatuses = [
     { value: 'booked', label: 'Booked' },
+    { value: 'pending', label: 'Pending' },
     { value: 'rescheduled', label: 'Rescheduled' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },

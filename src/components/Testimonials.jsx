@@ -57,7 +57,120 @@ const isYouTubeUrl = (url) => {
   return /youtube\.com|youtu\.be/.test(url);
 };
 
-export default function Testimonials() {
+const DEFAULT_DESKTOP_YOUTUBE_URL = "https://www.youtube.com/watch?v=RSge3l2uKSI";
+
+/** Default carousel items (tablet/mobile) — same as original homepage. */
+const DEFAULT_PHOTOS = [
+  { src: "https://www.youtube.com/watch?v=RSge3l2uKSI", alt: "Testimonial video", type: "video" },
+  { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
+  {
+    text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.",
+    author: "Father of a 10-year-old",
+    bgImage: "/Our promise bg1.webp",
+    gradient: "linear-gradient(135deg, #E6F5EC 0%, #D4EDE0 50%, #C8E8D5 100%)",
+    type: "text",
+  },
+  { src: "/TESTIMONIALS 2.webp", alt: "Family smiling", type: "image" },
+  {
+    text: "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident.",
+    author: "12-year-old girl",
+    bgImage: "/Our promise bg2.webp",
+    gradient: "linear-gradient(135deg, #ECEBFF 0%, #E0DEFF 50%, #D4D2FF 100%)",
+    type: "text",
+  },
+  { src: "/TESTIMONIALS 3.webp", alt: "Happy child", type: "image" },
+  {
+    text: "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person.",
+    author: "Parent of an 8-year-old",
+    bgImage: "/Our promise bg3.webp",
+    gradient: "linear-gradient(135deg, #FFF5E6 0%, #FFEED6 50%, #FFE7C8 100%)",
+    type: "text",
+  },
+  { src: "/TESTIMONIALS 4.webp", alt: "Family moment", type: "image" },
+  {
+    text: "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children.",
+    author: "Parent of a 9-year-old",
+    bgImage: "/Our promise bg4.webp",
+    gradient: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #D1E9FF 100%)",
+    type: "text",
+  },
+  { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" },
+];
+
+/** Desktop xl 5-column layout content — default homepage copy. */
+const DEFAULT_DESKTOP_GRID = {
+  col1: {
+    src: "/testimonial2.PNG",
+    alt: "Collage of parents and children sharing their counseling experience",
+  },
+  col2: [
+    {
+      quote:
+        "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.",
+      author: "Father of a 10-year-old",
+      bg: "/Our promise bg1.webp",
+      quoteClassName: "p1",
+    },
+    {
+      quote:
+        "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident.",
+      author: "12-year-old girl",
+      bg: "/Our promise bg2.webp",
+      quoteClassName: "",
+    },
+  ],
+  col3: {
+    topImage: {
+      src: "/testimonial3.PNG",
+      alt: "Mother and child smiling after counseling session",
+    },
+  },
+  col4: {
+    textCard: {
+      quote:
+        "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person.",
+      author: "Parent of an 8-year-old",
+      bg: "/Our promise bg3.webp",
+    },
+    bottomImage: {
+      src: "/testimonialgirl.png",
+      alt: "Young girl smiling, representing a positive therapy outcome",
+    },
+  },
+  col5: {
+    topImage: {
+      src: "/testimonial5.PNG",
+      alt: "Parents and child together after counseling support",
+    },
+    textCard: {
+      quote:
+        "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children.",
+      author: "Parent of a 9-year-old",
+      bg: "/Our promise bg4.webp",
+    },
+  },
+};
+
+/**
+ * Homepage testimonials carousel + desktop grid.
+ * Pass `photos`, `desktopGrid`, `headingLine1`, etc. to reuse the same UI with different copy (e.g. events).
+ */
+export default function Testimonials({
+  photos: photosProp,
+  desktopGrid: desktopGridProp,
+  desktopYouTubeUrl: desktopYouTubeUrlProp,
+  eyebrowText,
+  headingLine1,
+  headingLine2,
+  useAccessibleHeading = false,
+} = {}) {
+  const desktopYouTubeUrl = desktopYouTubeUrlProp ?? DEFAULT_DESKTOP_YOUTUBE_URL;
+  const photos = photosProp ?? DEFAULT_PHOTOS;
+  const desktopGrid = desktopGridProp ?? DEFAULT_DESKTOP_GRID;
+  const resolvedEyebrow = eyebrowText ?? "Testimonials";
+  const resolvedHeadingLine1 = headingLine1 ?? "What Families Are Saying About Our";
+  const resolvedHeadingLine2 = headingLine2 === undefined ? "Child Counseling Support" : headingLine2;
+
   const scrollContainerRef = useRef(null);
   const autoPlayRef = useRef(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -78,46 +191,6 @@ export default function Testimonials() {
   const desktopYouTubeIframeRef = useRef(null);
   const [isDesktopVideoPlaying, setIsDesktopVideoPlaying] = useState(true);
   const mobileYouTubeIframeRefs = useRef({});
-  
-  // Hardcoded YouTube video URL for desktop testimonial
-  const desktopYouTubeUrl = "https://www.youtube.com/watch?v=RSge3l2uKSI";
-  
-  const photos = [
-    { src: "https://www.youtube.com/watch?v=RSge3l2uKSI", alt: "Testimonial video", type: "video" },
-    { src: "/TESTIMONIALS 1.webp", alt: "Smiling parent and child", type: "image" },
-    { 
-      text: "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week.", 
-      author: "Father of a 10-year-old",
-      bgImage: "/Our promise bg1.webp",
-      gradient: "linear-gradient(135deg, #E6F5EC 0%, #D4EDE0 50%, #C8E8D5 100%)",
-      type: "text" 
-    },
-    { src: "/TESTIMONIALS 2.webp", alt: "Family smiling", type: "image" },
-    { 
-      text: "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident.", 
-      author: "12-year-old girl",
-      bgImage: "/Our promise bg2.webp",
-      gradient: "linear-gradient(135deg, #ECEBFF 0%, #E0DEFF 50%, #D4D2FF 100%)",
-      type: "text" 
-    },
-    { src: "/TESTIMONIALS 3.webp", alt: "Happy child", type: "image" },
-    { 
-      text: "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person.", 
-      author: "Parent of an 8-year-old",
-      bgImage: "/Our promise bg3.webp",
-      gradient: "linear-gradient(135deg, #FFF5E6 0%, #FFEED6 50%, #FFE7C8 100%)",
-      type: "text" 
-    },
-    { src: "/TESTIMONIALS 4.webp", alt: "Family moment", type: "image" },
-    { 
-      text: "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children.", 
-      author: "Parent of a 9-year-old",
-      bgImage: "/Our promise bg4.webp",
-      gradient: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 50%, #D1E9FF 100%)",
-      type: "text" 
-    },
-    { src: "/TESTIMONIALS 5.webp", alt: "Happy family", type: "image" }
-  ];
 
   // Create infinite loop by duplicating photos
   const infinitePhotos = [...photos, ...photos, ...photos];
@@ -843,8 +916,36 @@ export default function Testimonials() {
       <div className="mx-auto max-w-[1600px]  px-0 md:px-1 ">
         {/* Heading */}
         <div className="text-center max-w-4xl mx-auto px-4">
-          <p className="p1">Testimonials</p>
-          <h2 className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full" style={{ fontWeight: 500 }}>What Families Are Saying About Our<br className="hidden md:inline" /> Child Counseling Support</h2>
+          <p className="p1">{resolvedEyebrow}</p>
+          {useAccessibleHeading ? (
+            <div
+              className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full font-sans"
+              style={{ fontWeight: 500 }}
+              role="heading"
+              aria-level={2}
+            >
+              {resolvedHeadingLine1}
+              {resolvedHeadingLine2 ? (
+                <>
+                  <br className="hidden md:inline" />
+                  {resolvedHeadingLine2}
+                </>
+              ) : null}
+            </div>
+          ) : (
+            <h2
+              className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full"
+              style={{ fontWeight: 500 }}
+            >
+              {resolvedHeadingLine1}
+              {resolvedHeadingLine2 ? (
+                <>
+                  <br className="hidden md:inline" />
+                  {resolvedHeadingLine2}
+                </>
+              ) : null}
+            </h2>
+          )}
         </div>
 
         {/* Desktop: 5-column layout with images (xl and above to match header/hero desktop breakpoint) */}
@@ -852,49 +953,43 @@ export default function Testimonials() {
           {/* First column: full-length image edge-to-edge */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0">
             <div className="flex-1 rounded-[10px] relative overflow-hidden">
-              <Image src="/testimonial2.PNG" alt="Collage of parents and children sharing their counseling experience" fill className="object-cover object-bottom scale-100" />
+              <Image
+                src={desktopGrid.col1.src}
+                alt={desktopGrid.col1.alt}
+                fill
+                className="object-cover object-bottom scale-100"
+              />
             </div>
           </div>
           {/* Second column split vertically into two equal halves with padding and gap */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
+            {desktopGrid.col2.map((card, idx) => (
               <div
-                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/Our promise bg1.webp')" }}
-              />
-              <div className="relative z-10">
-                <p className="p1">
-                  "What I liked most is how the therapist involved us as parents. It didn't feel like therapy alone, it felt like teamwork. My child is opening up more every week."
-                </p>
-                <br />
-                <p className="p2 mt-4 mb-4">
-                  Father of a 10-year-old
-                </p>
+                key={idx}
+                className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden"
+                style={{ height: "316px" }}
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
+                  style={{ backgroundImage: `url('${card.bg}')` }}
+                />
+                <div className="relative z-10">
+                  <p className={card.quoteClassName || undefined}>
+                    &quot;{card.quote}&quot;
+                  </p>
+                  <br />
+                  <p className="p2 mt-4 mb-4">{card.author}</p>
+                </div>
               </div>
-            </div>
-            <div className="relative rounded-[10px] border border-gray-200 p-4 overflow-hidden" style={{height: '316px'}}>
-              <div
-                className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/Our promise bg2.webp')" }}
-              />
-              <div className="relative z-10">
-                <p>
-                  "I thought therapy was only for people with big problems, but now I know it's just a space to talk and feel better. I feel safe to say anything, and it's helping me be more confident."
-                </p>
-                <br />
-                <p className="p2 mt-4 mb-4">
-                  12-year-old girl
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
           {/* Third column: split 30% top (image), 70% bottom (video) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '186px'}}>
-              <img 
-                src="/testimonial3.PNG" 
-                alt="Mother and child smiling after counseling session" 
-                className="w-full h-full object-cover object-bottom scale-100" 
+            <div className="rounded-[10px] relative overflow-hidden" style={{ height: "186px" }}>
+              <img
+                src={desktopGrid.col3.topImage.src}
+                alt={desktopGrid.col3.topImage.alt}
+                className="w-full h-full object-cover object-bottom scale-100"
               />
             </div>
             <div 
@@ -975,44 +1070,62 @@ export default function Testimonials() {
 
           {/* Fourth column: split 40% top (text review), 60% bottom (image) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '260px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
+            <div
+              className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden"
+              style={{
+                height: "260px",
+                width: "calc(100% - 0.5rem)",
+                marginLeft: "0.25rem",
+                marginRight: "0.25rem",
+              }}
+            >
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/Our promise bg3.webp')" }}
+                style={{ backgroundImage: `url('${desktopGrid.col4.textCard.bg}')` }}
               />
               <div className="relative z-10">
-                <p>
-                  "I was a person who used to get angry at my kid for every little thing. Through better parenting coaching I started becoming a better parent and a better person."
-                </p>
+                <p>&quot;{desktopGrid.col4.textCard.quote}&quot;</p>
                 <br />
-                <p className="p2 mt-4 mb-4">
-                  Parent of an 8-year-old
-                </p>
+                <p className="p2 mt-4 mb-4">{desktopGrid.col4.textCard.author}</p>
               </div>
             </div>
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '372px', width: 'calc(100% - 0.5rem)', marginLeft: '0.25rem', marginRight: '0.25rem'}}>
-              <Image src="/testimonialgirl.png" alt="Young girl smiling, representing a positive therapy outcome" fill className="object-cover object-bottom scale-100" />
+            <div
+              className="rounded-[10px] relative overflow-hidden"
+              style={{
+                height: "372px",
+                width: "calc(100% - 0.5rem)",
+                marginLeft: "0.25rem",
+                marginRight: "0.25rem",
+              }}
+            >
+              <Image
+                src={desktopGrid.col4.bottomImage.src}
+                alt={desktopGrid.col4.bottomImage.alt}
+                fill
+                className="object-cover object-bottom scale-100"
+              />
             </div>
           </div>
 
           {/* Fifth column: split 50% image (top), 50% text (bottom) */}
           <div className="h-[640px] rounded-[10px] overflow-hidden flex flex-col p-0 gap-2">
-            <div className="rounded-[10px] relative overflow-hidden" style={{height: '316px'}}>
-              <Image src="/testimonial5.PNG" alt="Parents and child together after counseling support" fill className="object-cover object-center scale-100" />
+            <div className="rounded-[10px] relative overflow-hidden" style={{ height: "316px" }}>
+              <Image
+                src={desktopGrid.col5.topImage.src}
+                alt={desktopGrid.col5.topImage.alt}
+                fill
+                className="object-cover object-center scale-100"
+              />
             </div>
-            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{height: '316px'}}>
+            <div className="relative rounded-[10px] border border-gray-200 p-3 flex flex-col overflow-hidden" style={{ height: "316px" }}>
               <div
                 className="absolute inset-0 bg-cover bg-center z-0 testimonial-faq-bg"
-                style={{ backgroundImage: "url('/Our promise bg4.webp')" }}
+                style={{ backgroundImage: `url('${desktopGrid.col5.textCard.bg}')` }}
               />
               <div className="relative z-10">
-                <p>
-                  "Little Care has been such a gentle support for our family. My daughter used to struggle with focus and big emotions, but after a few sessions, I can see how much more confident she feels. The therapists truly understand children."
-                </p>
+                <p>&quot;{desktopGrid.col5.textCard.quote}&quot;</p>
                 <br />
-                <p className="p2 mt-4 mb-4">
-                  Parent of a 9-year-old
-                </p>
+                <p className="p2 mt-4 mb-4">{desktopGrid.col5.textCard.author}</p>
               </div>
             </div>
           </div>

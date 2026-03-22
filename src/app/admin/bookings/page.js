@@ -127,12 +127,13 @@ export default function BookingsPage() {
         order: 'asc'
       };
 
-      // Add filters
-      if (filterStatus && filterStatus !== 'all') {
-        params.status = filterStatus;
+      // Add filters (Upcoming tab = booked + rescheduled — repeated ?status= for reliable parsing)
+      if (filterStatus) {
+        params.status =
+          filterStatus === 'booked' ? ['booked', 'rescheduled'] : filterStatus;
       }
 
-      // Date range filter (same behavior as finance sessions page)
+      // Date range filter
       if (dateRange && dateRange.from && dateRange.to) {
         const formatDateToIST = (date) => {
           if (!date) return null;
@@ -466,13 +467,6 @@ export default function BookingsPage() {
 
 
   const getStatusIcon = (status, booking) => {
-    // Check if session time has passed but status is still 'booked'
-    const isTimePassed = () => {
-      if (!booking.scheduled_date || !booking.scheduled_time) return false;
-      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
-      return sessionDateTime < new Date();
-    };
-
     switch (status) {
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -482,8 +476,17 @@ export default function BookingsPage() {
         return <AlertCircle className="h-4 w-4 text-orange-500" />;
       case 'rescheduled':
         return <RefreshCw className="h-4 w-4 text-yellow-500" />;
+      case 'scheduled':
+        if (isBookingPastDue(booking)) {
+          return <Clock className="h-4 w-4 text-slate-500" />;
+        }
+        return <Calendar className="h-4 w-4 text-sky-600" />;
+      case 'confirmed':
+        return <UserCheck className="h-4 w-4 text-emerald-600" />;
+      case 'reschedule_requested':
+        return <RefreshCw className="h-4 w-4 text-amber-600" />;
       case 'booked':
-        if (isTimePassed()) {
+        if (isBookingPastDue(booking)) {
           return <Clock className="h-4 w-4 text-slate-500" />;
         }
         return <Clock className="h-4 w-4 text-[#3f2e73]" />;
@@ -493,13 +496,6 @@ export default function BookingsPage() {
   };
 
   const getStatusColor = (status, booking) => {
-    // Check if session time has passed but status is still 'booked'
-    const isTimePassed = () => {
-      if (!booking.scheduled_date || !booking.scheduled_time) return false;
-      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
-      return sessionDateTime < new Date();
-    };
-
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-800';
@@ -509,8 +505,17 @@ export default function BookingsPage() {
         return 'bg-orange-100 text-orange-800';
       case 'rescheduled':
         return 'bg-yellow-100 text-yellow-800';
+      case 'scheduled':
+        if (isBookingPastDue(booking)) {
+          return 'bg-slate-100 text-slate-700';
+        }
+        return 'bg-sky-100 text-sky-800';
+      case 'confirmed':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'reschedule_requested':
+        return 'bg-amber-100 text-amber-900';
       case 'booked':
-        if (isTimePassed()) {
+        if (isBookingPastDue(booking)) {
           return 'bg-slate-100 text-slate-700';
         }
         return 'bg-[#3f2e73]/10 text-[#3f2e73]';
@@ -520,13 +525,6 @@ export default function BookingsPage() {
   };
 
   const getStatusText = (status, booking) => {
-    // Check if session time has passed but status is still 'booked'
-    const isTimePassed = () => {
-      if (!booking.scheduled_date || !booking.scheduled_time) return false;
-      const sessionDateTime = new Date(`${booking.scheduled_date}T${booking.scheduled_time}`);
-      return sessionDateTime < new Date();
-    };
-
     switch (status) {
       case 'completed':
         return 'Completed';
@@ -536,13 +534,29 @@ export default function BookingsPage() {
         return 'No Show';
       case 'rescheduled':
         return 'Rescheduled';
+      case 'scheduled':
+        if (isBookingPastDue(booking)) {
+          return 'Pending';
+        }
+        return 'Scheduled';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'reschedule_requested':
+        if (isBookingPastDue(booking)) {
+          return 'Pending';
+        }
+        return 'Reschedule requested';
       case 'booked':
-        if (isTimePassed()) {
+        if (isBookingPastDue(booking)) {
           return 'Pending';
         }
         return 'Booked';
       default:
-        return status?.charAt(0).toUpperCase() + status?.slice(1) || 'Unknown';
+        if (!status) return 'Unknown';
+        return status
+          .split('_')
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
     }
   };
 
@@ -577,9 +591,50 @@ export default function BookingsPage() {
   // Normalize status for comparison (backend may return 'noshow' or 'no_show')
   const normalizeStatus = (s) => (s === 'noshow' ? 'no_show' : (s || ''));
 
-  // Client-side: filter by selected status tab (so Booked tab never shows no_show etc.) and by search
+  // Robust overdue check for booked sessions (supports varied backend time formats)
+  const isBookingPastDue = (booking) => {
+    const status = normalizeStatus(booking?.status);
+    if (status !== 'booked' && status !== 'scheduled' && status !== 'reschedule_requested') return false;
+    const dateStr = booking?.scheduled_date;
+    const timeStr = booking?.scheduled_time;
+    if (!dateStr || !timeStr) return false;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const todayIso = `${y}-${m}-${d}`;
+    const sessionDateOnly = String(dateStr).slice(0, 10);
+
+    // Cross-day check avoids timezone parsing ambiguity
+    if (sessionDateOnly < todayIso) return true;
+    if (sessionDateOnly > todayIso) return false;
+
+    // Same-day check using HH:mm from scheduled_time
+    const cleanTime = String(timeStr).split('.')[0].trim();
+    const parts = cleanTime.split(':');
+    if (parts.length >= 2) {
+      const hh = parseInt(parts[0], 10);
+      const mm = parseInt(parts[1], 10);
+      if (!Number.isNaN(hh) && !Number.isNaN(mm)) {
+        const sessionMinutes = hh * 60 + mm;
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        return sessionMinutes < nowMinutes;
+      }
+    }
+
+    // Fallback for uncommon formats
+    const fallback = new Date(`${sessionDateOnly}T${cleanTime}`);
+    if (!Number.isNaN(fallback.getTime())) return fallback < now;
+    return false;
+  };
+
+  // Client-side: filter by selected status tab and by search
   const filteredBookings = bookings.filter(booking => {
-    const statusMatch = filterStatus === 'all' || normalizeStatus(booking.status) === filterStatus;
+    const st = normalizeStatus(booking.status);
+    const statusMatch =
+      (filterStatus === 'booked' && (st === 'booked' || st === 'rescheduled')) ||
+      st === filterStatus;
     if (!statusMatch) return false;
 
     if (!searchTerm) return true;
@@ -591,16 +646,23 @@ export default function BookingsPage() {
     return matchesSearch;
   });
 
-  // Sort by nearest slot first (scheduled_date then scheduled_time ascending)
-  const displayBookings = [...filteredBookings].sort((a, b) => {
-    const aDate = a.scheduled_date || '';
-    const aTime = a.scheduled_time || '';
-    const bDate = b.scheduled_date || '';
-    const bTime = b.scheduled_time || '';
-    const aDt = new Date(`${aDate}T${aTime}`);
-    const bDt = new Date(`${bDate}T${bTime}`);
-    return aDt - bDt;
-  });
+  // Sort by nearest slot first (scheduled_date + scheduled_time ascending)
+  const scheduledSlotMs = (s) => {
+    const d = s?.scheduled_date;
+    if (!d) return 0;
+    const dateOnly = String(d).slice(0, 10);
+    const rawT = s.scheduled_time != null ? String(s.scheduled_time) : '00:00:00';
+    const t = rawT.split('.')[0].trim();
+    const parts = t.split(':');
+    const hh = String(parts[0] || '00').padStart(2, '0');
+    const mm = String(parts[1] || '00').padStart(2, '0');
+    const ss = String((parts[2] || '00').split('.')[0]).padStart(2, '0');
+    const ms = new Date(`${dateOnly}T${hh}:${mm}:${ss}`).getTime();
+    return Number.isFinite(ms) ? ms : 0;
+  };
+  const displayBookings = [...filteredBookings].sort(
+    (a, b) => scheduledSlotMs(a) - scheduledSlotMs(b)
+  );
 
   // Debug logging
   useEffect(() => {
@@ -614,8 +676,7 @@ export default function BookingsPage() {
   }, [currentPage, totalPages, totalBookings, displayBookings.length]);
 
   const statusTabs = [
-    { value: 'all', label: 'All' },
-    { value: 'booked', label: 'Booked' },
+    { value: 'booked', label: 'Upcoming' },
     { value: 'completed', label: 'Completed' },
     { value: 'packages', label: 'Packages' },
     { value: 'cancelled', label: 'Cancelled' },
@@ -1007,7 +1068,9 @@ export default function BookingsPage() {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          {['booked', 'rescheduled', 'confirmed'].includes(booking.status) && (
+                          {['booked', 'rescheduled', 'confirmed', 'scheduled', 'reschedule_requested'].includes(
+                            booking.status
+                          ) && (
                             <>
                               <DropdownMenuItem onClick={() => handleReschedule(booking)} className="cursor-pointer">
                                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -1055,7 +1118,7 @@ export default function BookingsPage() {
           <Calendar className="mx-auto h-12 w-12 text-gray-400" />
           <h6>No bookings found</h6>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || filterStatus !== 'all'
+            {searchTerm
               ? 'Try adjusting your search or filter criteria.'
               : 'No therapy sessions have been booked yet.'
             }
@@ -1127,11 +1190,15 @@ export default function BookingsPage() {
       {!showPackagesView && (displayBookings.length > 0 || totalBookings > 0) && (
         <div className="text-center mt-4 text-sm text-gray-600">
           Showing {displayBookings.length} of {totalBookings} booking{totalBookings !== 1 ? 's' : ''}
-          {filterStatus !== 'all' && filterStatus !== 'packages' && (
+          {filterStatus !== 'packages' && (
             <>
               {' '}with status{' '}
               <span className="font-medium text-gray-900">
-                {filterStatus === 'no_show' ? 'No Show' : filterStatus.replace('_', ' ')}
+                {filterStatus === 'no_show'
+                  ? 'No Show'
+                  : filterStatus === 'booked'
+                    ? 'Upcoming'
+                    : filterStatus.split('_').join(' ')}
               </span>
             </>
           )}

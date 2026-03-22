@@ -84,6 +84,7 @@ export default function AdminManualBookingModal({
   const [searchClient, setSearchClient] = useState('');
   const [searchPsychologist, setSearchPsychologist] = useState('');
   const [meetLink, setMeetLink] = useState(''); // For recordOnly: optional Meet link if created elsewhere
+  const [status, setStatus] = useState('booked'); // For recordOnly: session status (booked, completed, cancelled, no_show, rescheduled)
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -164,6 +165,7 @@ export default function AdminManualBookingModal({
     setSearchClient('');
     setSearchPsychologist('');
     setMeetLink('');
+    setStatus('booked');
     setShowSuccessModal(false);
     setShowFailureModal(false);
     setFailureMessage('');
@@ -604,6 +606,7 @@ export default function AdminManualBookingModal({
       };
       if (recordOnly) {
         bookingData.meet_link = meetLink?.trim() || undefined;
+        bookingData.status = status;
       }
 
       console.log(recordOnly ? 'Creating record-only booking:' : 'Creating manual booking:', bookingData);
@@ -1223,6 +1226,27 @@ export default function AdminManualBookingModal({
               <p className="mt-1 text-xs text-slate-500">Method used for manual payment</p>
               </div>
             </div>
+
+            {/* Status (record-only): set session status when adding a record */}
+            {recordOnly && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-4">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Status *
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
+                >
+                  <option value="booked">Booked</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="no_show">No Show</option>
+                  <option value="rescheduled">Rescheduled</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">Session status for this record</p>
+              </div>
+            )}
 
             {/* Meet link (record-only): optional if meeting was created elsewhere */}
             {recordOnly && (

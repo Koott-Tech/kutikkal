@@ -529,6 +529,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 <li className="text-left"><a href="/career" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Career</h2></a></li>
                                 <li className="text-left"><a href="/faq" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">FAQ</h2></a></li>
                                 <li className="text-left"><a href="/blog" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Blog</h2></a></li>
+                                <li className="text-left"><a href="/events" className="text-white hover:text-green-200 transition-colors duration-200 font-medium text-left block"><h2 className="footer-individual-menu-item">Events</h2></a></li>
                             </ul>
                         </div>
                     </div>

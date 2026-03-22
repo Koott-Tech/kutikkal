@@ -98,6 +98,10 @@ export function normalizeImageUrl(url) {
         }
       }
     }
+    // Other absolute URLs (CDN, etc.): keep full URL — pathname-only would break Next/Image
+    if (urlObj.protocol === 'https:' || urlObj.protocol === 'http:') {
+      return url;
+    }
     return urlObj.pathname;
   } catch (e) {
     // If URL parsing fails, try regex to extract /api/images/... path

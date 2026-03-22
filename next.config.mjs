@@ -25,6 +25,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'little.care',
       },
+      {
+        protocol: 'https',
+        hostname: 'static.wixstatic.com',
+      },
       // Development
       {
         protocol: 'http',

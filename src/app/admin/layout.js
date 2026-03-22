@@ -21,7 +21,8 @@ import {
   ChevronDown,
   ChevronRight,
   Layers,
-  RefreshCw
+  RefreshCw,
+  Briefcase
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -57,7 +58,7 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const currentPath = window.location.pathname;
-      const cmsPaths = ['/admin/blogs', '/admin/counselling', '/admin/assessments', '/admin/better-parenting'];
+      const cmsPaths = ['/admin/blogs', '/admin/counselling', '/admin/assessments', '/admin/better-parenting', '/admin/careers'];
       const isOnCmsPage = cmsPaths.some(path => currentPath.startsWith(path));
       if (isOnCmsPage) {
         setIsCmsMenuOpen(true);
@@ -87,6 +88,7 @@ export default function AdminLayout({ children }) {
         { name: 'Counselling Pages', href: '/admin/counselling', icon: MessageSquare },
         { name: 'Assessment Pages', href: '/admin/assessments', icon: FileText },
         { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
+        { name: 'Careers', href: '/admin/careers', icon: Briefcase },
       ]
     },
   ];

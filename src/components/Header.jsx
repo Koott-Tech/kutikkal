@@ -1141,6 +1141,18 @@ export default function Header() {
                           </svg>
                           <span className="text-gray-700 text-base font-medium">FAQ</span>
                         </div>
+                        <div 
+                          className="py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 flex items-center gap-3"
+                          onClick={() => {
+                            router.push('/events');
+                            setIsResourcesOpen(false);
+                          }}
+                        >
+                          <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-gray-700 text-base font-medium">Events</span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1842,6 +1854,16 @@ export default function Header() {
                             }}
                           >
                             <span className="text-gray-700" style={{ fontSize: '14px' }}>FAQ</span>
+                          </div>
+                          <div 
+                            className="py-1.5 cursor-pointer hover:bg-gray-50 rounded-md px-2"
+                            onClick={() => {
+                              router.push('/events');
+                              setIsMobileMenuOpen(false);
+                              setIsMobileResourcesOpen(false);
+                            }}
+                          >
+                            <span className="text-gray-700" style={{ fontSize: '14px' }}>Events</span>
                           </div>
                         </div>
                       </div>

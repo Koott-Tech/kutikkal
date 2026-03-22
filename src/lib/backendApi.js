@@ -958,9 +958,18 @@ export const adminApi = {
 
   // Reschedule session
   async rescheduleSession(sessionId, rescheduleData) {
-    return apiRequest(`/admin/sessions/${sessionId}/reschedule`, {
+    const mappedData = {
+      // Admin backend expects updateSession payload keys
+      scheduled_date: rescheduleData?.new_date || rescheduleData?.scheduled_date,
+      scheduled_time: rescheduleData?.new_time || rescheduleData?.scheduled_time,
+      // Keep status aligned with admin reschedule action
+      status: rescheduleData?.status || 'rescheduled',
+      ...(rescheduleData?.reason ? { reason: rescheduleData.reason } : {})
+    };
+
+    return apiRequest(`/admin/sessions/${sessionId}`, {
       method: 'PUT',
-      body: JSON.stringify(rescheduleData),
+      body: JSON.stringify(mappedData),
     });
   },
 
@@ -1263,6 +1272,57 @@ export const adminApi = {
   },
 };
 
+// Careers API
+export const careersApi = {
+  // Public list
+  async getCareers(params = {}) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v != null && v !== '') query.append(k, v);
+    });
+    const qs = query.toString();
+    return apiRequest(`/careers${qs ? `?${qs}` : ''}`);
+  },
+
+  // Public detail
+  async getCareerBySlug(slug) {
+    return apiRequest(`/careers/slug/${encodeURIComponent(slug)}`);
+  },
+
+  // Admin list
+  async getCareersAdmin(params = {}) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v != null && v !== '') query.append(k, v);
+    });
+    return apiRequest(`/careers/admin?${query.toString()}`);
+  },
+
+  async getCareer(id) {
+    return apiRequest(`/careers/admin/${encodeURIComponent(id)}`);
+  },
+
+  async createCareer(data) {
+    return apiRequest('/careers/admin', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateCareer(id, data) {
+    return apiRequest(`/careers/admin/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteCareer(id) {
+    return apiRequest(`/careers/admin/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 // Superadmin API
 export const superadminApi = {
   // Create admin user
@@ -1351,9 +1411,16 @@ export const sessionsApi = {
   async getAllSessions(params = {}) {
     const queryParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (value) queryParams.append(key, value);
+      if (value === undefined || value === null || value === '') return;
+      if (Array.isArray(value)) {
+        value.forEach((v) => {
+          if (v !== undefined && v !== null && v !== '') queryParams.append(key, String(v));
+        });
+        return;
+      }
+      queryParams.append(key, value);
     });
-    
+
     return apiRequest(`/admin/sessions/all?${queryParams}`);
   },
 
