@@ -1,21 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Testimonials from "@/components/Testimonials";
 import {
-  WORKSHOP_TESTIMONIALS_PHOTOS,
-  WORKSHOP_TESTIMONIALS_DESKTOP_GRID,
-} from "@/data/workshopTestimonialsHomeStyle";
-import LeadershipMembersShowcase from "@/components/LeadershipMembersShowcase";
-import {
-  Calendar,
   Clock,
-  MonitorPlay,
   Heart,
   Users,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
   MessageCircle,
   LineChart,
@@ -24,6 +18,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import { SUMMER_WORKSHOP_2026_HERO_IMAGE } from "@/data/summerWorkshop2026Assets";
+import Reviews from "@/components/Reviews";
 
 const COUNTRY_CODES = [
   { code: "+91", label: "India (+91)" },
@@ -44,66 +39,57 @@ const COUNTRY_CODES = [
   { code: "+92", label: "Pakistan (+92)" },
 ];
 
-/** Same card layout as About → Leadership; optional `image` per person (URLs from content team). */
-const PANELISTS = [
+const EVENT_DUMMY_REVIEWS = [
   {
-    name: "Sreerag Babu",
-    title: "Workshop panelist",
-    image:
-      "https://static.wixstatic.com/media/624142_016a00ca91fb416c9e3b5a3693aebfe0~mv2.webp/v1/fill/w_256,h_300,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.webp",
+    author: "Aparna",
+    text: "The session gave us simple steps we could apply the same day. My child opened up more than usual after the workshop.",
+    avatarUrl: "/testimonialgirl.png",
   },
+  {
+    author: "Nikhil",
+    text: "Very practical and easy to follow. We now have a calm routine for talking about big emotions at home.",
+    avatarUrl: "/testimonial5.PNG",
+  },
+  {
+    author: "Farah",
+    text: "Loved the parent-child activities. It felt supportive, clear, and realistic for everyday family life.",
+    avatarUrl: "/TESTIMONIALS 4.webp",
+  },
+];
+
+const EVENT_SPEAKERS = [
   {
     name: "Irene Cherian",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/irene-1761805889946.webp",
-  },
-  {
-    name: "Lakshmi",
-    title: "Workshop panelist",
-    image:
-      "https://static.wixstatic.com/media/624142_20fd35759ae94c32bc333c9ba016dc89~mv2.webp/v1/fill/w_256,h_300,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.webp",
+    designation: "Child Psychologist",
+    experience: "8+ years experience",
+    image: "https://www.little.care/api/images/profile-pictures/irene-1761805889946.webp",
+    details:
+      "Focuses on child emotional wellbeing, parent guidance, and practical communication tools for everyday family life.",
+    languages: "English, Malayalam, Hindi",
+    focus: "Emotional regulation, parent-child communication, anxiety support",
+    style: "Warm, structured, and activity-based",
   },
   {
     name: "Shuhaima Katti",
-    title: "Workshop panelist",
+    designation: "Behavior Therapist",
+    experience: "6+ years experience",
     image: "https://www.little.care/api/images/profile-pictures/katti-1762803574350.webp",
-  },
-  {
-    name: "Anjala",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/29ea19f6-feff-48e3-af67-4c451f8175f4.webp",
-  },
-  {
-    name: "Ambili",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/57950d98-1d92-4b7f-990f-8a9b5825da8e.webp",
-  },
-  {
-    name: "Shinjuna",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/8318404d-96eb-428c-b61e-5da72e683f40.webp",
+    details:
+      "Works with families on behavior support strategies, emotional regulation routines, and consistent home follow-through.",
+    languages: "English, Malayalam, Tamil",
+    focus: "Behavior plans, calming routines, home consistency",
+    style: "Practical, child-friendly, and collaborative",
   },
   {
     name: "Aswathy Sampath",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/8c586c80-a0d1-4fcf-96a4-faf7fdfcae11.webp",
-  },
-  {
-    name: "Albin",
-    title: "Workshop panelist",
-    image:
-      "https://static.wixstatic.com/media/624142_0c31eb1f7e7b4bf68b2b299457144aa5~mv2.png/v1/fill/w_256,h_300,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.png",
-  },
-  {
-    name: "Taniya",
-    title: "Workshop panelist",
-    image:
-      "https://www.little.care/api/images/profile-pictures/thaniya-1761831177583.webp",
+    designation: "Special Educator",
+    experience: "7+ years experience",
+    image: "https://www.little.care/api/images/profile-pictures/8c586c80-a0d1-4fcf-96a4-faf7fdfcae11.webp",
+    details:
+      "Helps parents understand learning differences and build supportive, child-friendly practices at home and school.",
+    languages: "English, Malayalam",
+    focus: "Learning support, confidence building, school-home bridge",
+    style: "Inclusive, adaptive, and strengths-focused",
   },
 ];
 
@@ -114,11 +100,9 @@ export default function WorkshopSummer2026Client() {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
-
-  const scrollToSchedule = useCallback((e) => {
-    e.preventDefault();
-    document.getElementById("schedule")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  const [speakerIndex, setSpeakerIndex] = useState(0);
+  const [speakerPhase, setSpeakerPhase] = useState("idle");
+  const [speakerDirection, setSpeakerDirection] = useState(1);
 
   const scrollToRegister = useCallback((e) => {
     e.preventDefault();
@@ -161,6 +145,38 @@ export default function WorkshopSummer2026Client() {
     [fullName, email, countryCode, phone]
   );
 
+  const activeSpeaker = EVENT_SPEAKERS[speakerIndex];
+
+  const changeSpeaker = useCallback((nextIndex, direction = 1) => {
+    if (nextIndex === speakerIndex) return;
+    setSpeakerDirection(direction);
+    setSpeakerPhase("out");
+    setTimeout(() => {
+      setSpeakerIndex(nextIndex);
+      setSpeakerPhase("in");
+      setTimeout(() => setSpeakerPhase("idle"), 20);
+    }, 220);
+  }, [speakerIndex]);
+
+  const goPrevSpeaker = () => {
+    const next = (speakerIndex - 1 + EVENT_SPEAKERS.length) % EVENT_SPEAKERS.length;
+    changeSpeaker(next, -1);
+  };
+
+  const goNextSpeaker = () => {
+    const next = (speakerIndex + 1) % EVENT_SPEAKERS.length;
+    changeSpeaker(next, 1);
+  };
+
+  useEffect(() => {
+    const autoTimer = setInterval(() => {
+      const next = (speakerIndex + 1) % EVENT_SPEAKERS.length;
+      changeSpeaker(next);
+    }, 6000);
+
+    return () => clearInterval(autoTimer);
+  }, [speakerIndex, changeSpeaker]);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero — full viewport height, split layout, image + floating form */}
@@ -194,11 +210,11 @@ export default function WorkshopSummer2026Client() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href="#schedule"
-                  onClick={scrollToSchedule}
+                  href="#register"
+                  onClick={scrollToRegister}
                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#3f2e73] shadow-lg hover:bg-gray-50 transition-colors"
                 >
-                  Schedule
+                  Register
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <Link
@@ -319,34 +335,135 @@ export default function WorkshopSummer2026Client() {
       </section>
 
       {/* Content sections — CMS-like grids */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16 space-y-16 sm:space-y-20">
-        <section className="grid gap-10 lg:grid-cols-2 lg:gap-14 items-start">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#3f2e73]/10 px-3 py-1 text-xs font-semibold text-[#3f2e73]">
-              <Heart className="h-3.5 w-3.5" />
-              Our mission
-            </div>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24 space-y-28 sm:space-y-32 lg:space-y-36">
+        <section
+          className="relative overflow-hidden rounded-3xl border border-[#3f2e73]/20 bg-gradient-to-br from-[#f8f5ff] via-white to-[#eef6ff] p-6 sm:p-8"
+          aria-labelledby="what-is-this-heading"
+        >
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#3f2e73]/10 blur-2xl" aria-hidden />
+          <div className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#7b68b8]/10 blur-xl" aria-hidden />
+
+          <div className="relative">
+            <p className="inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#3f2e73]">
+              Workshop Format
+            </p>
             <div
-              className="mt-4 text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight font-sans"
+              id="what-is-this-heading"
+              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight font-sans"
               role="heading"
               aria-level={2}
             >
-              LittleCare
+              What is this?
             </div>
-            <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">
-              At LittleCare, we create safe and engaging spaces where families can build emotional awareness, improve
-              communication, and strengthen their connection. Because when families understand each other better,
-              children feel more confident, secure, and heard.
+            <p className="mt-4 max-w-3xl text-sm sm:text-base text-gray-700 leading-relaxed">
+              This is a 1-hour interactive online workshop designed for parents and children to participate together.
+              It is not a lecture; it is a practical space where families engage, share, and learn through games,
+              role-plays, and guided activities.
             </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {[
+                { icon: LineChart, text: "Understand what emotions really are and why they can feel intense." },
+                { icon: MessageCircle, text: "Learn how to express feelings without hurting each other." },
+                { icon: Clock, text: "Explore simple ways to improve communication at home." },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3f2e73]/10 text-[#3f2e73]">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <p className="mt-3 text-sm text-gray-700 leading-relaxed">{text}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 aspect-[4/3] lg:aspect-auto lg:min-h-[280px]">
-            <Image
-              src="/TESTIMONIALS 2.webp"
-              alt="Parent and child spending time together"
-              fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 50vw, 100vw"
-            />
+        </section>
+
+        <section aria-labelledby="event-speakers-heading">
+          <div className="mb-8 sm:mb-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#3f2e73]">Meet the speakers</p>
+            <div
+              id="event-speakers-heading"
+              className="mt-3 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 font-sans"
+              role="heading"
+              aria-level={2}
+            >
+              Panelists for this session
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <div className="text-xs font-medium text-[#3f2e73]">
+              {speakerIndex + 1} / {EVENT_SPEAKERS.length}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={goPrevSpeaker}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#3f2e73]/20 text-[#3f2e73] hover:bg-[#f4f1ff] transition-colors"
+                aria-label="Previous speaker"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={goNextSpeaker}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#3f2e73]/20 text-[#3f2e73] hover:bg-[#f4f1ff] transition-colors"
+                aria-label="Next speaker"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <article
+            className={`grid gap-10 lg:grid-cols-2 lg:gap-14 items-start lg:items-center transition-all duration-500 ease-out ${
+              speakerPhase === "out"
+                ? speakerDirection === 1
+                  ? "opacity-0 -translate-x-6"
+                  : "opacity-0 translate-x-6"
+                : speakerPhase === "in"
+                  ? speakerDirection === 1
+                    ? "opacity-0 translate-x-6"
+                    : "opacity-0 -translate-x-6"
+                  : "opacity-100 translate-x-0"
+            }`}
+          >
+            <div>
+              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44] tracking-tight font-sans">{activeSpeaker.name}</div>
+              <p className="mt-2 text-sm font-medium text-[#3f2e73]">
+                {activeSpeaker.designation} · {activeSpeaker.experience}
+              </p>
+              <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">{activeSpeaker.details}</p>
+              <div className="mt-4 space-y-2 text-xs sm:text-sm text-gray-700">
+                <p><span className="font-semibold text-[#2a1f52]">Languages:</span> {activeSpeaker.languages}</p>
+                <p><span className="font-semibold text-[#2a1f52]">Session focus:</span> {activeSpeaker.focus}</p>
+                <p><span className="font-semibold text-[#2a1f52]">Approach:</span> {activeSpeaker.style}</p>
+              </div>
+            </div>
+
+            <div className="relative w-full max-w-[220px] sm:max-w-[250px] lg:max-w-[280px] rounded-2xl overflow-hidden border border-gray-200 aspect-[3/4] mx-auto lg:ml-auto lg:mr-0">
+              <Image
+                src={activeSpeaker.image}
+                alt={activeSpeaker.name}
+                fill
+                className="object-cover rounded-2xl"
+                sizes="(min-width: 1024px) 280px, (min-width: 640px) 250px, 220px"
+              />
+            </div>
+          </article>
+
+          <div className="mt-5 flex items-center gap-2">
+            {EVENT_SPEAKERS.map((speaker, idx) => (
+              <button
+                key={speaker.name}
+                type="button"
+                onClick={() => changeSpeaker(idx, idx > speakerIndex ? 1 : -1)}
+                className={`h-1.5 rounded-full transition-all ${
+                  idx === speakerIndex ? "w-8 bg-[#3f2e73]" : "w-4 bg-[#3f2e73]/25"
+                }`}
+                aria-label={`Go to speaker ${idx + 1}`}
+              />
+            ))}
           </div>
         </section>
 
@@ -360,11 +477,12 @@ export default function WorkshopSummer2026Client() {
               role="heading"
               aria-level={2}
             >
-              When families understand feelings, everyone grows together
+              Why this workshop matters for families
             </div>
             <p className="mt-4 text-base text-gray-600 leading-relaxed max-w-2xl mx-auto">
-              Many struggles at home start from emotions that are hard to name, hear, or say out loud. This hour is built
-              to change that—gently and together.
+              Many challenges do not begin outside the home, they begin in small moments where feelings are left
+              unspoken. Children may not know how to express emotions, and parents may not always know how to respond
+              in the moment. This workshop helps bridge that gap.
             </p>
           </div>
 
@@ -374,23 +492,23 @@ export default function WorkshopSummer2026Client() {
               {[
                 {
                   icon: Clock,
-                  title: "Timely skills",
-                  body: "In one focused hour, you’ll practice tools you can use the same week—not someday when things calm down.",
+                  title: "Children feel safer expressing emotions",
+                  body: "Kids learn words and simple tools to share big feelings instead of shutting down or reacting in frustration.",
                 },
                 {
                   icon: LineChart,
-                  title: "Visible progress",
-                  body: "Games and role-plays help you see what’s working: clearer words, softer reactions, and more trust.",
+                  title: "Parents respond with more confidence",
+                  body: "You practice calm, practical responses that improve communication and reduce emotional conflict at home.",
                 },
                 {
                   icon: MessageCircle,
-                  title: "Integrated care",
-                  body: "Parents and children learn the same language, so support doesn’t stop when the call ends.",
+                  title: "Families build healthier patterns",
+                  body: "Parents and children learn together, creating shared emotional language that continues after the session.",
                 },
                 {
                   icon: Layers,
-                  title: "No barrier to start",
-                  body: "This session is free. Show up as you are—we meet you where your family is today.",
+                  title: "A small step creates real change",
+                  body: "A single guided session can strengthen trust, reduce misunderstandings, and improve day-to-day connection.",
                 },
               ].map(({ icon: Icon, title, body }) => (
                 <div
@@ -419,199 +537,99 @@ export default function WorkshopSummer2026Client() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#3f2e73]/20 bg-[#3f2e73]/[0.04] p-6 sm:p-8">
-          <div className="flex items-center gap-2 text-[#3f2e73]">
-            <Users className="h-5 w-5" />
-            <div className="text-lg font-semibold text-gray-900 font-sans" role="heading" aria-level={2}>
-              Who can join?
-            </div>
-          </div>
-          <p className="mt-3 text-sm sm:text-base text-gray-700 leading-relaxed">
-            Parents with their children (best suited for ages <strong>9–14 years</strong>) who wish to build a more
-            understanding and emotionally connected home.
-          </p>
-        </section>
-
-        <section>
-          <div
-            className="text-xl sm:text-2xl font-semibold text-gray-900 font-sans"
-            role="heading"
-            aria-level={2}
-          >
-            Our panelists
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Facilitators and voices guiding this summer series.</p>
-        </section>
-
-        {/* Full viewport width — same breakout pattern as homepage testimonials */}
-        <div className="w-screen max-w-[100vw] relative left-1/2 -translate-x-1/2 overflow-x-clip">
-          <LeadershipMembersShowcase
-            members={PANELISTS}
-            showSectionHeader={false}
-            useAccessibleNameHeading
-            className="!px-0 w-full max-w-none"
-            sectionClassName="w-full mt-8 md:mt-10"
-            layout="carousel"
-            carouselFullBleed
-            naturalMemberImageHeight
-          />
-        </div>
-
-        <section
-          id="schedule"
-          className="w-full scroll-mt-24 sm:scroll-mt-28"
-          aria-labelledby="how-it-works-heading"
-        >
-          <div
-            id="how-it-works-heading"
-            className="text-xl sm:text-2xl font-semibold text-gray-900 font-sans"
-            role="heading"
-            aria-level={2}
-          >
-            How it works
-          </div>
-          <p className="mt-2 max-w-2xl text-sm text-gray-600 leading-relaxed">
-            One live session online—here&apos;s when, how long, and how you&apos;ll join. Add it to your calendar and show
-            up with your child.
-          </p>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-12 lg:gap-8 lg:items-stretch">
-            {/* Schedule spotlight — date & time are the hero facts */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#3f2e73]/15 bg-gradient-to-br from-[#3f2e73]/12 via-[#f4f2fa] to-white p-8 text-gray-900 shadow-sm lg:col-span-7 lg:p-10">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#3f2e73]/10 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-[#3f2e73]/5 blur-2xl" />
-              <div className="relative flex flex-wrap items-start justify-between gap-6">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#3f2e73]/80">Session date</p>
-                  <p className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl">
-                    April 18
-                  </p>
-                  <p className="mt-2 text-lg font-medium text-gray-600">2026 · Saturday</p>
-                </div>
-                <div className="rounded-2xl bg-[#3f2e73]/10 px-4 py-3 text-[#3f2e73]">
-                  <Calendar className="h-8 w-8" aria-hidden />
-                </div>
-              </div>
-              <div className="relative mt-10 grid gap-6 border-t border-[#3f2e73]/10 pt-8 sm:grid-cols-2">
-                <div>
-                  <div className="flex items-center gap-2 text-gray-500">
-                    <Clock className="h-4 w-4 shrink-0 text-[#3f2e73]" aria-hidden />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Time (IST)</span>
-                  </div>
-                  <p className="mt-2 text-lg font-semibold leading-snug text-gray-900 sm:text-xl">
-                    11:00 AM – 12:00 PM
-                  </p>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 text-gray-500">
-                    <Clock className="h-4 w-4 shrink-0 text-[#3f2e73]" aria-hidden />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Duration</span>
-                  </div>
-                  <p className="mt-2 text-lg font-semibold text-gray-900 sm:text-xl">1 hour</p>
-                  <p className="mt-1 text-sm text-gray-600">Interactive · parent &amp; child together</p>
-                </div>
+        <section className="py-4" aria-labelledby="who-can-join-heading">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="inline-flex items-center gap-2 text-[#3f2e73]">
+              <Users className="h-5 w-5" />
+              <div id="who-can-join-heading" className="text-xl font-semibold text-[#241a44] font-sans" role="heading" aria-level={2}>
+                Who can join?
               </div>
             </div>
+            <span className="inline-flex items-center rounded-full bg-[#f4f1ff] px-3 py-1 text-xs font-semibold text-[#3f2e73]">
+              Age 9-14
+            </span>
+          </div>
 
-            {/* How you join — explains the online piece */}
-            <div className="flex flex-col gap-4 lg:col-span-5">
-              <div className="flex flex-1 flex-col rounded-2xl border border-gray-200 bg-gray-50/90 p-6 shadow-sm sm:p-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
-                  <MonitorPlay className="h-7 w-7" strokeWidth={1.75} aria-hidden />
-                </div>
-                <div
-                  className="mt-5 text-lg font-semibold text-gray-900 font-sans"
-                  role="heading"
-                  aria-level={3}
-                >
-                  Join on Google Meet
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  This workshop runs <strong className="font-medium text-gray-800">online only</strong>. After you
-                  register, we&apos;ll email you the Meet link and reminders—no apps to install beyond your browser.
-                </p>
-                <ul className="mt-5 space-y-3 text-sm text-gray-700">
-                  <li className="flex gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#3f2e73]" aria-hidden />
-                    Stable internet and a quiet corner work best for you and your child.
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#3f2e73]" aria-hidden />
-                    Same link for both parent and child—join from one device or two.
-                  </li>
-                </ul>
-              </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="border-l-2 border-[#3f2e73]/30 pl-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Primary attendees</p>
+              <p className="mt-1 text-sm font-medium text-[#2a1f52]">Parents with their children (best suited for ages 9-14 years)</p>
+            </div>
+            <div className="border-l-2 border-[#3f2e73]/30 pl-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Best suited for</p>
+              <p className="mt-1 text-sm font-medium text-[#2a1f52]">Families building emotional communication at home</p>
             </div>
           </div>
         </section>
 
         <section
-          className="relative overflow-hidden rounded-3xl border border-gray-200/90 bg-white shadow-[0_2px_24px_-4px_rgba(15,23,42,0.08)]"
-          aria-labelledby="special-note-heading"
+          className="relative overflow-hidden rounded-3xl border border-[#3f2e73]/20 bg-white shadow-[0_18px_48px_-22px_rgba(63,46,115,0.45)]"
+          aria-labelledby="ticket-heading"
         >
-          <div
-            className="h-1 w-full bg-gradient-to-r from-[#3f2e73] via-[#5c4a94] to-[#3f2e73]"
-            aria-hidden
-          />
-          <div className="grid gap-10 p-8 sm:p-10 lg:grid-cols-12 lg:gap-12 lg:p-12">
-            <div className="lg:col-span-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                <Gift className="h-3.5 w-3.5 text-emerald-700" aria-hidden />
-                Free · this session
+          <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 bg-[#3f2e73]" style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }} aria-hidden />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#3f2e73] via-[#7b68b8] to-[#3f2e73]" aria-hidden />
+          <div className="grid lg:grid-cols-[220px_1fr]">
+            <div className="relative border-b border-[#3f2e73]/15 bg-[#f4f1ff] p-6 lg:border-b-0 lg:border-r lg:border-[#3f2e73]/15">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3f2e73]/70">Session pass</p>
+              <p className="mt-2 text-4xl font-semibold leading-none text-[#2f2358]">FREE</p>
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-300/80 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                <Gift className="h-3 w-3" aria-hidden />
+                Complimentary
               </div>
+              <div className="mt-6 text-xs font-medium text-[#5e5774]">Ticket ID: LC-SW-2026</div>
+            </div>
+
+            <div className="p-6 sm:p-7">
               <div
-                id="special-note-heading"
-                className="mt-5 text-2xl font-semibold tracking-tight text-gray-900 font-sans sm:text-[1.65rem]"
+                id="ticket-heading"
+                className="text-2xl font-semibold tracking-tight text-[#241a44] font-sans sm:text-[1.8rem]"
                 role="heading"
                 aria-level={2}
               >
-                Special note
+                Expressing Big Emotions at Home
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-gray-600 sm:text-base">
-                This workshop is <span className="font-semibold text-gray-900">free to attend</span>. We want as many
-                families as possible to try a parent–child session with no upfront cost.
-              </p>
-            </div>
+              <p className="mt-2 text-sm text-[#5e5774]">One-session parent-child workshop ticket.</p>
 
-            <div className="flex flex-col gap-3 lg:col-span-7 lg:justify-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Pricing snapshot</p>
-              <div className="space-y-3">
-                <div className="flex flex-col justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/70 px-5 py-4 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-500 shadow-sm ring-1 ring-gray-100">
-                      <IndianRupee className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Future sessions</p>
-                      <p className="text-xs text-gray-500">Standard rate · 1 hour</p>
-                    </div>
-                  </div>
-                  <p className="text-xl font-semibold tabular-nums text-gray-900 sm:text-right">
-                    ₹479
-                    <span className="text-sm font-normal text-gray-500"> /session</span>
-                  </p>
+              <div className="mt-6 grid gap-0 rounded-2xl border border-[#3f2e73]/14 bg-white sm:grid-cols-3">
+                <div className="p-4 sm:border-r sm:border-[#3f2e73]/12">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Date</p>
+                  <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Sat, 18 April 2026</p>
                 </div>
-
-                <div className="flex flex-col justify-between gap-3 rounded-2xl border border-[#3f2e73]/20 bg-gradient-to-br from-[#3f2e73]/[0.06] to-white px-5 py-4 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
-                      <IndianRupee className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Early bird</p>
-                      <p className="text-xs text-gray-600">For select upcoming paid workshops</p>
-                    </div>
-                  </div>
-                  <div className="sm:text-right">
-                    <p className="text-xl font-semibold tabular-nums text-[#3f2e73]">
-                      ₹199
-                      <span className="text-sm font-normal text-[#3f2e73]/70"> /session</span>
-                    </p>
-                    <p className="mt-0.5 text-xs text-gray-600">Register before Apr 10, 2026 · details by email</p>
-                  </div>
+                <div className="border-t border-[#3f2e73]/12 p-4 sm:border-t-0 sm:border-r sm:border-[#3f2e73]/12">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Time</p>
+                  <p className="mt-1 text-sm font-semibold text-[#2a1f52]">11:00 AM - 12:00 PM IST</p>
+                </div>
+                <div className="border-t border-[#3f2e73]/12 p-4 sm:border-t-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Format</p>
+                  <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Online (Google Meet)</p>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-[#3f2e73]/18 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgba(63,46,115,0.08)]">
+          <div className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight font-sans" role="heading" aria-level={2}>
+            What You&apos;ll Take Back
+          </div>
+          <p className="mt-2 text-sm sm:text-base text-gray-600">
+            By the end of the workshop, families leave with practical tools they can use right away.
+          </p>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {[
+              { icon: Heart, text: "Better understanding of emotions" },
+              { icon: MessageCircle, text: "Simple tools to express feelings" },
+              { icon: Users, text: "Improved parent-child communication" },
+              { icon: LineChart, text: "A stronger emotional connection at home" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-start gap-3 rounded-2xl border border-[#3f2e73]/12 bg-[#faf8ff] p-4">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#3f2e73]/12 text-[#3f2e73]">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <p className="text-sm sm:text-base text-[#2a1f52]">{text}</p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -637,15 +655,15 @@ export default function WorkshopSummer2026Client() {
         </section>
       </div>
 
-      {/* Full-bleed like homepage — not inside max-w-6xl / horizontal padding */}
-      <Testimonials
-        photos={WORKSHOP_TESTIMONIALS_PHOTOS}
-        desktopGrid={WORKSHOP_TESTIMONIALS_DESKTOP_GRID}
-        eyebrowText="Testimonials"
-        headingLine1="What families say about our workshops"
-        headingLine2=""
-        useAccessibleHeading
-      />
+      <div className="mt-20 sm:mt-24 md:mt-28">
+        <Reviews
+          cmsData={{
+            title: "What families said after this event",
+            reviews: EVENT_DUMMY_REVIEWS,
+          }}
+        />
+      </div>
+
     </div>
   );
 }
