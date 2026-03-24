@@ -142,11 +142,11 @@ export default function Blog() {
 
   return (
     <section className="min-h-screen w-full bg-white">
-      <div className="mx-auto max-w-6xl px-16 sm:px-24 lg:px-32 pt-32 pb-16 md:pt-40 md:pb-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-10 lg:px-16 pt-32 pb-16 md:pt-40 md:pb-20">
         {/* Header Section */}
-        <div className="text-center mb-16">
+        <div className="text-left md:text-center mb-16">
           {pageTitle}
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl md:mx-auto font-light">
             Behavioral health information you can trust, verified by clinicians.
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function Blog() {
           <Link href={`/blog/${featuredPost.slug}`} className="block">
             <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16 group cursor-pointer">
               {/* Image Container */}
-              <div className="relative h-[360px] md:h-[420px] w-full">
+              <div className="relative h-[220px] sm:h-[300px] md:h-[420px] w-full">
                 <Image
                   src={normalizeImageUrl(featuredPost.featured_image_url || "/kids.png")}
                   alt={featuredPost.title}
@@ -239,33 +239,39 @@ export default function Blog() {
               <Link 
                 key={post.id} 
                 href={`/blog/${post.slug}`} 
-                className="group block w-full max-w-[340px] mx-auto md:mx-0"
+                className="group block w-full max-w-[300px] sm:max-w-[340px] mx-0"
               >
-                <article className="w-full cursor-pointer">
+                <article className="w-full max-w-[300px] sm:max-w-[340px] mx-0 cursor-pointer">
                   {/* Image Container */}
                   {post.featured_image_url && (
-                    <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
-                    <Image
+                    <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] rounded-2xl overflow-hidden mx-0 bg-white">
+                      <Image
                         src={normalizeImageUrl(post.featured_image_url || '')}
-                      alt={post.title}
-                      fill
-                        className="object-contain object-left"
+                        alt={post.title}
+                        fill
+                        className="object-contain object-left md:object-center"
                         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
                       />
-                      </div>
-                    )}
+                    </div>
+                  )}
                   
                   {/* Meta Info */}
-                  <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
-                    <span>{post.author_name || "Little Care Team"}</span>
-                    <span className="px-1 md:px-2">•</span>
-                    <span>{formatDate(post.published_at || post.created_at)}</span>
-                  </div>
-                  
-                  {/* Title */}
-                  <h6 className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900">
+                  <div className="w-full max-w-[300px] sm:max-w-[340px] mx-0 px-3 sm:px-0">
+                    <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm text-left">
+                      <span>{post.author_name || "Little Care Team"}</span>
+                      <span className="px-1 md:px-2">•</span>
+                      <span>{formatDate(post.published_at || post.created_at)}</span>
+                    </div>
+                    
+                    {/* Title */}
+                    <div
+                      role="heading"
+                      aria-level={3}
+                      className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900 text-left break-words leading-tight"
+                    >
                       {post.title}
-                    </h6>
+                    </div>
+                  </div>
                 </article>
               </Link>
             ))}

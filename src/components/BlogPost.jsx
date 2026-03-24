@@ -298,19 +298,19 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
 
   return (
     <section className="mt-16 pt-8 border-t border-gray-200" aria-label="You might also like">
-      <div className="related-posts text-center md:text-left">
+      <div className="related-posts text-left">
         <h6 className="text-2xl font-semibold text-gray-900 mb-6">
           You might also like
         </h6>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center md:justify-items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogs.map((blog) => (
             <Link 
               key={blog.id} 
               href={`/blog/${blog.slug}`}
-              className="group block w-full max-w-[340px] mx-auto md:mx-0"
+              className="group block w-full max-w-[340px] mx-0"
             >
-              <article className="w-full cursor-pointer text-center md:text-left">
+              <article className="w-full cursor-pointer text-left">
                 {/* Image Container */}
                 {blog.featured_image_url && (
                   <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
@@ -319,7 +319,7 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                       alt={blog.title}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
-                      className="object-contain object-left"
+                      className="object-contain object-left md:object-center"
                       priority={false}
                     />
                   </div>
@@ -516,19 +516,7 @@ export default function BlogPost({ slug }) {
       <div className="max-w-6xl mx-auto px-6 sm:px-32 lg:px-40 xl:px-44 pt-24 pb-12">
         {/* Title & Metadata */}
         <header className="mb-8">
-          <div
-            role="heading"
-            aria-level={1}
-            className="font-semibold mb-4 text-[24px] leading-[1.35rem] md:text-[48px] md:leading-[3rem] tracking-[-0.65px]"
-          >
-            {blogPost.title}
-          </div>
-          {blogPost.excerpt && (
-            <p className="font-medium text-gray-600 text-base md:text-lg mb-4">
-              {blogPost.excerpt}
-            </p>
-          )}
-          <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600 sm:gap-x-4 sm:text-sm">
+          <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600 sm:gap-x-4 sm:text-sm">
             <span className="font-medium">{blogPost.author_name}</span>
             <span>•</span>
             <span>
@@ -543,7 +531,18 @@ export default function BlogPost({ slug }) {
               {blogPost.view_count || 0} views
             </span>
           </div>
-          
+          <div
+            role="heading"
+            aria-level={1}
+            className="font-semibold mb-4 text-[24px] leading-[1.35rem] md:text-[48px] md:leading-[3rem] tracking-[-0.65px]"
+          >
+            {blogPost.title}
+          </div>
+          {blogPost.excerpt && (
+            <p className="font-medium text-gray-600 text-base md:text-lg mb-4">
+              {blogPost.excerpt}
+            </p>
+          )}
           {/* Tags */}
           {blogPost.tags && blogPost.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
