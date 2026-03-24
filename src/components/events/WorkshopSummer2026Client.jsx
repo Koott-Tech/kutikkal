@@ -194,17 +194,17 @@ export default function WorkshopSummer2026Client() {
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-start px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 md:pt-44 lg:pt-48 xl:pt-52 pb-10 sm:pb-12 lg:pb-14">
           <div className="grid min-h-0 flex-1 gap-10 lg:grid-cols-2 lg:gap-12 lg:items-center">
             <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+              <p className="text-xs font-semibold uppercase text-white/80">
                 Little Care Summer Workshops 2026
               </p>
               <div
-                className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-[1.1] tracking-tight font-sans"
+                className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white font-sans"
                 role="heading"
                 aria-level={1}
               >
                 Not just workshops — spaces where children and parents learn, feel, and grow together.
               </div>
-              <p className="mt-5 text-base sm:text-lg text-white/90 leading-relaxed">
+              <p className="mt-5 text-base sm:text-lg text-white/90">
                 Join our first interactive session on expressing emotions at home. Free for this edition; register to
                 save your spot.
               </p>
@@ -232,7 +232,7 @@ export default function WorkshopSummer2026Client() {
             >
               <div className="rounded-2xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-black/5">
                 <div
-                  className="text-lg sm:text-xl font-semibold text-gray-900 leading-snug font-sans"
+                  className="text-lg sm:text-xl font-semibold text-gray-900 font-sans"
                   role="heading"
                   aria-level={2}
                 >
@@ -241,7 +241,7 @@ export default function WorkshopSummer2026Client() {
 
                 <form onSubmit={onSubmit} className="mt-6 space-y-4">
                   <div>
-                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-800 uppercase tracking-wide">
+                    <label htmlFor="fullName" className="block text-xs font-semibold text-gray-800 uppercase">
                       Full name
                     </label>
                     <input
@@ -257,7 +257,7 @@ export default function WorkshopSummer2026Client() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-xs font-semibold text-gray-800 uppercase tracking-wide">
+                    <label htmlFor="email" className="block text-xs font-semibold text-gray-800 uppercase">
                       Email
                     </label>
                     <input
@@ -273,7 +273,7 @@ export default function WorkshopSummer2026Client() {
                     />
                   </div>
                   <div>
-                    <span className="block text-xs font-semibold text-gray-800 uppercase tracking-wide">
+                    <span className="block text-xs font-semibold text-gray-800 uppercase">
                       WhatsApp number
                     </span>
                     <div className="mt-1.5 flex gap-2">
@@ -344,18 +344,18 @@ export default function WorkshopSummer2026Client() {
           <div className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#7b68b8]/10 blur-xl" aria-hidden />
 
           <div className="relative">
-            <p className="inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#3f2e73]">
+            <p className="inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase text-[#3f2e73]">
               Workshop Format
             </p>
             <div
               id="what-is-this-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight font-sans"
+              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 font-sans"
               role="heading"
               aria-level={2}
             >
               What is this?
             </div>
-            <p className="mt-4 max-w-3xl text-sm sm:text-base text-gray-700 leading-relaxed">
+            <p className="mt-4 max-w-3xl text-sm sm:text-base text-gray-700">
               This is a 1-hour interactive online workshop designed for parents and children to participate together.
               It is not a lecture; it is a practical space where families engage, share, and learn through games,
               role-plays, and guided activities.
@@ -371,7 +371,7 @@ export default function WorkshopSummer2026Client() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3f2e73]/10 text-[#3f2e73]">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <p className="mt-3 text-sm text-gray-700 leading-relaxed">{text}</p>
+                  <p className="mt-3 text-sm text-gray-700">{text}</p>
                 </div>
               ))}
             </div>
@@ -380,10 +380,10 @@ export default function WorkshopSummer2026Client() {
 
         <section aria-labelledby="event-speakers-heading">
           <div className="mb-8 sm:mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#3f2e73]">Meet the speakers</p>
+            <p className="text-xs font-semibold uppercase text-[#3f2e73]">Meet the speakers</p>
             <div
               id="event-speakers-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 font-sans"
+              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 font-sans"
               role="heading"
               aria-level={2}
             >
@@ -429,11 +429,11 @@ export default function WorkshopSummer2026Client() {
             }`}
           >
             <div>
-              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44] tracking-tight font-sans">{activeSpeaker.name}</div>
+              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44] font-sans">{activeSpeaker.name}</div>
               <p className="mt-2 text-sm font-medium text-[#3f2e73]">
                 {activeSpeaker.designation} · {activeSpeaker.experience}
               </p>
-              <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">{activeSpeaker.details}</p>
+              <p className="mt-4 text-sm sm:text-base text-gray-600">{activeSpeaker.details}</p>
               <div className="mt-4 space-y-2 text-xs sm:text-sm text-gray-700">
                 <p><span className="font-semibold text-[#2a1f52]">Languages:</span> {activeSpeaker.languages}</p>
                 <p><span className="font-semibold text-[#2a1f52]">Session focus:</span> {activeSpeaker.focus}</p>
@@ -470,16 +470,16 @@ export default function WorkshopSummer2026Client() {
         {/* Rula-style: centered headline, 4 soft cards, purple icons, pill CTA */}
         <section className="w-full py-2 sm:py-4" aria-labelledby="why-it-matters-heading">
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#3f2e73]">Why it matters</p>
+            <p className="text-xs font-semibold uppercase text-[#3f2e73]">Why it matters</p>
             <div
               id="why-it-matters-heading"
-              className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 font-sans leading-tight"
+              className="mt-3 text-3xl sm:text-4xl font-semibold text-gray-900 font-sans"
               role="heading"
               aria-level={2}
             >
               Why this workshop matters for families
             </div>
-            <p className="mt-4 text-base text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-4 text-base text-gray-600 max-w-2xl mx-auto">
               Many challenges do not begin outside the home, they begin in small moments where feelings are left
               unspoken. Children may not know how to express emotions, and parents may not always know how to respond
               in the moment. This workshop helps bridge that gap.
@@ -521,7 +521,7 @@ export default function WorkshopSummer2026Client() {
                   <div className="text-base font-semibold text-gray-900 font-sans" role="heading" aria-level={3}>
                     {title}
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{body}</p>
+                  <p className="mt-2 text-sm text-gray-600">{body}</p>
                 </div>
               ))}
             </div>
@@ -552,11 +552,11 @@ export default function WorkshopSummer2026Client() {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <div className="border-l-2 border-[#3f2e73]/30 pl-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Primary attendees</p>
+              <p className="text-[11px] font-semibold uppercase text-[#3f2e73]/60">Primary attendees</p>
               <p className="mt-1 text-sm font-medium text-[#2a1f52]">Parents with their children (best suited for ages 9-14 years)</p>
             </div>
             <div className="border-l-2 border-[#3f2e73]/30 pl-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Best suited for</p>
+              <p className="text-[11px] font-semibold uppercase text-[#3f2e73]/60">Best suited for</p>
               <p className="mt-1 text-sm font-medium text-[#2a1f52]">Families building emotional communication at home</p>
             </div>
           </div>
@@ -570,8 +570,8 @@ export default function WorkshopSummer2026Client() {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#3f2e73] via-[#7b68b8] to-[#3f2e73]" aria-hidden />
           <div className="grid lg:grid-cols-[220px_1fr]">
             <div className="relative border-b border-[#3f2e73]/15 bg-[#f4f1ff] p-6 lg:border-b-0 lg:border-r lg:border-[#3f2e73]/15">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#3f2e73]/70">Session pass</p>
-              <p className="mt-2 text-4xl font-semibold leading-none text-[#2f2358]">FREE</p>
+              <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/70">Session pass</p>
+              <p className="mt-2 text-4xl font-semibold text-[#2f2358]">FREE</p>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-300/80 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
                 <Gift className="h-3 w-3" aria-hidden />
                 Complimentary
@@ -582,7 +582,7 @@ export default function WorkshopSummer2026Client() {
             <div className="p-6 sm:p-7">
               <div
                 id="ticket-heading"
-                className="text-2xl font-semibold tracking-tight text-[#241a44] font-sans sm:text-[1.8rem]"
+                className="text-2xl font-semibold text-[#241a44] font-sans sm:text-[1.8rem]"
                 role="heading"
                 aria-level={2}
               >
@@ -592,15 +592,15 @@ export default function WorkshopSummer2026Client() {
 
               <div className="mt-6 grid gap-0 rounded-2xl border border-[#3f2e73]/14 bg-white sm:grid-cols-3">
                 <div className="p-4 sm:border-r sm:border-[#3f2e73]/12">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Date</p>
+                  <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/60">Date</p>
                   <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Sat, 18 April 2026</p>
                 </div>
                 <div className="border-t border-[#3f2e73]/12 p-4 sm:border-t-0 sm:border-r sm:border-[#3f2e73]/12">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Time</p>
+                  <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/60">Time</p>
                   <p className="mt-1 text-sm font-semibold text-[#2a1f52]">11:00 AM - 12:00 PM IST</p>
                 </div>
                 <div className="border-t border-[#3f2e73]/12 p-4 sm:border-t-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#3f2e73]/60">Format</p>
+                  <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/60">Format</p>
                   <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Online (Google Meet)</p>
                 </div>
               </div>
@@ -609,7 +609,7 @@ export default function WorkshopSummer2026Client() {
         </section>
 
         <section className="rounded-3xl border border-[#3f2e73]/18 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgba(63,46,115,0.08)]">
-          <div className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight font-sans" role="heading" aria-level={2}>
+          <div className="text-2xl sm:text-3xl font-semibold text-gray-900 font-sans" role="heading" aria-level={2}>
             What You&apos;ll Take Back
           </div>
           <p className="mt-2 text-sm sm:text-base text-gray-600">
@@ -641,7 +641,7 @@ export default function WorkshopSummer2026Client() {
           >
             Ready to join?
           </div>
-          <p className="mt-3 mx-auto max-w-xl text-sm sm:text-base text-white/90 leading-relaxed">
+          <p className="mt-3 mx-auto max-w-xl text-sm sm:text-base text-white/90">
             Take the first step towards a more understanding and emotionally safe home.
           </p>
           <a

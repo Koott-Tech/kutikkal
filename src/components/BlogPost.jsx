@@ -298,19 +298,19 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
 
   return (
     <section className="mt-16 pt-8 border-t border-gray-200" aria-label="You might also like">
-      <div className="related-posts">
+      <div className="related-posts text-center md:text-left">
         <h6 className="text-2xl font-semibold text-gray-900 mb-6">
           You might also like
         </h6>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center md:justify-items-stretch">
           {blogs.map((blog) => (
             <Link 
               key={blog.id} 
               href={`/blog/${blog.slug}`}
               className="group block w-full max-w-[340px] mx-auto md:mx-0"
             >
-              <article className="w-full cursor-pointer">
+              <article className="w-full cursor-pointer text-center md:text-left">
                 {/* Image Container */}
                 {blog.featured_image_url && (
                   <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
@@ -369,6 +369,7 @@ const formatDate = (dateString) => {
 export default function BlogPost({ slug }) {
   const router = useRouter();
   const blogContentRef = useRef(null);
+  const hasResetScrollRef = useRef(false);
   const [blogPost, setBlogPost] = useState(null);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -378,7 +379,17 @@ export default function BlogPost({ slug }) {
   useEffect(() => {
     loadBlogPost();
     loadLatestBlogs();
+    hasResetScrollRef.current = false;
   }, [slug]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (loading || hasResetScrollRef.current) return;
+
+    // Avoid browser scroll restoration placing the page near footer on refresh.
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    hasResetScrollRef.current = true;
+  }, [loading]);
 
   // Frontend: remove drag UI and disable drag (drag only in CMS editor)
   useEffect(() => {
@@ -388,6 +399,24 @@ export default function BlogPost({ slug }) {
     const stripDragUI = () => {
       root.querySelectorAll('.doc-editor-img-block, .document-editor-image-wrapper').forEach((el) => {
         el.setAttribute('draggable', 'false');
+        // Force full-width rendering even for legacy content with inline image sizing.
+        el.style.setProperty('display', 'block', 'important');
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('max-width', '100%', 'important');
+        el.style.setProperty('margin-left', 'auto', 'important');
+        el.style.setProperty('margin-right', 'auto', 'important');
+        const imgEl = el.querySelector('img');
+        if (imgEl) {
+          imgEl.removeAttribute('width');
+          imgEl.removeAttribute('height');
+          imgEl.style.setProperty('display', 'block', 'important');
+          imgEl.style.setProperty('width', '100%', 'important');
+          imgEl.style.setProperty('min-width', '100%', 'important');
+          imgEl.style.setProperty('max-width', '100%', 'important');
+          imgEl.style.setProperty('height', 'auto', 'important');
+          imgEl.style.setProperty('max-height', 'none', 'important');
+          imgEl.style.setProperty('object-fit', 'cover', 'important');
+        }
         el.querySelectorAll('.doc-editor-img-drag-handle, .doc-editor-img-overlay').forEach((c) => c.remove());
       });
     };
@@ -484,31 +513,33 @@ export default function BlogPost({ slug }) {
     <>
       <BlogMetaTags blog={blogPost} />
     <article className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-10 sm:px-12 lg:px-20 xl:px-24 pt-24 pb-12">
+      <div className="max-w-6xl mx-auto px-6 sm:px-32 lg:px-40 xl:px-44 pt-24 pb-12">
         {/* Title & Metadata */}
         <header className="mb-8">
-          <h2 className="font-semibold mb-4">
+          <div
+            role="heading"
+            aria-level={1}
+            className="font-semibold mb-4 text-[24px] leading-[1.35rem] md:text-[48px] md:leading-[3rem] tracking-[-0.65px]"
+          >
             {blogPost.title}
-          </h2>
+          </div>
           {blogPost.excerpt && (
-            <h3 className="font-medium text-gray-600 mb-4">
+            <p className="font-medium text-gray-600 text-base md:text-lg mb-4">
               {blogPost.excerpt}
-            </h3>
+            </p>
           )}
-          <div className="flex items-center space-x-6 mb-6">
-            <span className="p2">
-              By <span className="font-medium">{blogPost.author_name}</span>
-            </span>
-            <span className="p2">•</span>
-            <span className="p2">
+          <div className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600 sm:gap-x-4 sm:text-sm">
+            <span className="font-medium">{blogPost.author_name}</span>
+            <span>•</span>
+            <span>
               {formatDate(blogPost.published_at || blogPost.created_at)}
             </span>
-            <span className="p2">•</span>
-            <span className="p2">
+            <span>•</span>
+            <span>
               {blogPost.read_time_minutes || 5} min read
             </span>
-            <span className="p2">•</span>
-            <span className="p2">
+            <span>•</span>
+            <span>
               {blogPost.view_count || 0} views
             </span>
           </div>
@@ -553,7 +584,7 @@ export default function BlogPost({ slug }) {
                 display: block !important;
                 margin-top: 0 !important;
                 margin-bottom: 1rem !important;
-                line-height: 1.75 !important;
+                line-height: 1.45 !important;
               }
               .blog-content .document-editor h1 { display: block !important; margin-top: 1.5rem !important; margin-bottom: 1rem !important; }
               .blog-content .document-editor h2 { display: block !important; margin-top: 1.25rem !important; margin-bottom: 0.75rem !important; }
@@ -594,7 +625,9 @@ export default function BlogPost({ slug }) {
               .blog-content-html pre {
                 display: block !important;
                 margin-bottom: 1rem !important;
-                line-height: 1.75 !important;
+                line-height: 1.45 !important;
+                margin-left: 0 !important;
+                padding-left: 0 !important;
               }
               .blog-content p:last-child,
               .blog-content div:last-child,
@@ -611,7 +644,8 @@ export default function BlogPost({ slug }) {
               .blog-content ol {
                 display: block !important;
                 margin: 1rem 0 !important;
-                padding-left: 1.5rem !important;
+                margin-left: 0.75rem;
+                padding-left: 2.5rem;
               }
               .blog-content ul {
                 list-style-type: disc !important;
@@ -637,6 +671,7 @@ export default function BlogPost({ slug }) {
                 font-size: 2.5rem !important;
                 line-height: 1.2 !important;
                 font-weight: 700 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 2rem !important;
                 margin-bottom: 1rem !important;
                 overflow: visible !important;
@@ -647,6 +682,7 @@ export default function BlogPost({ slug }) {
                 font-size: 2rem !important;
                 line-height: 1.3 !important;
                 font-weight: 700 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 1.75rem !important;
                 margin-bottom: 0.875rem !important;
                 overflow: visible !important;
@@ -657,6 +693,7 @@ export default function BlogPost({ slug }) {
                 font-size: 1.75rem !important;
                 line-height: 1.4 !important;
                 font-weight: 600 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 1.5rem !important;
                 margin-bottom: 0.75rem !important;
                 overflow: visible !important;
@@ -667,6 +704,7 @@ export default function BlogPost({ slug }) {
                 font-size: 1.5rem !important;
                 line-height: 1.4 !important;
                 font-weight: 600 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 1.25rem !important;
                 margin-bottom: 0.625rem !important;
                 overflow: visible !important;
@@ -677,6 +715,7 @@ export default function BlogPost({ slug }) {
                 font-size: 1.25rem !important;
                 line-height: 1.5 !important;
                 font-weight: 600 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 1rem !important;
                 margin-bottom: 0.5rem !important;
                 overflow: visible !important;
@@ -687,6 +726,7 @@ export default function BlogPost({ slug }) {
                 font-size: 1.125rem !important;
                 line-height: 1.5 !important;
                 font-weight: 600 !important;
+                letter-spacing: -0.65px !important;
                 margin-top: 0.875rem !important;
                 margin-bottom: 0.5rem !important;
                 overflow: visible !important;
@@ -705,9 +745,9 @@ export default function BlogPost({ slug }) {
                 margin: 1rem auto !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
-                max-width: min(100%, 720px) !important;
-                max-height: 400px !important;
-                overflow: hidden !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                overflow: visible !important;
                 cursor: default !important;
               }
               .blog-content .doc-editor-img-drag-handle,
@@ -726,9 +766,76 @@ export default function BlogPost({ slug }) {
                 display: block !important;
                 width: 100% !important;
                 height: auto !important;
-                max-height: 400px !important;
-                object-fit: contain !important;
+                max-height: none !important;
+                object-fit: cover !important;
                 border-radius: 0.5rem !important;
+              }
+              .blog-content img,
+              .blog-content-html img {
+                display: block !important;
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                object-fit: cover !important;
+                margin: 1rem 0 !important;
+                border-radius: 0.5rem !important;
+              }
+              @media (max-width: 767px) {
+                .blog-content .document-editor p,
+                .blog-content .document-editor div,
+                .blog-content .document-editor blockquote {
+                  line-height: 1.25rem !important;
+                }
+                .blog-content h1,
+                .blog-content-html h1 {
+                  font-size: 22px !important;
+                }
+                .blog-content h2,
+                .blog-content-html h2 {
+                  font-size: 20px !important;
+                }
+                .blog-content h3,
+                .blog-content-html h3 {
+                  font-size: 18px !important;
+                }
+                .blog-content h4,
+                .blog-content-html h4 {
+                  font-size: 16px !important;
+                }
+                .blog-content h5,
+                .blog-content-html h5 {
+                  font-size: 15px !important;
+                }
+                .blog-content h6,
+                .blog-content-html h6 {
+                  font-size: 14px !important;
+                }
+                .blog-content h1,
+                .blog-content h2,
+                .blog-content h3,
+                .blog-content h4,
+                .blog-content h5,
+                .blog-content h6,
+                .blog-content-html h1,
+                .blog-content-html h2,
+                .blog-content-html h3,
+                .blog-content-html h4,
+                .blog-content-html h5,
+                .blog-content-html h6 {
+                  line-height: 1.3 !important;
+                  letter-spacing: -0.65px !important;
+                }
+                .blog-content p,
+                .blog-content div,
+                .blog-content blockquote,
+                .blog-content-html p,
+                .blog-content-html div,
+                .blog-content-html blockquote {
+                  line-height: 1.25rem !important;
+                  letter-spacing: -0.50px !important;
+                }
               }
             `
           }} />

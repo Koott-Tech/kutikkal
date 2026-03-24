@@ -81,14 +81,29 @@ export default function Blog() {
     });
   };
 
+  /* globals.css uses !important on h1–h6 font sizes; use a div + role so Tailwind / inline size is not overridden (avoids loading → loaded title flash). */
+  const pageTitle = (
+    <div
+      role="heading"
+      aria-level={1}
+      className="font-semibold text-gray-900 mb-6"
+      style={{
+        fontFamily: "'DM Sans', Arial, Helvetica, sans-serif",
+        fontSize: 'clamp(1.75rem, 5vw + 0.5rem, 3.5rem)',
+        lineHeight: 1.1,
+        letterSpacing: '-0.02em',
+      }}
+    >
+      Our Blog
+    </div>
+  );
+
   if (loading) {
     return (
       <section className="min-h-screen w-full bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-6 pt-32 pb-16 md:pt-40 md:pb-20">
           <div className="text-center mb-16">
-            <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
-              Our Blog
-            </h6>
+            {pageTitle}
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
               Behavioral health information you can trust, verified by clinicians.
             </p>
@@ -104,11 +119,9 @@ export default function Blog() {
   if (error) {
     return (
       <section className="min-h-screen w-full bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mx-auto max-w-6xl px-6 pt-32 pb-16 md:pt-40 md:pb-20">
           <div className="text-center mb-16">
-            <h6 className="text-4xl md:text-5xl font-normal text-gray-900 mb-4">
-              Our Blog
-            </h6>
+            {pageTitle}
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
               Behavioral health information you can trust, verified by clinicians.
             </p>
@@ -129,19 +142,10 @@ export default function Blog() {
 
   return (
     <section className="min-h-screen w-full bg-white">
-      <div className="mx-auto max-w-6xl px-16 sm:px-24 lg:px-32 py-16">
+      <div className="mx-auto max-w-6xl px-16 sm:px-24 lg:px-32 pt-32 pb-16 md:pt-40 md:pb-20">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h2
-            className="font-semibold text-gray-900 mb-6"
-            style={{
-              fontSize: '3.5rem',
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em'
-            }}
-          >
-            Our Blog
-          </h2>
+          {pageTitle}
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
             Behavioral health information you can trust, verified by clinicians.
           </p>

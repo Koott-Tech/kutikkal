@@ -118,6 +118,24 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       const editor = editorRef.current;
       editor.querySelectorAll?.('.doc-editor-img-block, .document-editor-image-wrapper').forEach((el) => {
         el.setAttribute('data-draggable-image', 'true');
+        // Normalize legacy inline sizing so CMS images always span full editor width.
+        el.style.setProperty('display', 'block', 'important');
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('max-width', '100%', 'important');
+        el.style.setProperty('margin-left', 'auto', 'important');
+        el.style.setProperty('margin-right', 'auto', 'important');
+        const imgEl = el.querySelector('img');
+        if (imgEl) {
+          imgEl.removeAttribute('width');
+          imgEl.removeAttribute('height');
+          imgEl.style.setProperty('display', 'block', 'important');
+          imgEl.style.setProperty('width', '100%', 'important');
+          imgEl.style.setProperty('min-width', '100%', 'important');
+          imgEl.style.setProperty('max-width', '100%', 'important');
+          imgEl.style.setProperty('height', 'auto', 'important');
+          imgEl.style.setProperty('max-height', 'none', 'important');
+          imgEl.style.setProperty('object-fit', 'cover', 'important');
+        }
         if (!el.querySelector('.doc-editor-img-overlay')) {
           const overlay = document.createElement('div');
           overlay.className = 'doc-editor-img-overlay';
@@ -816,6 +834,13 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     img.src = imageUrl;
     img.alt = 'Image';
     img.setAttribute('draggable', 'false');
+    img.style.setProperty('display', 'block', 'important');
+    img.style.setProperty('width', '100%', 'important');
+    img.style.setProperty('min-width', '100%', 'important');
+    img.style.setProperty('max-width', '100%', 'important');
+    img.style.setProperty('height', 'auto', 'important');
+    img.style.setProperty('max-height', 'none', 'important');
+    img.style.setProperty('object-fit', 'cover', 'important');
     div.appendChild(img);
     const overlay = document.createElement('div');
     overlay.className = 'doc-editor-img-overlay';
@@ -2155,10 +2180,9 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             margin-left: auto !important;
             margin-right: auto !important;
             padding: 0 !important;
-            max-width: min(100%, 720px) !important;
+            max-width: 100% !important;
             width: 100% !important;
-            max-height: 400px !important;
-            overflow: hidden !important;
+            overflow: visible !important;
             box-sizing: border-box !important;
             cursor: grab !important;
           }
@@ -2171,10 +2195,19 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             display: block !important;
             width: 100% !important;
             height: auto !important;
-            max-height: 400px !important;
-            object-fit: contain !important;
+            max-height: none !important;
+            object-fit: cover !important;
             border-radius: 0.5rem !important;
             pointer-events: none !important;
+          }
+          ${sel} img {
+            display: block !important;
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+            object-fit: cover !important;
           }
           ${sel} .doc-editor-img-overlay {
             position: absolute !important;
@@ -2231,9 +2264,6 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             color: #374151 !important;
           }
           ${sel} img {
-            max-width: 100% !important;
-            height: auto !important;
-            border-radius: 0.5rem !important;
             margin: 1rem 0 !important;
           }
           ${sel}:empty::before {

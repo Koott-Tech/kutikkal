@@ -110,7 +110,7 @@ export default function EventsPage() {
             Events
           </span>
           <div
-            className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-[#241a44] sm:text-5xl font-sans"
+            className="mt-4 text-4xl font-semibold text-[#241a44] sm:text-5xl font-sans"
             role="heading"
             aria-level={1}
           >
@@ -160,10 +160,10 @@ export default function EventsPage() {
                   <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-3 py-1 text-xs font-semibold text-[#3f2e73]">
                     {event.category}
                   </span>
-                  <div className="mt-3 text-2xl font-semibold leading-tight text-[#241a44] font-sans sm:text-[30px] lg:text-[32px]">
+                  <div className="mt-3 text-2xl font-semibold text-[#241a44] font-sans sm:text-[30px] lg:text-[32px]">
                     {event.title}
                   </div>
-                  <p className="mt-3 line-clamp-2 text-sm !leading-[1.15] text-[#5e5774] sm:text-[15px]">
+                  <p className="mt-3 line-clamp-2 text-sm text-[#5e5774] sm:text-[15px]">
                     {event.description}
                   </p>
                   <div className="mt-7 space-y-1.5 text-sm text-[#514a68]">
@@ -201,13 +201,13 @@ export default function EventsPage() {
               Our mission
             </span>
             <div
-              className="mt-4 text-3xl font-semibold tracking-tight text-[#241a44] sm:text-4xl font-sans"
+              className="mt-4 text-3xl font-semibold text-[#241a44] sm:text-4xl font-sans"
               role="heading"
               aria-level={2}
             >
               Building emotionally safer homes for every family
             </div>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#5e5774] sm:text-base">
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-[#5e5774] sm:text-base">
               At Little Care, we design practical workshops where parents and children learn together, understand
               emotions better, and build stronger day-to-day communication with confidence.
             </p>
@@ -217,13 +217,13 @@ export default function EventsPage() {
         <section className="w-full" aria-labelledby="events-how-it-works-heading">
           <div
             id="events-how-it-works-heading"
-            className="text-center text-2xl font-semibold tracking-tight text-[#241a44] sm:text-3xl font-sans"
+            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
             role="heading"
             aria-level={2}
           >
             How it works
           </div>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-relaxed text-[#5e5774] sm:text-base">
+          <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-[#5e5774] sm:text-base">
             Register for your preferred event, receive the joining details, and attend the live session with your family.
           </p>
 
@@ -233,7 +233,7 @@ export default function EventsPage() {
                 <Calendar className="h-5 w-5" />
               </div>
               <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Pick your event date</div>
-              <p className="mt-2 text-sm leading-relaxed text-[#5e5774]">
+              <p className="mt-2 text-sm text-[#5e5774]">
                 Choose the event that suits your family and complete your booking in a few steps.
               </p>
             </article>
@@ -243,7 +243,7 @@ export default function EventsPage() {
                 <MonitorPlay className="h-5 w-5" />
               </div>
               <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Get joining details</div>
-              <p className="mt-2 text-sm leading-relaxed text-[#5e5774]">
+              <p className="mt-2 text-sm text-[#5e5774]">
                 We share your event link, reminders, and session instructions on email and WhatsApp.
               </p>
             </article>
@@ -253,7 +253,7 @@ export default function EventsPage() {
                 <Clock className="h-5 w-5" />
               </div>
               <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Attend live session</div>
-              <p className="mt-2 text-sm leading-relaxed text-[#5e5774]">
+              <p className="mt-2 text-sm text-[#5e5774]">
                 Join on time with your child and learn practical tools you can use right away at home.
               </p>
             </article>
@@ -262,7 +262,7 @@ export default function EventsPage() {
 
         <section className="pt-12 sm:pt-16 lg:pt-20">
           <div
-            className="text-center text-2xl font-semibold tracking-tight text-[#241a44] sm:text-3xl font-sans"
+            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
             role="heading"
             aria-level={2}
           >
@@ -304,7 +304,7 @@ export default function EventsPage() {
           <section className="mx-auto max-w-4xl" aria-labelledby="events-faq-heading">
             <div
               id="events-faq-heading"
-              className="text-center text-2xl font-semibold tracking-tight text-[#241a44] sm:text-3xl font-sans"
+              className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
               role="heading"
               aria-level={2}
             >
@@ -317,7 +317,7 @@ export default function EventsPage() {
                   <span>Is this event online or offline?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm leading-relaxed text-[#5e5774]">
+                <p className="px-1 pb-5 text-sm text-[#5e5774]">
                   Most sessions are hosted online. Final venue or join-link details are shared after booking.
                 </p>
               </details>
@@ -327,7 +327,7 @@ export default function EventsPage() {
                   <span>Can parents and children join together?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm leading-relaxed text-[#5e5774]">
+                <p className="px-1 pb-5 text-sm text-[#5e5774]">
                   Yes. Our events are designed for parent-child participation unless mentioned otherwise on the event card.
                 </p>
               </details>
@@ -337,7 +337,7 @@ export default function EventsPage() {
                   <span>How will I receive reminders and updates?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm leading-relaxed text-[#5e5774]">
+                <p className="px-1 pb-5 text-sm text-[#5e5774]">
                   You will receive confirmations and reminders by email and WhatsApp after successful registration.
                 </p>
               </details>
@@ -349,7 +349,7 @@ export default function EventsPage() {
           <div className="text-2xl font-semibold sm:text-3xl font-sans" role="heading" aria-level={2}>
             Ready to join?
           </div>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#3f2e73]/85 sm:text-base">
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-[#3f2e73]/85 sm:text-base">
             Explore upcoming sessions, reserve your seat, and start your family learning journey with Little Care.
           </p>
           <Link

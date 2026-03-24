@@ -646,10 +646,9 @@
   position: relative;
   margin: 1rem auto;
   padding: 0;
-  max-width: min(100%, 720px);
+  max-width: 100%;
   width: 100%;
-  max-height: 400px;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   cursor: grab;
 }
@@ -663,8 +662,18 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 400px;
-  object-fit: contain;
+  max-height: none;
+  object-fit: cover;
   border-radius: var(--bec-radius);
   pointer-events: none;
+}
+
+.becDocumentEditorWrap :global(.document-editor img) {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: cover;
 }
