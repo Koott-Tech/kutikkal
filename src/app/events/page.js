@@ -273,13 +273,13 @@ export default function EventsPage() {
           </p>
         </section>
 
-        <div className="w-screen max-w-[100vw] relative left-1/2 -translate-x-1/2 overflow-x-clip">
+        <div className="w-full relative overflow-x-clip md:w-screen md:max-w-[100vw] md:left-1/2 md:-translate-x-1/2">
           <LeadershipMembersShowcase
             members={PANELISTS}
             showSectionHeader={false}
             useAccessibleNameHeading
             className="!px-0 w-full max-w-none"
-            sectionClassName="w-full mt-8 md:mt-10"
+            sectionClassName="w-full mt-8 md:mt-10 px-4 sm:px-6 md:px-0"
             layout="carousel"
             carouselFullBleed
             naturalMemberImageHeight
@@ -345,20 +345,6 @@ export default function EventsPage() {
           </section>
         </div>
 
-        <section className="rounded-2xl bg-gradient-to-b from-[#d8cff2] to-[#b7a6e3] px-6 py-12 text-center text-[#2f2358] sm:px-8 sm:py-14">
-          <div className="text-2xl font-semibold sm:text-3xl font-sans" role="heading" aria-level={2}>
-            Ready to join?
-          </div>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-[#3f2e73]/85 sm:text-base">
-            Explore upcoming sessions, reserve your seat, and start your family learning journey with Little Care.
-          </p>
-          <Link
-            href="/events/little-care-summer-workshops-2026#register"
-            className="mt-8 inline-flex items-center rounded-full bg-[#3f2e73] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-[#342560]"
-          >
-            Register now
-          </Link>
-        </section>
       </div>
     </div>
   );

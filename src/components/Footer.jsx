@@ -21,6 +21,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
     const [betterParentingMenu, setBetterParentingMenu] = useState([]);
     const pathname = usePathname();
     const router = useRouter();
+    const isEventsPage = pathname === '/events' || pathname.startsWith('/events/');
 
     const formatDisplayName = (slug) => {
         if (!slug) return '';
@@ -240,6 +241,29 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                             onClick={() => router.push('/online-child-psychologist')}
                         >
                             Get started
+                        </button>
+                    </div>
+                </div>
+            ) : isEventsPage ? (
+                // Events pages footer wrapper design
+                <div className="w-full py-12 md:py-14 px-8 md:px-16 lg:px-24" style={{
+                    background: 'linear-gradient(to bottom, #f5f1ff, #eae4ff, #e8e0f5)'
+                }}>
+                    <div className="text-center max-w-4xl mx-auto px-4">
+                        <h4 className="footer-heading mb-2 font-semibold">
+                            Ready to join?
+                        </h4>
+                        <p className="footer-description text-sm md:text-base text-gray-700 mb-8">
+                            Explore upcoming sessions, reserve your seat, and start your family learning journey with Little Care.
+                        </p>
+                        <button
+                            className="text-white px-5 py-2 md:px-7 md:py-2.5 rounded-3xl text-sm md:text-base font-semibold transition-all duration-200 shadow-sm"
+                            style={{ backgroundColor: '#3f2e73' }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1d1733')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3f2e73')}
+                            onClick={() => router.push('/events/little-care-summer-workshops-2026#register')}
+                        >
+                            Register now
                         </button>
                     </div>
                 </div>
