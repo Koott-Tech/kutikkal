@@ -198,7 +198,7 @@ export default function WorkshopSummer2026Client() {
                 Little Care Summer Workshops 2026
               </p>
               <div
-                className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white font-sans"
+                className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white"
                 role="heading"
                 aria-level={1}
               >
@@ -232,7 +232,7 @@ export default function WorkshopSummer2026Client() {
             >
               <div className="rounded-2xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-black/5">
                 <div
-                  className="text-lg sm:text-xl font-semibold text-gray-900 font-sans"
+                  className="text-lg sm:text-xl font-semibold text-gray-900"
                   role="heading"
                   aria-level={2}
                 >
@@ -349,7 +349,7 @@ export default function WorkshopSummer2026Client() {
             </p>
             <div
               id="what-is-this-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 font-sans"
+              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900"
               role="heading"
               aria-level={2}
             >
@@ -383,7 +383,7 @@ export default function WorkshopSummer2026Client() {
             <p className="text-xs font-semibold uppercase text-[#3f2e73]">Meet the speakers</p>
             <div
               id="event-speakers-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900 font-sans"
+              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900"
               role="heading"
               aria-level={2}
             >
@@ -429,7 +429,7 @@ export default function WorkshopSummer2026Client() {
             }`}
           >
             <div>
-              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44] font-sans">{activeSpeaker.name}</div>
+              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44]">{activeSpeaker.name}</div>
               <p className="mt-2 text-sm font-medium text-[#3f2e73]">
                 {activeSpeaker.designation} · {activeSpeaker.experience}
               </p>
@@ -473,7 +473,7 @@ export default function WorkshopSummer2026Client() {
             <p className="text-xs font-semibold uppercase text-[#3f2e73]">Why it matters</p>
             <div
               id="why-it-matters-heading"
-              className="mt-3 text-3xl sm:text-4xl font-semibold text-gray-900 font-sans"
+              className="mt-3 text-3xl sm:text-4xl font-semibold text-gray-900"
               role="heading"
               aria-level={2}
             >
@@ -518,7 +518,7 @@ export default function WorkshopSummer2026Client() {
                   <div className="mb-4 flex h-10 w-10 items-center justify-center text-[#3f2e73]" aria-hidden>
                     <Icon className="h-7 w-7" strokeWidth={1.5} />
                   </div>
-                  <div className="text-base font-semibold text-gray-900 font-sans" role="heading" aria-level={3}>
+                  <div className="text-base font-semibold text-gray-900" role="heading" aria-level={3}>
                     {title}
                   </div>
                   <p className="mt-2 text-sm text-gray-600">{body}</p>
@@ -541,7 +541,7 @@ export default function WorkshopSummer2026Client() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 text-[#3f2e73]">
               <Users className="h-5 w-5" />
-              <div id="who-can-join-heading" className="text-xl font-semibold text-[#241a44] font-sans" role="heading" aria-level={2}>
+              <div id="who-can-join-heading" className="text-xl font-semibold text-[#241a44]" role="heading" aria-level={2}>
                 Who can join?
               </div>
             </div>
@@ -568,21 +568,23 @@ export default function WorkshopSummer2026Client() {
         >
           <div className="pointer-events-none absolute right-0 top-0 h-16 w-16 bg-[#3f2e73]" style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }} aria-hidden />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#3f2e73] via-[#7b68b8] to-[#3f2e73]" aria-hidden />
-          <div className="grid lg:grid-cols-[220px_1fr]">
+          <div className="grid lg:grid-cols-[240px_1fr]">
             <div className="relative border-b border-[#3f2e73]/15 bg-[#f4f1ff] p-6 lg:border-b-0 lg:border-r lg:border-[#3f2e73]/15">
               <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/70">Session pass</p>
-              <p className="mt-2 text-4xl font-semibold text-[#2f2358]">FREE</p>
+              <div className="mt-2 flex items-baseline gap-3">
+                <span className="text-lg font-medium text-gray-400 line-through">₹700</span>
+                <span className="text-4xl font-bold text-[#2f2358]">FREE</span>
+              </div>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-300/80 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
                 <Gift className="h-3 w-3" aria-hidden />
-                Complimentary
+                Free for this event
               </div>
-              <div className="mt-6 text-xs font-medium text-[#5e5774]">Ticket ID: LC-SW-2026</div>
             </div>
 
             <div className="p-6 sm:p-7">
               <div
                 id="ticket-heading"
-                className="text-2xl font-semibold text-[#241a44] font-sans sm:text-[1.8rem]"
+                className="text-2xl font-semibold text-[#241a44] sm:text-[1.8rem]"
                 role="heading"
                 aria-level={2}
               >
@@ -590,7 +592,7 @@ export default function WorkshopSummer2026Client() {
               </div>
               <p className="mt-2 text-sm text-[#5e5774]">One-session parent-child workshop ticket.</p>
 
-              <div className="mt-6 grid gap-0 rounded-2xl border border-[#3f2e73]/14 bg-white sm:grid-cols-3">
+              <div className="mt-5 grid gap-0 rounded-2xl border border-[#3f2e73]/14 bg-white sm:grid-cols-3">
                 <div className="p-4 sm:border-r sm:border-[#3f2e73]/12">
                   <p className="text-[10px] font-semibold uppercase text-[#3f2e73]/60">Date</p>
                   <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Sat, 18 April 2026</p>
@@ -604,12 +606,21 @@ export default function WorkshopSummer2026Client() {
                   <p className="mt-1 text-sm font-semibold text-[#2a1f52]">Online (Google Meet)</p>
                 </div>
               </div>
+
+              <a
+                href="#register"
+                onClick={scrollToRegister}
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#3f2e73] px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-[#3f2e73]/25 transition-all hover:bg-[#342560] hover:shadow-xl hover:shadow-[#3f2e73]/30 sm:w-auto"
+              >
+                Register Now — It&apos;s Free
+                <ChevronRight className="h-5 w-5" />
+              </a>
             </div>
           </div>
         </section>
 
         <section className="rounded-3xl border border-[#3f2e73]/18 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgba(63,46,115,0.08)]">
-          <div className="text-2xl sm:text-3xl font-semibold text-gray-900 font-sans" role="heading" aria-level={2}>
+          <div className="text-2xl sm:text-3xl font-semibold text-gray-900" role="heading" aria-level={2}>
             What You&apos;ll Take Back
           </div>
           <p className="mt-2 text-sm sm:text-base text-gray-600">
@@ -631,27 +642,6 @@ export default function WorkshopSummer2026Client() {
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="text-center rounded-2xl bg-gradient-to-b from-[#3f2e73] to-[#2a1f52] px-6 py-12 sm:py-14 text-white">
-          <div
-            className="text-2xl sm:text-3xl font-semibold font-sans"
-            role="heading"
-            aria-level={2}
-          >
-            Ready to join?
-          </div>
-          <p className="mt-3 mx-auto max-w-xl text-sm sm:text-base text-white/90">
-            Take the first step towards a more understanding and emotionally safe home.
-          </p>
-          <a
-            href="#register"
-            onClick={scrollToRegister}
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#3f2e73] shadow-lg hover:bg-gray-100 transition-colors"
-          >
-            Register
-            <ArrowRight className="h-4 w-4" />
-          </a>
         </section>
       </div>
 

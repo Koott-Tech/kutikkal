@@ -104,63 +104,70 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[1280px] space-y-14 px-5 pb-16 pt-24 sm:space-y-16 sm:px-8 sm:pt-28 lg:px-12">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-4 py-1 text-xs font-semibold text-[#3f2e73]">
+      {/* Hero Section - 80vh */}
+      <section className="relative flex min-h-[80vh] flex-col items-center justify-center bg-gradient-to-b from-[#f8f6ff] to-white px-5 pt-20 sm:px-8 sm:pt-24 lg:px-12">
+        <div className="mx-auto max-w-4xl text-center mt-12 sm:mt-16">
+          <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-5 py-1.5 text-sm font-semibold text-[#3f2e73]">
             Events
           </span>
           <div
-            className="mt-4 text-4xl font-semibold text-[#241a44] sm:text-5xl font-sans"
+            className="mt-6 text-4xl font-bold text-[#241a44] sm:text-5xl md:text-6xl"
             role="heading"
             aria-level={1}
           >
             Grow Your Network &amp; Skills with Our Events
           </div>
+          <p className="mx-auto mt-6 max-w-2xl text-base text-[#5e5774] sm:text-lg">
+            Join our workshops and family events designed to help parents and children learn, connect, and grow together.
+          </p>
         </div>
-        <div className="mt-8 flex gap-3 overflow-x-auto pb-2">
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           <button
             type="button"
-            className="whitespace-nowrap rounded-full bg-[#3f2e73] px-5 py-2 text-sm font-semibold text-white shadow-sm"
+            className="whitespace-nowrap rounded-full bg-[#3f2e73] px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-[#342560] transition-colors"
           >
             All Events
           </button>
           <button
             type="button"
-            className="whitespace-nowrap rounded-full border border-[#3f2e73]/25 bg-white px-5 py-2 text-sm font-medium text-[#3f2e73]"
+            className="whitespace-nowrap rounded-full border border-[#3f2e73]/25 bg-white px-6 py-2.5 text-sm font-medium text-[#3f2e73] hover:bg-[#f4f1ff] transition-colors"
           >
             Nearest Events
           </button>
           <button
             type="button"
-            className="whitespace-nowrap rounded-full border border-[#3f2e73]/25 bg-white px-5 py-2 text-sm font-medium text-[#3f2e73]"
+            className="whitespace-nowrap rounded-full border border-[#3f2e73]/25 bg-white px-6 py-2.5 text-sm font-medium text-[#3f2e73] hover:bg-[#f4f1ff] transition-colors"
           >
             Latest Event
           </button>
         </div>
+      </section>
 
-        <div className="mt-8 space-y-6">
+      <div className="mx-auto max-w-[1280px] px-5 pb-16 sm:px-8 lg:px-12">
+
+        <div className="space-y-6">
           {events.slice(0, 3).map((event) => (
             <article
               key={event.id}
               className="rounded-3xl border border-[#3f2e73]/15 bg-white/95 p-3 shadow-[0_8px_30px_rgba(63,46,115,0.08)] backdrop-blur-[1px] sm:p-4 lg:p-5"
             >
               <div className="grid gap-4 md:grid-cols-[300px_1fr_auto] md:items-center md:gap-6">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#3f2e73]/10 md:aspect-[5/4]">
+                <Link href={event.detailsHref} className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#3f2e73]/10 md:aspect-[5/4] cursor-pointer group">
                   <Image
                     src={event.image}
                     alt={event.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                     sizes="(min-width: 768px) 300px, 100vw"
                     priority
                   />
-                </div>
+                </Link>
 
                 <div className="min-w-0 px-1 md:pr-2">
                   <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-3 py-1 text-xs font-semibold text-[#3f2e73]">
                     {event.category}
                   </span>
-                  <div className="mt-3 text-2xl font-semibold text-[#241a44] font-sans sm:text-[30px] lg:text-[32px]">
+                  <div className="mt-3 text-2xl font-semibold text-[#241a44] sm:text-[30px] lg:text-[32px]">
                     {event.title}
                   </div>
                   <p className="mt-3 line-clamp-2 text-sm text-[#5e5774] sm:text-[15px]">
@@ -195,13 +202,13 @@ export default function EventsPage() {
           ))}
         </div>
 
-        <div className="py-16 sm:py-24">
+        <div className="pt-12 pb-8 sm:pt-16 sm:pb-12">
           <section className="mx-auto max-w-5xl rounded-3xl border border-[#3f2e73]/15 bg-[#f4f1ff] px-6 py-8 text-center sm:px-8 sm:py-10">
             <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-4 py-1 text-xs font-semibold text-[#3f2e73]">
               Our mission
             </span>
             <div
-              className="mt-4 text-3xl font-semibold text-[#241a44] sm:text-4xl font-sans"
+              className="mt-4 text-3xl font-semibold text-[#241a44] sm:text-4xl"
               role="heading"
               aria-level={2}
             >
@@ -217,7 +224,7 @@ export default function EventsPage() {
         <section className="w-full" aria-labelledby="events-how-it-works-heading">
           <div
             id="events-how-it-works-heading"
-            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
+            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
             role="heading"
             aria-level={2}
           >
@@ -232,7 +239,7 @@ export default function EventsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <Calendar className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Pick your event date</div>
+              <div className="mt-4 text-lg font-semibold text-[#241a44]">Pick your event date</div>
               <p className="mt-2 text-sm text-[#5e5774]">
                 Choose the event that suits your family and complete your booking in a few steps.
               </p>
@@ -242,7 +249,7 @@ export default function EventsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <MonitorPlay className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Get joining details</div>
+              <div className="mt-4 text-lg font-semibold text-[#241a44]">Get joining details</div>
               <p className="mt-2 text-sm text-[#5e5774]">
                 We share your event link, reminders, and session instructions on email and WhatsApp.
               </p>
@@ -252,7 +259,7 @@ export default function EventsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <Clock className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44] font-sans">Attend live session</div>
+              <div className="mt-4 text-lg font-semibold text-[#241a44]">Attend live session</div>
               <p className="mt-2 text-sm text-[#5e5774]">
                 Join on time with your child and learn practical tools you can use right away at home.
               </p>
@@ -262,7 +269,7 @@ export default function EventsPage() {
 
         <section className="pt-12 sm:pt-16 lg:pt-20">
           <div
-            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
+            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
             role="heading"
             aria-level={2}
           >
@@ -304,7 +311,7 @@ export default function EventsPage() {
           <section className="mx-auto max-w-4xl" aria-labelledby="events-faq-heading">
             <div
               id="events-faq-heading"
-              className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl font-sans"
+              className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
               role="heading"
               aria-level={2}
             >

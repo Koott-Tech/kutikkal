@@ -63,7 +63,8 @@ export default function BlogsPage() {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
       
       const queryParams = new URLSearchParams();
-      if (statusFilter && statusFilter !== 'all') queryParams.append('status', statusFilter);
+      // Always send status - 'all' shows all blogs including drafts
+      queryParams.append('status', statusFilter || 'all');
       if (searchTerm) queryParams.append('search', searchTerm);
       
       const response = await fetch(`${baseUrl}/blogs/admin?${queryParams}`, {

@@ -301,17 +301,19 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     return !text && (hasOnlyBr || el.childNodes.length === 0);
   };
 
-  // Sanitize pasted HTML: allow safe block and inline elements. Convert empty headings/blockquotes to paragraphs (SEO).
+  // Sanitize pasted HTML: allow safe block elements only. Strip inline formatting (bold, italic, etc.) so paste is plain.
   const sanitizePasteHtml = useCallback((html) => {
     if (!html || typeof html !== 'string') return '';
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    const allowedTags = ['p', 'div', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'blockquote'];
+    // Only structural tags - no inline formatting (strong, b, em, i, u, span)
+    const allowedTags = ['p', 'div', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'blockquote'];
     const headingOrQuote = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
     const walk = (node) => {
       if (node.nodeType === Node.TEXT_NODE) return node.cloneNode(true);
       if (node.nodeType !== Node.ELEMENT_NODE) return null;
       const tag = node.tagName?.toLowerCase();
       if (!tag || !allowedTags.includes(tag)) {
+        // Unwrap: keep children but discard the tag (strips bold, italic, span, etc.)
         const frag = document.createDocumentFragment();
         [...node.childNodes].forEach((child) => {
           const c = walk(child);
@@ -430,7 +432,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         block = inner;
         inner = block.querySelector(blockSelector);
       }
-      const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+      const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => {
+        if (b.tagName === 'LI') return true; // Always include <li>
+        return !b.querySelector(blockSelector);
+      });
       const idx = leafBlocks.indexOf(block);
       toolbarBlockIndexRef.current = idx >= 0 ? idx : null;
     } else {
@@ -618,7 +623,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       if (n?.nodeType === Node.ELEMENT_NODE && n.tagName === 'IMG') n = n.parentNode;
       const block = n?.nodeType === Node.ELEMENT_NODE ? n.closest?.(blockSelector) : null;
       if (block && editor.contains(block) && block !== editor) {
-        const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+        const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => {
+          if (b.tagName === 'LI') return true; // Always include <li>
+          return !b.querySelector(blockSelector);
+        });
         const idx = leafBlocks.indexOf(block);
         toolbarBlockIndexRef.current = idx >= 0 ? idx : null;
       }
@@ -1190,7 +1198,11 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       } catch (_) {}
     }
     const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
-    const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
+    // For leaf blocks, include <li> even if it contains block children (we handle list items specially)
+    const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => {
+      if (b.tagName === 'LI') return true; // Always include <li> - we handle them specially
+      return !b.querySelector(blockSelector);
+    });
     const isBlockEmpty = (el) => !(el.textContent || '').trim() && (el.innerHTML.replace(/<br\s*\/?>/gi, '').replace(/\s/g, '').length === 0);
     let blockToReplace = null;
     // When we restored the toolbar selection (floating tooltip), use block index so only that block changes (like / menu).
@@ -1241,6 +1253,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     }
     if (!blockToReplace || blockToReplace === editor) return;
 
+    // Inside a list item: never replace <li> with a heading/paragraph block (breaks the list).
+    // Wrap only the selection (or all children) so one bullet can contain e.g. <h4> + text.
     const applyBlockStyles = (el, blockType) => {
       el.style.marginTop = '0.35em';
       el.style.marginBottom = '0.35em';
@@ -1276,6 +1290,98 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     const tag = type === 'p' ? 'p' : type === 'quote' ? 'blockquote' : type === 'code' ? 'pre' : type;
     const currentTag = blockToReplace.tagName.toLowerCase();
     const currentBlockType = currentTag === 'blockquote' ? 'quote' : currentTag === 'pre' ? 'code' : currentTag === 'p' ? 'p' : currentTag;
+
+    // Check if we're inside a list item (either blockToReplace IS an <li>, or it's inside one)
+    // This works for both <ul> (bullet) and <ol> (numbered) lists
+    const parentLi = blockToReplace.tagName === 'LI' ? blockToReplace : blockToReplace.closest?.('li');
+    const isInsideList = parentLi && editor.contains(parentLi);
+
+    if (isInsideList && tag !== 'ul' && tag !== 'ol') {
+      // Inside a list: wrap only the selected text in the new tag, keeping everything in the same <li>
+      try {
+        // Try to get a valid range - prefer savedToolbarRangeClone for floating toolbar actions
+        // Clone ranges to avoid mutation issues
+        let activeRange = null;
+        if (savedToolbarRangeClone && !savedToolbarRangeClone.collapsed) {
+          try {
+            if (parentLi.contains(savedToolbarRangeClone.commonAncestorContainer)) {
+              activeRange = savedToolbarRangeClone.cloneRange();
+            }
+          } catch (_) {}
+        }
+        if (!activeRange && savedRangeClone && !savedRangeClone.collapsed) {
+          try {
+            if (parentLi.contains(savedRangeClone.commonAncestorContainer)) {
+              activeRange = savedRangeClone.cloneRange();
+            }
+          } catch (_) {}
+        }
+        if (!activeRange && range && !range.collapsed) {
+          try {
+            if (parentLi.contains(range.commonAncestorContainer)) {
+              activeRange = range.cloneRange();
+            }
+          } catch (_) {}
+        }
+        
+        const hasValidSelection = activeRange && !activeRange.collapsed;
+        
+        if (hasValidSelection) {
+          // User selected specific text - wrap only that selection
+          const selectedFragment = activeRange.extractContents();
+          const newEl = document.createElement(tag);
+          applyBlockStyles(newEl, type);
+          if (tag === 'pre') {
+            const code = document.createElement('code');
+            while (selectedFragment.firstChild) code.appendChild(selectedFragment.firstChild);
+            newEl.appendChild(code);
+          } else {
+            while (selectedFragment.firstChild) newEl.appendChild(selectedFragment.firstChild);
+          }
+          activeRange.insertNode(newEl);
+          // Place cursor after the new element
+          const newRange = document.createRange();
+          newRange.setStartAfter(newEl);
+          newRange.collapse(true);
+          window.getSelection()?.removeAllRanges();
+          window.getSelection()?.addRange(newRange);
+        } else if (blockToReplace.tagName !== 'LI') {
+          // Cursor is inside an existing block element (h4, p, etc.) inside the <li>
+          // Replace that element's tag while keeping it inside the <li>
+          const newEl = document.createElement(tag);
+          applyBlockStyles(newEl, type);
+          if (tag === 'pre') {
+            const code = document.createElement('code');
+            code.innerHTML = blockToReplace.innerHTML;
+            newEl.appendChild(code);
+          } else {
+            newEl.innerHTML = blockToReplace.innerHTML;
+          }
+          blockToReplace.parentNode?.replaceChild(newEl, blockToReplace);
+        } else {
+          // blockToReplace IS the <li> and no selection - wrap all content in new tag
+          const newEl = document.createElement(tag);
+          applyBlockStyles(newEl, type);
+          if (tag === 'pre') {
+            const code = document.createElement('code');
+            while (parentLi.firstChild) code.appendChild(parentLi.firstChild);
+            newEl.appendChild(code);
+          } else {
+            while (parentLi.firstChild) newEl.appendChild(parentLi.firstChild);
+          }
+          parentLi.appendChild(newEl);
+        }
+        skipContentSyncRef.current = true;
+        handleInput();
+        setTimeout(() => {
+          skipContentSyncRef.current = false;
+        }, 0);
+        return;
+      } catch (err) {
+        console.error('List item block type change failed:', err);
+        /* fall through to normal block replace */
+      }
+    }
 
     // Check if selection covers only part of the block (then we split; only selected part gets new type)
     // Collapsed cursor = replace whole block; only multi-character selection can trigger split
@@ -1541,71 +1647,17 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setSlashMenu({ visible: false, position: { top: 0, left: 0 } });
   }, [insertImageAtSelection, handleInput]);
 
-  // Tooltip block-type change: find block from saved toolbar range (no restore – selection is often lost on click).
-  // Uses selectionWhenToolbarShownRef + toolbarBlockIndexRef so it works like the / menu target.
+  // Tooltip block type: same DOM logic as setBlockType (restores toolbar selection first), including
+  // wrapping only the selected words inside a bullet instead of replacing the whole <li>.
   const setBlockTypeFromTooltip = useCallback((type) => {
-    const editor = editorRef.current;
-    if (!editor) return;
-    const blockSelector = 'p, h1, h2, h3, h4, h5, h6, div, blockquote, li';
-    let block = null;
-    const savedRange = selectionWhenToolbarShownRef.current;
-    if (savedRange) {
-      try {
-        const startContainer = savedRange.startContainer;
-        if (startContainer && document.contains(startContainer) && editor.contains(startContainer)) {
-          let node = startContainer;
-          if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
-          if (node?.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') node = node.parentNode;
-          block = node?.nodeType === Node.ELEMENT_NODE ? node.closest?.(blockSelector) : null;
-          if (block && editor.contains(block) && block !== editor) {
-            let inner = block.querySelector(blockSelector);
-            while (inner && inner !== block && block.contains(inner) && inner.contains(savedRange.startContainer)) {
-              block = inner;
-              inner = block.querySelector(blockSelector);
-            }
-          } else {
-            block = null;
-          }
-        }
-      } catch (_) {}
-    }
-    if (!block && toolbarBlockIndexRef.current != null) {
-      const leafBlocks = Array.from(editor.querySelectorAll(blockSelector)).filter((b) => !b.querySelector(blockSelector));
-      const idx = toolbarBlockIndexRef.current;
-      if (idx >= 0 && idx < leafBlocks.length) block = leafBlocks[idx];
-    }
-    if (!block || block === editor) {
+    if (!editorRef.current) {
       setFloatingBlockMenuOpen(false);
       return;
     }
-    const applyBlockStyles = (el, blockType) => {
-      el.style.marginTop = '0.35em';
-      el.style.marginBottom = '0.35em';
-      el.style.lineHeight = '1.45';
-      if (blockType === 'h1') { el.style.fontSize = '1.875rem'; el.style.fontWeight = '700'; }
-      else if (blockType === 'h2') { el.style.fontSize = '1.5rem'; el.style.fontWeight = '600'; }
-      else if (blockType === 'h3') { el.style.fontSize = '1.25rem'; el.style.fontWeight = '600'; }
-      else if (blockType === 'h4') { el.style.fontSize = '1.125rem'; el.style.fontWeight = '600'; }
-      else if (blockType === 'quote') { el.style.borderLeft = '4px solid #d1d5db'; el.style.paddingLeft = '1rem'; el.style.fontStyle = 'italic'; el.style.color = '#4b5563'; }
-      else if (blockType === 'code') { el.style.background = '#f3f4f6'; el.style.padding = '1rem'; el.style.borderRadius = '6px'; el.style.overflowX = 'auto'; el.style.fontFamily = 'ui-monospace, monospace'; el.style.fontSize = '0.875rem'; }
-    };
-    const tag = type === 'p' ? 'p' : type === 'quote' ? 'blockquote' : type === 'code' ? 'pre' : type;
-    const newBlock = document.createElement(tag === 'pre' ? 'pre' : tag);
-    applyBlockStyles(newBlock, type);
-    if (tag === 'pre') {
-      const code = document.createElement('code');
-      code.innerHTML = block.innerHTML;
-      newBlock.appendChild(code);
-    } else {
-      newBlock.innerHTML = block.innerHTML;
-    }
-    block.parentNode?.replaceChild(newBlock, block);
-    skipContentSyncRef.current = true;
-    handleInput();
-    setTimeout(() => { skipContentSyncRef.current = false; }, 0);
+    setBlockType(type);
     setToolbarPosition((prev) => ({ ...prev, visible: false }));
     setFloatingBlockMenuOpen(false);
-  }, [handleInput]);
+  }, [setBlockType]);
 
   // Get the <ol> that contains the toolbar selection (for "Start at" control)
   const getOlContainingToolbarSelection = useCallback(() => {
@@ -2140,7 +2192,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           ${sel} ul,
           ${sel} ol {
             list-style-position: outside !important;
-            padding-left: 1.25rem !important;
+            padding-left: 1.5rem !important;
             margin: 0.35rem 0 !important;
             display: block !important;
           }
@@ -2162,6 +2214,20 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           ${sel} li div {
             margin: 0 !important;
             padding: 0 !important;
+          }
+          ${sel} li > h1,
+          ${sel} li > h2,
+          ${sel} li > h3,
+          ${sel} li > h4,
+          ${sel} li > h5,
+          ${sel} li > h6 {
+            margin-top: 0.1em !important;
+            margin-bottom: 0.2em !important;
+            line-height: 1.35 !important;
+            display: block !important;
+          }
+          ${sel} li > blockquote {
+            margin: 0.35em 0 !important;
           }
           ${sel} a,
           ${sel} .document-editor-link {

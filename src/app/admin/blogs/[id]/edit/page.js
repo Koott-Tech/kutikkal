@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Menu } from 'lucide-react';
+import { ArrowLeft, Save, Eye, PanelLeft, PanelLeftClose } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminSidebar } from '@/contexts/AdminSidebarContext';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -15,15 +15,22 @@ export default function EditBlogPage() {
   const id = params?.id;
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
   const { showError, showSuccess } = useNotification();
-  const { toggleSidebar, isSidebarOpen } = useAdminSidebar() || {};
-  const adminSidebarCollapsed = isSidebarOpen === false;
+  const { setSidebarOpen } = useAdminSidebar() || {};
   const router = useRouter();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showEditorSidebar, setShowEditorSidebar] = useState(true);
   const blogEditorRef = useRef(null);
+
+  // Hide admin sidebar when editor opens
+  useEffect(() => {
+    if (setSidebarOpen) {
+      setSidebarOpen(false);
+    }
+  }, [setSidebarOpen]);
 
   useEffect(() => {
     if (!id || authLoading) return;
@@ -71,7 +78,6 @@ export default function EditBlogPage() {
           seo_title: b.seo_title || b.title,
           seo_description: b.seo_description || b.excerpt,
           focus_keyword: b.focus_keyword || '',
-          meta_keywords: b.meta_keywords || [],
           canonical_url: b.canonical_url || ''
         });
         if (b.featured_image_url) setImagePreview(b.featured_image_url);
@@ -144,7 +150,7 @@ export default function EditBlogPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (!blog?.title?.trim()) {
       showError('Please enter a title');
       return;
@@ -182,77 +188,88 @@ export default function EditBlogPage() {
 
   if (authLoading || loading || !blog) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73]" />
+      <div className="min-h-screen bg-[#fafbfc] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#3f2e73] border-t-transparent" />
+          <p className="text-sm text-gray-500">Loading editor...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-4 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin/blogs"
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                title="Back to blogs"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Edit Blog</h1>
-                <p className="text-sm text-gray-500">{blog.title || 'Untitled'}</p>
-              </div>
-            </div>
-            {typeof toggleSidebar === 'function' && (
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                title="Toggle admin menu"
-                aria-label="Toggle admin menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${adminSidebarCollapsed ? 'w-full max-w-full' : 'max-w-7xl'}`}>
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-          <div className="min-h-[60vh]">
-            <BlogEditorWix
-              ref={blogEditorRef}
-              blog={blog}
-              onChange={setBlog}
-              onFeaturedImageUpload={uploadFeaturedImage}
-              onContentImageUpload={handleContentImageUpload}
-              uploadProgress={uploadingImage}
-              defaultAuthorName={user?.name}
-              featuredImagePreview={imagePreview}
-              adminSidebarCollapsed={adminSidebarCollapsed}
-            />
-          </div>
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+    <div className="min-h-screen bg-[#fafbfc] flex flex-col">
+      {/* Fixed Header */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between px-4 sm:px-6 h-14">
+          {/* Left side */}
+          <div className="flex items-center gap-3">
             <Link
               href="/admin/blogs"
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Back to blogs"
             >
-              Cancel
+              <ArrowLeft className="h-4 w-4" />
             </Link>
+            <div className="h-5 w-px bg-gray-200" />
             <button
-              type="submit"
-              disabled={saving}
-              className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#1d1733] disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={() => setShowEditorSidebar(!showEditorSidebar)}
+              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              title={showEditorSidebar ? 'Hide sidebar' : 'Show sidebar'}
             >
-              {saving ? 'Saving...' : 'Update Blog'}
+              {showEditorSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+            </button>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+              blog.status === 'published' 
+                ? 'bg-green-100 text-green-700' 
+                : blog.status === 'archived'
+                ? 'bg-gray-100 text-gray-600'
+                : 'bg-amber-100 text-amber-700'
+            }`}>
+              {blog.status === 'published' ? 'Published' : blog.status === 'archived' ? 'Archived' : 'Draft'}
+            </span>
+          </div>
+
+          {/* Right side - Actions */}
+          <div className="flex items-center gap-2">
+            {blog.status === 'published' && blog.slug && (
+              <Link
+                href={`/blog/${blog.slug}`}
+                target="_blank"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saving}
+              className="flex items-center gap-1.5 px-4 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#2d2156] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            >
+              <Save className="h-4 w-4" />
+              <span>{saving ? 'Saving...' : 'Save'}</span>
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </header>
+
+      {/* Editor Content */}
+      <main className="flex-1 overflow-hidden">
+        <BlogEditorWix
+          ref={blogEditorRef}
+          blog={blog}
+          onChange={setBlog}
+          onFeaturedImageUpload={uploadFeaturedImage}
+          onContentImageUpload={handleContentImageUpload}
+          uploadProgress={uploadingImage}
+          defaultAuthorName={user?.name}
+          featuredImagePreview={imagePreview}
+          showSidebar={showEditorSidebar}
+        />
+      </main>
     </div>
   );
 }

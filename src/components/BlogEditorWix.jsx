@@ -88,7 +88,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   uploadProgress = false,
   defaultAuthorName = '',
   featuredImagePreview = null,
-  adminSidebarCollapsed = false,
+  showSidebar = false,
 }, ref) {
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -209,10 +209,11 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   }, [wordCount]);
 
   return (
-    <div className={`${styles.root} ${adminSidebarCollapsed ? styles.rootExpanded : ''}`}>
+    <div className={`${styles.root} ${!showSidebar ? styles.rootExpanded : ''}`}>
       <div className={styles.layout}>
         <div className={styles.layoutRow}>
           {/* Left sidebar: 220–250px, only Add / Settings / SEO */}
+          {showSidebar && (
           <aside className={styles.sidebar}>
             <nav className={styles.sidebarNav}>
               <button
@@ -285,8 +286,8 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                   <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Settings</span>
                   <div className={styles.settingsSection}>
                     <label className={styles.settingsLabel}>Featured image</label>
-                    <label style={{ display: 'block', border: '2px dashed var(--bec-border)', borderRadius: 8, padding: 16, textAlign: 'center', cursor: 'pointer', background: 'var(--bec-hover)' }}>
-                      {uploadProgress ? 'Uploading…' : 'Upload'}
+                    <label className={styles.featuredImageUpload}>
+                      {uploadProgress ? 'Uploading…' : 'Click to upload'}
                       <input
                         type="file"
                         accept={ACCEPT_IMAGE}
@@ -296,9 +297,9 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       />
                     </label>
                     {(blog.featured_image_url || featuredImagePreview) && (
-                      <div style={{ position: 'relative', marginTop: 8 }}>
-                        <img src={featuredImagePreview || blog.featured_image_url} alt="Featured" style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 8 }} />
-                        <button type="button" onClick={() => onChange({ ...blog, featured_image_url: '' })} style={{ position: 'absolute', top: 4, right: 4, padding: 4, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', cursor: 'pointer' }}><X size={14} /></button>
+                      <div className={styles.featuredImagePreview}>
+                        <img src={featuredImagePreview || blog.featured_image_url} alt="Featured" />
+                        <button type="button" onClick={() => onChange({ ...blog, featured_image_url: '' })} className={styles.featuredImageRemove}><X size={14} /></button>
                       </div>
                     )}
                   </div>
@@ -343,7 +344,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       placeholder="Add category"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
                     />
-                    <button type="button" onClick={addCategory} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <button type="button" onClick={addCategory} className={styles.addBtn}>Add</button>
                     <div className={styles.tagChipWrap}>
                       {(blog.categories || []).map((cat) => (
                         <span key={cat} className={styles.tagChip}>
@@ -362,7 +363,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       placeholder="Add tag (Enter to add)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     />
-                    <button type="button" onClick={addTag} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <button type="button" onClick={addTag} className={styles.addBtn}>Add</button>
                     <div className={styles.tagChipWrap}>
                       {(blog.tags || []).map((tag) => (
                         <span key={tag} className={styles.tagChip}>
@@ -378,7 +379,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
               {sidebarTab === 'seo' && (
                 <>
                   <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>SEO</span>
-                  <button type="button" onClick={() => setSeoPreviewOpen((o) => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', marginBottom: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+                  <button type="button" onClick={() => setSeoPreviewOpen((o) => !o)} className={styles.seoToggleBtn}>
                     <span>Google Preview</span>
                     {seoPreviewOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </button>
@@ -444,7 +445,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       placeholder="Add keyword (Enter to add)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMetaKeyword())}
                     />
-                    <button type="button" onClick={addMetaKeyword} style={{ marginTop: 6, padding: '6px 12px', background: 'var(--bec-primary)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Add</button>
+                    <button type="button" onClick={addMetaKeyword} className={styles.addBtn}>Add</button>
                     <div className={styles.tagChipWrap}>
                       {(blog.meta_keywords || []).map((kw) => (
                         <span key={kw} className={styles.tagChip}>
@@ -455,7 +456,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                     </div>
                   </div>
                   <div className={styles.settingsSection}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                    <label className={styles.checkboxLabel}>
                       <input
                         type="checkbox"
                         checked={blog.no_index !== true}
@@ -468,6 +469,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
               )}
             </div>
           </aside>
+          )}
 
           {/* Main: toolbar + editor */}
           <div className={styles.mainWrap}>

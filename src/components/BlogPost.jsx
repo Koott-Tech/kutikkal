@@ -534,7 +534,7 @@ export default function BlogPost({ slug }) {
           <div
             role="heading"
             aria-level={1}
-            className="font-semibold mb-4 text-[24px] leading-[1.35rem] md:text-[48px] md:leading-[3rem] tracking-[-0.65px]"
+            className="font-semibold mb-4 text-[20px] leading-[1.5rem] md:text-[32px] md:leading-[2.25rem] tracking-[-0.5px]"
           >
             {blogPost.title}
           </div>
@@ -597,12 +597,14 @@ export default function BlogPost({ slug }) {
               .blog-content .document-editor ul,
               .blog-content .document-editor ol {
                 display: block !important;
-                margin: 0.35rem 0 !important;
+                margin: 0.75rem 0 !important;
+                margin-left: 1.5rem !important;
                 padding-left: 1.25rem !important;
+                list-style-position: outside !important;
               }
               .blog-content .document-editor ul { list-style-type: disc !important; }
               .blog-content .document-editor ol { list-style-type: decimal !important; }
-              .blog-content .document-editor li { display: list-item !important; margin: 0 0 1px 0 !important; line-height: 1.5 !important; }
+              .blog-content .document-editor li { display: list-item !important; margin: 0 0 0.5rem 0 !important; line-height: 1.6 !important; list-style-position: outside !important; padding-left: 0.25rem !important; }
               .blog-content p,
               .blog-content div,
               .blog-content h1,
@@ -624,7 +626,20 @@ export default function BlogPost({ slug }) {
               .blog-content-html pre {
                 display: block !important;
                 margin-bottom: 1rem !important;
-                line-height: 1.45 !important;
+                line-height: 1.6 !important;
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+              }
+              /* Ensure headings and paragraphs start from the left edge */
+              .blog-content > p,
+              .blog-content > div,
+              .blog-content > h1,
+              .blog-content > h2,
+              .blog-content > h3,
+              .blog-content > h4,
+              .blog-content > h5,
+              .blog-content > h6,
+              .blog-content > blockquote {
                 margin-left: 0 !important;
                 padding-left: 0 !important;
               }
@@ -643,8 +658,9 @@ export default function BlogPost({ slug }) {
               .blog-content ol {
                 display: block !important;
                 margin: 1rem 0 !important;
-                margin-left: 0.75rem;
-                padding-left: 2.5rem;
+                margin-left: 1.5rem !important;
+                padding-left: 1.25rem !important;
+                list-style-position: outside !important;
               }
               .blog-content ul {
                 list-style-type: disc !important;
@@ -656,8 +672,43 @@ export default function BlogPost({ slug }) {
                 display: list-item !important;
                 margin-bottom: 0.5rem !important;
                 line-height: 1.6 !important;
-                /* Force bullet/numbered list text to match body font size, overriding any pasted inline font-size */
                 font-size: 1rem !important;
+                list-style-position: outside !important;
+                padding-left: 0.25rem !important;
+              }
+              /* Support mixed content inside list items: h4 title + p description in same bullet */
+              .blog-content li > h1,
+              .blog-content li > h2,
+              .blog-content li > h3,
+              .blog-content li > h4,
+              .blog-content li > h5,
+              .blog-content li > h6,
+              .blog-content-html li > h1,
+              .blog-content-html li > h2,
+              .blog-content-html li > h3,
+              .blog-content-html li > h4,
+              .blog-content-html li > h5,
+              .blog-content-html li > h6 {
+                display: block !important;
+                margin-top: 0 !important;
+                margin-bottom: 0.25rem !important;
+                line-height: 1.35 !important;
+              }
+              .blog-content li > h4,
+              .blog-content-html li > h4 {
+                font-size: 1.1rem !important;
+                font-weight: 600 !important;
+              }
+              .blog-content li > p,
+              .blog-content-html li > p {
+                display: block !important;
+                margin-top: 0 !important;
+                margin-bottom: 0.5rem !important;
+                line-height: 1.6 !important;
+              }
+              .blog-content li > blockquote,
+              .blog-content-html li > blockquote {
+                margin: 0.35rem 0 !important;
               }
               .blog-content ul ul,
               .blog-content ol ul,
