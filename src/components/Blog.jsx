@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
-// Removed backendApi import - will use direct fetch
 
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -11,8 +11,9 @@ export default function Blog() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const categories = ["All", "Mental Health", "ADHD", "Autism", "Parenting", "Relationships", "Self-Care", "Therapy", "Psychiatry"];
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   useEffect(() => {
     loadBlogs();
@@ -54,22 +55,55 @@ export default function Blog() {
     }
   };
 
-  // Get unique categories from blog tags
-  const uniqueCategories = [...new Set((blogs || []).flatMap(blog => blog.tags || []))];
-  const displayCategories = ["All", ...categories.filter(cat => uniqueCategories.some(blogTag => blogTag.toLowerCase().includes(cat.toLowerCase())))];
+  // Get unique categories from blog tags and categories
+  const allCategories = [...new Set(
+    (blogs || []).flatMap(blog => [...(blog.categories || []), ...(blog.tags || [])])
+  )].filter(Boolean).sort();
+  
+  const displayCategories = ["All", ...allCategories];
+  const visibleCategories = showAllCategories ? displayCategories : displayCategories.slice(0, 7);
   
   // Sort blogs by creation date, get the latest as featured
   const sortedBlogs = [...(blogs || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  const featuredPost = sortedBlogs[0];
+  const featuredPosts = sortedBlogs.slice(0, Math.min(4, sortedBlogs.length)); // Get top 4 for carousel (or less if fewer blogs)
+  const featuredPost = featuredPosts[featuredIndex] || sortedBlogs[0];
   
-  // Filter posts based on selected category and search query
+  // Auto-rotate featured posts with fade animation - 8 seconds per slide
+  useEffect(() => {
+    if (featuredPosts.length <= 1) return;
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setFeaturedIndex((prev) => (prev + 1) % featuredPosts.length);
+      }, 600);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 650);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [featuredPosts.length]);
+
+  const goToSlide = useCallback((index) => {
+    if (index === featuredIndex) return;
+    setIsAnimating(true);
+    setTimeout(() => {
+      setFeaturedIndex(index);
+    }, 600);
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 650);
+  }, [featuredIndex]);
+
+  // Filter posts based on selected category and search query - skip only the currently featured post
   const filteredPosts = sortedBlogs.slice(1).filter(post => {
     const matchesCategory = selectedCategory === "All" || 
-      (post.tags && post.tags.some(tag => tag.toLowerCase().includes(selectedCategory.toLowerCase())));
+      (post.tags && post.tags.some(tag => tag === selectedCategory)) ||
+      (post.categories && post.categories.some(cat => cat === selectedCategory));
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.author_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+                         (post.author_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (post.excerpt || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+                         (post.categories && post.categories.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase())));
     return matchesCategory && matchesSearch;
   });
 
@@ -86,30 +120,30 @@ export default function Blog() {
     <div
       role="heading"
       aria-level={1}
-      className="font-semibold text-gray-900 mb-6"
+      className="font-semibold text-gray-900 mb-4"
       style={{
         fontFamily: "'DM Sans', Arial, Helvetica, sans-serif",
-        fontSize: 'clamp(1.75rem, 5vw + 0.5rem, 3.5rem)',
-        lineHeight: 1.1,
+        fontSize: 'clamp(2rem, 5vw + 0.5rem, 3rem)',
+        lineHeight: 1.15,
         letterSpacing: '-0.02em',
       }}
     >
-      Our Blog
+      The Little Care Blog
     </div>
   );
 
   if (loading) {
     return (
       <section className="min-h-screen w-full bg-white">
-        <div className="mx-auto max-w-6xl px-6 pt-32 pb-16 md:pt-40 md:pb-20">
-          <div className="text-center mb-16">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
+          <div className="text-left mb-8 sm:mb-10">
             {pageTitle}
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
-              Behavioral health information you can trust, verified by clinicians.
+            <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+              A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
           <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3f2e73]"></div>
           </div>
         </div>
       </section>
@@ -119,18 +153,18 @@ export default function Blog() {
   if (error) {
     return (
       <section className="min-h-screen w-full bg-white">
-        <div className="mx-auto max-w-6xl px-6 pt-32 pb-16 md:pt-40 md:pb-20">
-          <div className="text-center mb-16">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
+          <div className="text-left mb-8 sm:mb-10">
             {pageTitle}
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-light">
-              Behavioral health information you can trust, verified by clinicians.
+            <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+              A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
           <div className="text-center py-16">
             <p className="text-red-600 mb-4">Failed to load blogs: {error}</p>
             <button 
               onClick={loadBlogs}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="px-4 py-2 bg-[#3f2e73] text-white rounded-lg hover:bg-[#2d2156]"
             >
               Try Again
             </button>
@@ -142,59 +176,124 @@ export default function Blog() {
 
   return (
     <section className="min-h-screen w-full bg-white">
-      <div className="mx-auto max-w-6xl px-4 sm:px-10 lg:px-16 pt-32 pb-16 md:pt-40 md:pb-20">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
         {/* Header Section */}
-        <div className="text-left md:text-center mb-16">
+        <div className="text-left mb-8 sm:mb-10">
           {pageTitle}
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl md:mx-auto font-light">
-            Behavioral health information you can trust, verified by clinicians.
+          <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+            A trusted resource for parents and families, offering expert insights and guidance on child mental health.
           </p>
         </div>
 
-        {/* Featured Blog Post Card */}
+        {/* Featured Blog Post - Rula Style */}
         {featuredPost && (
-          <Link href={`/blog/${featuredPost.slug}`} className="block">
-            <div className="relative overflow-hidden rounded-2xl shadow-lg mb-16 group cursor-pointer">
-              {/* Image Container */}
-              <div className="relative h-[220px] sm:h-[300px] md:h-[420px] w-full">
-                <Image
-                  src={normalizeImageUrl(featuredPost.featured_image_url || "/kids.png")}
-                  alt={featuredPost.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-                
-                {/* Category Badge */}
+          <div className="mb-12 relative">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
+              {/* Left: Image - landscape wider 60% - Only fade animation */}
+              <Link 
+                href={`/blog/${featuredPost.slug}`} 
+                className={`block group w-full lg:w-[60%] lg:flex-shrink-0 transition-opacity duration-700 ease-in-out ${
+                  isAnimating ? 'opacity-0' : 'opacity-100'
+                }`}
+                key={`img-${featuredIndex}`}
+              >
+                <div className="relative aspect-[16/8] rounded-xl overflow-hidden">
+                  <Image
+                    src={normalizeImageUrl(featuredPost.featured_image_url || "/kids.png")}
+                    alt={featuredPost.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority
+                  />
+                </div>
+              </Link>
+
+              {/* Right: Content - Fade animation (same as image) */}
+              <div 
+                className={`flex flex-col justify-center w-full lg:w-auto lg:flex-1 lg:pl-4 transition-opacity duration-700 ease-in-out ${
+                  isAnimating ? 'opacity-0' : 'opacity-100'
+                }`}
+                key={`content-${featuredIndex}`}
+              >
+                {/* Category Tags */}
                 {featuredPost.tags && featuredPost.tags.length > 0 && (
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {featuredPost.tags[0]}
-                    </span>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {featuredPost.tags.slice(0, 2).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 )}
-                
-                {/* Text Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-8">
-                  <div className="text-white">
-                    {/* Author and Date */}
-                    <div className="text-sm text-gray-200 mb-3" style={{ fontWeight: 25 }}>
-                      {featuredPost.author_name} • {formatDate(featuredPost.published_at || featuredPost.created_at)}
-                    </div>
-                    
-                    {/* Title */}
-                    <h6 className="text-xl md:text-2xl leading-tight" style={{ fontWeight: 500 }}>
-                      {featuredPost.title}
-                    </h6>
-                  </div>
-                </div>
+
+                {/* Title */}
+                <Link href={`/blog/${featuredPost.slug}`}>
+                  <h2 
+                    className="text-xl sm:text-2xl lg:text-[1.75rem] font-semibold text-gray-900 leading-tight hover:text-[#3f2e73] transition-colors cursor-pointer"
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
+                    {featuredPost.title}
+                  </h2>
+                </Link>
+
+                {/* Excerpt */}
+                <p className="mt-4 text-gray-600 text-base sm:text-lg line-clamp-2">
+                  {featuredPost.excerpt || "A therapist can help you process and understand this topic better."}
+                </p>
+
+                {/* Read More Link */}
+                <Link
+                  href={`/blog/${featuredPost.slug}`}
+                  className="mt-6 inline-flex items-center gap-2 text-gray-900 font-medium hover:text-[#3f2e73] transition-colors group/link"
+                >
+                  <span className="border-b border-gray-900 group-hover/link:border-[#3f2e73]">Read more</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
+                </Link>
               </div>
             </div>
-          </Link>
+
+            {/* Pagination Dots with Progress */}
+            {featuredPosts.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <style dangerouslySetInnerHTML={{ __html: `
+                  @keyframes progressFill {
+                    from { width: 0%; }
+                    to { width: 100%; }
+                  }
+                `}} />
+                {featuredPosts.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goToSlide(idx)}
+                    className="relative"
+                    aria-label={`Go to slide ${idx + 1}`}
+                  >
+                    {idx === featuredIndex ? (
+                      <div className="relative w-8 h-2.5 bg-gray-300 rounded-full overflow-hidden">
+                        <div 
+                          key={`progress-${featuredIndex}`}
+                          className="absolute top-0 left-0 h-full bg-[#3f2e73] rounded-full"
+                          style={{
+                            width: '0%',
+                            animation: 'progressFill 8s linear forwards'
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-2.5 h-2.5 bg-gray-300 rounded-full hover:bg-gray-400 transition-colors" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* Search Bar */}
-        <div className="mb-8">
+        <div className="mb-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto">
             <div className="relative">
               <input
@@ -214,60 +313,69 @@ export default function Blog() {
         </div>
 
         {/* Category Filters */}
-        <div className="mb-12">
+        <div className="mb-12 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap justify-center gap-3">
-            {displayCategories.map((category) => (
+            {visibleCategories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                   selectedCategory === category
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-[#3f2e73] text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {category}
               </button>
             ))}
+            {displayCategories.length > 7 && (
+              <button
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-white border-2 border-[#3f2e73] text-[#3f2e73] hover:bg-[#3f2e73] hover:text-white transition-all duration-200"
+              >
+                {showAllCategories ? 'Show less' : `+${displayCategories.length - 7} more`}
+              </button>
+            )}
           </div>
         </div>
 
         {/* Blog Posts Grid */}
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 px-4 sm:px-6 lg:px-8">
             {filteredPosts.map((post) => (
               <Link 
                 key={post.id} 
                 href={`/blog/${post.slug}`} 
-                className="group block w-full max-w-[300px] sm:max-w-[340px] mx-0"
+                className="group block w-full"
               >
-                <article className="w-full max-w-[300px] sm:max-w-[340px] mx-0 cursor-pointer">
+                <article className="w-full cursor-pointer overflow-hidden">
                   {/* Image Container */}
                   {post.featured_image_url && (
-                    <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] rounded-2xl overflow-hidden mx-0 bg-white">
+                    <div className="relative w-full aspect-[16/9] overflow-hidden bg-white rounded-xl">
                       <Image
                         src={normalizeImageUrl(post.featured_image_url || '')}
                         alt={post.title}
                         fill
-                        className="object-contain object-left md:object-center"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
                       />
                     </div>
                   )}
                   
                   {/* Meta Info */}
-                  <div className="w-full max-w-[300px] sm:max-w-[340px] mx-0 px-3 sm:px-0">
-                    <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm text-left">
+                  <div className="mt-4">
+                    <div className="text-gray-600 text-xs md:text-sm text-left">
                       <span>{post.author_name || "Little Care Team"}</span>
                       <span className="px-1 md:px-2">•</span>
                       <span>{formatDate(post.published_at || post.created_at)}</span>
                     </div>
                     
-                    {/* Title */}
+                    {/* Title - Fixed height with 2 line clamp */}
                     <div
                       role="heading"
                       aria-level={3}
-                      className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900 text-left break-words leading-tight"
+                      className="mt-2 font-semibold text-sm md:text-base text-gray-900 text-left break-words leading-tight line-clamp-2"
+                      style={{ height: '2.5rem', overflow: 'hidden' }}
                     >
                       {post.title}
                     </div>
@@ -277,7 +385,7 @@ export default function Blog() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
+          <div className="text-center py-16 px-4 sm:px-6 lg:px-8">
             <div className="text-gray-500 text-lg mb-4">
               {blogs.length === 0 
                 ? "No blog posts available yet." 
