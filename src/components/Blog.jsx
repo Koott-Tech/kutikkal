@@ -176,6 +176,15 @@ export default function Blog() {
 
   return (
     <section className="min-h-screen w-full bg-white">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
         {/* Header Section */}
         <div className="text-left mb-8 sm:mb-10">
@@ -231,16 +240,29 @@ export default function Blog() {
 
                 {/* Title */}
                 <Link href={`/blog/${featuredPost.slug}`}>
-                  <h2 
-                    className="text-xl sm:text-2xl lg:text-[1.75rem] font-semibold text-gray-900 leading-tight hover:text-[#3f2e73] transition-colors cursor-pointer"
-                    style={{ letterSpacing: '-0.02em' }}
+                  <div 
+                    role="heading"
+                    aria-level={2}
+                    className="text-xl sm:text-2xl lg:text-[1.75rem] font-semibold text-gray-900 hover:text-[#3f2e73] transition-colors cursor-pointer"
+                    style={{ 
+                      fontFamily: "'DM Sans', Arial, Helvetica, sans-serif",
+                      lineHeight: '1.4',
+                      letterSpacing: '-0.02em'
+                    }}
                   >
                     {featuredPost.title}
-                  </h2>
+                  </div>
                 </Link>
 
                 {/* Excerpt */}
-                <p className="mt-4 text-gray-600 text-base sm:text-lg line-clamp-2">
+                <p 
+                  className="mt-4 text-gray-600 text-base sm:text-lg line-clamp-2" 
+                  style={{ 
+                    fontFamily: "'Work Sans', Arial, Helvetica, sans-serif",
+                    lineHeight: '1.6',
+                    letterSpacing: '0.010em'
+                  }}
+                >
                   {featuredPost.excerpt || "A therapist can help you process and understand this topic better."}
                 </p>
 
@@ -312,18 +334,21 @@ export default function Blog() {
           </div>
         </div>
 
-        {/* Category Filters */}
-        <div className="mb-12 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap justify-center gap-3">
-            {visibleCategories.map((category) => (
+        {/* Category Filters - Full width on mobile */}
+        <div className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="flex md:flex-wrap md:justify-center gap-3 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 pl-4 md:px-6 lg:px-8 scrollbar-hide">
+            {visibleCategories.map((category, idx) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  selectedCategory === category
-                    ? 'bg-[#3f2e73] text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                  idx === visibleCategories.length - 1 && displayCategories.length <= 7 ? 'mr-4 md:mr-0' : ''
                 }`}
+                style={{
+                  backgroundColor: selectedCategory === category ? '#3f2e73' : '#f3f4f6',
+                  color: selectedCategory === category ? 'white' : '#374151',
+                  boxShadow: selectedCategory === category ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'
+                }}
               >
                 {category}
               </button>
@@ -331,7 +356,7 @@ export default function Blog() {
             {displayCategories.length > 7 && (
               <button
                 onClick={() => setShowAllCategories(!showAllCategories)}
-                className="px-4 py-2 rounded-full text-sm font-medium bg-white border-2 border-[#3f2e73] text-[#3f2e73] hover:bg-[#3f2e73] hover:text-white transition-all duration-200"
+                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 bg-white border-2 border-[#3f2e73] text-[#3f2e73] hover:bg-[#3f2e73] hover:text-white transition-all duration-200 mr-4 md:mr-0"
               >
                 {showAllCategories ? 'Show less' : `+${displayCategories.length - 7} more`}
               </button>
