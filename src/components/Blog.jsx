@@ -4,6 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import {
+  BLOG_UI_LINE_HEIGHT_CLASS,
+  BLOG_LETTER_SPACING_CLASS,
+  BLOG_CARD_TITLE_CLASS,
+  BLOG_CARD_TITLE_STYLE,
+  BLOG_FEATURED_TITLE_CLASS,
+  BLOG_FEATURED_TITLE_STYLE,
+  BLOG_TYPOGRAPHY_ROOT_CLASS,
+  BLOG_TYPOGRAPHY_ROOT_CSS,
+  HERO_BODY_TEXT_CLASS,
+  HERO_BODY_TEXT_STYLE,
+  HERO_DISPLAY_HEADING_CLASS,
+  HERO_DISPLAY_HEADING_STYLE,
+} from '@/constants/heroTypography';
 
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -120,13 +134,8 @@ export default function Blog() {
     <div
       role="heading"
       aria-level={1}
-      className="font-semibold text-gray-900 mb-4"
-      style={{
-        fontFamily: "'DM Sans', Arial, Helvetica, sans-serif",
-        fontSize: 'clamp(2rem, 5vw + 0.5rem, 3rem)',
-        lineHeight: 1.15,
-        letterSpacing: '-0.02em',
-      }}
+      className={`text-gray-900 mb-4 ${HERO_DISPLAY_HEADING_CLASS}`}
+      style={HERO_DISPLAY_HEADING_STYLE}
     >
       The Little Care Blog
     </div>
@@ -134,11 +143,12 @@ export default function Blog() {
 
   if (loading) {
     return (
-      <section className="min-h-screen w-full bg-white">
+      <section className={`min-h-screen w-full bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+        <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
-          <div className="text-left mb-8 sm:mb-10">
+          <div className="text-left mb-16 sm:mb-20">
             {pageTitle}
-            <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+            <p className={`text-gray-600 max-w-xl ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
@@ -152,11 +162,12 @@ export default function Blog() {
 
   if (error) {
     return (
-      <section className="min-h-screen w-full bg-white">
+      <section className={`min-h-screen w-full bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+        <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
-          <div className="text-left mb-8 sm:mb-10">
+          <div className="text-left mb-16 sm:mb-20">
             {pageTitle}
-            <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+            <p className={`text-gray-600 max-w-xl ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
@@ -175,8 +186,9 @@ export default function Blog() {
   }
 
   return (
-    <section className="min-h-screen w-full bg-white">
+    <section className={`min-h-screen w-full bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
       <style dangerouslySetInnerHTML={{ __html: `
+        ${BLOG_TYPOGRAPHY_ROOT_CSS}
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -187,16 +199,16 @@ export default function Blog() {
       `}} />
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
         {/* Header Section */}
-        <div className="text-left mb-8 sm:mb-10">
+        <div className="text-left mb-16 sm:mb-20">
           {pageTitle}
-          <p className="text-base sm:text-lg text-gray-600 max-w-xl">
+          <p className={`text-gray-600 max-w-xl ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             A trusted resource for parents and families, offering expert insights and guidance on child mental health.
           </p>
         </div>
 
         {/* Featured Blog Post - Rula Style */}
         {featuredPost && (
-          <div className="mb-12 relative">
+          <div className="mb-24 relative">
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center">
               {/* Left: Image - landscape wider 60% - Only fade animation */}
               <Link 
@@ -230,7 +242,7 @@ export default function Blog() {
                     {featuredPost.tags.slice(0, 2).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${BLOG_UI_LINE_HEIGHT_CLASS} bg-gray-100 text-gray-700 border border-gray-200`}
                       >
                         {tag}
                       </span>
@@ -243,12 +255,8 @@ export default function Blog() {
                   <div 
                     role="heading"
                     aria-level={2}
-                    className="text-xl sm:text-2xl lg:text-[1.75rem] font-semibold text-gray-900 hover:text-[#3f2e73] transition-colors cursor-pointer"
-                    style={{ 
-                      fontFamily: "'DM Sans', Arial, Helvetica, sans-serif",
-                      lineHeight: '1.4',
-                      letterSpacing: '-0.02em'
-                    }}
+                    className={`text-gray-900 hover:text-[#3f2e73] transition-colors cursor-pointer ${BLOG_FEATURED_TITLE_CLASS}`}
+                    style={BLOG_FEATURED_TITLE_STYLE}
                   >
                     {featuredPost.title}
                   </div>
@@ -256,12 +264,8 @@ export default function Blog() {
 
                 {/* Excerpt */}
                 <p 
-                  className="mt-4 text-gray-600 text-base sm:text-lg line-clamp-2" 
-                  style={{ 
-                    fontFamily: "'Work Sans', Arial, Helvetica, sans-serif",
-                    lineHeight: '1.6',
-                    letterSpacing: '0.010em'
-                  }}
+                  className={`mt-4 text-gray-600 line-clamp-2 ${HERO_BODY_TEXT_CLASS}`}
+                  style={HERO_BODY_TEXT_STYLE}
                 >
                   {featuredPost.excerpt || "A therapist can help you process and understand this topic better."}
                 </p>
@@ -269,7 +273,7 @@ export default function Blog() {
                 {/* Read More Link */}
                 <Link
                   href={`/blog/${featuredPost.slug}`}
-                  className="mt-6 inline-flex items-center gap-2 text-gray-900 font-medium hover:text-[#3f2e73] transition-colors group/link"
+                  className={`mt-6 inline-flex items-center gap-2 text-gray-900 font-medium ${BLOG_UI_LINE_HEIGHT_CLASS} hover:text-[#3f2e73] transition-colors group/link`}
                 >
                   <span className="border-b border-gray-900 group-hover/link:border-[#3f2e73]">Read more</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
@@ -315,7 +319,7 @@ export default function Blog() {
         )}
 
         {/* Search Bar */}
-        <div className="mb-8 px-4 sm:px-6 lg:px-8">
+        <div className="mb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto">
             <div className="relative">
               <input
@@ -323,7 +327,7 @@ export default function Blog() {
                 placeholder="Search articles, authors, or topics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 pl-10 pr-4 text-gray-700 bg-white border border-gray-300 rounded-full focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                className={`w-full px-4 py-3 pl-10 pr-4 text-gray-700 ${BLOG_UI_LINE_HEIGHT_CLASS} bg-white border border-gray-300 rounded-full focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200`}
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,13 +339,13 @@ export default function Blog() {
         </div>
 
         {/* Category Filters - Full width on mobile */}
-        <div className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="mb-24 -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="flex md:flex-wrap md:justify-center gap-3 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 pl-4 md:px-6 lg:px-8 scrollbar-hide">
             {visibleCategories.map((category, idx) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
+                className={`px-4 py-2 rounded-full text-sm font-medium ${BLOG_UI_LINE_HEIGHT_CLASS} whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
                   idx === visibleCategories.length - 1 && displayCategories.length <= 7 ? 'mr-4 md:mr-0' : ''
                 }`}
                 style={{
@@ -356,7 +360,7 @@ export default function Blog() {
             {displayCategories.length > 7 && (
               <button
                 onClick={() => setShowAllCategories(!showAllCategories)}
-                className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 bg-white border-2 border-[#3f2e73] text-[#3f2e73] hover:bg-[#3f2e73] hover:text-white transition-all duration-200 mr-4 md:mr-0"
+                className={`px-4 py-2 rounded-full text-sm font-medium ${BLOG_UI_LINE_HEIGHT_CLASS} whitespace-nowrap flex-shrink-0 bg-white border-2 border-[#3f2e73] text-[#3f2e73] hover:bg-[#3f2e73] hover:text-white transition-all duration-200 mr-4 md:mr-0`}
               >
                 {showAllCategories ? 'Show less' : `+${displayCategories.length - 7} more`}
               </button>
@@ -366,7 +370,7 @@ export default function Blog() {
 
         {/* Blog Posts Grid */}
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-32 px-4 sm:px-6 lg:px-8">
             {filteredPosts.map((post) => (
               <Link 
                 key={post.id} 
@@ -389,7 +393,7 @@ export default function Blog() {
                   
                   {/* Meta Info */}
                   <div className="mt-4">
-                    <div className="text-gray-600 text-xs md:text-sm text-left">
+                    <div className={`text-gray-600 text-xs md:text-sm text-left ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
                       <span>{post.author_name || "Little Care Team"}</span>
                       <span className="px-1 md:px-2">•</span>
                       <span>{formatDate(post.published_at || post.created_at)}</span>
@@ -399,8 +403,8 @@ export default function Blog() {
                     <div
                       role="heading"
                       aria-level={3}
-                      className="mt-2 font-semibold text-sm md:text-base text-gray-900 text-left break-words leading-tight line-clamp-2"
-                      style={{ height: '2.5rem', overflow: 'hidden' }}
+                      className={BLOG_CARD_TITLE_CLASS}
+                      style={BLOG_CARD_TITLE_STYLE}
                     >
                       {post.title}
                     </div>
@@ -411,7 +415,7 @@ export default function Blog() {
           </div>
         ) : (
           <div className="text-center py-16 px-4 sm:px-6 lg:px-8">
-            <div className="text-gray-500 text-lg mb-4">
+            <div className={`text-gray-500 text-lg ${BLOG_UI_LINE_HEIGHT_CLASS} mb-4`}>
               {blogs.length === 0 
                 ? "No blog posts available yet." 
                 : `No articles found for "${searchQuery}" in ${selectedCategory === "All" ? "all categories" : selectedCategory}`
@@ -423,7 +427,7 @@ export default function Blog() {
                   setSearchQuery("");
                   setSelectedCategory("All");
                 }}
-                className="text-indigo-600 hover:text-indigo-800 font-medium"
+                className={`text-indigo-600 hover:text-indigo-800 font-medium ${BLOG_UI_LINE_HEIGHT_CLASS}`}
               >
                 Clear filters
               </button>

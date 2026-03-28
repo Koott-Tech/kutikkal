@@ -69,16 +69,9 @@ h5 {
 }
 
 h6 {
-  font-size: 20px !important;
+  font-size: 18px !important;
   line-height: 1.25rem !important;
   letter-spacing: -0.65px !important;
-}
-
-h7 {
-  font-size: 18px !important;
-  line-height: 1.5rem !important;
-  letter-spacing: -0.65px !important;
- 
 }
 
 /* Tablet responsive overrides (768px - 1023px)
@@ -182,11 +175,6 @@ p {
 /* Utility: tighter tracking override */
 .tight-tracking {
   letter-spacing: -0.50px !important;
-}
-
-/* Override h6 font size to 18px */
-h6 {
-  font-size: 18px !important;
 }
 
 /* Number bold styling */
@@ -413,10 +401,20 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     scroll-behavior: smooth;
   }
   
-  /* Prevent horizontal scrolling on all containers */
-  * {
-    max-width: 100%;
+  /* Box model sitewide; cap width on replaced/media only (avoid `* { max-width }` breaking flex/grid) */
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
+  }
+  img,
+  video,
+  canvas,
+  svg:not(:root),
+  iframe,
+  embed,
+  object {
+    max-width: 100%;
   }
   
   /* Fix for Android Chrome */

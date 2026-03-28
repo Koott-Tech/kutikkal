@@ -280,7 +280,7 @@ export default function BlogTeaser() {
           }
         }
       `}} />
-      <div className="mx-auto max-w-[1100px] px-0 md:px-0 overflow-hidden">
+      <div className="mx-auto max-w-[1100px] px-0 md:px-0 overflow-hidden md:overflow-visible">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-12">
           <div className="text-center md:text-left max-w-4xl md:max-w-none mx-auto md:mx-0 px-4 md:px-0">
              <p className="text-sm md:text-base lg:text-lg">From our blog</p>
@@ -325,12 +325,12 @@ export default function BlogTeaser() {
             return (
             <article 
               key={post.id || post.slug || post.title} 
-              className="blog-card cursor-pointer"
+              className="blog-card min-w-0 cursor-pointer"
               onClick={() => handleBlogClick(post)}
             >
                {imageSrc && (
                <div
-               className={`blog-image relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl  ${
+               className={`blog-image relative w-full min-w-0 h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl ${
                    post.highlight ? "ring-4 md:ring-8 ring-sky-100" : ""
                  }`}
                >
@@ -338,7 +338,7 @@ export default function BlogTeaser() {
                   src={imageSrc}
                   alt={altText}
                   fill
-                    className="object-contain object-left"
+                  className="object-cover object-center"
                   sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw"
                   priority={isFirstImage}
                 />

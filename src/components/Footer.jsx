@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import BlogNewsletterFooterCta from "./BlogNewsletterFooterCta";
 
 export default function Footer({ isHomePage = false, isCmsPage = false, isTherapistProfile = false }) {
     const [openSections, setOpenSections] = useState({});
@@ -22,6 +23,7 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
     const pathname = usePathname();
     const router = useRouter();
     const isEventsPage = pathname === '/events' || pathname.startsWith('/events/');
+    const isBlogPage = pathname === '/blog' || pathname.startsWith('/blog/');
 
     const formatDisplayName = (slug) => {
         if (!slug) return '';
@@ -267,6 +269,8 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                         </button>
                     </div>
                 </div>
+            ) : isBlogPage ? (
+                <BlogNewsletterFooterCta />
             ) : (
                 // CMS pages footer wrapper design (current design)
                 <div className="w-full py-12 md:py-14 px-8 md:px-16 lg:px-24" style={{ 

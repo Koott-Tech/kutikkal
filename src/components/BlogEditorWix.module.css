@@ -22,15 +22,19 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--bec-text);
   background: var(--bec-bg-subtle);
-  height: 100%;
+  /* Fill admin <main flex-1 min-h-0> so only editorScroll scrolls — toolbar does not leave the viewport */
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Full height layout */
+/* Fill admin main (flex-1); avoid calc(100vh - 180px) which left a gap under the editor */
 .layout {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 180px);
-  min-height: 600px;
+  flex: 1;
+  min-height: 0;
 }
 
 .layoutRow {
@@ -46,7 +50,7 @@
 }
 
 .rootExpanded .editorScroll {
-  padding: 20px 24px;
+  padding: 20px 24px 12px;
 }
 
 /* Left sidebar - sleek design */
@@ -113,7 +117,7 @@
 
 .sidebarPanelTitle {
   display: block;
-  font-size: 11px !important;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -180,20 +184,80 @@
   background: var(--bec-bg-subtle);
 }
 
-/* FIXED TOOLBAR - stays at top */
-.toolbarWrap {
+/* Single header row: back / status | formatting (scrolls) | save / preview */
+.unifiedTop {
   flex-shrink: 0;
-  position: sticky;
-  top: 0;
   z-index: 100;
+  align-self: stretch;
+  width: 100%;
   background: var(--bec-bg);
   border-bottom: 1px solid var(--bec-border);
-  padding: 10px 16px;
+  box-shadow: var(--bec-shadow-sm);
+}
+
+.unifiedHeaderBar {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 52px;
+  padding: 6px 12px;
+  flex-wrap: nowrap;
+}
+
+@media (min-width: 640px) {
+  .unifiedHeaderBar {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.unifiedHeaderLeft,
+.unifiedHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.unifiedHeaderRight {
+  margin-left: auto;
+}
+
+/* Center: block type (dropdown) + scrollable formatting row */
+.unifiedToolbarMiddle {
+  flex: 1 1 0%;
+  min-width: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 6px;
-  box-shadow: var(--bec-shadow-sm);
+  padding: 4px 0;
+  overflow: visible;
+}
+
+.unifiedToolbarScroll {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.unifiedToolbarScroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.unifiedToolbarScroll::-webkit-scrollbar-thumb {
+  background: var(--bec-border);
+  border-radius: 3px;
 }
 
 .toolbarGroup {
@@ -321,7 +385,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px 16px;
+  padding: 20px 16px 12px;
   background: var(--bec-bg-subtle);
 }
 
@@ -331,14 +395,15 @@
   background: var(--bec-bg);
   border-radius: var(--bec-radius-lg);
   box-shadow: var(--bec-shadow-sm);
-  padding: 24px 32px;
-  min-height: 500px;
+  padding: 24px 32px 20px;
   border: 1px solid var(--bec-border-light);
 }
 
-/* Title input - clean and modern */
+/* Title — textarea so long titles wrap (single-line input overflowed horizontally) */
 .editorTitle {
+  display: block;
   width: 100%;
+  box-sizing: border-box;
   font-size: 2.25rem;
   font-weight: 700;
   border: none;
@@ -351,6 +416,13 @@
   outline: none;
   transition: border-color 0.2s ease;
   line-height: 1.2;
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .editorTitle:focus {
@@ -384,6 +456,28 @@
 
 .editorExcerpt::placeholder {
   color: #cbd5e1;
+}
+
+/* Featured image — matches public BlogPost.jsx (max-w-[960px], rounded-2xl, above body) */
+.editorFeaturedImage {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.editorFeaturedImageFrame {
+  width: 100%;
+  max-width: 960px;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.editorFeaturedImageImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
 /* Settings panel */
@@ -633,8 +727,8 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--bec-border-light);
   font-size: 13px;
   color: var(--bec-text-secondary);
@@ -653,10 +747,10 @@
 
 @media (max-width: 768px) {
   .layout {
-    height: auto;
-    min-height: calc(100vh - 120px);
+    flex: 1;
+    min-height: 0;
   }
-  
+
   .layoutRow {
     flex-direction: column;
   }
@@ -678,14 +772,19 @@
     gap: 12px;
   }
 
-  .toolbarWrap {
+  .unifiedToolbarMiddle {
     flex-wrap: wrap;
-    padding: 8px 12px;
-    gap: 4px;
+    align-items: flex-start;
+  }
+
+  .unifiedToolbarScroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 4px;
   }
 
   .editorScroll {
-    padding: 20px 16px;
+    padding: 16px 12px 10px;
   }
 
   .editorInner {
@@ -698,86 +797,102 @@
   }
 }
 
-/* Document editor wrapper */
+/* Document editor wrapper — no tall min-height (was 400px) to avoid empty space below short posts */
 .becDocumentEditorWrap {
-  min-height: 400px;
+  min-height: 0;
 }
 
+/* Match BlogPost.jsx `.blog-content .document-editor` + public post body typography */
 .becDocumentEditorWrap :global(.document-editor) {
-  min-height: 400px;
+  min-height: 8rem;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: var(--bec-text);
-  line-height: 1.75;
+  font-family: 'Work Sans', Arial, Helvetica, sans-serif;
+  letter-spacing: -0.7px;
+  color: #171717;
   outline: none;
+  text-align: justify;
 }
 
-/* Paragraphs */
 .becDocumentEditorWrap :global(.document-editor p) {
   display: block;
   margin-top: 0;
   margin-bottom: 1rem;
-  line-height: 1.75;
+  font-size: 1rem;
+  line-height: 24px;
+  font-weight: 400;
 }
 
-.becDocumentEditorWrap :global(.document-editor div) {
+.becDocumentEditorWrap :global(.document-editor div:not(.doc-editor-img-block):not(.document-editor-image-wrapper)) {
   display: block;
   margin-top: 0;
   margin-bottom: 1rem;
+  line-height: 24px;
 }
 
-/* Headings */
+/* Headings — DM Sans; vertical margins match BlogPost `.document-editor h*` overrides */
 .becDocumentEditorWrap :global(.document-editor h1) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 2.5rem;
-  line-height: 1.2;
+  line-height: 60px;
   font-weight: 700;
-  margin-top: 2rem;
+  letter-spacing: -0.7px;
+  margin-top: 1.5rem;
   margin-bottom: 1rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor h2) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 2rem;
-  line-height: 1.3;
+  line-height: 1.25;
   font-weight: 700;
-  margin-top: 1.75rem;
-  margin-bottom: 0.875rem;
+  letter-spacing: -0.7px;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor h3) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 1.75rem;
-  line-height: 1.4;
+  line-height: 1.25;
   font-weight: 600;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  letter-spacing: -0.7px;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor h4) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 1.5rem;
-  line-height: 1.4;
+  line-height: 1.25;
   font-weight: 600;
-  margin-top: 1.25rem;
-  margin-bottom: 0.625rem;
+  letter-spacing: -0.7px;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor h5) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 1.25rem;
-  line-height: 1.5;
+  line-height: 1.25;
   font-weight: 600;
-  margin-top: 1rem;
+  letter-spacing: -0.7px;
+  margin-top: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor h6) {
   display: block;
+  font-family: 'DM Sans', Arial, Helvetica, sans-serif;
   font-size: 1.125rem;
-  line-height: 1.5;
+  line-height: 1.25;
   font-weight: 600;
-  margin-top: 0.875rem;
+  letter-spacing: -0.7px;
+  margin-top: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
@@ -785,6 +900,8 @@
 .becDocumentEditorWrap :global(.document-editor pre) {
   display: block;
   margin: 1rem 0;
+  line-height: 24px;
+  font-size: 1rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor > *:first-child) {
@@ -800,12 +917,31 @@
   margin-bottom: 0.25em;
 }
 
-/* Lists */
+.becDocumentEditorWrap :global(.document-editor p br) {
+  display: block;
+  margin-bottom: 0.25em;
+}
+
+/* Shift+Enter in headings: <br> line-box matches paragraph (24px) */
+.becDocumentEditorWrap :global(.document-editor h1 br),
+.becDocumentEditorWrap :global(.document-editor h2 br),
+.becDocumentEditorWrap :global(.document-editor h3 br),
+.becDocumentEditorWrap :global(.document-editor h4 br),
+.becDocumentEditorWrap :global(.document-editor h5 br),
+.becDocumentEditorWrap :global(.document-editor h6 br) {
+  display: block;
+  font-size: 1rem;
+  line-height: 24px;
+  height: 24px;
+  margin: 0;
+}
+
 .becDocumentEditorWrap :global(.document-editor ul),
 .becDocumentEditorWrap :global(.document-editor ol) {
   list-style-position: outside;
-  padding-left: 1.5rem;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
+  margin-left: 1.5rem;
+  padding-left: 1.25rem;
 }
 
 .becDocumentEditorWrap :global(.document-editor ul) {
@@ -816,12 +952,20 @@
   list-style-type: decimal;
 }
 
+.becDocumentEditorWrap :global(.document-editor ul ul),
+.becDocumentEditorWrap :global(.document-editor ol ul),
+.becDocumentEditorWrap :global(.document-editor ul ol),
+.becDocumentEditorWrap :global(.document-editor ol ol) {
+  margin: 0.5rem 0;
+}
+
 .becDocumentEditorWrap :global(.document-editor li) {
   display: list-item;
   margin: 0 0 0.5rem 0;
-  padding: 0;
-  line-height: 1.6;
+  padding-left: 0.25rem;
+  line-height: 20px;
   font-size: 1rem;
+  list-style-position: outside;
 }
 
 .becDocumentEditorWrap :global(.document-editor a),
@@ -830,14 +974,14 @@
   text-decoration: underline;
 }
 
-/* Image blocks */
+/* Image blocks — slightly narrower than column (matches public post; not featured banner) */
 .becDocumentEditorWrap :global(.document-editor .doc-editor-img-block),
 .becDocumentEditorWrap :global(.document-editor .document-editor-image-wrapper) {
   display: block;
   position: relative;
-  margin: 1.5rem auto;
+  margin: 1rem auto;
   padding: 0;
-  max-width: 100%;
+  max-width: 92%;
   width: 100%;
   overflow: visible;
   box-sizing: border-box;
@@ -854,6 +998,8 @@
 .becDocumentEditorWrap :global(.document-editor .document-editor-image-wrapper img) {
   display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: auto;
   max-height: none;
   object-fit: cover;
@@ -864,10 +1010,12 @@
 .becDocumentEditorWrap :global(.document-editor img) {
   display: block;
   width: 100%;
-  min-width: 100%;
-  max-width: 100%;
+  min-width: 0;
+  max-width: 92%;
   height: auto;
   max-height: none;
   object-fit: cover;
   border-radius: var(--bec-radius-lg);
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -12,7 +12,8 @@ import {
   Mail,
   Calendar,
   MoreVertical,
-  Loader2
+  Loader2,
+  History
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -28,6 +29,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import WheelPagination from '@/components/ui/wheel-pagination';
+import ClientBookingsHistoryModal from '@/components/ClientBookingsHistoryModal';
 
 export default function UsersPage() {
   const { showError, showSuccess } = useNotification();
@@ -46,6 +48,8 @@ export default function UsersPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null); // Track which user is being deleted
+  const [bookingsHistoryOpen, setBookingsHistoryOpen] = useState(false);
+  const [bookingsHistoryUser, setBookingsHistoryUser] = useState(null);
 
   useEffect(() => {
     // Check authentication and role
@@ -142,6 +146,11 @@ export default function UsersPage() {
   const openFullProfile = (user) => {
     setSelectedUser(user);
     setIsFullProfileOpen(true);
+  };
+
+  const openBookingsHistory = (user) => {
+    setBookingsHistoryUser(user);
+    setBookingsHistoryOpen(true);
   };
 
   const handleUserModalClose = () => {
@@ -323,6 +332,16 @@ export default function UsersPage() {
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openBookingsHistory(user);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <History className="h-4 w-4 mr-2" />
+                              Bookings history
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
                               onClick={(e) => { 
@@ -447,6 +466,21 @@ export default function UsersPage() {
       />
 
       {/* Full Profile Modal (View) */}
+      <ClientBookingsHistoryModal
+        isOpen={bookingsHistoryOpen}
+        onClose={() => {
+          setBookingsHistoryOpen(false);
+          setBookingsHistoryUser(null);
+        }}
+        clientId={bookingsHistoryUser?.client_id || bookingsHistoryUser?.profile?.client_id || null}
+        displayName={
+          bookingsHistoryUser?.name ||
+          (bookingsHistoryUser?.profile?.first_name && bookingsHistoryUser?.profile?.last_name
+            ? `${bookingsHistoryUser.profile.first_name} ${bookingsHistoryUser.profile.last_name}`.trim()
+            : bookingsHistoryUser?.email || '')
+        }
+      />
+
       {isFullProfileOpen && selectedUser && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-4xl w-full max-h-[90vh] overflow-y-auto">

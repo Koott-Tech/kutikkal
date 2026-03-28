@@ -19,6 +19,22 @@ import {
 } from "lucide-react";
 import { SUMMER_WORKSHOP_2026_HERO_IMAGE } from "@/data/summerWorkshop2026Assets";
 import Reviews from "@/components/Reviews";
+import {
+  BLOG_TYPOGRAPHY_ROOT_CLASS,
+  BLOG_TYPOGRAPHY_ROOT_CSS,
+  BLOG_LETTER_SPACING_CLASS,
+  BLOG_UI_LINE_HEIGHT_CLASS,
+  BLOG_CARD_TITLE_CLASS,
+  BLOG_CARD_TITLE_STYLE,
+  BLOG_FEATURED_TITLE_CLASS,
+  BLOG_FEATURED_TITLE_STYLE,
+  BLOG_SECTION_HEADING_CLASS,
+  BLOG_SECTION_HEADING_STYLE,
+  HERO_DISPLAY_HEADING_CLASS,
+  HERO_DISPLAY_HEADING_STYLE,
+  HERO_BODY_TEXT_CLASS,
+  HERO_BODY_TEXT_STYLE,
+} from "@/constants/heroTypography";
 
 const COUNTRY_CODES = [
   { code: "+91", label: "India (+91)" },
@@ -178,7 +194,8 @@ export default function WorkshopSummer2026Client() {
   }, [speakerIndex, changeSpeaker]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+      <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
       {/* Hero — full viewport height, split layout, image + floating form */}
       <section className="relative h-[100dvh] min-h-[100dvh] overflow-x-hidden overflow-y-auto md:overflow-y-hidden">
         <Image
@@ -194,17 +211,18 @@ export default function WorkshopSummer2026Client() {
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-start px-4 sm:px-6 lg:px-8 pt-36 sm:pt-40 md:pt-44 lg:pt-48 xl:pt-52 pb-10 sm:pb-12 lg:pb-14">
           <div className="grid min-h-0 flex-1 gap-10 lg:grid-cols-2 lg:gap-12 lg:items-center">
             <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase text-white/80">
+              <p className={`text-xs font-semibold uppercase text-white/80 ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
                 Little Care Summer Workshops 2026
               </p>
               <div
-                className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold text-white"
+                className={`mt-3 text-white ${HERO_DISPLAY_HEADING_CLASS}`}
                 role="heading"
                 aria-level={1}
+                style={HERO_DISPLAY_HEADING_STYLE}
               >
                 Not just workshops — spaces where children and parents learn, feel, and grow together.
               </div>
-              <p className="mt-5 text-base sm:text-lg text-white/90">
+              <p className={`mt-5 text-white/90 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                 Join our first interactive session on expressing emotions at home. Free for this edition; register to
                 save your spot.
               </p>
@@ -232,9 +250,10 @@ export default function WorkshopSummer2026Client() {
             >
               <div className="rounded-2xl bg-white p-6 sm:p-8 shadow-2xl ring-1 ring-black/5">
                 <div
-                  className="text-lg sm:text-xl font-semibold text-gray-900"
+                  className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`}
                   role="heading"
                   aria-level={2}
+                  style={BLOG_SECTION_HEADING_STYLE}
                 >
                   Reserve your spot — Expressing Big Emotions at Home
                 </div>
@@ -344,18 +363,19 @@ export default function WorkshopSummer2026Client() {
           <div className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-[#7b68b8]/10 blur-xl" aria-hidden />
 
           <div className="relative">
-            <p className="inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase text-[#3f2e73]">
+            <p className={`inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
               Workshop Format
             </p>
             <div
               id="what-is-this-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900"
+              className={`mt-3 text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
               role="heading"
               aria-level={2}
+              style={BLOG_SECTION_HEADING_STYLE}
             >
               What is this?
             </div>
-            <p className="mt-4 max-w-3xl text-sm sm:text-base text-gray-700">
+            <p className={`mt-4 max-w-3xl text-gray-700 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               This is a 1-hour interactive online workshop designed for parents and children to participate together.
               It is not a lecture; it is a practical space where families engage, share, and learn through games,
               role-plays, and guided activities.
@@ -371,7 +391,7 @@ export default function WorkshopSummer2026Client() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3f2e73]/10 text-[#3f2e73]">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <p className="mt-3 text-sm text-gray-700">{text}</p>
+                  <p className={`mt-3 text-gray-700 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>{text}</p>
                 </div>
               ))}
             </div>
@@ -380,12 +400,13 @@ export default function WorkshopSummer2026Client() {
 
         <section aria-labelledby="event-speakers-heading">
           <div className="mb-8 sm:mb-10">
-            <p className="text-xs font-semibold uppercase text-[#3f2e73]">Meet the speakers</p>
+            <p className={`text-xs font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>Meet the speakers</p>
             <div
               id="event-speakers-heading"
-              className="mt-3 text-2xl sm:text-3xl font-semibold text-gray-900"
+              className={`mt-3 text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
               role="heading"
               aria-level={2}
+              style={BLOG_SECTION_HEADING_STYLE}
             >
               Panelists for this session
             </div>
@@ -429,11 +450,11 @@ export default function WorkshopSummer2026Client() {
             }`}
           >
             <div>
-              <div className="text-2xl sm:text-3xl font-semibold text-[#241a44]">{activeSpeaker.name}</div>
-              <p className="mt-2 text-sm font-medium text-[#3f2e73]">
+              <div className={`text-gray-900 ${BLOG_FEATURED_TITLE_CLASS}`} style={BLOG_FEATURED_TITLE_STYLE}>{activeSpeaker.name}</div>
+              <p className={`mt-2 text-sm font-medium text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
                 {activeSpeaker.designation} · {activeSpeaker.experience}
               </p>
-              <p className="mt-4 text-sm sm:text-base text-gray-600">{activeSpeaker.details}</p>
+              <p className={`mt-4 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>{activeSpeaker.details}</p>
               <div className="mt-4 space-y-2 text-xs sm:text-sm text-gray-700">
                 <p><span className="font-semibold text-[#2a1f52]">Languages:</span> {activeSpeaker.languages}</p>
                 <p><span className="font-semibold text-[#2a1f52]">Session focus:</span> {activeSpeaker.focus}</p>
@@ -470,16 +491,17 @@ export default function WorkshopSummer2026Client() {
         {/* Rula-style: centered headline, 4 soft cards, purple icons, pill CTA */}
         <section className="w-full py-2 sm:py-4" aria-labelledby="why-it-matters-heading">
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-0">
-            <p className="text-xs font-semibold uppercase text-[#3f2e73]">Why it matters</p>
+            <p className={`text-xs font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>Why it matters</p>
             <div
               id="why-it-matters-heading"
-              className="mt-3 text-3xl sm:text-4xl font-semibold text-gray-900"
+              className={`mt-3 text-gray-900 ${BLOG_FEATURED_TITLE_CLASS}`}
               role="heading"
               aria-level={2}
+              style={BLOG_FEATURED_TITLE_STYLE}
             >
               Why this workshop matters for families
             </div>
-            <p className="mt-4 text-base text-gray-600 max-w-2xl mx-auto">
+            <p className={`mt-4 text-gray-600 max-w-2xl mx-auto ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               Many challenges do not begin outside the home, they begin in small moments where feelings are left
               unspoken. Children may not know how to express emotions, and parents may not always know how to respond
               in the moment. This workshop helps bridge that gap.
@@ -518,10 +540,10 @@ export default function WorkshopSummer2026Client() {
                   <div className="mb-4 flex h-10 w-10 items-center justify-center text-[#3f2e73]" aria-hidden>
                     <Icon className="h-7 w-7" strokeWidth={1.5} />
                   </div>
-                  <div className="text-base font-semibold text-gray-900" role="heading" aria-level={3}>
+                  <div className={`text-gray-900 ${BLOG_CARD_TITLE_CLASS}`} style={BLOG_CARD_TITLE_STYLE} role="heading" aria-level={3}>
                     {title}
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">{body}</p>
+                  <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>{body}</p>
                 </div>
               ))}
             </div>
@@ -541,7 +563,7 @@ export default function WorkshopSummer2026Client() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 text-[#3f2e73]">
               <Users className="h-5 w-5" />
-              <div id="who-can-join-heading" className="text-xl font-semibold text-[#241a44]" role="heading" aria-level={2}>
+              <div id="who-can-join-heading" className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`} role="heading" aria-level={2} style={BLOG_SECTION_HEADING_STYLE}>
                 Who can join?
               </div>
             </div>
@@ -584,13 +606,14 @@ export default function WorkshopSummer2026Client() {
             <div className="p-6 sm:p-7">
               <div
                 id="ticket-heading"
-                className="text-2xl font-semibold text-[#241a44] sm:text-[1.8rem]"
+                className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`}
                 role="heading"
                 aria-level={2}
+                style={BLOG_SECTION_HEADING_STYLE}
               >
                 Expressing Big Emotions at Home
               </div>
-              <p className="mt-2 text-sm text-[#5e5774]">One-session parent-child workshop ticket.</p>
+              <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>One-session parent-child workshop ticket.</p>
 
               <div className="mt-5 grid gap-0 rounded-2xl border border-[#3f2e73]/14 bg-white sm:grid-cols-3">
                 <div className="p-4 sm:border-r sm:border-[#3f2e73]/12">
@@ -620,10 +643,10 @@ export default function WorkshopSummer2026Client() {
         </section>
 
         <section className="rounded-3xl border border-[#3f2e73]/18 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgba(63,46,115,0.08)]">
-          <div className="text-2xl sm:text-3xl font-semibold text-gray-900" role="heading" aria-level={2}>
+          <div className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`} role="heading" aria-level={2} style={BLOG_SECTION_HEADING_STYLE}>
             What You&apos;ll Take Back
           </div>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
+          <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             By the end of the workshop, families leave with practical tools they can use right away.
           </p>
 
@@ -638,7 +661,7 @@ export default function WorkshopSummer2026Client() {
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#3f2e73]/12 text-[#3f2e73]">
                   <Icon className="h-4 w-4" />
                 </div>
-                <p className="text-sm sm:text-base text-[#2a1f52]">{text}</p>
+                <p className={`text-sm sm:text-base text-[#2a1f52] ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>{text}</p>
               </div>
             ))}
           </div>

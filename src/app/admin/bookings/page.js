@@ -119,12 +119,14 @@ export default function BookingsPage() {
     try {
       setIsLoading(true);
       
-      // Build query parameters for server-side pagination
+      // Build query parameters for server-side pagination.
+      // Completed: desc so page 2 continues “newest first” globally (must match client sort).
+      // Upcoming / other tabs: asc (earliest sessions first).
       const params = {
         page: currentPage,
         limit: itemsPerPage,
         sort: 'scheduled_date',
-        order: 'asc'
+        order: filterStatus === 'completed' ? 'desc' : 'asc'
       };
 
       // Add filters (Upcoming tab = booked + rescheduled — repeated ?status= for reliable parsing)
@@ -646,7 +648,7 @@ export default function BookingsPage() {
     return matchesSearch;
   });
 
-  // Sort by nearest slot first (scheduled_date + scheduled_time ascending)
+  // Upcoming / other tabs: earliest slot first. Completed: most recent session first (nearest to today at top).
   const scheduledSlotMs = (s) => {
     const d = s?.scheduled_date;
     if (!d) return 0;
@@ -660,9 +662,14 @@ export default function BookingsPage() {
     const ms = new Date(`${dateOnly}T${hh}:${mm}:${ss}`).getTime();
     return Number.isFinite(ms) ? ms : 0;
   };
-  const displayBookings = [...filteredBookings].sort(
-    (a, b) => scheduledSlotMs(a) - scheduledSlotMs(b)
-  );
+  const displayBookings = [...filteredBookings].sort((a, b) => {
+    const ma = scheduledSlotMs(a);
+    const mb = scheduledSlotMs(b);
+    if (filterStatus === 'completed') {
+      return mb - ma;
+    }
+    return ma - mb;
+  });
 
   // Debug logging
   useEffect(() => {

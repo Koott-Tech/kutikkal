@@ -7,6 +7,21 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import backendApi from "@/lib/backendApi";
 import BlogMetaTags from "./BlogMetaTags";
+import {
+  BLOG_CARD_TITLE_CLASS,
+  BLOG_CARD_TITLE_STYLE,
+  BLOG_LETTER_SPACING_CLASS,
+  BLOG_SECTION_HEADING_CLASS,
+  BLOG_SECTION_HEADING_STYLE,
+  BLOG_BODY_IMAGE_MAX_WIDTH,
+  BLOG_TYPOGRAPHY_ROOT_CLASS,
+  BLOG_TYPOGRAPHY_ROOT_CSS,
+  HERO_BODY_TEXT_CLASS,
+  HERO_BODY_TEXT_STYLE,
+  HERO_DISPLAY_HEADING_CLASS,
+  HERO_DISPLAY_HEADING_STYLE,
+} from '@/constants/heroTypography';
+import { getBlogPostPageTypographyCss } from '@/constants/blogContentTypographyCss';
 
 // Extract text content from block - handles string, object { text/content }, or array of nodes
 const getBlockContent = (block) => {
@@ -28,12 +43,12 @@ const StructuredContentRenderer = ({ content }) => {
   }
 
   return (
-    <div className="prose prose-lg max-w-none space-y-12">
+    <div className={`prose prose-lg max-w-none space-y-12 ${BLOG_LETTER_SPACING_CLASS} [&_p]:leading-[24px] [&_li]:leading-[20px] [&_blockquote]:leading-[24px] [&_h1]:leading-[60px] [&_h2]:leading-tight [&_h3]:leading-tight [&_h4]:leading-tight`}>
       {content.map((block, index) => {
         switch (block.type) {
                  case 'paragraph':
                    return (
-                     <p key={index} className="leading-relaxed">
+                     <p key={index} className={`leading-[24px] ${BLOG_LETTER_SPACING_CLASS}`}>
                        {(() => {
                          const normalizeUrl = (url) => {
                            if (!url || !url.trim()) return url;
@@ -198,8 +213,9 @@ const StructuredContentRenderer = ({ content }) => {
             };
             const headingText = String(getBlockContent(block) ?? '');
             const headingParts = parseInlineLinks(headingText);
+            const headingLeadClass = HeadingTag === 'h1' ? 'leading-[60px]' : 'leading-tight';
             return (
-              <HeadingTag key={index} className="mb-4 mt-8 font-semibold text-gray-900">
+              <HeadingTag key={index} className={`mb-4 mt-8 font-semibold ${headingLeadClass} text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
                 {headingParts.map((part, partIndex) => {
                   if (part.type === 'link') {
                     return (
@@ -228,11 +244,11 @@ const StructuredContentRenderer = ({ content }) => {
                 <img 
                   src={normalizeImageUrl(block.src || '')} 
                   alt={block.alt}
-                  className="w-full max-w-[640px] max-h-96 object-cover rounded-lg shadow-md"
+                  className="w-full max-w-[min(92%,560px)] max-h-96 object-cover rounded-lg shadow-md"
                   loading="lazy"
                 />
                 {block.caption && (
-                  <p className="text-sm text-gray-600 mt-3 text-center italic">
+                  <p className={`text-sm text-gray-600 mt-3 text-center italic leading-[24px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {block.caption}
                   </p>
                 )}
@@ -243,7 +259,7 @@ const StructuredContentRenderer = ({ content }) => {
             return (
               <ul key={index} className="list-disc list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
-                  <li key={itemIndex} className="leading-relaxed">
+                  <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
                   </li>
                 ))}
@@ -254,7 +270,7 @@ const StructuredContentRenderer = ({ content }) => {
             return (
               <ol key={index} className="list-decimal list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
-                  <li key={itemIndex} className="leading-relaxed">
+                  <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
                   </li>
                 ))}
@@ -268,10 +284,10 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'quote':
             return (
-              <blockquote key={index} className="border-l-4 border-indigo-500 pl-6 my-8 italic text-gray-700 bg-gray-50 py-4 rounded-r-lg">
-                <p className="mb-2">"{block.content}"</p>
+              <blockquote key={index} className={`border-l-4 border-indigo-500 pl-6 my-8 italic leading-[24px] text-gray-700 bg-gray-50 py-4 rounded-r-lg ${BLOG_LETTER_SPACING_CLASS}`}>
+                <p className={`mb-2 leading-[24px] ${BLOG_LETTER_SPACING_CLASS}`}>"{block.content}"</p>
                 {block.author && (
-                  <cite className="text-sm text-gray-500 not-italic">
+                  <cite className={`text-sm text-gray-500 not-italic leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     — {block.author}
                   </cite>
                 )}
@@ -299,9 +315,9 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
   return (
     <section className="mt-16 pt-8 border-t border-gray-200" aria-label="You might also like">
       <div className="related-posts text-left">
-        <h6 className="text-2xl font-semibold text-gray-900 mb-6">
+        <div role="heading" aria-level={2} className={BLOG_SECTION_HEADING_CLASS} style={BLOG_SECTION_HEADING_STYLE}>
           You might also like
-        </h6>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogs.map((blog) => (
@@ -326,16 +342,21 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                 )}
                 
                 {/* Meta Info */}
-                <div className="mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm">
+                <div className={`mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                   <span>{blog.author_name || "Little Care Team"}</span>
                   <span className="px-1 md:px-2">•</span>
                   <span>{formatDate(blog.published_at || blog.created_at)}</span>
                 </div>
                 
                 {/* Title */}
-                <h6 className="mt-2 md:mt-3 lg:mt-2 font-medium text-sm md:text-base text-gray-900">
+                <div
+                  role="heading"
+                  aria-level={3}
+                  className={`${BLOG_CARD_TITLE_CLASS} md:mt-3 lg:mt-2`}
+                  style={BLOG_CARD_TITLE_STYLE}
+                >
                   {blog.title}
-                </h6>
+                </div>
               </article>
             </Link>
           ))}
@@ -345,7 +366,7 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
         <div className="mt-8 text-center">
           <Link 
             href="/blog" 
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors ${BLOG_LETTER_SPACING_CLASS}`}
           >
             View All Articles
             <svg className="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,7 +423,7 @@ export default function BlogPost({ slug }) {
         // Force full-width rendering even for legacy content with inline image sizing.
         el.style.setProperty('display', 'block', 'important');
         el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('max-width', '100%', 'important');
+        el.style.setProperty('max-width', BLOG_BODY_IMAGE_MAX_WIDTH, 'important');
         el.style.setProperty('margin-left', 'auto', 'important');
         el.style.setProperty('margin-right', 'auto', 'important');
         const imgEl = el.querySelector('img');
@@ -411,7 +432,7 @@ export default function BlogPost({ slug }) {
           imgEl.removeAttribute('height');
           imgEl.style.setProperty('display', 'block', 'important');
           imgEl.style.setProperty('width', '100%', 'important');
-          imgEl.style.setProperty('min-width', '100%', 'important');
+          imgEl.style.setProperty('min-width', '0', 'important');
           imgEl.style.setProperty('max-width', '100%', 'important');
           imgEl.style.setProperty('height', 'auto', 'important');
           imgEl.style.setProperty('max-height', 'none', 'important');
@@ -477,7 +498,8 @@ export default function BlogPost({ slug }) {
 
   if (loading) {
     return (
-      <article className="min-h-screen bg-white">
+      <article className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+        <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -489,18 +511,19 @@ export default function BlogPost({ slug }) {
 
   if (error || !blogPost) {
     return (
-      <article className="min-h-screen flex flex-col items-center justify-center px-4">
+      <article className={`min-h-screen flex flex-col items-center justify-center px-4 ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+        <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
         <div className="max-w-md text-center">
-          <h1 className="text-5xl font-bold mb-4" style={{ color: '#3f2e73' }}>404</h1>
-          <h2 className="text-2xl font-semibold mb-3" style={{ color: '#3f2e73' }}>
+          <h1 className={`text-5xl font-bold leading-none mb-4 ${BLOG_LETTER_SPACING_CLASS}`} style={{ color: '#3f2e73' }}>404</h1>
+          <h2 className={`text-2xl font-semibold leading-none mb-3 ${BLOG_LETTER_SPACING_CLASS}`} style={{ color: '#3f2e73' }}>
             Article not found
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className={`text-gray-600 leading-none mb-6 ${BLOG_LETTER_SPACING_CLASS}`}>
             {error ? `Error: ${error}` : "The article you're looking for doesn't exist or is no longer available."}
             </p>
           <Link
             href="/"
-            className="inline-flex items-center justify-center w-full py-3 px-4 text-base font-semibold text-white rounded-lg transition-colors duration-200 bg-[#3f2e73] hover:bg-[#1d1733]"
+            className={`inline-flex items-center justify-center w-full py-3 px-4 text-base font-semibold leading-none text-white rounded-lg transition-colors duration-200 bg-[#3f2e73] hover:bg-[#1d1733] ${BLOG_LETTER_SPACING_CLASS}`}
           >
             Go back home
           </Link>
@@ -512,11 +535,12 @@ export default function BlogPost({ slug }) {
   return (
     <>
       <BlogMetaTags blog={blogPost} />
-    <article className="min-h-screen bg-white">
+      <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
+    <article className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
       <div className="max-w-6xl mx-auto px-6 sm:px-32 lg:px-40 xl:px-44 pt-24 pb-12">
         {/* Title & Metadata */}
         <header className="mb-8">
-          <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600 sm:gap-x-4 sm:text-sm">
+          <div className={`mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-[20px] text-gray-600 sm:gap-x-4 sm:text-sm ${BLOG_LETTER_SPACING_CLASS}`}>
             <span className="font-medium">{blogPost.author_name}</span>
             <span>•</span>
             <span>
@@ -534,12 +558,13 @@ export default function BlogPost({ slug }) {
           <div
             role="heading"
             aria-level={1}
-            className="font-semibold mb-4 text-[20px] leading-[1.5rem] md:text-[32px] md:leading-[2.25rem] tracking-[-0.5px]"
+            className={`text-gray-900 mb-4 ${HERO_DISPLAY_HEADING_CLASS}`}
+            style={HERO_DISPLAY_HEADING_STYLE}
           >
             {blogPost.title}
           </div>
           {blogPost.excerpt && (
-            <p className="font-medium text-gray-600 text-base md:text-lg mb-4">
+            <p className={`font-medium text-gray-600 mb-4 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               {blogPost.excerpt}
             </p>
           )}
@@ -549,7 +574,7 @@ export default function BlogPost({ slug }) {
               {blogPost.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-3 py-1 rounded-full p2 bg-indigo-100 text-indigo-800"
+                  className={`inline-flex items-center px-3 py-1 rounded-full p2 leading-[20px] bg-indigo-100 text-indigo-800 ${BLOG_LETTER_SPACING_CLASS}`}
                 >
                   {tag}
                 </span>
@@ -576,319 +601,7 @@ export default function BlogPost({ slug }) {
         {/* Blog body: content first, then "You might also like" below (no overlap) */}
         <div className="blog-post-body w-full">
         <div ref={blogContentRef} className="blog-content w-full">
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              /* Same block spacing as blog CMS editor (document-editor) for correct line breaks */
-              .blog-content .document-editor p {
-                display: block !important;
-                margin-top: 0 !important;
-                margin-bottom: 1rem !important;
-                line-height: 1.45 !important;
-              }
-              .blog-content .document-editor h1 { display: block !important; margin-top: 1.5rem !important; margin-bottom: 1rem !important; }
-              .blog-content .document-editor h2 { display: block !important; margin-top: 1.25rem !important; margin-bottom: 0.75rem !important; }
-              .blog-content .document-editor h3 { display: block !important; margin-top: 1rem !important; margin-bottom: 0.5rem !important; }
-              .blog-content .document-editor h4, .blog-content .document-editor h5, .blog-content .document-editor h6 { display: block !important; margin-top: 0.75rem !important; margin-bottom: 0.5rem !important; }
-              .blog-content .document-editor div { display: block !important; margin-top: 0 !important; margin-bottom: 1rem !important; }
-              .blog-content .document-editor blockquote { display: block !important; margin: 1rem 0 !important; }
-              .blog-content .document-editor pre { display: block !important; margin: 1rem 0 !important; }
-              .blog-content .document-editor > *:first-child { margin-top: 0 !important; }
-              .blog-content .document-editor > *:last-child { margin-bottom: 0 !important; }
-              .blog-content .document-editor ul,
-              .blog-content .document-editor ol {
-                display: block !important;
-                margin: 0.75rem 0 !important;
-                margin-left: 1.5rem !important;
-                padding-left: 1.25rem !important;
-                list-style-position: outside !important;
-              }
-              .blog-content .document-editor ul { list-style-type: disc !important; }
-              .blog-content .document-editor ol { list-style-type: decimal !important; }
-              .blog-content .document-editor li { display: list-item !important; margin: 0 0 0.5rem 0 !important; line-height: 1.6 !important; list-style-position: outside !important; padding-left: 0.25rem !important; }
-              .blog-content p,
-              .blog-content div,
-              .blog-content h1,
-              .blog-content h2,
-              .blog-content h3,
-              .blog-content h4,
-              .blog-content h5,
-              .blog-content h6,
-              .blog-content blockquote,
-              .blog-content-html p,
-              .blog-content-html div,
-              .blog-content-html h1,
-              .blog-content-html h2,
-              .blog-content-html h3,
-              .blog-content-html h4,
-              .blog-content-html h5,
-              .blog-content-html h6,
-              .blog-content-html blockquote,
-              .blog-content-html pre {
-                display: block !important;
-                margin-bottom: 1rem !important;
-                line-height: 1.6 !important;
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-              }
-              /* Ensure headings and paragraphs start from the left edge */
-              .blog-content > p,
-              .blog-content > div,
-              .blog-content > h1,
-              .blog-content > h2,
-              .blog-content > h3,
-              .blog-content > h4,
-              .blog-content > h5,
-              .blog-content > h6,
-              .blog-content > blockquote {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-              }
-              .blog-content p:last-child,
-              .blog-content div:last-child,
-              .blog-content-html p:last-of-type,
-              .blog-content-html div:last-of-type,
-              .blog-content-html > *:last-child {
-                margin-bottom: 0 !important;
-              }
-              .blog-content br {
-                display: block !important;
-                margin-bottom: 0.25em !important;
-              }
-              .blog-content ul,
-              .blog-content ol {
-                display: block !important;
-                margin: 1rem 0 !important;
-                margin-left: 1.5rem !important;
-                padding-left: 1.25rem !important;
-                list-style-position: outside !important;
-              }
-              .blog-content ul {
-                list-style-type: disc !important;
-              }
-              .blog-content ol {
-                list-style-type: decimal !important;
-              }
-              .blog-content li {
-                display: list-item !important;
-                margin-bottom: 0.5rem !important;
-                line-height: 1.6 !important;
-                font-size: 1rem !important;
-                list-style-position: outside !important;
-                padding-left: 0.25rem !important;
-              }
-              /* Support mixed content inside list items: h4 title + p description in same bullet */
-              .blog-content li > h1,
-              .blog-content li > h2,
-              .blog-content li > h3,
-              .blog-content li > h4,
-              .blog-content li > h5,
-              .blog-content li > h6,
-              .blog-content-html li > h1,
-              .blog-content-html li > h2,
-              .blog-content-html li > h3,
-              .blog-content-html li > h4,
-              .blog-content-html li > h5,
-              .blog-content-html li > h6 {
-                display: block !important;
-                margin-top: 0 !important;
-                margin-bottom: 0.25rem !important;
-                line-height: 1.35 !important;
-              }
-              .blog-content li > h4,
-              .blog-content-html li > h4 {
-                font-size: 1.1rem !important;
-                font-weight: 600 !important;
-              }
-              .blog-content li > p,
-              .blog-content-html li > p {
-                display: block !important;
-                margin-top: 0 !important;
-                margin-bottom: 0.5rem !important;
-                line-height: 1.6 !important;
-              }
-              .blog-content li > blockquote,
-              .blog-content-html li > blockquote {
-                margin: 0.35rem 0 !important;
-              }
-              .blog-content ul ul,
-              .blog-content ol ul,
-              .blog-content ul ol,
-              .blog-content ol ol {
-                margin: 0.5rem 0 !important;
-              }
-              .blog-content h1,
-              .blog-content-html h1 {
-                font-size: 2.5rem !important;
-                line-height: 1.2 !important;
-                font-weight: 700 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 2rem !important;
-                margin-bottom: 1rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content h2,
-              .blog-content-html h2 {
-                font-size: 2rem !important;
-                line-height: 1.3 !important;
-                font-weight: 700 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 1.75rem !important;
-                margin-bottom: 0.875rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content h3,
-              .blog-content-html h3 {
-                font-size: 1.75rem !important;
-                line-height: 1.4 !important;
-                font-weight: 600 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 1.5rem !important;
-                margin-bottom: 0.75rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content h4,
-              .blog-content-html h4 {
-                font-size: 1.5rem !important;
-                line-height: 1.4 !important;
-                font-weight: 600 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 1.25rem !important;
-                margin-bottom: 0.625rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content h5,
-              .blog-content-html h5 {
-                font-size: 1.25rem !important;
-                line-height: 1.5 !important;
-                font-weight: 600 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 1rem !important;
-                margin-bottom: 0.5rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content h6,
-              .blog-content-html h6 {
-                font-size: 1.125rem !important;
-                line-height: 1.5 !important;
-                font-weight: 600 !important;
-                letter-spacing: -0.65px !important;
-                margin-top: 0.875rem !important;
-                margin-bottom: 0.5rem !important;
-                overflow: visible !important;
-                visibility: visible !important;
-              }
-              .blog-content a {
-                color: #3f2e73 !important;
-                text-decoration: underline !important;
-              }
-              .blog-content a:hover {
-                color: #1d1733 !important;
-              }
-              .blog-content .doc-editor-img-block,
-              .blog-content .document-editor-image-wrapper {
-                display: block !important;
-                margin: 1rem auto !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                max-width: 100% !important;
-                width: 100% !important;
-                overflow: visible !important;
-                cursor: default !important;
-              }
-              .blog-content .doc-editor-img-drag-handle,
-              .blog-content .doc-editor-img-overlay,
-              .blog-content-html .doc-editor-img-drag-handle,
-              .blog-content-html .doc-editor-img-overlay {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                overflow: hidden !important;
-                position: absolute !important;
-                pointer-events: none !important;
-              }
-              .blog-content .doc-editor-img-block img,
-              .blog-content .document-editor-image-wrapper img {
-                display: block !important;
-                width: 100% !important;
-                height: auto !important;
-                max-height: none !important;
-                object-fit: cover !important;
-                border-radius: 0.5rem !important;
-              }
-              .blog-content img,
-              .blog-content-html img {
-                display: block !important;
-                width: 100% !important;
-                min-width: 100% !important;
-                max-width: 100% !important;
-                height: auto !important;
-                max-height: none !important;
-                object-fit: cover !important;
-                margin: 1rem 0 !important;
-                border-radius: 0.5rem !important;
-              }
-              @media (max-width: 767px) {
-                .blog-content .document-editor p,
-                .blog-content .document-editor div,
-                .blog-content .document-editor blockquote {
-                  line-height: 1.25rem !important;
-                }
-                .blog-content h1,
-                .blog-content-html h1 {
-                  font-size: 22px !important;
-                }
-                .blog-content h2,
-                .blog-content-html h2 {
-                  font-size: 20px !important;
-                }
-                .blog-content h3,
-                .blog-content-html h3 {
-                  font-size: 18px !important;
-                }
-                .blog-content h4,
-                .blog-content-html h4 {
-                  font-size: 16px !important;
-                }
-                .blog-content h5,
-                .blog-content-html h5 {
-                  font-size: 15px !important;
-                }
-                .blog-content h6,
-                .blog-content-html h6 {
-                  font-size: 14px !important;
-                }
-                .blog-content h1,
-                .blog-content h2,
-                .blog-content h3,
-                .blog-content h4,
-                .blog-content h5,
-                .blog-content h6,
-                .blog-content-html h1,
-                .blog-content-html h2,
-                .blog-content-html h3,
-                .blog-content-html h4,
-                .blog-content-html h5,
-                .blog-content-html h6 {
-                  line-height: 1.3 !important;
-                  letter-spacing: -0.65px !important;
-                }
-                .blog-content p,
-                .blog-content div,
-                .blog-content blockquote,
-                .blog-content-html p,
-                .blog-content-html div,
-                .blog-content-html blockquote {
-                  line-height: 1.25rem !important;
-                  letter-spacing: -0.50px !important;
-                }
-              }
-            `
-          }} />
+          <style dangerouslySetInnerHTML={{ __html: getBlogPostPageTypographyCss(BLOG_BODY_IMAGE_MAX_WIDTH) }} />
           {(() => {
             // Prefer HTML content when it has block structure (from BlogEditorWix/CMS) so headings display correctly
             const hasHtmlBlocks = blogPost.content && /<(p|div|br|h[1-6]|ul|ol|li|blockquote)\b/i.test(blogPost.content);
@@ -903,7 +616,7 @@ export default function BlogPost({ slug }) {
               <div
                 className="blog-content-html document-editor"
                 data-block-content="true"
-                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.75 }}
+                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '24px', letterSpacing: '-0.7px' }}
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             );

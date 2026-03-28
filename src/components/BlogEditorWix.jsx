@@ -1,21 +1,16 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { useState, useRef, useMemo, useEffect, useLayoutEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import {
-  Plus,
   Settings,
   Search,
-  Upload,
   X,
   ChevronDown,
   ChevronRight,
-  CheckCircle2,
-  AlertCircle,
   Bold,
   Italic,
   Underline,
   Strikethrough,
-  Link as LinkIcon,
   List,
   ListOrdered,
   CheckSquare,
@@ -29,15 +24,9 @@ import {
   Redo2,
   Minus,
   Smile,
-  Type,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Quote,
-  Code,
 } from 'lucide-react';
 import DocumentStyleEditor, { getDefaultToolbarState } from '@/components/DocumentStyleEditor';
+import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import styles from './BlogEditorWix.module.css';
 
 const generateSlug = (title) => {
@@ -60,17 +49,6 @@ const BLOCK_TYPES = [
   { value: 'code', label: 'Code Block' },
 ];
 
-const FONT_SIZES = [12, 14, 16, 18, 20, 24, 32, 48];
-
-const FONT_FAMILIES = [
-  { value: '', label: 'Default' },
-  { value: 'Arial, sans-serif', label: 'Arial' },
-  { value: 'Georgia, serif', label: 'Georgia' },
-  { value: 'Times New Roman, serif', label: 'Times New Roman' },
-  { value: 'Courier New, monospace', label: 'Courier New' },
-  { value: 'Verdana, sans-serif', label: 'Verdana' },
-];
-
 const ACCEPT_IMAGE = 'image/jpeg,image/jpg,image/png,image/webp';
 
 // Toolbar button: prevent default so editor keeps focus/selection (Google Docs style), then run command
@@ -89,17 +67,30 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   defaultAuthorName = '',
   featuredImagePreview = null,
   showSidebar = false,
+  /** Merged with formatting toolbar into one chrome (back, save, …) */
+  headerLeft = null,
+  headerRight = null,
 }, ref) {
   const editorRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const titleTextareaRef = useRef(null);
+
+  const adjustTitleTextareaHeight = useCallback(() => {
+    const el = titleTextareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    adjustTitleTextareaHeight();
+  }, [blog.title, adjustTitleTextareaHeight]);
 
   useImperativeHandle(ref, () => ({
     getContent: () => editorRef.current?.getContent?.() ?? ''
   }), []);
 
-  const [sidebarTab, setSidebarTab] = useState('add');
+  const [sidebarTab, setSidebarTab] = useState('settings');
   const [seoPreviewOpen, setSeoPreviewOpen] = useState(true);
-  const [isDragging, setIsDragging] = useState(false);
   const [toolbarState, setToolbarState] = useState(() => getDefaultToolbarState());
   const [blockTypeDropdownOpen, setBlockTypeDropdownOpen] = useState(false);
   const blockTypeDropdownRef = useRef(null);
@@ -141,31 +132,6 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
       return { success: false, error: e.message };
     }
   }, [onContentImageUpload, blog.title]);
-
-  const insertImageFromSidebar = useCallback(async (file) => {
-    if (!file || !editorRef.current?.insertImageByUrl) return;
-    const result = await handleImageUpload(file);
-    if (result?.success && result?.data?.imageUrl) {
-      editorRef.current.insertImageByUrl(result.data.imageUrl);
-      editorRef.current.focus?.();
-      const input = fileInputRef.current;
-      if (input) input.value = '';
-    }
-  }, [handleImageUpload]);
-
-  const onAddZoneClick = () => fileInputRef.current?.click();
-  const onAddZoneDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file && /^image\/(jpeg|jpg|png|webp)$/i.test(file.type)) insertImageFromSidebar(file);
-  };
-  const onAddZoneDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
-  const onAddZoneDragLeave = () => setIsDragging(false);
-  const onAddZoneChange = (e) => {
-    const file = e.target?.files?.[0];
-    if (file) insertImageFromSidebar(file);
-  };
 
   const addTag = () => {
     const input = document.getElementById('bec-tag-input');
@@ -212,19 +178,10 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
     <div className={`${styles.root} ${!showSidebar ? styles.rootExpanded : ''}`}>
       <div className={styles.layout}>
         <div className={styles.layoutRow}>
-          {/* Left sidebar: 220–250px, only Add / Settings / SEO */}
+          {/* Left sidebar: Settings / SEO */}
           {showSidebar && (
           <aside className={styles.sidebar}>
             <nav className={styles.sidebarNav}>
-              <button
-                type="button"
-                className={sidebarTab === 'add' ? `${styles.sidebarNavBtn} ${styles.sidebarNavBtnActive}` : styles.sidebarNavBtn}
-                onClick={() => setSidebarTab('add')}
-                title="Add"
-                aria-label="Add"
-              >
-                <Plus size={20} />
-              </button>
               <button
                 type="button"
                 className={sidebarTab === 'settings' ? `${styles.sidebarNavBtn} ${styles.sidebarNavBtnActive}` : styles.sidebarNavBtn}
@@ -246,41 +203,6 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
             </nav>
 
             <div className={styles.sidebarPanel}>
-              {sidebarTab === 'add' && (
-                <>
-                  <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Add</span>
-                  <div
-                    className={`${styles.addImageZone} ${isDragging ? styles.addImageZoneDragging : ''} ${uploadProgress ? styles.addImageZoneDisabled : ''}`}
-                    onMouseDown={() => editorRef.current?.saveSelection?.()}
-                    onClick={onAddZoneClick}
-                    onDrop={onAddZoneDrop}
-                    onDragOver={onAddZoneDragOver}
-                    onDragLeave={onAddZoneDragLeave}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && onAddZoneClick()}
-                  >
-                    {uploadProgress ? (
-                      <div style={{ margin: '12px 0' }}>Uploading…</div>
-                    ) : (
-                      <>
-                        <Upload className={styles.addImageZoneIcon} size={40} />
-                        <p className={styles.addImageZoneText}>Image upload</p>
-                        <p className={styles.addImageZoneHint}>Drag & drop or click · JPG, PNG, WEBP</p>
-                      </>
-                    )}
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPT_IMAGE}
-                    onChange={onAddZoneChange}
-                    style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-                    aria-hidden
-                  />
-                </>
-              )}
-
               {sidebarTab === 'settings' && (
                 <>
                   <span className={styles.sidebarPanelTitle} role="heading" aria-level={2}>Settings</span>
@@ -471,18 +393,21 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
           </aside>
           )}
 
-          {/* Main: toolbar + editor */}
+          {/* Main: unified chrome (nav + formatting) + editor */}
           <div className={styles.mainWrap}>
-            {/* Sticky top toolbar – save selection on mousedown (capture) so it's preserved before browser clears it */}
-            <div
-              className={styles.toolbarWrap}
-              onMouseDownCapture={() => editorRef.current?.saveSelection?.()}
-            >
-              <div className={styles.toolbarGroup} ref={blockTypeDropdownRef} style={{ position: 'relative' }}>
+            <header className={styles.unifiedTop}>
+              <div className={styles.unifiedHeaderBar}>
+                <div className={styles.unifiedHeaderLeft}>{headerLeft}</div>
+                <div
+                  className={styles.unifiedToolbarMiddle}
+                  onMouseDownCapture={() => editorRef.current?.saveSelection?.()}
+                >
+              <div className={styles.toolbarGroup} ref={blockTypeDropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
                 <button
                   type="button"
                   className={styles.toolbarSelect}
-                  title="Block type"
+                  title="Block type — paragraph, heading, quote, or code"
+                  aria-label="Block type — paragraph, heading, quote, or code"
                   style={{ minWidth: 120, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -500,6 +425,8 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                         key={o.value}
                         type="button"
                         role="option"
+                        title={o.label}
+                        aria-label={o.label}
                         aria-selected={toolbarState.blockType === o.value}
                         className={`${styles.blockTypeDropdownItem} ${toolbarState.blockType === o.value ? styles.toolbarBtnActive : ''}`}
                         onMouseDown={(e) => {
@@ -517,94 +444,59 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                     ))}
                   </div>
                 )}
-                <select
-                  className={styles.toolbarSelect}
-                  style={{ minWidth: 72 }}
-                  title="Font"
-                  onMouseDown={() => editorRef.current?.saveSelection?.()}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    editorRef.current?.restoreSelection?.();
-                    editorRef.current?.focus?.();
-                    if (v) editorRef.current?.applyFontFamily?.(v);
-                    e.target.value = '';
-                  }}
-                >
-                  {FONT_FAMILIES.map((f) => (
-                    <option key={f.value || 'default'} value={f.value}>{f.label}</option>
-                  ))}
-                </select>
-                <select
-                  className={styles.toolbarSelect}
-                  style={{ minWidth: 64 }}
-                  title="Font size"
-                  defaultValue={16}
-                  onMouseDown={() => editorRef.current?.saveSelection?.()}
-                  onChange={(e) => {
-                    const px = Number(e.target.value);
-                    editorRef.current?.restoreSelection?.();
-                    editorRef.current?.focus?.();
-                    editorRef.current?.applyFontSize?.(px);
-                  }}
-                >
-                  {FONT_SIZES.map((px) => (
-                    <option key={px} value={px}>{px}px</option>
-                  ))}
-                </select>
+              </div>
+              <div className={styles.unifiedToolbarScroll}>
+              <div className={styles.toolbarDivider} />
+              <div className={styles.toolbarGroup}>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.bold ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('bold'); })} title="Bold" aria-label="Bold"><Bold size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.italic ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('italic'); })} title="Italic" aria-label="Italic"><Italic size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.underline ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('underline'); })} title="Underline" aria-label="Underline"><Underline size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.strike ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('strikeThrough'); })} title="Strikethrough" aria-label="Strikethrough"><Strikethrough size={18} /></button>
               </div>
               <div className={styles.toolbarDivider} />
               <div className={styles.toolbarGroup}>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.bold ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('bold'); })} title="Bold"><Bold size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.italic ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('italic'); })} title="Italic"><Italic size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.underline ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('underline'); })} title="Underline"><Underline size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.strike ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.formatText?.('strikeThrough'); })} title="Strikethrough"><Strikethrough size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ul' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertUnorderedList')); })} title="Bullet list" aria-label="Bullet list"><List size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ol' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertOrderedList')); })} title="Numbered list" aria-label="Numbered list"><ListOrdered size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertChecklist?.(); })} title="Checklist" aria-label="Checklist"><CheckSquare size={18} /></button>
               </div>
               <div className={styles.toolbarDivider} />
               <div className={styles.toolbarGroup}>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.inLink ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.handleAddLink?.(); })} title="Link"><LinkIcon size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'left' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('left'); })} title="Align left" aria-label="Align left"><AlignLeft size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'center' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('center'); })} title="Align center" aria-label="Align center"><AlignCenter size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'right' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('right'); })} title="Align right" aria-label="Align right"><AlignRight size={18} /></button>
+                <button type="button" className={`${styles.toolbarBtn} ${(!toolbarState.alignment || toolbarState.alignment === 'justify') ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('justify'); })} title="Justify" aria-label="Justify"><AlignJustify size={18} /></button>
               </div>
               <div className={styles.toolbarDivider} />
               <div className={styles.toolbarGroup}>
-                <input type="color" title="Text color" className={styles.toolbarColorInput} onMouseDown={(e) => { e.preventDefault(); editorRef.current?.saveSelection?.(); }} onChange={(e) => { requestAnimationFrame(() => { editorRef.current?.restoreSelection?.(); editorRef.current?.focus?.(); editorRef.current?.applyTextColor?.(e.target.value); }); }} />
-                <input type="color" title="Highlight" className={styles.toolbarColorInput} data-highlight onMouseDown={(e) => { e.preventDefault(); editorRef.current?.saveSelection?.(); }} defaultValue="#fde047" onChange={(e) => { requestAnimationFrame(() => { editorRef.current?.restoreSelection?.(); editorRef.current?.focus?.(); editorRef.current?.applyHighlight?.(e.target.value); }); }} />
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('outdent')); })} title="Decrease indent" aria-label="Decrease indent"><IndentDecrease size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('indent')); })} title="Increase indent" aria-label="Increase indent"><IndentIncrease size={18} /></button>
               </div>
               <div className={styles.toolbarDivider} />
               <div className={styles.toolbarGroup}>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ul' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertUnorderedList')); })} title="Bullet list"><List size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.listType === 'ol' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertOrderedList')); })} title="Numbered list"><ListOrdered size={18} /></button>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertChecklist?.(); })} title="Checklist"><CheckSquare size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.undo?.())} title="Undo" aria-label="Undo"><Undo2 size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.redo?.())} title="Redo" aria-label="Redo"><Redo2 size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertDivider?.(); })} title="Horizontal divider" aria-label="Horizontal divider"><Minus size={18} /></button>
+                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertText', false, '😊')); })} title="Insert emoji" aria-label="Insert emoji"><Smile size={18} /></button>
               </div>
-              <div className={styles.toolbarDivider} />
-              <div className={styles.toolbarGroup}>
-                <button type="button" className={`${styles.toolbarBtn} ${(!toolbarState.alignment || toolbarState.alignment === 'left') ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('left'); })} title="Align left"><AlignLeft size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'center' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('center'); })} title="Center"><AlignCenter size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'right' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('right'); })} title="Align right"><AlignRight size={18} /></button>
-                <button type="button" className={`${styles.toolbarBtn} ${toolbarState.alignment === 'justify' ? styles.toolbarBtnActive : ''}`} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.setAlignment?.('justify'); })} title="Justify"><AlignJustify size={18} /></button>
               </div>
-              <div className={styles.toolbarDivider} />
-              <div className={styles.toolbarGroup}>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('outdent')); })} title="Decrease indent"><IndentDecrease size={18} /></button>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('indent')); })} title="Increase indent"><IndentIncrease size={18} /></button>
+                </div>
+                <div className={styles.unifiedHeaderRight}>{headerRight}</div>
               </div>
-              <div className={styles.toolbarDivider} />
-              <div className={styles.toolbarGroup}>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.undo?.())} title="Undo"><Undo2 size={18} /></button>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => editorRef.current?.redo?.())} title="Redo"><Redo2 size={18} /></button>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.insertDivider?.(); })} title="Divider"><Minus size={18} /></button>
-                <button type="button" className={styles.toolbarBtn} onMouseDown={(e) => toolbarCmd(e, () => { editorRef.current?.focus?.(); editorRef.current?.runWithSelection?.(() => document.execCommand('insertText', false, '😊')); })} title="Emoji"><Smile size={18} /></button>
-              </div>
-            </div>
+            </header>
 
             {/* Scrollable editor area, centered max-width 800px */}
             <div className={styles.editorScroll}>
               <div className={styles.editorInner}>
-                <input
-                  type="text"
+                <textarea
+                  ref={titleTextareaRef}
                   required
+                  rows={1}
                   className={styles.editorTitle}
                   value={blog.title ?? ''}
                   onChange={(e) => onChange({ ...blog, title: e.target.value })}
                   placeholder="Post title"
+                  aria-label="Post title"
+                  spellCheck
                 />
                 <textarea
                   className={styles.editorExcerpt}
@@ -613,6 +505,18 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                   placeholder="Brief description (excerpt)"
                   rows={2}
                 />
+                {/* Same placement + framing as public BlogPost (below header, above body) */}
+                {(blog.featured_image_url || featuredImagePreview) && (
+                  <div className={styles.editorFeaturedImage}>
+                    <div className={styles.editorFeaturedImageFrame}>
+                      <img
+                        src={normalizeImageUrl(featuredImagePreview || blog.featured_image_url || '')}
+                        alt={blog.title?.trim() ? blog.title : 'Featured image'}
+                        className={styles.editorFeaturedImageImg}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className={styles.becDocumentEditorWrap} data-blog-cms-editor>
                   <DocumentStyleEditor
                     ref={editorRef}

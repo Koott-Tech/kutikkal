@@ -22,7 +22,7 @@ export default function EditBlogPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [showEditorSidebar, setShowEditorSidebar] = useState(true);
+  const [showEditorSidebar, setShowEditorSidebar] = useState(false);
   const blogEditorRef = useRef(null);
 
   // Hide admin sidebar when editor opens
@@ -198,66 +198,8 @@ export default function EditBlogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] flex flex-col">
-      {/* Fixed Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-4 sm:px-6 h-14">
-          {/* Left side */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/blogs"
-              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Back to blogs"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div className="h-5 w-px bg-gray-200" />
-            <button
-              type="button"
-              onClick={() => setShowEditorSidebar(!showEditorSidebar)}
-              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              title={showEditorSidebar ? 'Hide sidebar' : 'Show sidebar'}
-            >
-              {showEditorSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
-            </button>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-              blog.status === 'published' 
-                ? 'bg-green-100 text-green-700' 
-                : blog.status === 'archived'
-                ? 'bg-gray-100 text-gray-600'
-                : 'bg-amber-100 text-amber-700'
-            }`}>
-              {blog.status === 'published' ? 'Published' : blog.status === 'archived' ? 'Archived' : 'Draft'}
-            </span>
-          </div>
-
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-2">
-            {blog.status === 'published' && blog.slug && (
-              <Link
-                href={`/blog/${blog.slug}`}
-                target="_blank"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Eye className="h-4 w-4" />
-                <span>Preview</span>
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#2d2156] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-            >
-              <Save className="h-4 w-4" />
-              <span>{saving ? 'Saving...' : 'Save'}</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Editor Content */}
-      <main className="flex-1 overflow-hidden">
+    <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#fafbfc]">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <BlogEditorWix
           ref={blogEditorRef}
           blog={blog}
@@ -268,6 +210,60 @@ export default function EditBlogPage() {
           defaultAuthorName={user?.name}
           featuredImagePreview={imagePreview}
           showSidebar={showEditorSidebar}
+          headerLeft={
+            <>
+              <Link
+                href="/admin/blogs"
+                className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Back to blogs"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              <div className="h-5 w-px bg-gray-200" />
+              <button
+                type="button"
+                onClick={() => setShowEditorSidebar(!showEditorSidebar)}
+                className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                title={showEditorSidebar ? 'Hide sidebar' : 'Show sidebar'}
+              >
+                {showEditorSidebar ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
+              </button>
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  blog.status === 'published'
+                    ? 'bg-green-100 text-green-700'
+                    : blog.status === 'archived'
+                      ? 'bg-gray-100 text-gray-600'
+                      : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                {blog.status === 'published' ? 'Published' : blog.status === 'archived' ? 'Archived' : 'Draft'}
+              </span>
+            </>
+          }
+          headerRight={
+            <>
+              {blog.status === 'published' && blog.slug && (
+                <Link
+                  href={`/blog/${blog.slug}`}
+                  target="_blank"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>Preview</span>
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-[#3f2e73] text-white text-sm font-medium rounded-lg hover:bg-[#2d2156] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              >
+                <Save className="h-4 w-4" />
+                <span>{saving ? 'Saving...' : 'Save'}</span>
+              </button>
+            </>
+          }
         />
       </main>
     </div>

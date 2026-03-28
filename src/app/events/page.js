@@ -6,6 +6,22 @@ import Link from "next/link";
 import Image from "next/image";
 import LeadershipMembersShowcase from "@/components/LeadershipMembersShowcase";
 import { Calendar, ChevronDown, Clock, MonitorPlay } from "lucide-react";
+import {
+  BLOG_TYPOGRAPHY_ROOT_CLASS,
+  BLOG_TYPOGRAPHY_ROOT_CSS,
+  BLOG_LETTER_SPACING_CLASS,
+  BLOG_UI_LINE_HEIGHT_CLASS,
+  BLOG_FEATURED_TITLE_CLASS,
+  BLOG_FEATURED_TITLE_STYLE,
+  BLOG_CARD_TITLE_CLASS,
+  BLOG_CARD_TITLE_STYLE,
+  BLOG_SECTION_HEADING_CLASS,
+  BLOG_SECTION_HEADING_STYLE,
+  HERO_DISPLAY_HEADING_CLASS,
+  HERO_DISPLAY_HEADING_STYLE,
+  HERO_BODY_TEXT_CLASS,
+  HERO_BODY_TEXT_STYLE,
+} from "@/constants/heroTypography";
 import Testimonials from "@/components/Testimonials";
 import {
   WORKSHOP_TESTIMONIALS_PHOTOS,
@@ -103,21 +119,23 @@ export default function EventsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
+      <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
       {/* Hero Section - 80vh */}
       <section className="relative flex min-h-[80vh] flex-col items-center justify-center bg-gradient-to-b from-[#f8f6ff] to-white px-5 pt-20 sm:px-8 sm:pt-24 lg:px-12">
         <div className="mx-auto max-w-4xl text-center mt-12 sm:mt-16">
-          <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-5 py-1.5 text-sm font-semibold text-[#3f2e73]">
+          <span className={`inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-5 py-1.5 text-sm font-semibold text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
             Events
           </span>
           <div
-            className="mt-6 text-4xl font-bold text-[#241a44] sm:text-5xl md:text-6xl"
+            className={`mt-6 text-gray-900 ${HERO_DISPLAY_HEADING_CLASS}`}
             role="heading"
             aria-level={1}
+            style={HERO_DISPLAY_HEADING_STYLE}
           >
             Grow Your Network &amp; Skills with Our Events
           </div>
-          <p className="mx-auto mt-6 max-w-2xl text-base text-[#5e5774] sm:text-lg">
+          <p className={`mx-auto mt-6 max-w-2xl text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             Join our workshops and family events designed to help parents and children learn, connect, and grow together.
           </p>
         </div>
@@ -164,16 +182,21 @@ export default function EventsPage() {
                 </Link>
 
                 <div className="min-w-0 px-1 md:pr-2">
-                  <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-3 py-1 text-xs font-semibold text-[#3f2e73]">
+                  <span className={`inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-3 py-1 text-xs font-semibold text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
                     {event.category}
                   </span>
-                  <div className="mt-3 text-2xl font-semibold text-[#241a44] sm:text-[30px] lg:text-[32px]">
+                  <div
+                    className={`mt-3 text-gray-900 ${BLOG_FEATURED_TITLE_CLASS}`}
+                    style={BLOG_FEATURED_TITLE_STYLE}
+                    role="heading"
+                    aria-level={2}
+                  >
                     {event.title}
                   </div>
-                  <p className="mt-3 line-clamp-2 text-sm text-[#5e5774] sm:text-[15px]">
+                  <p className={`mt-3 line-clamp-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                     {event.description}
                   </p>
-                  <div className="mt-7 space-y-1.5 text-sm text-[#514a68]">
+                  <div className={`mt-7 space-y-1.5 text-sm text-gray-700 ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
                     <p>
                       <span className="font-semibold text-[#2f2358]">Organizer:</span> {event.organizer}
                     </p>
@@ -202,45 +225,49 @@ export default function EventsPage() {
           ))}
         </div>
 
-        <div className="pt-12 pb-8 sm:pt-16 sm:pb-12">
+        <div className="pt-24 pb-10 sm:pt-32 sm:pb-16">
           <section className="mx-auto max-w-5xl rounded-3xl border border-[#3f2e73]/15 bg-[#f4f1ff] px-6 py-8 text-center sm:px-8 sm:py-10">
             <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-4 py-1 text-xs font-semibold text-[#3f2e73]">
               Our mission
             </span>
             <div
-              className="mt-4 text-3xl font-semibold text-[#241a44] sm:text-4xl"
+              className={`mt-4 text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
               role="heading"
               aria-level={2}
+              style={BLOG_SECTION_HEADING_STYLE}
             >
               Building emotionally safer homes for every family
             </div>
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-[#5e5774] sm:text-base">
+            <p className={`mx-auto mt-4 max-w-2xl text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               At Little Care, we design practical workshops where parents and children learn together, understand
               emotions better, and build stronger day-to-day communication with confidence.
             </p>
           </section>
         </div>
 
-        <section className="w-full" aria-labelledby="events-how-it-works-heading">
+        <section className="w-full pt-20 sm:pt-28" aria-labelledby="events-how-it-works-heading">
           <div
             id="events-how-it-works-heading"
-            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
+            className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
             role="heading"
             aria-level={2}
+            style={BLOG_SECTION_HEADING_STYLE}
           >
             How it works
           </div>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-[#5e5774] sm:text-base">
+          <p className={`mx-auto mt-2 max-w-2xl text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             Register for your preferred event, receive the joining details, and attend the live session with your family.
           </p>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="mt-16 grid gap-5 md:grid-cols-3">
             <article className="rounded-2xl border border-[#3f2e73]/15 bg-white p-5 shadow-[0_8px_22px_rgba(63,46,115,0.07)]">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <Calendar className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44]">Pick your event date</div>
-              <p className="mt-2 text-sm text-[#5e5774]">
+              <div className={`mt-4 text-gray-900 ${BLOG_CARD_TITLE_CLASS}`} style={BLOG_CARD_TITLE_STYLE} role="heading" aria-level={3}>
+                Pick your event date
+              </div>
+              <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                 Choose the event that suits your family and complete your booking in a few steps.
               </p>
             </article>
@@ -249,8 +276,10 @@ export default function EventsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <MonitorPlay className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44]">Get joining details</div>
-              <p className="mt-2 text-sm text-[#5e5774]">
+              <div className={`mt-4 text-gray-900 ${BLOG_CARD_TITLE_CLASS}`} style={BLOG_CARD_TITLE_STYLE} role="heading" aria-level={3}>
+                Get joining details
+              </div>
+              <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                 We share your event link, reminders, and session instructions on email and WhatsApp.
               </p>
             </article>
@@ -259,23 +288,26 @@ export default function EventsPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3f2e73]/10 text-[#3f2e73]">
                 <Clock className="h-5 w-5" />
               </div>
-              <div className="mt-4 text-lg font-semibold text-[#241a44]">Attend live session</div>
-              <p className="mt-2 text-sm text-[#5e5774]">
+              <div className={`mt-4 text-gray-900 ${BLOG_CARD_TITLE_CLASS}`} style={BLOG_CARD_TITLE_STYLE} role="heading" aria-level={3}>
+                Attend live session
+              </div>
+              <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                 Join on time with your child and learn practical tools you can use right away at home.
               </p>
             </article>
           </div>
         </section>
 
-        <section className="pt-12 sm:pt-16 lg:pt-20">
+        <section className="pt-24 sm:pt-32 lg:pt-40">
           <div
-            className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
+            className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
             role="heading"
             aria-level={2}
+            style={BLOG_SECTION_HEADING_STYLE}
           >
             Our panelists
           </div>
-          <p className="mt-2 text-center text-sm text-[#5e5774]">
+          <p className={`mt-2 !text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             Facilitators and voices guiding our event sessions.
           </p>
         </section>
@@ -286,7 +318,7 @@ export default function EventsPage() {
             showSectionHeader={false}
             useAccessibleNameHeading
             className="!px-0 w-full max-w-none"
-            sectionClassName="w-full mt-8 md:mt-10 px-4 sm:px-6 md:px-0"
+            sectionClassName="w-full mt-16 md:mt-20 px-4 sm:px-6 md:px-0"
             layout="carousel"
             carouselFullBleed
             naturalMemberImageHeight
@@ -306,46 +338,72 @@ export default function EventsPage() {
         />
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-12 px-4 pb-16 pt-16 sm:space-y-14 sm:px-6 sm:pt-20 lg:px-8">
-        <div className="py-16 sm:py-24">
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-20 sm:px-6 sm:pt-28 lg:px-8">
+        <div className="pb-12 sm:pb-16">
           <section className="mx-auto max-w-4xl" aria-labelledby="events-faq-heading">
             <div
               id="events-faq-heading"
-              className="text-center text-2xl font-semibold text-[#241a44] sm:text-3xl"
+              className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
               role="heading"
               aria-level={2}
+              style={BLOG_SECTION_HEADING_STYLE}
             >
               Frequently asked questions
             </div>
 
             <div className="mt-8">
               <details className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-[#2f2358]">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
                   <span>Is this event online or offline?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm text-[#5e5774]">
+                <p className={`px-1 pb-5 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                   Most sessions are hosted online. Final venue or join-link details are shared after booking.
                 </p>
               </details>
 
               <details className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-[#2f2358]">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
                   <span>Can parents and children join together?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm text-[#5e5774]">
+                <p className={`px-1 pb-5 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                   Yes. Our events are designed for parent-child participation unless mentioned otherwise on the event card.
                 </p>
               </details>
 
               <details className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-[#2f2358]">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
                   <span>How will I receive reminders and updates?</span>
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <p className="px-1 pb-5 text-sm text-[#5e5774]">
+                <p className={`px-1 pb-5 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
                   You will receive confirmations and reminders by email and WhatsApp after successful registration.
+                </p>
+              </details>
+
+              <details className="group">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
+                  <span>Where can I read more parenting and child mental health articles?</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <p className={`px-1 pb-5 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+                  Visit{" "}
+                  <Link href="/blog" className="font-medium text-[#3f2e73] underline underline-offset-2 hover:text-[#2d2156]">
+                    The Little Care Blog
+                  </Link>{" "}
+                  for expert-written guides, family stories, and practical tips that complement what we cover in live events.
+                </p>
+              </details>
+
+              <details className="group">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 border-b border-[#3f2e73]/15 px-1 py-5 text-left text-base font-medium text-gray-900 ${BLOG_LETTER_SPACING_CLASS}`}>
+                  <span>Do workshop topics also appear as blog posts?</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <p className={`px-1 pb-5 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+                  We often expand on event themes in articles—search by topic or browse categories on the blog to go deeper
+                  on emotions, communication, and everyday parenting strategies.
                 </p>
               </details>
             </div>

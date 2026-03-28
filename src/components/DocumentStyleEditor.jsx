@@ -1,5 +1,7 @@
 'use client';
 
+import { BLOG_BODY_IMAGE_MAX_WIDTH } from '@/constants/heroTypography';
+import { getBlogDocumentEditorTypographyCss } from '../constants/blogContentTypographyCss';
 import { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -41,7 +43,7 @@ export const getDefaultToolbarState = () => ({
   fontSize: null,
   fontFamily: null,
   listType: null, // 'ul' | 'ol' | null
-  alignment: null, // 'left' | 'center' | 'right' | 'justify'
+  alignment: 'justify', // default; 'left' | 'center' | 'right' | 'justify'
   hasSelection: false,
 });
 
@@ -118,10 +120,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       const editor = editorRef.current;
       editor.querySelectorAll?.('.doc-editor-img-block, .document-editor-image-wrapper').forEach((el) => {
         el.setAttribute('data-draggable-image', 'true');
-        // Normalize legacy inline sizing so CMS images always span full editor width.
+        // Normalize legacy inline sizing; body images match public post (narrower than full column).
         el.style.setProperty('display', 'block', 'important');
         el.style.setProperty('width', '100%', 'important');
-        el.style.setProperty('max-width', '100%', 'important');
+        el.style.setProperty('max-width', BLOG_BODY_IMAGE_MAX_WIDTH, 'important');
         el.style.setProperty('margin-left', 'auto', 'important');
         el.style.setProperty('margin-right', 'auto', 'important');
         const imgEl = el.querySelector('img');
@@ -130,7 +132,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           imgEl.removeAttribute('height');
           imgEl.style.setProperty('display', 'block', 'important');
           imgEl.style.setProperty('width', '100%', 'important');
-          imgEl.style.setProperty('min-width', '100%', 'important');
+          imgEl.style.setProperty('min-width', '0', 'important');
           imgEl.style.setProperty('max-width', '100%', 'important');
           imgEl.style.setProperty('height', 'auto', 'important');
           imgEl.style.setProperty('max-height', 'none', 'important');
@@ -208,8 +210,10 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       else if (tag === 'blockquote') state.blockType = 'quote';
       else if (tag === 'pre') state.blockType = 'code';
       else state.blockType = 'p';
-      const align = block.style?.textAlign || block.getAttribute?.('style')?.match(/text-align:\s*(\w+)/)?.[1];
-      if (align) state.alignment = align;
+      let align = (block.style?.textAlign || block.getAttribute?.('style')?.match(/text-align:\s*(\w+)/)?.[1] || '').trim();
+      if (align === 'start') align = 'left';
+      if (align === 'end') align = 'right';
+      state.alignment = align || 'justify';
       if (tag === 'li') {
         const list = block.closest?.('ul');
         state.listType = list ? 'ul' : (block.closest?.('ol') ? 'ol' : null);
@@ -844,7 +848,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     img.setAttribute('draggable', 'false');
     img.style.setProperty('display', 'block', 'important');
     img.style.setProperty('width', '100%', 'important');
-    img.style.setProperty('min-width', '100%', 'important');
+    img.style.setProperty('min-width', '0', 'important');
     img.style.setProperty('max-width', '100%', 'important');
     img.style.setProperty('height', 'auto', 'important');
     img.style.setProperty('max-height', 'none', 'important');
@@ -2170,65 +2174,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
       {/* Editor Styles – scoped when scopeSelector set (blog CMS uses no global CSS) */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          ${sel} p {
-            margin-top: 0 !important;
-            margin-bottom: 1rem !important;
-            line-height: 1.75 !important;
-          }
-          ${sel} p:empty,
-          ${sel} p:has(> br:only-child) {
-            min-height: 1em !important;
-            /* For blank lines (like after an H1), don't add extra bottom margin – keeps cursor gap to a single line height */
-            margin-bottom: 0 !important;
-          }
-          ${sel} h1 { font-size: 2.5rem !important; line-height: 1.2 !important; font-weight: 700 !important; margin-top: 2rem !important; margin-bottom: 0.25rem !important; display: block !important; }
-          ${sel} h2 { font-size: 2rem !important; line-height: 1.3 !important; font-weight: 700 !important; margin-top: 1.75rem !important; margin-bottom: 0.875rem !important; display: block !important; }
-          ${sel} h3 { font-size: 1.75rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.5rem !important; margin-bottom: 0.75rem !important; display: block !important; }
-          ${sel} h4 { font-size: 1.5rem !important; line-height: 1.4 !important; font-weight: 600 !important; margin-top: 1.25rem !important; margin-bottom: 0.625rem !important; display: block !important; }
-          ${sel} h5 { font-size: 1.25rem !important; line-height: 1.5 !important; font-weight: 600 !important; margin-top: 1rem !important; margin-bottom: 0.5rem !important; display: block !important; }
-          ${sel} h6 { font-size: 1.125rem !important; line-height: 1.5 !important; font-weight: 600 !important; margin-top: 0.875rem !important; margin-bottom: 0.5rem !important; display: block !important; }
-          ${sel} > *:first-child { margin-top: 0 !important; }
-          ${sel} > *:last-child { margin-bottom: 0 !important; }
-          ${sel} ul,
-          ${sel} ol {
-            list-style-position: outside !important;
-            padding-left: 1.5rem !important;
-            margin: 0.35rem 0 !important;
-            display: block !important;
-          }
-          ${sel} ul { list-style-type: disc !important; }
-          ${sel} ol { list-style-type: decimal !important; }
-          ${sel} li {
-            display: list-item !important;
-            margin: 0 !important;
-            padding: 0 0 1px 0 !important;
-            line-height: 1.5 !important;
-            list-style-position: outside !important;
-          }
-          ${sel} ul li[style],
-          ${sel} ol li[style] {
-            margin: 0 !important;
-            padding: 0 0 1px 0 !important;
-          }
-          ${sel} li p,
-          ${sel} li div {
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          ${sel} li > h1,
-          ${sel} li > h2,
-          ${sel} li > h3,
-          ${sel} li > h4,
-          ${sel} li > h5,
-          ${sel} li > h6 {
-            margin-top: 0.1em !important;
-            margin-bottom: 0.2em !important;
-            line-height: 1.35 !important;
-            display: block !important;
-          }
-          ${sel} li > blockquote {
-            margin: 0.35em 0 !important;
-          }
+          ${getBlogDocumentEditorTypographyCss(sel)}
           ${sel} a,
           ${sel} .document-editor-link {
             color: #3f2e73 !important;
@@ -2246,7 +2192,7 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             margin-left: auto !important;
             margin-right: auto !important;
             padding: 0 !important;
-            max-width: 100% !important;
+            max-width: ${BLOG_BODY_IMAGE_MAX_WIDTH} !important;
             width: 100% !important;
             overflow: visible !important;
             box-sizing: border-box !important;
@@ -2260,6 +2206,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           ${sel} .document-editor-image-wrapper img {
             display: block !important;
             width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
             height: auto !important;
             max-height: none !important;
             object-fit: cover !important;
@@ -2269,11 +2217,13 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           ${sel} img {
             display: block !important;
             width: 100% !important;
-            min-width: 100% !important;
-            max-width: 100% !important;
+            min-width: 0 !important;
+            max-width: ${BLOG_BODY_IMAGE_MAX_WIDTH} !important;
             height: auto !important;
             max-height: none !important;
             object-fit: cover !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
           }
           ${sel} .doc-editor-img-overlay {
             position: absolute !important;
@@ -2330,7 +2280,8 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
             color: #374151 !important;
           }
           ${sel} img {
-            margin: 1rem 0 !important;
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
           }
           ${sel}:empty::before {
             content: attr(data-placeholder);
@@ -2357,18 +2308,20 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         onDragOver={handleImageDragOver}
         onDrop={handleImageDrop}
         onDragEnd={handleImageDragEnd}
-        className={`document-editor w-full min-h-[500px] p-8 text-gray-800 focus:outline-none ${useScopedStylesOnly ? '' : `
-          [&_p]:mb-4 [&_p]:leading-relaxed [&_p]:text-base
+        className={`document-editor w-full text-gray-800 focus:outline-none ${
+          useScopedStylesOnly
+            ? 'min-h-[8rem] p-0'
+            : `min-h-[500px] p-8 [&_p]:mb-4 [&_p]:leading-relaxed [&_p]:text-base
           [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_blockquote]:text-gray-700
           [&_a]:underline [&_a]:cursor-pointer
           [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_img]:shadow-sm
-          [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none
-        `}`}
+          [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none`
+        }`}
         data-placeholder={placeholder}
         style={{
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
-          lineHeight: '1.75'
+          ...(useScopedStylesOnly ? {} : { lineHeight: '1.75' }),
         }}
       />
     </div>
