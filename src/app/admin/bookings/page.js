@@ -648,7 +648,7 @@ export default function BookingsPage() {
     return matchesSearch;
   });
 
-  // Upcoming / other tabs: earliest slot first. Completed: most recent session first (nearest to today at top).
+  // IST wall-clock for slot ordering (matches backend getAllSessions).
   const scheduledSlotMs = (s) => {
     const d = s?.scheduled_date;
     if (!d) return 0;
@@ -659,7 +659,7 @@ export default function BookingsPage() {
     const hh = String(parts[0] || '00').padStart(2, '0');
     const mm = String(parts[1] || '00').padStart(2, '0');
     const ss = String((parts[2] || '00').split('.')[0]).padStart(2, '0');
-    const ms = new Date(`${dateOnly}T${hh}:${mm}:${ss}`).getTime();
+    const ms = new Date(`${dateOnly}T${hh}:${mm}:${ss}+05:30`).getTime();
     return Number.isFinite(ms) ? ms : 0;
   };
   const displayBookings = [...filteredBookings].sort((a, b) => {
@@ -667,6 +667,17 @@ export default function BookingsPage() {
     const mb = scheduledSlotMs(b);
     if (filterStatus === 'completed') {
       return mb - ma;
+    }
+    // Upcoming + Rescheduled tabs: future sessions first (nearest slot at top), overdue after.
+    const nearestFirst =
+      filterStatus === 'booked' || filterStatus === 'rescheduled';
+    if (nearestFirst) {
+      const now = Date.now();
+      const aPast = ma < now;
+      const bPast = mb < now;
+      if (aPast !== bPast) return aPast ? 1 : -1;
+      if (aPast && bPast) return mb - ma;
+      return ma - mb;
     }
     return ma - mb;
   });
