@@ -81,7 +81,20 @@ const nextConfig = {
   // Rewrite analytics requests to bypass ad blockers
   // These proxies make analytics requests appear as first-party requests (bypasses ad blockers)
   async rewrites() {
+    // Proxy /api/images to Express so next/image and relative /api/images/* URLs work in dev/prod
+    const backendOrigin = (
+      process.env.BACKEND_INTERNAL_URL ||
+      (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api').replace(
+        /\/api\/?$/,
+        ''
+      )
+    ).replace(/\/$/, '');
+
     return [
+      {
+        source: '/api/images/:path*',
+        destination: `${backendOrigin}/api/images/:path*`,
+      },
       {
         source: '/posthog/:path*',
         destination: 'https://us.i.posthog.com/:path*',
