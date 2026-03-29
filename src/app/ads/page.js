@@ -1841,7 +1841,7 @@ export default function AdsLandingPage() {
                           width: '100%',
                           lineHeight: '1.4', // Better line spacing
                           overflow: 'visible', // Allow button to be visible
-                          minHeight: '7.5rem' // Fixed minimum height to always reserve space for Today + Tomorrow + button
+                          minHeight: '7.5rem' // Reserve space so cards with 1–2 availability lines + button align
                         }}>
                           {(() => {
                             const isLoading = loadingAvailability.has(psych.id);
@@ -1903,14 +1903,9 @@ export default function AdsLandingPage() {
                                   });
                                 }
                                 
-                                return { dateLabel, text: `${dateLabel}: ${times.join(' • ')}`, isToday, isTomorrow };
+                                return { dateLabel, text: `${dateLabel}: ${times.join(' • ')}` };
                               });
-                              
-                              // Check if there's a Today slot but no Tomorrow slot
-                              const hasToday = formattedSlots.some(slot => slot.isToday);
-                              const hasTomorrow = formattedSlots.some(slot => slot.isTomorrow);
-                              const needsExtraLineBreak = hasToday && !hasTomorrow;
-                              
+
                               return (
                                 <>
                                   Next available:
@@ -1918,14 +1913,7 @@ export default function AdsLandingPage() {
                                   {formattedSlots.map((slot, index) => (
                                     <React.Fragment key={index}>
                                       {slot.text}
-                                      {slot.isToday && needsExtraLineBreak ? (
-                                        <>
-                                          <br />
-                                          <br />
-                                        </>
-                                      ) : (
-                                        index < formattedSlots.length - 1 && <br />
-                                      )}
+                                      {index < formattedSlots.length - 1 ? <br /> : null}
                                     </React.Fragment>
                                   ))}
                                 </>
