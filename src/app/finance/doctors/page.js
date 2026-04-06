@@ -6,6 +6,7 @@ import { financeApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,7 +63,7 @@ export default function FinanceDoctors() {
       setError(null);
 
       const params = {};
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         const formatDateToIST = (date) => {
           const istString = new Date(date).toLocaleString('en-US', {
             timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -171,7 +172,7 @@ export default function FinanceDoctors() {
       if (editCommissions.doctor_commission_followup && editCommissions.doctor_commission_followup.trim() !== '') {
         const amount = parseFloat(editCommissions.doctor_commission_followup);
         if (isNaN(amount) || amount < 0) {
-          alert('Please enter a valid doctor commission amount for follow-up session (≥ 0)');
+          alert('Please enter a valid doctor commission amount for follow-up package (≥ 0)');
           return;
         }
         requestData.doctor_commission_followup = amount;
@@ -199,7 +200,7 @@ export default function FinanceDoctors() {
       if (editCommissions.doctor_commission_followup_package && editCommissions.doctor_commission_followup_package.trim() !== '') {
         const amount = parseFloat(editCommissions.doctor_commission_followup_package);
         if (isNaN(amount) || amount < 0) {
-          alert('Please enter a valid doctor commission amount for follow-up session (package) (≥ 0)');
+          alert('Please enter a valid doctor commission amount for follow-up package (full package) (≥ 0)');
           return;
         }
         requestData.doctor_commission_followup_package = amount;
@@ -228,7 +229,7 @@ export default function FinanceDoctors() {
           if (editCommissions[followupKey] && editCommissions[followupKey].trim() !== '') {
             const amount = parseFloat(editCommissions[followupKey]);
             if (isNaN(amount) || amount < 0) {
-              alert(`Please enter a valid doctor commission amount for ${pkg.name || packageType} follow-up session (≥ 0)`);
+              alert(`Please enter a valid doctor commission amount for ${pkg.name || packageType} follow-up package (≥ 0)`);
               return;
             }
             doctorCommissionPackages[followupKey] = amount;
@@ -457,10 +458,10 @@ export default function FinanceDoctors() {
                             )}
                           </div>
                           
-                          {/* Follow-up Session Commission */}
+                          {/* Follow-up package commission */}
                           <div>
                             <label className="block text-xs font-medium text-gray-700 mb-2">
-                              Follow-up Session Commission (What Doctor Gets)
+                              Follow-up package commission (what doctor gets)
                             </label>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-gray-600">₹</span>
@@ -527,10 +528,10 @@ export default function FinanceDoctors() {
                                   )}
                                 </div>
                                 
-                                {/* Follow-up Session Commission */}
+                                {/* Follow-up package commission */}
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-2">
-                                    Follow-up Session Commission for Full Package (What Doctor Gets)
+                                    Follow-up package commission for full package (what doctor gets)
                                   </label>
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-600">₹</span>

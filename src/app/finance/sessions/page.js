@@ -31,6 +31,7 @@ import { financeApi } from '@/lib/backendApi';
 import { useNotification } from '@/contexts/NotificationContext';
 import WheelPagination from '@/components/ui/wheel-pagination';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 
 export default function FinanceSessionsPage() {
   const { showError } = useNotification();
@@ -92,7 +93,7 @@ export default function FinanceSessionsPage() {
         params.status = filterStatus;
       }
 
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         const formatDateToIST = (date) => {
           if (!date) return null;
           const istString = new Date(date).toLocaleString('en-US', {

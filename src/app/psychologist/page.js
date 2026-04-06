@@ -13,6 +13,7 @@ import {
   Filter
 } from "lucide-react";
 import DateRangePicker from "@/components/ui/date-range-picker";
+import { hasDateRangeBounds } from "@/lib/dateRangeBounds";
 
 export default function PsychologistDashboard() {
   const { user } = useAuth();
@@ -111,7 +112,10 @@ export default function PsychologistDashboard() {
 
   // Get date range based on filters (using IST timezone for comparison)
   const getDateRange = () => {
-    if (dateRange && dateRange.from && dateRange.to) {
+    if (dateRange?.all) {
+      return { from: null, to: null };
+    }
+    if (hasDateRangeBounds(dateRange)) {
       try {
         const from = new Date(dateRange.from);
         const to = new Date(dateRange.to);

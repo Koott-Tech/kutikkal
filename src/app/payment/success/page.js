@@ -5,9 +5,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clientApi, paymentApi } from '../../../lib/backendApi';
 import { useAuth } from '../../../contexts/AuthContext';
+import {
+  buildPaymentSuccessBookingSummary,
+  formatDurationHuman,
+  getSessionDurationMinutesFromPackageType
+} from '../../../utils/bookingConfirmationLabels';
 
 // Force dynamic rendering to bypass cache
 export const dynamic = 'force-dynamic';
+
+function packageMetaFromSession(s) {
+  const pkg = s?.package;
+  if (!pkg) return { packageName: null, packageType: null };
+  return {
+    packageName: pkg.name || null,
+    packageType: pkg.package_type || null
+  };
+}
 
 // Success Animation Component (Google Pay style)
 function SuccessAnimationContent() {
@@ -317,18 +331,19 @@ function PaymentSuccessContent() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Show success animation immediately and start fetching data in parallel
+  // Keep page at top; do NOT show celebration until booking is verified (avoids "success" then failure UX)
   useEffect(() => {
-    // Ensure page is at top before showing anything
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    
-    // Show animation immediately - don't wait for loading screen
-    // Data fetching will happen in parallel (already started in the other useEffect)
-    setShowCenteredAnimation(true);
     setLoadingScreenComplete(true);
   }, []);
+
+  useEffect(() => {
+    if (sessionDetails && !error) {
+      setShowCenteredAnimation(true);
+    }
+  }, [sessionDetails, error]);
 
   // Scroll to top on page load and prevent unwanted scrolling
   useEffect(() => {
@@ -377,7 +392,7 @@ function PaymentSuccessContent() {
     const payload = {
       orderId: razorpay_order_id || 'N/A',
       paymentId: razorpay_payment_id || 'N/A',
-      status: 'success'
+      status: 'verifying'
     };
 
     setPaymentData(payload);
@@ -468,17 +483,15 @@ function PaymentSuccessContent() {
     }
 
     try {
-      // Progressive delay: 1s, 2s, 3s, 4s, 5s (max 5 attempts = ~15 seconds total)
-      if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-      }
+      // Spacing between polls is only the setTimeout in each branch below—do not add an extra
+      // await here or each retry waits twice (e.g. 1s timer + 1s delay = 2s between checks).
 
       console.log(`🔍 Polling booking status (attempt ${attempt + 1})...`, { orderId: orderId?.substring(0, 10) + '...' });
       
       const statusResponse = await paymentApi.getBookingStatusByOrderId(orderId);
 
       if (statusResponse.success && statusResponse.data) {
-        const { status, session, message, payment } = statusResponse.data;
+        const { status, session, message, payment, failureReason } = statusResponse.data;
         
         // Check if payment was completed long ago (more than 5 minutes)
         // If so, and session exists, fetch it immediately without polling
@@ -506,7 +519,8 @@ function PaymentSuccessContent() {
                     date: fullSession.scheduled_date,
                     time: fullSession.scheduled_time,
                     packageInfo: fullSession.package_id ? { hasPackage: true } : null,
-                    sessionType: fullSession.package_id ? 'Package Session' : 'Individual Session'
+                    sessionType: fullSession.package_id ? 'Package Session' : 'Individual Session',
+                    ...packageMetaFromSession(fullSession)
                   });
                   setLoadingSessionDetails(false);
                   isFetchingSessionRef.current = false;
@@ -534,8 +548,8 @@ function PaymentSuccessContent() {
 
         console.log('📊 Booking status:', { status, hasSession: !!session, message });
 
-        if (status === 'COMPLETED' && session) {
-          // Session created! Fetch full session details
+        if (status === 'COMPLETED' && session?.id) {
+          // Session created! Fetch full session details (require real session id — never trust placeholder objects)
           console.log('✅ Session created, fetching details...', { sessionId: session.id, hasSessionId: !!session.id, sessionType: session.session_type, packageId: session.package_id });
           
           // If we have a session ID, fetch full session details
@@ -712,7 +726,8 @@ function PaymentSuccessContent() {
                   date: fullSession.scheduled_date,
                   time: timeOnly,
                   packageInfo: packageInfo,
-                  sessionType: sessionType
+                  sessionType: sessionType,
+                  ...packageMetaFromSession(fullSession)
                 });
                 setLoadingSessionDetails(false);
                 isFetchingSessionRef.current = false;
@@ -814,7 +829,8 @@ function PaymentSuccessContent() {
             date: session?.scheduledDate || statusResponse.data.slotDetails?.scheduledDate,
             time: session?.scheduledTime || statusResponse.data.slotDetails?.scheduledTime,
             packageInfo: packageInfo,
-            sessionType: sessionType
+            sessionType: sessionType,
+            ...packageMetaFromSession(session)
           });
           setLoadingSessionDetails(false);
           isFetchingSessionRef.current = false;
@@ -826,9 +842,16 @@ function PaymentSuccessContent() {
           
           return;
         } else if (status === 'FAILED' || status === 'EXPIRED') {
-          // Booking failed
           setLoadingSessionDetails(false);
-          setError(message || 'Booking failed. Please contact support.');
+          let failMsg = message || 'Booking failed. Please contact support.';
+          if (
+            status === 'FAILED' &&
+            failureReason === 'payment_risk_check_failed'
+          ) {
+            failMsg =
+              'Your bank or Razorpay blocked this payment (risk check). No money was taken. Try another card, UPI, or network—or contact support with your order ID.';
+          }
+          setError(failMsg);
           isFetchingSessionRef.current = false;
           fetchAbortControllerRef.current = null;
           return;
@@ -877,7 +900,7 @@ function PaymentSuccessContent() {
           if (attempt < adjustedMaxAttempts) {
             setTimeout(() => {
               pollBookingStatus(orderId, attempt + 1, skipPolling);
-            }, 1000); // Poll every 1 second
+            }, 600); // Tight poll while webhook/session finalize (spacing only; no duplicate delay inside pollBookingStatus)
           } else {
             // Timeout - show message but don't error (webhook might still process it)
             setLoadingSessionDetails(false);
@@ -1014,7 +1037,8 @@ function PaymentSuccessContent() {
             date: session.scheduled_date,
             time: timeOnly,
             packageInfo: packageInfo,
-            sessionType: sessionType
+            sessionType: sessionType,
+            ...packageMetaFromSession(session)
           });
           setLoadingSessionDetails(false);
           // Reset fetching flag on success
@@ -1175,7 +1199,8 @@ function PaymentSuccessContent() {
             date: targetSession.scheduled_date,
             time: timeOnly,
             packageInfo: packageInfo,
-            sessionType: sessionType
+            sessionType: sessionType,
+            ...packageMetaFromSession(targetSession)
           });
           setLoadingSessionDetails(false);
           // Reset fetching flag on success
@@ -1260,6 +1285,23 @@ function PaymentSuccessContent() {
 
   if (loading) {
     return null;
+  }
+
+  if (!error && !sessionDetails && loadingSessionDetails) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16 bg-slate-50">
+        <div
+          className="w-10 h-10 border-2 border-slate-200 border-t-[#3f2e73] rounded-full animate-spin mb-6"
+          aria-hidden
+        />
+        <p className="text-slate-800 text-center font-medium text-lg">
+          Verifying your payment and booking…
+        </p>
+        <p className="text-slate-500 text-center text-sm mt-2 max-w-sm">
+          Please wait—do not close this page. We confirm with the payment provider before showing success.
+        </p>
+      </div>
+    );
   }
 
   if (error) {
@@ -1404,7 +1446,10 @@ function PaymentSuccessContent() {
                 {paymentData.amount && (
                   <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Amount:</strong> <span style={{ fontWeight: '600' }}>₹{paymentData.amount.toLocaleString('en-IN')}</span></p>
                 )}
-                <p style={{ margin: '6px 0' }}><strong style={{ color: '#374151' }}>Status:</strong> <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed</span></p>
+                <p style={{ margin: '6px 0' }}>
+                  <strong style={{ color: '#374151' }}>Status:</strong>{' '}
+                  <span style={{ color: '#22c55e', fontWeight: '500' }}>Confirmed with booking</span>
+                </p>
               </div>
             </div>
           </div>
@@ -1484,39 +1529,37 @@ function PaymentSuccessContent() {
                     <span style={{ color: '#3f2e73' }}>{sessionDetails.psychologistName}</span>
                   </div>
                   <div style={{ marginBottom: '8px' }}>
-                    <strong style={{ color: '#3f2e73' }}>Type:</strong>{' '}
+                    <strong style={{ color: '#3f2e73' }}>Booking</strong>{' '}
                     <span style={{ color: '#3f2e73' }}>
-                      {(() => {
-                        if (sessionDetails.packageInfo && sessionDetails.packageInfo.totalSessions !== undefined && sessionDetails.packageInfo.totalSessions !== null && sessionDetails.packageInfo.totalSessions > 0) {
-                          return `Package of ${sessionDetails.packageInfo.totalSessions}`;
-                        }
-                        // If session type indicates package but no package info yet, show "Package Session"
-                        if (sessionDetails.sessionType === 'Package Session' || sessionDetails.packageInfo?.hasPackage) {
-                          return 'Package Session';
-                        }
-                        // For individual sessions, show "Individual Session"
-                        // Check if it's definitely an individual session (no package_id, session_type is individual)
-                        if (!sessionDetails.packageInfo && 
-                            (sessionDetails.sessionType === 'Individual Session' || 
-                             sessionDetails.sessionType === 'therapy_session' || 
-                             sessionDetails.sessionType === 'individual_session' ||
-                             !sessionDetails.sessionType)) {
-                          return 'Individual Session';
-                        }
-                        // Default: format the session type nicely or show Individual Session
-                        if (sessionDetails.sessionType) {
-                          // Format session_type values like "therapy_session" to "Individual Session"
-                          if (sessionDetails.sessionType === 'therapy_session' || sessionDetails.sessionType === 'individual_session') {
-                            return 'Individual Session';
-                          }
-                          // If it's already formatted, use it
-                          return sessionDetails.sessionType;
-                        }
-                        // Final fallback
-                        return 'Individual Session';
-                      })()}
+                      {buildPaymentSuccessBookingSummary({
+                        packageName: sessionDetails.packageName,
+                        packageType: sessionDetails.packageType,
+                        totalSessions: sessionDetails.packageInfo?.totalSessions || 0,
+                        sessionType: sessionDetails.sessionType
+                      })}
                     </span>
                   </div>
+                  {(() => {
+                    const pt = sessionDetails.packageType;
+                    const total = sessionDetails.packageInfo?.totalSessions;
+                    let mins = null;
+                    if (pt) mins = getSessionDurationMinutesFromPackageType(pt);
+                    else if (
+                      sessionDetails.sessionType === 'Individual Session' &&
+                      !total &&
+                      !sessionDetails.packageInfo?.hasPackage
+                    ) {
+                      mins = 50;
+                    }
+                    const dur = mins != null ? formatDurationHuman(mins) : null;
+                    if (!dur) return null;
+                    return (
+                      <div style={{ marginBottom: '8px' }}>
+                        <strong style={{ color: '#3f2e73' }}>Session duration</strong>{' '}
+                        <span style={{ color: '#3f2e73' }}>{dur}</span>
+                      </div>
+                    );
+                  })()}
                   <div style={{ marginBottom: '8px' }}>
                     <strong style={{ color: '#3f2e73' }}>Date:</strong>{' '}
                     <span style={{ color: '#3f2e73' }}>{formatDate(sessionDetails.date)}</span>

@@ -1,8 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Plus, Minus, FileText } from 'lucide-react';
 import { publicApi } from '@/lib/backendApi';
+import { isChildSpecialistProfile } from '@/lib/doctorSpecialistProfile';
+
+const CHILD_FOLLOW_TIERS = [
+  { key: '1', label: '1 session' },
+  { key: '3', label: '3 sessions' },
+  { key: '6', label: '6 sessions' },
+  { key: '9', label: '9 sessions' },
+  { key: '12plus', label: '12 sessions' },
+];
+
+const DEFAULT_CHILD_SPECIALIST_FORM = {
+  initial: {
+    parent_only: { durationLabel: '1 hr', price: '1699' },
+    child_only: { durationLabel: '1.5 hr', price: '1899' },
+    family: { durationLabel: '2 hr', price: '2399' },
+  },
+  followUpPackages: {
+    '1': {
+      parent_only: { durationLabel: '1 hr', price: '1599' },
+      child_only: { durationLabel: '1 hr', price: '1599' },
+      family: { durationLabel: '1.5 hr', price: '1899' },
+    },
+    '3': {
+      parent_only: { durationLabel: '1 hr', price: '4588' },
+      child_only: { durationLabel: '1 hr', price: '4588' },
+      family: { durationLabel: '1.5 hr', price: '5188' },
+    },
+    '6': {
+      parent_only: { durationLabel: '1 hr', price: '8988' },
+      child_only: { durationLabel: '1 hr', price: '8988' },
+      family: { durationLabel: '1.5 hr', price: '10188' },
+    },
+    '9': {
+      parent_only: { durationLabel: '1 hr', price: '13288' },
+      child_only: { durationLabel: '1 hr', price: '13288' },
+      family: { durationLabel: '1.5 hr', price: '15088' },
+    },
+    '12plus': {
+      parent_only: { durationLabel: '1 hr', price: '17388' },
+      child_only: { durationLabel: '1 hr', price: '17388' },
+      family: { durationLabel: '1.5 hr', price: '19788' },
+    },
+  },
+};
+
+function mergeChildSpecialistFormFromApi(raw) {
+  const next = JSON.parse(JSON.stringify(DEFAULT_CHILD_SPECIALIST_FORM));
+  if (!raw || typeof raw !== 'object') return next;
+  if (raw.initial && typeof raw.initial === 'object') {
+    ['parent_only', 'child_only', 'family'].forEach((k) => {
+      if (raw.initial[k]) {
+        next.initial[k] = {
+          ...next.initial[k],
+          ...raw.initial[k],
+          price:
+            raw.initial[k].price != null && raw.initial[k].price !== ''
+              ? String(raw.initial[k].price)
+              : next.initial[k].price,
+        };
+      }
+    });
+  }
+  if (raw.followUpPackages && typeof raw.followUpPackages === 'object') {
+    CHILD_FOLLOW_TIERS.forEach(({ key: tier }) => {
+      if (!raw.followUpPackages[tier]) return;
+      ['parent_only', 'child_only', 'family'].forEach((k) => {
+        if (raw.followUpPackages[tier][k]) {
+          next.followUpPackages[tier][k] = {
+            ...next.followUpPackages[tier][k],
+            ...raw.followUpPackages[tier][k],
+            price:
+              raw.followUpPackages[tier][k].price != null &&
+              raw.followUpPackages[tier][k].price !== ''
+                ? String(raw.followUpPackages[tier][k].price)
+                : next.followUpPackages[tier][k].price,
+          };
+        }
+      });
+    });
+  }
+  return next;
+}
+
+const DURATION_MINUTES = {
+  initial: { parent_only: 60, child_only: 90, family: 120 },
+  followUp: { parent_only: 60, child_only: 60, family: 90 },
+};
+
+function buildChildSpecialistPricingPayload(form) {
+  const initial = {};
+  ['parent_only', 'child_only', 'family'].forEach((k) => {
+    const cell = form.initial[k];
+    initial[k] = {
+      durationLabel: cell.durationLabel,
+      durationMinutes: DURATION_MINUTES.initial[k],
+      price: parseInt(cell.price, 10),
+    };
+  });
+  const followUpPackages = {};
+  CHILD_FOLLOW_TIERS.forEach(({ key: tier }) => {
+    followUpPackages[tier] = {};
+    ['parent_only', 'child_only', 'family'].forEach((k) => {
+      const cell = form.followUpPackages[tier][k];
+      followUpPackages[tier][k] = {
+        durationLabel: cell.durationLabel,
+        durationMinutes: DURATION_MINUTES.followUp[k],
+        price: parseInt(cell.price, 10),
+      };
+    });
+  });
+  return { initial, followUpPackages };
+}
 
 // Helper to normalize possible image fields and relative URLs
 function resolveDoctorImage(doctor) {
@@ -52,6 +164,9 @@ export default function DoctorModal({
   doctor = null, 
   mode = 'add' 
 }) {
+  /** Snapshot of better-parent packages + original DB ids when switching to child specialist, or loaded from API while child UI is shown. */
+  const betterParentPackagesDraftRef = useRef(null);
+
   const [originalPackages, setOriginalPackages] = useState([]);
   const [originalDoctorData, setOriginalDoctorData] = useState(null); // Store original doctor data for comparison
   const [formData, setFormData] = useState({
@@ -85,8 +200,13 @@ export default function DoctorModal({
     faq_question_2: '',
     faq_answer_2: '',
     faq_question_3: '',
-    faq_answer_3: ''
+    faq_answer_3: '',
+    specialistCategory: 'better_parent'
   });
+
+  const [childSpecialistPricing, setChildSpecialistPricing] = useState(() =>
+    mergeChildSpecialistFormFromApi(null)
+  );
 
   // Simple step-by-step availability state
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -170,80 +290,125 @@ export default function DoctorModal({
     });
   };
 
-  // Fetch packages for a psychologist when editing
-  const fetchPsychologistPackages = async (psychologistId) => {
+  // Fetch packages for a psychologist when editing.
+  // Child-specialist rows (package_type cs_*) are excluded from "better parenting" session packages.
+  // If applyToForm is false (psychologist opens as child specialist), we only fill betterParentPackagesDraftRef
+  // so switching back to Better parenting restores standard packages without losing them.
+  const fetchPsychologistPackages = async (psychologistId, applyToForm) => {
     try {
+      if (!psychologistId) return;
+
       console.log('📦 Fetching packages for psychologist:', psychologistId);
-      console.log('📦 API URL:', `/public/psychologists/${psychologistId}/packages`);
-      
+
       const response = await publicApi.getPsychologistPackages(psychologistId);
       console.log('📦 API Response:', response);
-      
-      if (response.success && response.data.packages) {
-        console.log('📦 Packages fetched:', response.data.packages);
-        // Filter out 1-session packages (individual sessions) and map to form format
-        const multiSessionPackages = response.data.packages
-          .filter(pkg => pkg.session_count > 1)
-          .map(pkg => ({
+
+      const isStandardMultiSessionRow = (pkg) =>
+        pkg.session_count > 1 && !String(pkg.package_type || '').startsWith('cs_');
+
+      const buildFromPackagesList = (packagesArr, individualPrice) => {
+        const multiSessionPackages = (packagesArr || [])
+          .filter(isStandardMultiSessionRow)
+          .map((pkg) => ({
             id: pkg.id,
             name: pkg.name,
             price: pkg.price,
             sessions: pkg.session_count,
             description: pkg.description,
-            discount_percentage: pkg.discount_percentage
+            discount_percentage: pkg.discount_percentage,
           }));
-        
-        console.log('📦 Multi-session packages:', multiSessionPackages);
-        
-        // Store original packages (only multi-session packages with valid IDs - can be UUID or integer)
-        const originalMultiSessionPackages = multiSessionPackages.filter(pkg => pkg.id && !pkg.id.toString().startsWith('pkg-'));
-        setOriginalPackages(originalMultiSessionPackages);
-        
-        // Update form data with fetched packages
-        setFormData(prev => ({
-          ...prev,
-          packages: [
-            // Keep the individual session package with the current price
-            { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 },
-            // Add the fetched multi-session packages
-            ...multiSessionPackages
-          ]
-        }));
+        const originalMultiSessionPackages = multiSessionPackages.filter(
+          (pkg) => pkg.id && !pkg.id.toString().startsWith('pkg-')
+        );
+        const packages = [
+          {
+            name: 'Individual Session',
+            price: individualPrice ?? '',
+            sessions: 1,
+          },
+          ...multiSessionPackages,
+        ];
+        return { packages, originalPackages: originalMultiSessionPackages };
+      };
+
+      if (response.success && response.data?.packages) {
+        console.log('📦 Packages fetched:', response.data.packages);
+
+        let computedOriginal = [];
+
+        setFormData((prev) => {
+          const indPrice =
+            prev.price || doctor?.price || doctor?.individual_session_price || '';
+          const { packages, originalPackages } = buildFromPackagesList(
+            response.data.packages,
+            indPrice
+          );
+          computedOriginal = originalPackages;
+          betterParentPackagesDraftRef.current = {
+            packages: JSON.parse(JSON.stringify(packages)),
+            originalPackages: [...originalPackages],
+          };
+          if (applyToForm) {
+            return { ...prev, packages };
+          }
+          return prev;
+        });
+
+        if (applyToForm) {
+          setOriginalPackages(computedOriginal);
+        }
       } else {
         console.log('📦 No packages found or error:', response);
-        // Store empty original packages
-        setOriginalPackages([]);
-        // Keep only the individual session package
-        setFormData(prev => ({
-          ...prev,
-          packages: [
-            { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 }
-          ]
-        }));
+        setFormData((prev) => {
+          const indPrice =
+            prev.price || doctor?.price || doctor?.individual_session_price || '';
+          const packages = [
+            { name: 'Individual Session', price: indPrice, sessions: 1 },
+          ];
+          betterParentPackagesDraftRef.current = {
+            packages: JSON.parse(JSON.stringify(packages)),
+            originalPackages: [],
+          };
+          if (applyToForm) {
+            return { ...prev, packages };
+          }
+          return prev;
+        });
+        if (applyToForm) setOriginalPackages([]);
       }
     } catch (error) {
       console.error('📦 Error fetching packages:', error);
-      // Store empty original packages
-      setOriginalPackages([]);
-      // Keep only the individual session package on error
-      setFormData(prev => ({
-        ...prev,
-        packages: [
-          { name: 'Individual Session', price: prev.price || doctor.price || doctor.individual_session_price || '', sessions: 1 }
-        ]
-      }));
+      setFormData((prev) => {
+        const indPrice =
+          prev.price || doctor?.price || doctor?.individual_session_price || '';
+        const packages = [
+          { name: 'Individual Session', price: indPrice, sessions: 1 },
+        ];
+        betterParentPackagesDraftRef.current = {
+          packages: JSON.parse(JSON.stringify(packages)),
+          originalPackages: [],
+        };
+        if (applyToForm) {
+          return { ...prev, packages };
+        }
+        return prev;
+      });
+      if (applyToForm) setOriginalPackages([]);
     }
   };
 
   useEffect(() => {
     // Reset original packages and original doctor data when opening in add mode
     if (mode === 'add') {
+      betterParentPackagesDraftRef.current = null;
       setOriginalPackages([]);
       setOriginalDoctorData(null);
       setCountryCode('+91');
+      setChildSpecialistPricing(mergeChildSpecialistFormFromApi(null));
     }
     
     if (doctor && mode === 'edit') {
+      betterParentPackagesDraftRef.current = null;
       console.log('🔍 Doctor data for editing:', doctor);
       console.log('🔍 Doctor price field:', doctor.price);
       console.log('🔍 Doctor individual_session_price field:', doctor.individual_session_price);
@@ -336,7 +501,9 @@ export default function DoctorModal({
       };
 
       const parsedPhone = parsePhoneNumber(doctor.phone || '');
-      
+      const childSpecialistEffective = isChildSpecialistProfile(doctor);
+      const mergedChildForm = mergeChildSpecialistFormFromApi(doctor.child_specialist_pricing);
+
       // Store original doctor data for comparison (normalize to match backend format)
       const originalData = {
         first_name: doctor.first_name || doctor.firstName || '',
@@ -361,12 +528,19 @@ export default function DoctorModal({
         faq_question_2: doctor.faq_question_2 || null,
         faq_answer_2: doctor.faq_answer_2 || null,
         faq_question_3: doctor.faq_question_3 || null,
-        faq_answer_3: doctor.faq_answer_3 || null
+        faq_answer_3: doctor.faq_answer_3 || null,
+        specialist_category:
+          doctor.specialist_category === 'child_specialist' ? 'child_specialist' : 'better_parent',
+        child_specialist_pricing_json: childSpecialistEffective
+          ? JSON.stringify(buildChildSpecialistPricingPayload(mergedChildForm))
+          : ''
       };
       setOriginalDoctorData(originalData);
 
       // Set country code
       setCountryCode(parsedPhone.code);
+
+      setChildSpecialistPricing(mergedChildForm);
       
       setFormData({
         firstName: doctor.first_name || doctor.firstName || '',
@@ -400,7 +574,8 @@ export default function DoctorModal({
         faq_question_2: doctor.faq_question_2 || '',
         faq_answer_2: doctor.faq_answer_2 || '',
         faq_question_3: doctor.faq_question_3 || '',
-        faq_answer_3: doctor.faq_answer_3 || ''
+        faq_answer_3: doctor.faq_answer_3 || '',
+        specialistCategory: childSpecialistEffective ? 'child_specialist' : 'better_parent'
       });
       
       // Fetch packages for this psychologist
@@ -408,7 +583,8 @@ export default function DoctorModal({
       console.log('🔍 Doctor psychologist_id:', doctor.psychologist_id);
       const fetchId = doctor.id || doctor.psychologist_id;
       if (fetchId) {
-        fetchPsychologistPackages(fetchId);
+        // Always load standard (non–child-specialist) packages into draft ref; merge into form only for better-parent UI
+        fetchPsychologistPackages(fetchId, !childSpecialistEffective);
       } else {
         console.warn('⚠️ No doctor ID found for package fetching');
       }
@@ -759,6 +935,50 @@ export default function DoctorModal({
     }
   };
 
+  const handleSpecialistCategoryChange = (next) => {
+    if ((formData.designation || '').toLowerCase().includes('psychiatrist')) return;
+    const prev = formData.specialistCategory;
+
+    if (prev === 'better_parent' && next === 'child_specialist') {
+      betterParentPackagesDraftRef.current = {
+        packages: JSON.parse(JSON.stringify(formData.packages)),
+        originalPackages: [...originalPackages],
+      };
+      setFormData((p) => ({ ...p, specialistCategory: next }));
+      return;
+    }
+
+    if (prev === 'child_specialist' && next === 'better_parent') {
+      const snap = betterParentPackagesDraftRef.current;
+      if (snap && Array.isArray(snap.packages)) {
+        setFormData((p) => {
+          const restored = JSON.parse(JSON.stringify(snap.packages));
+          if (restored[0]?.sessions === 1) {
+            restored[0] = {
+              ...restored[0],
+              price: p.price ?? restored[0].price ?? '',
+            };
+          }
+          return { ...p, specialistCategory: next, packages: restored };
+        });
+        setOriginalPackages(
+          snap.originalPackages && snap.originalPackages.length
+            ? [...snap.originalPackages]
+            : []
+        );
+        return;
+      }
+      const fetchId = doctor?.id || doctor?.psychologist_id;
+      if (fetchId) {
+        fetchPsychologistPackages(fetchId, true);
+      }
+      setFormData((p) => ({ ...p, specialistCategory: next }));
+      return;
+    }
+
+    setFormData((p) => ({ ...p, specialistCategory: next }));
+  };
+
   const handleEducationChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -828,14 +1048,7 @@ export default function DoctorModal({
     if (selectedPackage) {
       updatePackage(index, 'name', selectedPackage.name);
       updatePackage(index, 'sessions', selectedPackage.sessions);
-      // Calculate discount based on individual price
-      if (formData.price) {
-        const individualPrice = parseFloat(formData.price);
-        const totalPrice = individualPrice * selectedPackage.sessions;
-        const discount = Math.round((totalPrice * 0.1) / selectedPackage.sessions); // 10% discount per session
-        updatePackage(index, 'price', (individualPrice - discount).toFixed(2));
-        updatePackage(index, 'discount', discount);
-      }
+      updatePackage(index, 'discount', 0);
     }
   };
 
@@ -987,6 +1200,28 @@ export default function DoctorModal({
       changedFields.personality_traits = currentData.personality_traits;
     }
 
+    if (currentData.specialist_category !== originalData.specialist_category) {
+      changedFields.specialist_category =
+        currentData.specialist_category === 'child_specialist' ? 'child_specialist' : 'better_parent';
+    }
+
+    const origChildJson = originalData.child_specialist_pricing_json || '';
+    const curChildJson = currentData.child_specialist_pricing_json || '';
+    if (currentData.specialist_category === 'child_specialist') {
+      if (curChildJson !== origChildJson) {
+        try {
+          changedFields.child_specialist_pricing = JSON.parse(curChildJson);
+        } catch {
+          /* ignore */
+        }
+      }
+    } else if (
+      originalData.specialist_category === 'child_specialist' ||
+      (origChildJson && currentData.specialist_category !== 'child_specialist')
+    ) {
+      changedFields.child_specialist_pricing = null;
+    }
+
     // Compare languages_json
     const currentLanguages = currentData.languages_json ? JSON.parse(currentData.languages_json) : [];
     const originalLanguages = originalData.languages_json ? JSON.parse(originalData.languages_json) : [];
@@ -1059,6 +1294,8 @@ export default function DoctorModal({
     return changedFields;
   };
 
+  const isPsychiatristForm = (formData.designation || '').toLowerCase().includes('psychiatrist');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('🚀 Form submission started');
@@ -1078,6 +1315,29 @@ export default function DoctorModal({
     if (!formData.experience_years || formData.experience_years < 0) newErrors.experience_years = 'Years of experience is required and must be 0 or greater';
     // Availability is optional in both add and edit (can be set via daily availability adder)
     // (no validation for availability)
+
+    if (!isPsychiatristForm && formData.specialistCategory !== 'child_specialist') {
+      if (!formData.price || String(formData.price).trim() === '') {
+        newErrors.price = 'Individual session price is required';
+      }
+    }
+    if (!isPsychiatristForm && formData.specialistCategory === 'child_specialist') {
+      try {
+        const built = buildChildSpecialistPricingPayload(childSpecialistPricing);
+        const flat = [];
+        ['parent_only', 'child_only', 'family'].forEach((k) => flat.push(built.initial[k].price));
+        CHILD_FOLLOW_TIERS.forEach(({ key: tier }) => {
+          ['parent_only', 'child_only', 'family'].forEach((k) =>
+            flat.push(built.followUpPackages[tier][k].price)
+          );
+        });
+        if (flat.some((n) => !Number.isFinite(n) || n <= 0)) {
+          newErrors.childSpecialistPricing = 'Enter valid positive prices for all child specialist options';
+        }
+      } catch {
+        newErrors.childSpecialistPricing = 'Invalid child specialist pricing';
+      }
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -1162,7 +1422,20 @@ export default function DoctorModal({
         faq_question_2: formData.faq_question_2?.trim() || null,
         faq_answer_2: formData.faq_answer_2?.trim() || null,
         faq_question_3: formData.faq_question_3?.trim() || null,
-        faq_answer_3: formData.faq_answer_3?.trim() || null
+        faq_answer_3: formData.faq_answer_3?.trim() || null,
+        specialist_category: isPsychiatristForm
+          ? 'better_parent'
+          : formData.specialistCategory === 'child_specialist'
+            ? 'child_specialist'
+            : 'better_parent',
+        child_specialist_pricing:
+          !isPsychiatristForm && formData.specialistCategory === 'child_specialist'
+            ? buildChildSpecialistPricingPayload(childSpecialistPricing)
+            : null,
+        child_specialist_pricing_json:
+          !isPsychiatristForm && formData.specialistCategory === 'child_specialist'
+            ? JSON.stringify(buildChildSpecialistPricingPayload(childSpecialistPricing))
+            : ''
       };
 
       const filteredLanguages = formData.languages
@@ -1213,6 +1486,32 @@ export default function DoctorModal({
   if (!isOpen) return null;
 
   const sectionHeading = 'text-sm font-semibold text-slate-700 tracking-tight mb-3';
+
+  const updateChildInitialCell = (variantKey, valueDigits) => {
+    setChildSpecialistPricing((prev) => ({
+      ...prev,
+      initial: {
+        ...prev.initial,
+        [variantKey]: { ...prev.initial[variantKey], price: valueDigits },
+      },
+    }));
+  };
+
+  const updateChildFollowCell = (tierKey, variantKey, valueDigits) => {
+    setChildSpecialistPricing((prev) => ({
+      ...prev,
+      followUpPackages: {
+        ...prev.followUpPackages,
+        [tierKey]: {
+          ...prev.followUpPackages[tierKey],
+          [variantKey]: {
+            ...prev.followUpPackages[tierKey][variantKey],
+            price: valueDigits,
+          },
+        },
+      },
+    }));
+  };
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1590,185 +1889,386 @@ export default function DoctorModal({
           {/* Pricing */}
           <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
             <div className={sectionHeading} role="heading" aria-level={3}>Pricing</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Generic individual price: only for non-psychiatrists */}
-              {!(formData.designation || '').toLowerCase().includes('psychiatrist') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Individual Price per Session (₹) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.price || ''}
-                    onChange={(e) => {
-                      // Only allow numbers
-                      const value = e.target.value.replace(/[^0-9]/g, '');
-                      handleInputChange('price', value);
-                    }}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
-                      errors.price ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="150"
-                  />
-                  {errors.price && (
-                    <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Price will be stored in the description field temporarily
-                  </p>
-                </div>
-              )}
 
-              {/* Psychiatrist-specific individual durations */}
-              {(formData.designation || '').toLowerCase().includes('psychiatrist') && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Psychiatrist 15 min Session Price (₹)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.psychiatrist15Price || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        handleInputChange('psychiatrist15Price', value);
-                      }}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
-                      placeholder="e.g. 800"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Psychiatrist 30 min Session Price (₹)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.psychiatrist30Price || ''}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        handleInputChange('psychiatrist30Price', value);
-                      }}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
-                      placeholder="e.g. 1200"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Packages Section */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className={sectionHeading} role="heading" aria-level={4}>Session Packages</div>
-                <button
-                  type="button"
-                  onClick={addPackage}
-                  className="px-3 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            {!isPsychiatristForm && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Specialist pricing category
+                </label>
+                <select
+                  value={formData.specialistCategory}
+                  onChange={(e) => handleSpecialistCategoryChange(e.target.value)}
+                  className="w-full max-w-md px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm bg-white"
                 >
-                  <Plus className="w-4 h-4" />
-                  Add Package
-                </button>
+                  <option value="better_parent">Better parenting (standard pricing &amp; packages)</option>
+                  <option value="child_specialist">Child specialist (initial session + follow-up package plans)</option>
+                </select>
               </div>
-              
-              <div className="space-y-4">
-                {ensurePackageIds(formData.packages).map((pkg, index) => (
-                  <div key={pkg.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="text-sm font-medium text-slate-800">
-                        Package {index + 1}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removePackage(index)}
-                        className="text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
+            )}
+
+            {!isPsychiatristForm && formData.specialistCategory === 'child_specialist' ? (
+              <div className="space-y-6">
+                {errors.childSpecialistPricing && (
+                  <p className="text-red-500 text-sm">{errors.childSpecialistPricing}</p>
+                )}
+                <div>
+                  <div className={sectionHeading} role="heading" aria-level={4}>
+                    Initial session
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      ['parent_only', 'Parent only'],
+                      ['child_only', 'Child only'],
+                      ['family', 'Family'],
+                    ].map(([key, label]) => (
+                      <div
+                        key={key}
+                        className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center border border-slate-200 rounded-lg p-3 bg-white"
                       >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Package Type *
-                        </label>
-                        <select
-                          value={pkg.sessions || ''}
-                          onChange={(e) => {
-                            const selectedId = parseInt(e.target.value);
-                            if (selectedId) {
-                              selectPackageType(index, selectedId);
-                            } else {
-                              // Reset package data when no selection
-                              updatePackage(index, 'name', '');
-                              updatePackage(index, 'sessions', '');
-                              updatePackage(index, 'price', '');
-                            }
-                          }}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
-                        >
-                          <option value="">Select Package</option>
-                          {availablePackages
-                            .filter(p => !formData.packages.some((existingPkg, i) => 
-                              i !== index && existingPkg.sessions === p.sessions
-                            ))
-                            .map(p => (
-                              <option key={p.id} value={p.sessions}>
-                                {p.name}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Sessions
-                        </label>
+                        <span className="text-sm font-medium text-gray-800">{label}</span>
+                        <span className="text-xs text-gray-600">
+                          {childSpecialistPricing.initial[key].durationLabel}
+                        </span>
                         <input
-                          type="number"
-                          value={pkg.sessions}
-                          disabled
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 text-gray-600"
+                          type="text"
+                          inputMode="numeric"
+                          value={childSpecialistPricing.initial[key].price}
+                          onChange={(e) =>
+                            updateChildInitialCell(key, e.target.value.replace(/[^0-9]/g, ''))
+                          }
+                          className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                          placeholder="₹"
                         />
                       </div>
-                      
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className={sectionHeading} role="heading" aria-level={4}>
+                    Follow-up package plans
+                  </div>
+                  <div className="space-y-4">
+                    {CHILD_FOLLOW_TIERS.map(({ key: tierKey, label: tierLabel }) => (
+                      <div
+                        key={tierKey}
+                        className="border border-slate-200 rounded-lg p-3 bg-white space-y-2"
+                      >
+                        <p className="text-xs font-semibold text-[#3f2e73]">{tierLabel}</p>
+                        {[
+                          ['parent_only', 'Parent only'],
+                          ['child_only', 'Child only'],
+                          ['family', 'Family'],
+                        ].map(([vKey, vLabel]) => (
+                          <div
+                            key={vKey}
+                            className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center"
+                          >
+                            <span className="text-sm text-gray-800">{vLabel}</span>
+                            <span className="text-xs text-gray-600">
+                              {childSpecialistPricing.followUpPackages[tierKey][vKey].durationLabel}
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={childSpecialistPricing.followUpPackages[tierKey][vKey].price}
+                              onChange={(e) =>
+                                updateChildFollowCell(
+                                  tierKey,
+                                  vKey,
+                                  e.target.value.replace(/[^0-9]/g, '')
+                                )
+                              }
+                              className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                              placeholder="₹"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Saving syncs these amounts to bookable packages for this psychologist.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {!isPsychiatristForm && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Individual Price per Session (₹) *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.price || ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          handleInputChange('price', value);
+                        }}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm ${
+                          errors.price ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="150"
+                      />
+                      {errors.price && (
+                        <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Stored as individual session price; add multi-session packages below.
+                      </p>
+                    </div>
+                  )}
+
+                  {isPsychiatristForm && (
+                    <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Price per Session (₹)
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Psychiatrist 15 min Session Price (₹)
                         </label>
                         <input
                           type="text"
-                          value={pkg.price || ''}
+                          value={formData.psychiatrist15Price || ''}
                           onChange={(e) => {
-                            // Only allow numbers
                             const value = e.target.value.replace(/[^0-9]/g, '');
-                            updatePackage(index, 'price', value);
+                            handleInputChange('psychiatrist15Price', value);
                           }}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
-                          placeholder="150"
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
+                          placeholder="e.g. 800"
                         />
                       </div>
-                    </div>
-                    
-                    {index > 0 && pkg.sessions > 1 && (
-                      <div className="mt-3 p-3 bg-[#3f2e73]/10 rounded-lg">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-[#3f2e73]">
-                            Total Package Price: ₹{(pkg.price * pkg.sessions).toFixed(2)}
-                          </span>
-                          <span className="text-[#3f2e73] font-medium">
-                            Save: ₹{((formData.price * pkg.sessions) - (pkg.price * pkg.sessions)).toFixed(2)}
-                          </span>
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Psychiatrist 30 min Session Price (₹)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.psychiatrist30Price || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            handleInputChange('psychiatrist30Price', value);
+                          }}
+                          className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm border-gray-300"
+                          placeholder="e.g. 1200"
+                        />
                       </div>
-                    )}
+                    </>
+                  )}
+                </div>
+
+                {!isPsychiatristForm && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={sectionHeading} role="heading" aria-level={4}>
+                        Session packages
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addPackage}
+                        className="px-3 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add package
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {ensurePackageIds(formData.packages).map((pkg, index) => (
+                        <div key={pkg.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-sm font-medium text-slate-800">
+                              Package {index + 1}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePackage(index)}
+                              className="text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Package type *
+                              </label>
+                              <select
+                                value={pkg.sessions || ''}
+                                onChange={(e) => {
+                                  const selectedId = parseInt(e.target.value, 10);
+                                  if (selectedId) {
+                                    selectPackageType(index, selectedId);
+                                  } else {
+                                    updatePackage(index, 'name', '');
+                                    updatePackage(index, 'sessions', '');
+                                    updatePackage(index, 'price', '');
+                                  }
+                                }}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
+                              >
+                                <option value="">Select package</option>
+                                {availablePackages
+                                  .filter(
+                                    (p) =>
+                                      !formData.packages.some(
+                                        (existingPkg, i) =>
+                                          i !== index && existingPkg.sessions === p.sessions
+                                      )
+                                  )
+                                  .map((p) => (
+                                    <option key={p.id} value={p.sessions}>
+                                      {p.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Sessions
+                              </label>
+                              <input
+                                type="number"
+                                value={pkg.sessions}
+                                disabled
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 text-gray-600"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Price per session (₹)
+                              </label>
+                              <input
+                                type="text"
+                                value={pkg.price || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9]/g, '');
+                                  updatePackage(index, 'price', value);
+                                }}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3f2e73]/20 focus:border-[#3f2e73] text-sm"
+                                placeholder="150"
+                              />
+                            </div>
+                          </div>
+
+                          {index > 0 && pkg.sessions > 1 && pkg.price !== '' && pkg.price != null && (
+                            <div className="mt-3 p-3 bg-[#3f2e73]/10 rounded-lg">
+                              <div className="text-sm text-[#3f2e73]">
+                                Total package price: ₹
+                                {(Number(pkg.price) * Number(pkg.sessions) || 0).toFixed(2)}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-3">
+                      * Set individual session price above. Choose a package size and enter per-session price manually.
+                    </p>
                   </div>
-                ))}
-              </div>
-              
-              <p className="text-xs text-gray-500 mt-3">
-                * Individual session price is set above. Additional packages provide discounts for multiple sessions.
-              </p>
-            </div>
+                )}
+
+                {isPsychiatristForm && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={sectionHeading} role="heading" aria-level={4}>
+                        Session packages
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addPackage}
+                        className="px-3 py-2 bg-[#3f2e73] hover:bg-[#1d1733] text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add package
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {ensurePackageIds(formData.packages).map((pkg, index) => (
+                        <div key={pkg.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-sm font-medium text-slate-800">
+                              Package {index + 1}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePackage(index)}
+                              className="text-[#3f2e73] hover:bg-[#3f2e73]/10 rounded-lg transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Package type *
+                              </label>
+                              <select
+                                value={pkg.sessions || ''}
+                                onChange={(e) => {
+                                  const selectedId = parseInt(e.target.value, 10);
+                                  if (selectedId) {
+                                    selectPackageType(index, selectedId);
+                                  } else {
+                                    updatePackage(index, 'name', '');
+                                    updatePackage(index, 'sessions', '');
+                                    updatePackage(index, 'price', '');
+                                  }
+                                }}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                              >
+                                <option value="">Select package</option>
+                                {availablePackages
+                                  .filter(
+                                    (p) =>
+                                      !formData.packages.some(
+                                        (existingPkg, i) =>
+                                          i !== index && existingPkg.sessions === p.sessions
+                                      )
+                                  )
+                                  .map((p) => (
+                                    <option key={p.id} value={p.sessions}>
+                                      {p.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Sessions
+                              </label>
+                              <input
+                                type="number"
+                                value={pkg.sessions}
+                                disabled
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-100 text-gray-600"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Price per session (₹)
+                              </label>
+                              <input
+                                type="text"
+                                value={pkg.price || ''}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9]/g, '');
+                                  updatePackage(index, 'price', value);
+                                }}
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Experience */}

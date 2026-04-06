@@ -28,6 +28,13 @@ import { formatCurrency } from '../../../lib/utils';
 // import { isClientContactComplete, getIncompleteContactFields } from '../../../lib/contactValidation'; // Removed - contact details collected during signup
 // import ContactCompletionWarning from '../../../components/ContactCompletionWarning'; // Removed - no longer needed
 import AuthModal from '../../../components/AuthModal';
+import ChildSpecSessionSelect, {
+  DEFAULT_CHILD_SPEC_FU_TIER,
+} from '@/components/ChildSpecSessionSelect';
+import {
+  CHILD_SPEC_FOLLOWUP_SESSION_DURATION,
+  CHILD_SPEC_INITIAL_SESSION_DURATION,
+} from '@/lib/childSpecSessionDurations';
 import { normalizeImageUrl } from '../../../utils/urlNormalizer';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
@@ -251,6 +258,34 @@ const TherapistProfileContent = ({ slug, packageId }) => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loadingPackages, setLoadingPackages] = useState(false);
   const [detailsFetched, setDetailsFetched] = useState({});
+  const [childSpecFuTiers, setChildSpecFuTiers] = useState({
+    parent: DEFAULT_CHILD_SPEC_FU_TIER,
+    child: DEFAULT_CHILD_SPEC_FU_TIER,
+    family: DEFAULT_CHILD_SPEC_FU_TIER,
+  });
+
+  const isChildSpecialistDoctor =
+    selectedDoctor?.specialist_category === 'child_specialist' ||
+    (!!selectedDoctor?.child_specialist_pricing?.initial &&
+      selectedDoctor?.specialist_category !== 'better_parent');
+  const childSpecInitPackages = useMemo(
+    () => packages.filter((p) => p.package_type?.startsWith('cs_init_')),
+    [packages]
+  );
+
+  const CHILD_SPEC_FU_SUFFIXES = ['parent', 'child', 'family'];
+  const CHILD_SPEC_VARIANT_LABELS = {
+    parent: 'Parent only',
+    child: 'Child only',
+    family: 'Family',
+  };
+  const CHILD_SPEC_FU_TIER_OPTIONS = [
+    { value: '1', label: '1 session' },
+    { value: '3', label: '3 sessions' },
+    { value: '6', label: '6 sessions' },
+    { value: '9', label: '9 sessions' },
+    { value: '12plus', label: '12 sessions' },
+  ];
   
   // Client package state (for booking remaining sessions)
   const [clientPackage, setClientPackage] = useState(null);
@@ -945,6 +980,18 @@ const TherapistProfileContent = ({ slug, packageId }) => {
     }
   };
 
+  /** Bottom CTA: drop verbose "Initial session —" / "Follow-up package (…) —" prefixes from package titles */
+  const bookButtonPackageLabel = (pkg) => {
+    if (!pkg) return 'Session';
+    const raw = String(pkg.name || '').trim();
+    if (!raw) return 'Session';
+    const cleaned = raw
+      .replace(/^initial session\s*[—–-]\s*/i, '')
+      .replace(/^follow-?up package\s*\([^)]*\)\s*[—–-]\s*/i, '')
+      .trim();
+    return cleaned || 'Session';
+  };
+
   const handleBookSession = async () => {
     // Prevent duplicate calls while booking is in progress
     if (isBooking) {
@@ -1358,26 +1405,35 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                 console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
               }
               
-              // Send payment verification to backend in background (non-blocking)
-              // Don't wait for it - redirect immediately for better UX
-              // The success page will also call this endpoint to ensure session is created
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature
-                })
-              }).catch(err => {
-                // Silently fail - success page will handle it
-                console.warn('⚠️ Background payment verification failed (success page will retry):', err);
+              const verifyUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
+              const verifyBody = JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
               });
-              
-              // Redirect IMMEDIATELY - no delay for better mobile UX
-              // Success page will ensure backend is called and session is created
+              try {
+                const ac = new AbortController();
+                const tid = setTimeout(() => ac.abort(), 15000);
+                const verifyRes = await fetch(verifyUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: verifyBody,
+                  signal: ac.signal
+                });
+                clearTimeout(tid);
+                if (!verifyRes.ok) {
+                  console.warn('⚠️ payment/success returned', verifyRes.status);
+                }
+              } catch (verifyErr) {
+                console.warn('⚠️ payment/success before redirect:', verifyErr?.message || verifyErr);
+                fetch(verifyUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: verifyBody,
+                  keepalive: true
+                }).catch(() => {});
+              }
+
               window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${encodeURIComponent(response.razorpay_signature)}`;
             },
             modal: {
@@ -1393,20 +1449,24 @@ const TherapistProfileContent = ({ slug, packageId }) => {
           const rzp = new window.Razorpay(options);
           rzp.on('payment.failed', function (response) {
             console.error('❌ Razorpay payment failed:', response);
-            showError(`Payment failed: ${response.error?.description || 'Unknown error'}`, 'Payment Failed');
+            let errorMessage =
+              response.error?.reason === 'payment_risk_check_failed'
+                ? 'Payment was declined by the bank or payment security checks. This is not a booking error—try another card, UPI, or contact your bank. You can also reach Little Care for help.'
+                : response.error?.description || 'Payment failed. Please try again.';
+            showError(errorMessage, 'Payment Failed');
             setIsBooking(false);
-            
-            // Send failure to backend
+
             fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/failure`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                razorpay_order_id: response.error?.metadata?.order_id,
-                error: response.error
-              })
-            }).catch(err => console.error('Failed to send failure notification:', err));
+                razorpay_order_id:
+                  response.error?.metadata?.order_id || response.razorpay_order_id,
+                error: response.error,
+              }),
+            }).catch((err) => console.error('Failed to send failure notification:', err));
           });
           
           rzp.open();
@@ -1704,6 +1764,14 @@ const TherapistProfileContent = ({ slug, packageId }) => {
       fetchPsychologistPackages(selectedDoctor.id);
     }
   }, [selectedDoctor]);
+
+  useEffect(() => {
+    setChildSpecFuTiers({
+      parent: DEFAULT_CHILD_SPEC_FU_TIER,
+      child: DEFAULT_CHILD_SPEC_FU_TIER,
+      family: DEFAULT_CHILD_SPEC_FU_TIER,
+    });
+  }, [selectedDoctor?.id]);
 
   useEffect(() => {
     if (selectedDoctor) {
@@ -2151,7 +2219,9 @@ const TherapistProfileContent = ({ slug, packageId }) => {
               {/* Calendar Header */}
               <div className="text-center mb-4">
                 <p className="font-bold text-gray-800 mb-1">Book Your Session</p>
-                <p className="text-gray-600 text-sm">Select a date and time that works for you</p>
+                {!isChildSpecialistDoctor && (
+                  <p className="text-gray-600 text-sm">Select a date and time that works for you</p>
+                )}
                 {loadingAvailability && (
                   <div className="mt-2 flex items-center justify-center text-xs" style={{ color: '#3f2e73' }}>
                     <div className="animate-spin rounded-full h-3 w-3 border-b-2 mr-2" style={{ borderColor: '#3f2e73' }}></div>
@@ -2159,9 +2229,14 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   </div>
                 )}
               </div>
-              
-            
-              
+
+              <div className="flex flex-col gap-4">
+              <div className={isChildSpecialistDoctor ? 'order-2' : 'order-1'}>
+              {isChildSpecialistDoctor && (
+                <p className="text-center text-gray-600 text-sm mb-2">
+                  Select a date and time that works for you
+                </p>
+              )}
               {/* Month Navigation */}
               <div className="flex items-center justify-between mb-2">
                 <button 
@@ -2376,9 +2451,11 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   </div>
                 )}
               </div>
+              </div>
 
                 {/* Package Selection or Package Information */}
-                <div className="mb-4 mt-6">
+                <div className={isChildSpecialistDoctor ? 'order-1' : 'order-2'}>
+                <div className={`mb-4 ${isChildSpecialistDoctor ? 'mt-0' : 'mt-6'}`}>
                 {isBookingRemaining && clientPackage ? (
                   // Show package information when booking remaining sessions
                   <div>
@@ -2411,10 +2488,150 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                   <>
                     <p className="text-sm font-medium text-[#3f2e73] mb-3">Select Package</p>
                     
-                    {/* Individual Session Options */}
-                    {getDoctorDesignation(selectedDoctor).toLowerCase().includes('psychiatrist') ? (
+                    {/* Child specialist before psychiatrist so titles like Neuropsychiatrist still get CS packages */}
+                    {isChildSpecialistDoctor ? (
+                      loadingPackages ? (
+                        <div className="text-center py-6">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3f2e73] mx-auto" />
+                          <p className="text-gray-500 text-xs mt-2">Loading session options…</p>
+                        </div>
+                      ) : childSpecInitPackages.length > 0 ? (
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-semibold text-[#3f2e73] mb-2">Initial session</p>
+                          <div className="space-y-1">
+                            {childSpecInitPackages.map((pkg) => {
+                              const suffix = /^cs_init_(parent|child|family)$/.exec(
+                                pkg.package_type || ''
+                              )?.[1];
+                              const label =
+                                suffix && CHILD_SPEC_VARIANT_LABELS[suffix]
+                                  ? `${CHILD_SPEC_VARIANT_LABELS[suffix]} (${CHILD_SPEC_INITIAL_SESSION_DURATION[suffix]})`
+                                  : pkg.name;
+                              return (
+                                <button
+                                  key={pkg.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedPackage(pkg);
+                                    setSelectedPrice(pkg.price);
+                                    setMissingFields((prev) =>
+                                      prev.filter((f) => f !== 'Package')
+                                    );
+                                  }}
+                                  className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                                    selectedPackage?.id === pkg.id
+                                      ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md'
+                                      : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
+                                  }`}
+                                >
+                                  <div className="flex justify-between items-center gap-2">
+                                    <span className="font-semibold text-sm">{label}</span>
+                                    <span className="font-bold text-base shrink-0">
+                                      ₹{pkg.price}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="flex items-center my-1">
+                          <div className="flex-1 border-t border-gray-300" />
+                          <span className="px-3 text-xs text-gray-500 font-medium">OR</span>
+                          <div className="flex-1 border-t border-gray-300" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-[#3f2e73] mb-2">
+                            Follow-up package
+                          </p>
+                          <div className="space-y-1.5">
+                            {CHILD_SPEC_FU_SUFFIXES.map((suffix) => {
+                              const tier =
+                                childSpecFuTiers[suffix] || DEFAULT_CHILD_SPEC_FU_TIER;
+                              const fuPkg = packages.find(
+                                (p) => p.package_type === `cs_fu_${tier}_${suffix}`
+                              );
+                              if (!fuPkg) return null;
+                              const selected = selectedPackage?.id === fuPkg.id;
+                              const selectFuRow = () => {
+                                setSelectedPackage(fuPkg);
+                                setSelectedPrice(fuPkg.price);
+                                setMissingFields((prev) =>
+                                  prev.filter((f) => f !== 'Package')
+                                );
+                              };
+                              return (
+                                <div
+                                  key={suffix}
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={selectFuRow}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      selectFuRow();
+                                    }
+                                  }}
+                                  className={`rounded-lg border py-1.5 px-2 text-sm transition-colors w-full text-left cursor-pointer ${
+                                    selected
+                                      ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-sm'
+                                      : 'border-gray-300 bg-white hover:border-[#3f2e73]/60'
+                                  }`}
+                                >
+                                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                                    <span className="font-semibold text-gray-900">
+                                      {`${CHILD_SPEC_VARIANT_LABELS[suffix]} (${CHILD_SPEC_FOLLOWUP_SESSION_DURATION[suffix]})`}
+                                    </span>
+                                    <div
+                                      className="flex flex-wrap items-center gap-1.5 sm:justify-end"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onMouseDown={(e) => e.stopPropagation()}
+                                      onKeyDown={(e) => e.stopPropagation()}
+                                      role="presentation"
+                                    >
+                                      <ChildSpecSessionSelect
+                                        compact
+                                        ariaLabel={`Sessions for ${CHILD_SPEC_VARIANT_LABELS[suffix]}, ${CHILD_SPEC_FOLLOWUP_SESSION_DURATION[suffix]} per session`}
+                                        value={tier}
+                                        options={CHILD_SPEC_FU_TIER_OPTIONS}
+                                        onChange={(e) => {
+                                          const nextTier = e.target.value;
+                                          const nextPkg = packages.find(
+                                            (p) =>
+                                              p.package_type === `cs_fu_${nextTier}_${suffix}`
+                                          );
+                                          setChildSpecFuTiers((prev) => ({
+                                            ...prev,
+                                            [suffix]: nextTier,
+                                          }));
+                                          if (nextPkg) {
+                                            setSelectedPackage(nextPkg);
+                                            setSelectedPrice(nextPkg.price);
+                                            setMissingFields((prev) =>
+                                              prev.filter((f) => f !== 'Package')
+                                            );
+                                          }
+                                        }}
+                                      />
+                                      <span className="font-bold text-sm text-[#3f2e73] px-1.5 py-0.5 rounded-md">
+                                        ₹{fuPkg.price}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      ) : (
+                        <p className="text-xs text-amber-800 text-center py-2">
+                          Child specialist packages are not available yet. Please refresh the page or contact support.
+                        </p>
+                      )
+                    ) : getDoctorDesignation(selectedDoctor).toLowerCase().includes('psychiatrist') ? (
                       <>
-                        {/* Psychiatrist 15 min individual session */}
                         <button
                           onClick={() => {
                             const price15 = selectedDoctor.psychiatrist_15min_price || selectedDoctor.price;
@@ -2446,7 +2663,6 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                           </div>
                         </button>
 
-                        {/* Psychiatrist 30 min individual session */}
                         <button
                           onClick={() => {
                             const price30 = selectedDoctor.psychiatrist_30min_price || selectedDoctor.price;
@@ -2491,12 +2707,11 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                             discount_percentage: 0
                           });
                           setSelectedPrice(selectedDoctor.price);
-                          // Clear missing fields message when user selects package
-                          setMissingFields(prev => prev.filter(f => f !== 'Package'));
+                          setMissingFields((prev) => prev.filter((f) => f !== 'Package'));
                         }}
                         className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
                           selectedPackage?.id === 'individual'
-                            ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
+                            ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md'
                             : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
                         }`}
                       >
@@ -2514,7 +2729,11 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3f2e73] mx-auto"></div>
                         <p className="text-gray-500 text-xs mt-2">Loading packages...</p>
                       </div>
-                    ) : packages.length > 0 ? (
+                    ) : !isChildSpecialistDoctor &&
+                      packages.some(
+                        (pkg) =>
+                          pkg.session_count > 1 && !String(pkg.package_type || '').startsWith('cs_')
+                      ) ? (
                       <>
                         <div className="flex items-center my-4">
                           <div className="flex-1 border-t border-gray-300"></div>
@@ -2522,44 +2741,53 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                           <div className="flex-1 border-t border-gray-300"></div>
                         </div>
                         <div className="space-y-1">
-                        {packages.filter(pkg => pkg.session_count > 1).map((pkg) => (
-                          <button
-                            key={pkg.id}
-                            onClick={() => {
-                              setSelectedPackage(pkg);
-                              setSelectedPrice(pkg.price);
-                              // Clear missing fields message when user selects package
-                              setMissingFields(prev => prev.filter(f => f !== 'Package'));
-                            }}
-                            className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
-                              selectedPackage?.id === pkg.id
-                                ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md' 
-                                : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
-                            }`}
-                          >
-                            <div className="flex justify-between items-center">
-                          <div className="text-left">
-                            <span className="font-semibold text-sm">
-                              {pkg.name}
-                              {getDoctorDesignation(selectedDoctor).toLowerCase().includes('psychiatrist') && pkg.session_count > 1
-                                ? ` (${pkg.session_count} × 15 min)`
-                                : ''}
-                            </span>
-                            {pkg.discount_percentage > 0 && (
-                              <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-1 py-0.5 rounded-full">
-                                Save {pkg.discount_percentage}%
-                              </span>
-                            )}
-                          </div>
-                              <span className="font-bold text-base">₹{pkg.price}</span>
-                            </div>
-                          </button>
-                        ))}
+                          {packages
+                            .filter(
+                              (pkg) =>
+                                pkg.session_count > 1 &&
+                                !String(pkg.package_type || '').startsWith('cs_')
+                            )
+                            .map((pkg) => (
+                              <button
+                                key={pkg.id}
+                                onClick={() => {
+                                  setSelectedPackage(pkg);
+                                  setSelectedPrice(pkg.price);
+                                  setMissingFields((prev) => prev.filter((f) => f !== 'Package'));
+                                }}
+                                className={`p-2 rounded-lg border text-sm transition-all duration-200 w-full text-left ${
+                                  selectedPackage?.id === pkg.id
+                                    ? 'border-[#3f2e73] bg-[#f5f1ff] text-[#3f2e73] shadow-md'
+                                    : 'border-gray-300 hover:border-[#3f2e73] text-gray-700 hover:shadow-sm'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <div className="text-left">
+                                    <span className="font-semibold text-sm">
+                                      {pkg.name}
+                                      {getDoctorDesignation(selectedDoctor)
+                                        .toLowerCase()
+                                        .includes('psychiatrist') && pkg.session_count > 1
+                                        ? ` (${pkg.session_count} × 15 min)`
+                                        : ''}
+                                    </span>
+                                    {pkg.discount_percentage > 0 && (
+                                      <span className="ml-2 text-xs bg-[#eae4ff] text-[#3f2e73] px-1 py-0.5 rounded-full">
+                                        Save {pkg.discount_percentage}%
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="font-bold text-base">₹{pkg.price}</span>
+                                </div>
+                              </button>
+                            ))}
                         </div>
                       </>
                     ) : null}
                   </>
                 )}
+              </div>
+              </div>
               </div>
 
               {/* Missing Fields Message */}
@@ -2581,7 +2809,7 @@ const TherapistProfileContent = ({ slug, packageId }) => {
                     : 'bg-[#3f2e73] text-white hover:bg-[#1d1733]'
                 }`}
               >
-                {isBooking ? 'Booking...' : isBookingRemaining ? 'Book Remaining Session' : `Book ${selectedPackage?.name || 'Session'}`}
+                {isBooking ? 'Booking...' : isBookingRemaining ? 'Book Remaining Session' : `Book ${bookButtonPackageLabel(selectedPackage)}`}
               </button>
 
               {/* Success Message */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import OnboardingModal from './OnboardingModal';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '../../lib/backendApi';
@@ -800,6 +800,23 @@ const Guide = () => {
     setSelected(index);
   };
 
+  const childSpecialistDoctors = useMemo(
+    () => doctors.filter((d) => d?.specialist_category !== 'better_parent'),
+    [doctors]
+  );
+  const betterParentingDoctors = useMemo(
+    () => doctors.filter((d) => d?.specialist_category === 'better_parent'),
+    [doctors]
+  );
+
+  const psychologistSections = useMemo(
+    () => [
+      { key: 'child_specialist', title: 'Child specialist', list: childSpecialistDoctors },
+      { key: 'better_parenting', title: 'Better parenting', list: betterParentingDoctors },
+    ],
+    [childSpecialistDoctors, betterParentingDoctors]
+  );
+
   const handleDateTimeConfirm = () => {
     if (selectedDate && selectedTime) {
       setShowDateTimePicker(false);
@@ -1297,7 +1314,29 @@ const Guide = () => {
               No doctors available at the moment.
             </div>
           ) : (
-            doctors.map((doc, idx) => {
+            <>
+            {psychologistSections.map((section) =>
+              section.list.length === 0 ? null : (
+                <React.Fragment key={section.key}>
+                  <div
+                    className="psychologists-subheading"
+                    style={{
+                      gridColumn: '1 / -1',
+                      width: '100%',
+                      fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
+                      fontWeight: 600,
+                      color: '#3f2e73',
+                      marginTop: section.key === 'child_specialist' ? '0.25rem' : '2.25rem',
+                      marginBottom: '0.75rem',
+                      paddingLeft: 'clamp(1rem, 2vw, 2rem)',
+                      paddingRight: 'clamp(1rem, 2vw, 2rem)',
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    {section.title}
+                  </div>
+                  {section.list.map((doc) => {
+              const idx = doctors.indexOf(doc);
               return (
                 <div 
                   key={doc.id || doc.name || idx} 
@@ -1660,7 +1699,10 @@ const Guide = () => {
                 </div>
                 </div>
               );
-            })
+            })}
+                </React.Fragment>
+            ))}
+            </>
           )}
         </div>
 

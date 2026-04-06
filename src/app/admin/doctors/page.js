@@ -27,6 +27,7 @@ import DoctorModal from '@/components/DoctorModal';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { isChildSpecialistProfile, specialistCategoryLabel } from '@/lib/doctorSpecialistProfile';
 
 const getDoctorImageUrl = (doctor) => {
   if (!doctor) return null;
@@ -718,10 +719,62 @@ export default function DoctorsPage() {
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Individual Session Price</label>
                     <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800">
-                      {selectedDoctor.price ? `₹${selectedDoctor.price}` : 'Not set'}
+                      {(() => {
+                        const indiv = selectedDoctor.price ?? selectedDoctor.individual_session_price;
+                        return indiv != null && String(indiv).trim() !== '' ? `₹${indiv}` : 'Not set';
+                      })()}
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Specialist pricing — same rules as public booking; DB may have pricing JSON before category is set */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3" role="heading" aria-level={2}>
+                  Specialist pricing
+                </div>
+                <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 mb-3">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</span>
+                  <p className="mt-1">{specialistCategoryLabel(selectedDoctor)}</p>
+                </div>
+                {isChildSpecialistProfile(selectedDoctor) && selectedDoctor.child_specialist_pricing?.initial && (
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Initial session</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {[
+                        ['parent_only', 'Parent only'],
+                        ['child_only', 'Child only'],
+                        ['family', 'Family'],
+                      ].map(([key, label]) => {
+                        const cell = selectedDoctor.child_specialist_pricing.initial[key];
+                        const price = cell?.price;
+                        return (
+                          <div key={key} className="bg-white border border-slate-200 rounded-lg p-3 text-sm">
+                            <div className="text-xs text-slate-500">{label}</div>
+                            <div className="font-semibold text-slate-900 mt-1">
+                              {price != null && price !== '' ? `₹${price}` : '—'}
+                            </div>
+                            {cell?.durationLabel ? (
+                              <div className="text-xs text-slate-400 mt-0.5">{cell.durationLabel}</div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {selectedDoctor.child_specialist_pricing?.followUpPackages && (
+                      <p className="text-xs text-slate-600 pt-1">
+                        Follow-up package tiers (1 / 3 / 6 / 9 / 12 sessions) are configured; open{' '}
+                        <span className="font-medium">Edit Profile</span> for the full grid and synced package rows.
+                      </p>
+                    )}
+                  </div>
+                )}
+                {!isChildSpecialistProfile(selectedDoctor) && (
+                  <p className="text-sm text-slate-600">
+                    Uses standard individual and multi-session packages. To use child specialist initial + follow-up plans,
+                    open Edit and set <span className="font-medium">Child specialist</span>.
+                  </p>
+                )}
               </div>
 
               {/* Availability */}

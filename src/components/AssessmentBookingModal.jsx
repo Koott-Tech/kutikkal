@@ -470,26 +470,35 @@ export default function AssessmentBookingModal({ open, onClose, assessment, doct
                 console.warn('⚠️ Could not store payment in sessionStorage:', storageErr);
               }
               
-              // Send payment verification to backend in background (non-blocking)
-              // Don't wait for it - redirect immediately for better UX
-              // The success page will also call this endpoint to ensure session is created
-              fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature
-                  })
-              }).catch(err => {
-                // Silently fail - success page will handle it
-                console.warn('⚠️ Background payment verification failed (success page will retry):', err);
+              const verifyUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api'}/payment/success`;
+              const verifyBody = JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
               });
-              
-              // Redirect IMMEDIATELY - no delay for better mobile UX
-              // Success page will ensure backend is called and session is created
+              try {
+                const ac = new AbortController();
+                const tid = setTimeout(() => ac.abort(), 15000);
+                const verifyRes = await fetch(verifyUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: verifyBody,
+                  signal: ac.signal
+                });
+                clearTimeout(tid);
+                if (!verifyRes.ok) {
+                  console.warn('⚠️ payment/success returned', verifyRes.status);
+                }
+              } catch (verifyErr) {
+                console.warn('⚠️ payment/success before redirect:', verifyErr?.message || verifyErr);
+                fetch(verifyUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: verifyBody,
+                  keepalive: true
+                }).catch(() => {});
+              }
+
               window.location.href = `/payment/success?razorpay_order_id=${response.razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&razorpay_signature=${encodeURIComponent(response.razorpay_signature)}`;
                 setIsBooking(false);
             },

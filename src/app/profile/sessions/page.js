@@ -900,7 +900,7 @@ export default function SessionsPage() {
                                   {session.package?.session_number && session.package?.total_sessions ? (
                                     <span>Package ({session.package.session_number}/{session.package.total_sessions})</span>
                                   ) : (
-                                session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
+                                    <span>{session.package?.name?.trim() || 'Package Session'}</span>
                                   )}
                             </span>
                           )}
@@ -1169,7 +1169,7 @@ export default function SessionsPage() {
                                         {session.package?.session_number && session.package?.total_sessions ? (
                                       <span>Package ({session.package.session_number}/{session.package.total_sessions})</span>
                                         ) : (
-                                      session.package?.package_type ? `Package - ${session.package.package_type.replace('_', ' ')}` : 'Package Session'
+                                      <span>{session.package?.name?.trim() || 'Package Session'}</span>
                                         )}
                                   </span>
                                 )}
@@ -1197,12 +1197,6 @@ export default function SessionsPage() {
                                   ? 'Free Assessment'
                                   : `Session with ${session.psychologist?.first_name} ${session.psychologist?.last_name}`}
                               </h5>
-                              
-                              {session.package && (
-                                <p className="text-gray-600 mb-1 leading-tight">
-                                  Package: {session.package.package_type?.replace('_', ' ')}
-                                </p>
-                              )}
                               
                               {Number(session.price) > 0 && (
                                 <p className="text-gray-600 mb-1 leading-tight">

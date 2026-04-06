@@ -47,7 +47,21 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { cache } from '@/lib/cache';
 import WheelPagination from '@/components/ui/wheel-pagination';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 import { getSessionCompletionFields } from '@/utils/sessionCompletionFields';
+
+/** Human-readable plan label: prefer DB `name`, else title-case slug `package_type`. */
+function adminPackageDisplayLabel(pkg) {
+  if (!pkg || typeof pkg !== 'object') return 'Package';
+  const n = typeof pkg.name === 'string' && pkg.name.trim();
+  if (n) return n.trim();
+  const raw = String(pkg.package_type || 'Package')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!raw || raw === 'Package') return 'Package';
+  return raw.replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export default function BookingsPage() {
   const { showError, showSuccess } = useNotification();
@@ -136,7 +150,7 @@ export default function BookingsPage() {
       }
 
       // Date range filter
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         const formatDateToIST = (date) => {
           if (!date) return null;
           const istString = new Date(date).toLocaleString('en-US', {
@@ -833,6 +847,9 @@ export default function BookingsPage() {
                     Psychologist
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plan
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Progress
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -846,7 +863,7 @@ export default function BookingsPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {packagesLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center">
+                    <td colSpan={6} className="px-6 py-10 text-center">
                       <div className="inline-flex flex-col items-center gap-3 text-gray-500">
                         <Loader2 className="h-8 w-8 animate-spin text-[#3f2e73]" />
                         <span className="text-sm font-medium">Processing...</span>
@@ -855,7 +872,7 @@ export default function BookingsPage() {
                   </tr>
                 ) : packagesList.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                       No packages with sessions.
                     </td>
                   </tr>
@@ -883,6 +900,14 @@ export default function BookingsPage() {
                               {pkg.psychologist?.first_name} {pkg.psychologist?.last_name}
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="font-medium text-gray-900">
+                            {adminPackageDisplayLabel(pkg.package)}
+                          </div>
+                          {total > 0 && (
+                            <div className="text-xs text-gray-500 mt-0.5">{total} sessions in plan</div>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {completed}/{total} completed · {remaining} remaining
@@ -980,13 +1005,12 @@ export default function BookingsPage() {
                             const pkg = booking.package || {};
                             const totalSessions = pkg.total_sessions ?? pkg.session_count ?? 0;
                             const sessionNumber = pkg.session_number;
-                            const raw = (pkg.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
-                            const packageType = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+                            const packageLabel = adminPackageDisplayLabel(pkg);
                             const hasTotal = totalSessions > 0;
                             const hasSessionNum = hasTotal && sessionNumber !== undefined && sessionNumber !== null;
                             return (
                               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#3f2e73]/10 text-[#3f2e73]">
-                                {packageType}
+                                {packageLabel}
                                 {hasSessionNum && <span className="ml-1">({sessionNumber}/{totalSessions})</span>}
                                 {hasTotal && !hasSessionNum && <span className="ml-1">({totalSessions})</span>}
                               </span>
@@ -1286,11 +1310,12 @@ export default function BookingsPage() {
                               if (match) totalSessions = parseInt(match[0], 10);
                             }
                             const sessionNumber = pkg.session_number;
+                            const label = adminPackageDisplayLabel(pkg);
                             if (totalSessions > 0 && sessionNumber !== undefined && sessionNumber !== null) {
-                              return <>Package <span className="text-slate-600">(Session {sessionNumber}/{totalSessions})</span></>;
+                              return <>{label} <span className="text-slate-600">(Session {sessionNumber}/{totalSessions})</span></>;
                             }
-                            if (totalSessions > 0) return <>Package <span className="text-slate-600">({totalSessions} sessions)</span></>;
-                            return 'Package';
+                            if (totalSessions > 0) return <>{label} <span className="text-slate-600">({totalSessions} sessions)</span></>;
+                            return label;
                           })()
                         ) : (
                           'Individual'
@@ -1381,13 +1406,15 @@ export default function BookingsPage() {
                     <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3" role="heading" aria-level={3}>Package & Pricing</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Package Type</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Plan</p>
                         <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900">
-                          {(() => {
-                            const raw = (selectedSession.package.package_type || 'Package').replace(/_\d+$/, '') || 'Package';
-                            return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-                          })()}
+                          {adminPackageDisplayLabel(selectedSession.package)}
                         </div>
+                        {selectedSession.package.package_type && (
+                          <p className="text-xs text-slate-400 mt-1 font-mono">
+                            {selectedSession.package.package_type}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Package Price</p>

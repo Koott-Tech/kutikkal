@@ -1702,6 +1702,9 @@ export const financeApi = {
     if (params.includeCharts !== undefined) {
       queryParams.append('includeCharts', params.includeCharts.toString());
     }
+    if (params.allTime === true || params.allTime === 'true') {
+      queryParams.append('allTime', 'true');
+    }
     const queryString = queryParams.toString();
     const url = queryString ? `/finance/dashboard?${queryString}` : '/finance/dashboard';
     console.log('Finance API getDashboard:', { 

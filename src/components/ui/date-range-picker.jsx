@@ -11,6 +11,8 @@ import { CalendarIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-rea
 import { cn } from "@/lib/utils";
 
 const predefinedRanges = [
+  { label: "All", value: "all" },
+  { separator: true },
   { label: "Today", value: "today" },
   { label: "Yesterday", value: "yesterday" },
   { separator: true },
@@ -72,6 +74,10 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
   });
 
   useEffect(() => {
+    if (selectedRange?.all) {
+      setTempRange({ from: null, to: null });
+      return;
+    }
     const normalized = normalizeRange(selectedRange);
     setTempRange(normalized);
     if (normalized.from) {
@@ -80,6 +86,12 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
   }, [selectedRange]);
 
   const handlePredefinedRange = (value) => {
+    if (value === "all") {
+      onSelect({ all: true });
+      setIsOpen(false);
+      return;
+    }
+
     const today = new Date();
     let from, to;
 
@@ -204,6 +216,9 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
   const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
 
   const getRangeText = () => {
+    if (selectedRange?.all) {
+      return "All dates";
+    }
     try {
       if (tempRange.from && tempRange.to) {
         const fromDate = new Date(tempRange.from);
@@ -226,7 +241,7 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className={cn("min-w-[280px] justify-start text-left font-normal", !tempRange.from && "text-muted-foreground")}>
+        <Button variant="outline" className={cn("min-w-[280px] justify-start text-left font-normal", !selectedRange?.all && !tempRange.from && "text-muted-foreground")}>
           <CalendarIcon className="mr-2 h-4 w-4" />
           {getRangeText()}
         </Button>
@@ -333,6 +348,9 @@ export default function DateRangePicker({ selectedRange, onSelect, onCancel }) {
               <div className="mb-3">
                 <p className="text-sm text-gray-600">
                   {(() => {
+                    if (selectedRange?.all) {
+                      return "All dates (no range filter)";
+                    }
                     try {
                       if (tempRange.from && tempRange.to) {
                         const fromDate = new Date(tempRange.from);

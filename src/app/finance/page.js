@@ -30,6 +30,7 @@ import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import DateRangePicker from '@/components/ui/date-range-picker';
 import { Filter } from 'lucide-react';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 
 export default function FinanceDashboard() {
   const { user, isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
@@ -173,46 +174,45 @@ export default function FinanceDashboard() {
         };
       };
       
-      // ALWAYS get valid dates - use dateRange if available, otherwise use current month
-      // This ensures we NEVER pass undefined to the API
-      let dateFrom, dateTo;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
+      const allTime = !!(dateRange && dateRange.all);
+      let dateFrom;
+      let dateTo;
+
+      if (allTime) {
+        dateFrom = undefined;
+        dateTo = undefined;
+      } else if (hasDateRangeBounds(dateRange)) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
       } else {
-        // Use current month as default
-        const currentDates = getCurrentMonthDates();
-        dateFrom = currentDates.from;
-        dateTo = currentDates.to;
-      }
-      
-      // Final validation - ensure dates are always valid strings (should never fail at this point)
-      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
-        console.error('CRITICAL ERROR: Dates validation failed!', { dateFrom, dateTo, dateRange, dateFromType: typeof dateFrom, dateToType: typeof dateTo });
-        // Last resort - use current month
         const currentDates = getCurrentMonthDates();
         dateFrom = currentDates.from;
         dateTo = currentDates.to;
       }
 
-      // Ensure we never pass undefined (should be impossible at this point, but double-check)
-      if (dateFrom === undefined || dateTo === undefined) {
-        console.error('FATAL ERROR: Dates are still undefined!', { dateFrom, dateTo });
-        const currentDates = getCurrentMonthDates();
-        dateFrom = currentDates.from;
-        dateTo = currentDates.to;
+      if (!allTime) {
+        if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+          console.error('CRITICAL ERROR: Dates validation failed!', { dateFrom, dateTo, dateRange, dateFromType: typeof dateFrom, dateToType: typeof dateTo });
+          const currentDates = getCurrentMonthDates();
+          dateFrom = currentDates.from;
+          dateTo = currentDates.to;
+        }
+
+        if (dateFrom === undefined || dateTo === undefined) {
+          console.error('FATAL ERROR: Dates are still undefined!', { dateFrom, dateTo });
+          const currentDates = getCurrentMonthDates();
+          dateFrom = currentDates.from;
+          dateTo = currentDates.to;
+        }
       }
 
-      console.log('Finance dashboard FINAL dates being sent:', { dateFrom, dateTo, dateRange });
+      console.log('Finance dashboard FINAL dates being sent:', { dateFrom, dateTo, dateRange, allTime });
 
-      // Always send dates (defaults to current month if not set)
-      // Ensure we never pass undefined - always pass valid date strings
-      const response = await financeApi.getDashboard({
-        dateFrom: dateFrom, // Should always be a valid string at this point
-        dateTo: dateTo, // Should always be a valid string at this point
-        includeCharts
-      });
+      const response = await financeApi.getDashboard(
+        allTime
+          ? { allTime: true, includeCharts }
+          : { dateFrom, dateTo, includeCharts }
+      );
       
       console.log('Finance dashboard API response:', response);
       
@@ -295,10 +295,14 @@ export default function FinanceDashboard() {
         };
       };
       
-      // Always get valid dates
-      let dateFrom, dateTo;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
+      const allTime = !!(dateRange && dateRange.all);
+      let dateFrom;
+      let dateTo;
+
+      if (allTime) {
+        dateFrom = undefined;
+        dateTo = undefined;
+      } else if (hasDateRangeBounds(dateRange)) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
       } else {
@@ -306,22 +310,23 @@ export default function FinanceDashboard() {
         dateFrom = currentDates.from;
         dateTo = currentDates.to;
       }
-      
-      // Final validation
-      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
-        console.error('CRITICAL: Charts dates validation failed!', { dateFrom, dateTo, dateRange });
-        const currentDates = getCurrentMonthDates();
-        dateFrom = currentDates.from;
-        dateTo = currentDates.to;
+
+      if (!allTime) {
+        if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+          console.error('CRITICAL: Charts dates validation failed!', { dateFrom, dateTo, dateRange });
+          const currentDates = getCurrentMonthDates();
+          dateFrom = currentDates.from;
+          dateTo = currentDates.to;
+        }
       }
 
-      console.log('Finance charts FINAL dates being sent:', { dateFrom, dateTo });
+      console.log('Finance charts FINAL dates being sent:', { dateFrom, dateTo, allTime });
 
-      const response = await financeApi.getDashboard({
-        dateFrom, // Always a valid string
-        dateTo, // Always a valid string
-        includeCharts: true
-      });
+      const response = await financeApi.getDashboard(
+        allTime
+          ? { allTime: true, includeCharts: true }
+          : { dateFrom, dateTo, includeCharts: true }
+      );
       
       if (response.success && response.data?.charts) {
         // Merge charts data into existing dashboard data
@@ -438,8 +443,7 @@ export default function FinanceDashboard() {
         dateFrom = startOfYear.toISOString().split('T')[0];
         dateTo = endOfYear.toISOString().split('T')[0];
       } else {
-        // Use current date range
-        if (dateRange && dateRange.from && dateRange.to) {
+        if (hasDateRangeBounds(dateRange)) {
           const formatDateToIST = (date) => {
             if (!date) return null;
             const istString = new Date(date).toLocaleString('en-US', {
@@ -453,8 +457,10 @@ export default function FinanceDashboard() {
           };
           dateFrom = formatDateToIST(dateRange.from);
           dateTo = formatDateToIST(dateRange.to);
+        } else if (dateRange?.all) {
+          dateFrom = null;
+          dateTo = null;
         } else {
-          // Default to current month
           const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           dateFrom = startOfMonth.toISOString().split('T')[0];
           dateTo = now.toISOString().split('T')[0];
@@ -469,12 +475,12 @@ export default function FinanceDashboard() {
 
       while (hasMore) {
         try {
-          const response = await financeApi.getSessions({
-            dateFrom,
-            dateTo,
-            page,
-            limit
-          });
+          const sessionParams = { page, limit };
+          if (dateFrom && dateTo) {
+            sessionParams.dateFrom = dateFrom;
+            sessionParams.dateTo = dateTo;
+          }
+          const response = await financeApi.getSessions(sessionParams);
 
           if (response.success && response.data?.sessions) {
             // Validate and clean session data
@@ -874,7 +880,8 @@ export default function FinanceDashboard() {
 
       // Generate filename
       const periodLabel = period === 'weekly' ? 'Weekly' : period === 'monthly' ? 'Monthly' : period === 'yearly' ? 'Yearly' : 'Custom';
-      const filename = `Finance_Sessions_${periodLabel}_${dateFrom}_to_${dateTo}.xlsx`;
+      const rangeLabel = dateFrom && dateTo ? `${dateFrom}_to_${dateTo}` : 'all-dates';
+      const filename = `Finance_Sessions_${periodLabel}_${rangeLabel}.xlsx`;
 
       // Download file
       XLSX.writeFile(wb, filename);

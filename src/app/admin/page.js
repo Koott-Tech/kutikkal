@@ -18,6 +18,7 @@ import { adminApi, dashboardApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { cache, withCache } from '@/lib/cache';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 import { Filter } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
       let start_date = null;
       let end_date = null;
       
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         // Convert dates to IST timezone and format as YYYY-MM-DD
         const formatDateToIST = (date) => {
           if (!date) return null;

@@ -6,6 +6,7 @@ import { CreditCard, Eye, Check, Clock, Calendar, User, Loader2, MoreVertical, F
 import { financeApi } from '@/lib/backendApi';
 import { useAuth } from '@/contexts/AuthContext';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import { hasDateRangeBounds } from '@/lib/dateRangeBounds';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -152,31 +153,34 @@ export default function FinancePayouts() {
         };
       };
       
-      // ALWAYS get valid dates - use dateRange if available, otherwise use current month
-      let dateFrom, dateTo;
-      
-      if (dateRange && dateRange.from && dateRange.to) {
+      const allTime = !!(dateRange && dateRange.all);
+      let dateFrom;
+      let dateTo;
+
+      if (allTime) {
+        dateFrom = undefined;
+        dateTo = undefined;
+      } else if (hasDateRangeBounds(dateRange)) {
         dateFrom = formatDateToIST(dateRange.from);
         dateTo = formatDateToIST(dateRange.to);
       } else {
-        // Use current month as default
-        const currentDates = getCurrentMonthDates();
-        dateFrom = currentDates.from;
-        dateTo = currentDates.to;
-      }
-      
-      // Final validation - ensure dates are always valid strings
-      if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
-        console.error('CRITICAL: Dates validation failed!', { dateFrom, dateTo, dateRange });
         const currentDates = getCurrentMonthDates();
         dateFrom = currentDates.from;
         dateTo = currentDates.to;
       }
 
-      const response = await financeApi.getDashboard({
-        dateFrom, // Always a valid string
-        dateTo // Always a valid string
-      });
+      if (!allTime) {
+        if (!dateFrom || !dateTo || typeof dateFrom !== 'string' || typeof dateTo !== 'string') {
+          console.error('CRITICAL: Dates validation failed!', { dateFrom, dateTo, dateRange });
+          const currentDates = getCurrentMonthDates();
+          dateFrom = currentDates.from;
+          dateTo = currentDates.to;
+        }
+      }
+
+      const response = await financeApi.getDashboard(
+        allTime ? { allTime: true } : { dateFrom, dateTo }
+      );
       
       if (response.success) {
         setDashboardData(response.data);
@@ -197,7 +201,7 @@ export default function FinancePayouts() {
       let dateFrom = null;
       let dateTo = null;
       
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         const formatDateToIST = (date) => {
           if (!date) return null;
           const istString = new Date(date).toLocaleString('en-US', {
@@ -254,7 +258,7 @@ export default function FinancePayouts() {
       // Format dates for API
       let dateFrom = null;
       let dateTo = null;
-      if (dateRange && dateRange.from && dateRange.to) {
+      if (hasDateRangeBounds(dateRange)) {
         const formatDateToIST = (date) => {
           if (!date) return null;
           const istString = new Date(date).toLocaleString('en-US', {
