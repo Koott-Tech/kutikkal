@@ -82,7 +82,7 @@ export function getWorkshopEventPageDefaults() {
           designation: "Workshop panelist",
           experience: "Workshop facilitation",
           image:
-            "https://static.wixstatic.com/media/624142_016a00ca91fb416c9e3b5a3693aebfe0~mv2.webp/v1/fill/w_256,h_300,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.webp",
+            "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/Sreerag.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvU3JlZXJhZy53ZWJwIiwiaWF0IjoxNzc1NTgzMjg5LCJleHAiOjE3NTQzNTgzMjg5fQ.ztMDN_5ZweAxTcUArCOAYAyHhz8tJmzDEkkdfqg1h00",
           details:
             "Supports interactive parent–child sessions with clear structure, warm facilitation, and space for families to practice new skills together.",
           languages: "English, Malayalam",

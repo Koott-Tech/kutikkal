@@ -87,7 +87,7 @@ const PANELISTS = [
     name: "Sreerag Babu",
     title: "Workshop panelist",
     image:
-      "https://static.wixstatic.com/media/624142_016a00ca91fb416c9e3b5a3693aebfe0~mv2.webp/v1/fill/w_256,h_300,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.webp",
+      "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/Sreerag.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvU3JlZXJhZy53ZWJwIiwiaWF0IjoxNzc1NTgzMjg5LCJleHAiOjE3NTQzNTgzMjg5fQ.ztMDN_5ZweAxTcUArCOAYAyHhz8tJmzDEkkdfqg1h00",
   },
   {
     name: "Irene Cherian",
@@ -129,7 +129,7 @@ const PANELISTS = [
     name: "Albin",
     title: "Workshop panelist",
     image:
-      "https://static.wixstatic.com/media/624142_0c31eb1f7e7b4bf68b2b299457144aa5~mv2.png/v1/fill/w_256,h_300,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Image-empty-state.png",
+      "https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/Albin%201.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvQWxiaW4gMS53ZWJwIiwiaWF0IjoxNzc1NTgzMzIwLCJleHAiOjE3NTQzNTgzMzIwfQ.VdE1OBco4irvMiEhBo0a8viKQ_b7GhA1fYP59BYcrHE",
   },
   {
     name: "Taniya",
@@ -349,6 +349,9 @@ export default async function EventsPage() {
             layout="carousel"
             carouselFullBleed
             naturalMemberImageHeight
+            activeDotClassName="w-8 bg-[#3f2e73]"
+            inactiveDotClassName="w-4 bg-[#3f2e73]/25"
+            dotBaseClassName="h-1.5 rounded-full"
           />
         </div>
 

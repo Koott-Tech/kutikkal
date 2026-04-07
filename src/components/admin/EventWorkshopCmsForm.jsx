@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { Loader2, Upload } from "lucide-react";
+import { adminApi } from "@/lib/backendApi";
+
 
 function Field({ label, children }) {
   return (
@@ -22,6 +26,42 @@ function TextInput({ value, onChange, rows = 1, type = "text", ...rest }) {
     return <textarea className={cls} rows={rows} value={value || ""} onChange={(e) => onChange(e.target.value)} {...rest} />;
   }
   return <input type={type} className={cls} value={value || ""} onChange={(e) => onChange(e.target.value)} {...rest} />;
+}
+
+function ImageUrlField({
+  value,
+  onChange,
+  uploading,
+  onUpload,
+  inputId,
+  placeholder = "/events/your-image.webp or https://...",
+}) {
+  return (
+    <div className="space-y-2">
+      <TextInput value={value} onChange={onChange} placeholder={placeholder} />
+      <div className="flex items-center gap-2">
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onUpload(file);
+            // Allow selecting same file again
+            e.target.value = "";
+          }}
+        />
+        <label
+          htmlFor={inputId}
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+        >
+          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          {uploading ? "Uploading..." : "Upload image"}
+        </label>
+      </div>
+    </div>
+  );
 }
 
 
@@ -58,7 +98,29 @@ function EditorSection({ title, children, sectionKey }) {
  * Full workshop event page CMS editor (merged shape from mergeWorkshopEventCms).
  */
 export default function EventWorkshopCmsForm({ cms, setCms }) {
+  const [uploadingByKey, setUploadingByKey] = useState({});
   const patch = (updater) => setCms((prev) => updater(structuredClone(prev)));
+  const setUploading = (key, value) =>
+    setUploadingByKey((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+
+  const uploadImageAndApply = async (file, key, applyUrl) => {
+    setUploading(key, true);
+    try {
+      const res = await adminApi.uploadImage(file);
+      const imageUrl = res?.data?.url || res?.url;
+      if (!imageUrl) {
+        throw new Error(res?.message || "Image upload failed");
+      }
+      applyUrl(imageUrl);
+    } catch (err) {
+      alert(err?.message || "Failed to upload image");
+    } finally {
+      setUploading(key, false);
+    }
+  };
 
   const emptySpeaker = () => ({
     name: "",
@@ -90,15 +152,32 @@ export default function EventWorkshopCmsForm({ cms, setCms }) {
             />
           </Field>
           <Field label="Hero background image URL">
-            <TextInput value={cms.heroImageUrl} onChange={(v) => patch((p) => ({ ...p, heroImageUrl: v }))} />
+            <ImageUrlField
+              value={cms.heroImageUrl}
+              onChange={(v) => patch((p) => ({ ...p, heroImageUrl: v }))}
+              uploading={!!uploadingByKey.heroImageUrl}
+              inputId="event-cms-hero-image-upload"
+              onUpload={(file) =>
+                uploadImageAndApply(file, "heroImageUrl", (url) =>
+                  patch((p) => ({ ...p, heroImageUrl: url }))
+                )
+              }
+            />
           </Field>
           <Field label="Hero image alt">
             <TextInput value={cms.heroImageAlt} onChange={(v) => patch((p) => ({ ...p, heroImageAlt: v }))} rows={2} />
           </Field>
           <Field label="Events page card image URL">
-            <TextInput
+            <ImageUrlField
               value={cms.eventListCard?.imageUrl}
               onChange={(v) => patch((p) => ({ ...p, eventListCard: { ...p.eventListCard, imageUrl: v } }))}
+              uploading={!!uploadingByKey.eventCardImage}
+              inputId="event-cms-card-image-upload-top"
+              onUpload={(file) =>
+                uploadImageAndApply(file, "eventCardImage", (url) =>
+                  patch((p) => ({ ...p, eventListCard: { ...p.eventListCard, imageUrl: url } }))
+                )
+              }
               placeholder="/events/your-cover.webp or https://..."
             />
           </Field>
@@ -148,9 +227,16 @@ export default function EventWorkshopCmsForm({ cms, setCms }) {
             />
           </Field>
           <Field label="Card image URL">
-            <TextInput
+            <ImageUrlField
               value={cms.eventListCard?.imageUrl}
               onChange={(v) => patch((p) => ({ ...p, eventListCard: { ...p.eventListCard, imageUrl: v } }))}
+              uploading={!!uploadingByKey.eventCardImage}
+              inputId="event-cms-card-image-upload-listing"
+              onUpload={(file) =>
+                uploadImageAndApply(file, "eventCardImage", (url) =>
+                  patch((p) => ({ ...p, eventListCard: { ...p.eventListCard, imageUrl: url } }))
+                )
+              }
               placeholder="/events/your-cover.webp or https://..."
             />
           </Field>
@@ -274,17 +360,42 @@ export default function EventWorkshopCmsForm({ cms, setCms }) {
               </div>
               {["name", "designation", "experience", "image", "details", "languages", "focus", "style"].map((f) => (
                 <Field key={f} label={f}>
-                  <TextInput
-                    value={sp[f]}
-                    onChange={(v) =>
-                      patch((p) => {
-                        const items = [...(p.speakers.items || [])];
-                        items[i] = { ...items[i], [f]: v };
-                        return { ...p, speakers: { ...p.speakers, items } };
-                      })
-                    }
-                    rows={f === "details" ? 3 : 1}
-                  />
+                  {f === "image" ? (
+                    <ImageUrlField
+                      value={sp[f]}
+                      onChange={(v) =>
+                        patch((p) => {
+                          const items = [...(p.speakers.items || [])];
+                          items[i] = { ...items[i], image: v };
+                          return { ...p, speakers: { ...p.speakers, items } };
+                        })
+                      }
+                      uploading={!!uploadingByKey[`speakerImage-${i}`]}
+                      inputId={`event-cms-speaker-image-upload-${i}`}
+                      onUpload={(file) =>
+                        uploadImageAndApply(file, `speakerImage-${i}`, (url) =>
+                          patch((p) => {
+                            const items = [...(p.speakers.items || [])];
+                            items[i] = { ...items[i], image: url };
+                            return { ...p, speakers: { ...p.speakers, items } };
+                          })
+                        )
+                      }
+                      placeholder="/speakers/name.webp or https://..."
+                    />
+                  ) : (
+                    <TextInput
+                      value={sp[f]}
+                      onChange={(v) =>
+                        patch((p) => {
+                          const items = [...(p.speakers.items || [])];
+                          items[i] = { ...items[i], [f]: v };
+                          return { ...p, speakers: { ...p.speakers, items } };
+                        })
+                      }
+                      rows={f === "details" ? 3 : 1}
+                    />
+                  )}
                 </Field>
               ))}
             </div>

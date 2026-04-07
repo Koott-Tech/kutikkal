@@ -45,6 +45,10 @@ export default function LeadershipMembersShowcase({
   carouselFullBleed = false,
   /** Panel photos: no fixed-height crop box — image scales to full frame with object-contain. */
   naturalMemberImageHeight = false,
+  /** Optional dot theme overrides for carousel pagination. */
+  activeDotClassName = "bg-indigo-600",
+  inactiveDotClassName = "bg-gray-300",
+  dotBaseClassName = "w-2 h-2 rounded-full",
 }) {
   const carouselOnly = layout === "carousel";
   const count = members.length;
@@ -293,8 +297,8 @@ export default function LeadershipMembersShowcase({
                     key={index}
                     type="button"
                     onClick={() => goToSlide(index)}
-                    className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                      currentSlide === index ? "bg-indigo-600" : "bg-gray-300"
+                    className={`${dotBaseClassName} transition-all duration-200 ${
+                      currentSlide === index ? activeDotClassName : inactiveDotClassName
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
