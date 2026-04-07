@@ -28,7 +28,8 @@ import {
   Activity,
   UserCircle,
   BookOpen,
-  ClipboardList
+  ClipboardList,
+  Ticket
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -111,10 +112,12 @@ export default function SuperAdminLayout({ children }) {
         { name: 'Doctors', href: '/superadmin/admin/doctors', icon: UserCheck },
         { name: 'Users', href: '/superadmin/admin/users', icon: Users },
         { name: 'Bookings', href: '/superadmin/admin/bookings', icon: Calendar },
+        { name: 'Events', href: '/superadmin/admin/events', icon: Ticket },
         { name: 'Free Assessments', href: '/superadmin/admin/free-assessments', icon: Calendar },
         { name: 'Assessment Sessions', href: '/superadmin/admin/assessment-sessions', icon: Package },
         { name: 'Rescheduling', href: '/superadmin/admin/rescheduling', icon: RefreshCw },
         { name: 'Free Assessment Timeslots', href: '/superadmin/admin/free-assessment-timeslots', icon: Clock },
+        { name: 'Event pages (CMS)', href: '/superadmin/admin/events-cms', icon: Ticket },
       ]
     },
     {

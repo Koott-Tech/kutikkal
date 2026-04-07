@@ -26,6 +26,8 @@ const Guide = () => {
   const router = useRouter();
   const loadedImagesCount = useRef(0);
   const totalImagesCount = useRef(0);
+  /** One listing retry with sync=1 per psychologist when fast availability returns no slots (GCal-heavy profiles). */
+  const emptyAvailabilityListRetryRef = useRef(new Set());
 
   // Helper functions for time slot filtering (same as therapist profile page)
   const parseTimeStringToMinutes = (timeStr) => {
@@ -447,6 +449,26 @@ const Guide = () => {
     }
   };
 
+  /**
+   * Listing cards: fast path first (no GCal sync). If no slots, one retry with sync so psychologists
+   * whose blocks depend on Google Calendar still show next availability (same pattern as profile page).
+   */
+  const fetchDoctorAvailabilityForListing = async (doctorId) => {
+    let result = await fetchDoctorAvailability(doctorId, false);
+    result = result || { timeSlots: [], nextDate: null };
+    if (
+      !result.timeSlots?.length &&
+      !emptyAvailabilityListRetryRef.current.has(doctorId)
+    ) {
+      emptyAvailabilityListRetryRef.current.add(doctorId);
+      const synced = await fetchDoctorAvailability(doctorId, true);
+      if (synced?.timeSlots?.length) {
+        result = synced;
+      }
+    }
+    return result;
+  };
+
   // Fetch availability for all doctors (optimized - parallel fetching with Promise.allSettled)
   const fetchAllDoctorsAvailability = async (doctorsList) => {
     if (doctorsList.length === 0) return;
@@ -455,7 +477,7 @@ const Guide = () => {
     // Use Promise.allSettled to handle failures gracefully
     const availabilityPromises = doctorsList.map(async (doctor) => {
       try {
-        const availability = await fetchDoctorAvailability(doctor.id);
+        const availability = await fetchDoctorAvailabilityForListing(doctor.id);
         return { doctorId: doctor.id, availability, success: true };
       } catch (error) {
         console.error(`Failed to fetch availability for doctor ${doctor.id}:`, error);
@@ -630,7 +652,7 @@ const Guide = () => {
       setLoadingAvailability(prev => new Set(prev).add(doctor.id));
       
       // Fetch in background - don't await
-      fetchDoctorAvailability(doctor.id)
+      fetchDoctorAvailabilityForListing(doctor.id)
         .then(availability => {
           setDoctorAvailability(prev => ({
             ...prev,
@@ -673,7 +695,7 @@ const Guide = () => {
                 setLoadingAvailability(prev => new Set(prev).add(doctorId));
                 
                 // Fetch availability
-                fetchDoctorAvailability(doctorId)
+                fetchDoctorAvailabilityForListing(doctorId)
                   .then(availability => {
                     setDoctorAvailability(prev => ({
                       ...prev,
@@ -768,27 +790,28 @@ const Guide = () => {
 
   // Sync availability for a specific doctor (called on hover/interaction for accuracy)
   const syncDoctorAvailability = async (doctorId) => {
-    // Check if already loading
     if (loadingAvailability.has(doctorId)) {
-      return; // Already syncing
+      return;
     }
-    
-    // Check if availability is already cached
-    if (doctorAvailability[doctorId]) {
-      return; // Already have availability data, no need to fetch again
+    const cached = doctorAvailability[doctorId];
+    // Empty object { timeSlots: [] } is truthy — must not block; those need a sync=true refresh.
+    if (cached?.timeSlots?.length > 0) {
+      return;
     }
-    
+    if (cached?.syncAttempted) {
+      return;
+    }
+
     try {
-      // Sync in background (don't block UI)
       const availability = await fetchDoctorAvailability(doctorId, true);
-      if (availability) {
-        setDoctorAvailability(prev => ({
-          ...prev,
-          [doctorId]: availability
-        }));
-      }
+      setDoctorAvailability((prev) => ({
+        ...prev,
+        [doctorId]: {
+          ...(availability || { timeSlots: [], nextDate: null }),
+          syncAttempted: true,
+        },
+      }));
     } catch (error) {
-      // Silently fail - don't interrupt user experience
       console.error(`Background sync failed for doctor ${doctorId}:`, error);
     }
   };

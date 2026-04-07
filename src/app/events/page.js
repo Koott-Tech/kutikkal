@@ -29,6 +29,42 @@ import {
 } from "@/data/workshopTestimonialsHomeStyle";
 import { SUMMER_WORKSHOP_2026_HERO_IMAGE } from "@/data/summerWorkshop2026Assets";
 
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001/api";
+
+async function getPublishedEventCards() {
+  try {
+    const res = await fetch(`${BACKEND_BASE_URL}/event-pages/public?limit=24`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json().catch(() => null);
+    const rows = Array.isArray(json?.data) ? json.data : [];
+
+    return rows.map((row) => {
+      const cms = row?.cms_data || {};
+      const listCard = cms?.eventListCard || {};
+      const details = Array.isArray(cms?.sessionBanner?.details) ? cms.sessionBanner.details : [];
+      const date = details.find((d) => String(d?.label || "").toLowerCase().includes("date"))?.value || "";
+      const time = details.find((d) => String(d?.label || "").toLowerCase().includes("time"))?.value || "";
+      const schedule = String(listCard?.scheduleText || "").trim() || [date, time].filter(Boolean).join(" at ");
+      const slug = row?.slug || "";
+      return {
+        id: row?.id || slug,
+        category: listCard?.category || cms?.whatIsThis?.eyebrow || "Family Workshop",
+        title: listCard?.title || cms?.sessionBanner?.title || cms?.hero?.title || row?.seo_title || "Event",
+        description: listCard?.description || cms?.hero?.body || row?.seo_description || "Join this event with Little Care.",
+        organizer: listCard?.organizer || "Little Care",
+        schedule: schedule || "Schedule to be announced",
+        image: listCard?.imageUrl || cms?.heroImageUrl || SUMMER_WORKSHOP_2026_HERO_IMAGE,
+        detailsHref: `/events/${slug}`,
+        ticketHref: `/events/${slug}`,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 export const metadata = {
   title: "Events",
   description:
@@ -102,21 +138,8 @@ const PANELISTS = [
   },
 ];
 
-export default function EventsPage() {
-  const events = [
-    {
-      id: "summer-2026",
-      category: "Family Workshop",
-      title: "Little Care Summer Workshop 2026",
-      description:
-        "Interactive parent-child session focused on expressing emotions at home, communication tools, and practical weekly habits.",
-      organizer: "Little Care Team",
-      schedule: "Sat, 18 April 2026 at 11:00 AM IST",
-      image: SUMMER_WORKSHOP_2026_HERO_IMAGE,
-      detailsHref: "/events/little-care-summer-workshops-2026",
-      ticketHref: "/events/little-care-summer-workshops-2026#register",
-    },
-  ];
+export default async function EventsPage() {
+  const events = await getPublishedEventCards();
 
   return (
     <div className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
@@ -164,7 +187,7 @@ export default function EventsPage() {
       <div className="mx-auto max-w-[1280px] px-5 pb-16 sm:px-8 lg:px-12">
 
         <div className="space-y-6">
-          {events.slice(0, 3).map((event) => (
+          {events.length > 0 ? events.map((event) => (
             <article
               key={event.id}
               className="rounded-3xl border border-[#3f2e73]/15 bg-white/95 p-3 shadow-[0_8px_30px_rgba(63,46,115,0.08)] backdrop-blur-[1px] sm:p-4 lg:p-5"
@@ -206,23 +229,27 @@ export default function EventsPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2.5 px-1 md:w-[160px] md:px-0">
+                <div className="flex w-full flex-col gap-2.5 px-1 md:w-[160px] md:px-0">
                   <Link
                     href={event.ticketHref}
-                    className="inline-flex items-center justify-center rounded-full bg-[#3f2e73] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#342560]"
+                    className="inline-flex w-full items-center justify-center rounded-full bg-[#3f2e73] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#342560]"
                   >
-                    Buy a ticket
+                    Book a slot
                   </Link>
                   <Link
                     href={event.detailsHref}
-                    className="inline-flex items-center justify-center rounded-full border border-[#3f2e73]/25 bg-white px-5 py-2.5 text-sm font-semibold text-[#3f2e73] transition-colors hover:bg-[#f4f1ff]"
+                    className="inline-flex w-full items-center justify-center text-sm font-semibold text-[#3f2e73] transition-colors hover:text-[#342560]"
                   >
                     See details
                   </Link>
                 </div>
               </div>
             </article>
-          ))}
+          )) : (
+            <article className="rounded-3xl border border-[#3f2e73]/15 bg-white/95 p-6 text-center text-gray-600 shadow-[0_8px_30px_rgba(63,46,115,0.08)]">
+              No published events yet. Create and publish an event in Events CMS.
+            </article>
+          )}
         </div>
 
         <div className="pt-24 pb-10 sm:pt-32 sm:pb-16">

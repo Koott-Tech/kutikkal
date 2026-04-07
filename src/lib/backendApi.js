@@ -1270,6 +1270,51 @@ export const adminApi = {
       method: 'DELETE',
     });
   },
+
+  // Workshop / event registrations (Supabase-backed)
+  async getEventRegistrations() {
+    return apiRequest('/admin/event-registrations');
+  },
+  async updateEventRegistration(registrationId, data) {
+    return apiRequest(`/admin/event-registrations/${registrationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  async deleteEventRegistration(registrationId) {
+    return apiRequest(`/admin/event-registrations/${registrationId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Marketing event pages CMS (/events/[slug])
+  async getEventPagesAdmin(params = {}) {
+    const q = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v != null && v !== '') q.append(k, v);
+    });
+    return apiRequest(`/event-pages/admin?${q}`);
+  },
+  async getEventPageAdmin(id) {
+    return apiRequest(`/event-pages/admin/${id}`);
+  },
+  async createEventPage(data) {
+    return apiRequest('/event-pages/admin', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  async updateEventPage(id, data) {
+    return apiRequest(`/event-pages/admin/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  async deleteEventPage(id) {
+    return apiRequest(`/event-pages/admin/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Careers API

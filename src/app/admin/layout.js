@@ -22,7 +22,8 @@ import {
   ChevronRight,
   Layers,
   RefreshCw,
-  Briefcase
+  Briefcase,
+  Ticket
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -58,7 +59,7 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const currentPath = window.location.pathname;
-      const cmsPaths = ['/admin/blogs', '/admin/counselling', '/admin/assessments', '/admin/better-parenting', '/admin/careers'];
+      const cmsPaths = ['/admin/blogs', '/admin/counselling', '/admin/assessments', '/admin/better-parenting', '/admin/careers', '/admin/events-cms'];
       const isOnCmsPage = cmsPaths.some(path => currentPath.startsWith(path));
       if (isOnCmsPage) {
         setIsCmsMenuOpen(true);
@@ -76,6 +77,7 @@ export default function AdminLayout({ children }) {
     { name: 'Doctors', href: '/admin/doctors', icon: UserCheck },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
+    { name: 'Events', href: '/admin/events', icon: Ticket },
     { name: 'Free Assessments', href: '/admin/free-assessments', icon: Calendar },
     { name: 'Assessment Sessions', href: '/admin/assessment-sessions', icon: Package },
     { name: 'Rescheduling', href: '/admin/rescheduling', icon: RefreshCw },
@@ -89,6 +91,7 @@ export default function AdminLayout({ children }) {
         { name: 'Assessment Pages', href: '/admin/assessments', icon: FileText },
         { name: 'Better Parenting', href: '/admin/better-parenting', icon: FileText },
         { name: 'Careers', href: '/admin/careers', icon: Briefcase },
+        { name: 'Event pages', href: '/admin/events-cms', icon: Ticket },
       ]
     },
   ];
