@@ -177,15 +177,13 @@ function SessionPassTicket({ cms, onRegister, titleId }) {
         </div>
 
         <div className="p-6 sm:p-7">
-          <div
+          <h2
             id={titleId}
             className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`}
-            role="heading"
-            aria-level={2}
             style={BLOG_SECTION_HEADING_STYLE}
           >
             {b.title}
-          </div>
+          </h2>
           <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             {b.subtitle}
           </p>
@@ -481,15 +479,13 @@ export default function WorkshopEventPageClient({
             <p className={`inline-flex rounded-full border border-[#3f2e73]/20 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>
               {cms.whatIsThis.eyebrow}
             </p>
-            <div
+            <h2
               id="what-is-this-heading"
               className={`mt-3 text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-              role="heading"
-              aria-level={2}
               style={BLOG_SECTION_HEADING_STYLE}
             >
               {cms.whatIsThis.title}
-            </div>
+            </h2>
             <p className={`mt-4 max-w-3xl text-gray-700 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               {cms.whatIsThis.body}
             </p>
@@ -517,15 +513,13 @@ export default function WorkshopEventPageClient({
         >
           <div className="mb-8 sm:mb-10">
             <p className={`text-xs font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>{cms.speakers.eyebrow}</p>
-            <div
+            <h2
               id="event-speakers-heading"
               className={`mt-3 text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-              role="heading"
-              aria-level={2}
               style={BLOG_SECTION_HEADING_STYLE}
             >
               {cms.speakers.heading}
-            </div>
+            </h2>
           </div>
 
           <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -617,15 +611,13 @@ export default function WorkshopEventPageClient({
         >
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-0">
             <p className={`text-xs font-semibold uppercase text-[#3f2e73] ${BLOG_UI_LINE_HEIGHT_CLASS}`}>{cms.whyItMatters.eyebrow}</p>
-            <div
+            <h2
               id="why-it-matters-heading"
               className={`mt-3 text-gray-900 ${BLOG_FEATURED_TITLE_CLASS}`}
-              role="heading"
-              aria-level={2}
               style={BLOG_FEATURED_TITLE_STYLE}
             >
               {cms.whyItMatters.heading}
-            </div>
+            </h2>
             <p className={`mt-4 text-gray-600 max-w-2xl mx-auto ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               {cms.whyItMatters.body}
             </p>
@@ -673,9 +665,9 @@ export default function WorkshopEventPageClient({
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 text-[#3f2e73]">
               <Users className="h-5 w-5" />
-              <div id="who-can-join-heading" className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`} role="heading" aria-level={2} style={BLOG_SECTION_HEADING_STYLE}>
+              <h2 id="who-can-join-heading" className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS} mb-0`} style={BLOG_SECTION_HEADING_STYLE}>
                 {cms.whoCanJoin.heading}
-              </div>
+              </h2>
             </div>
             <span className="inline-flex items-center rounded-full bg-[#f4f1ff] px-3 py-1 text-xs font-semibold text-[#3f2e73]">
               {cms.whoCanJoin.badge}
@@ -700,9 +692,9 @@ export default function WorkshopEventPageClient({
           className="rounded-3xl border border-[#3f2e73]/18 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgba(63,46,115,0.08)]"
           onClick={previewMode ? (e) => jumpToEditorSection("take-back", e) : undefined}
         >
-          <div className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`} role="heading" aria-level={2} style={BLOG_SECTION_HEADING_STYLE}>
+          <h2 className={`text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`} style={BLOG_SECTION_HEADING_STYLE}>
             {cms.takeBack.title}
-          </div>
+          </h2>
           <p className={`mt-2 text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             {cms.takeBack.body}
           </p>

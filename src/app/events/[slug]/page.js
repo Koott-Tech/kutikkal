@@ -27,15 +27,32 @@ export async function generateMetadata({ params }) {
     row.seo_description || merged.hero?.body?.slice(0, 160) || "Little Care events and workshops.";
   const canonical =
     row.canonical_url || `https://www.little.care/events/${params.slug}`;
+  const image = merged.eventListCard?.imageUrl || merged.heroImageUrl || undefined;
   return {
-    title: `${title} | Little Care`,
+    title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+      },
+    },
     openGraph: {
       title,
       description,
       type: "website",
       url: canonical,
       siteName: "Little Care",
+      ...(image ? { images: [{ url: image, alt: title }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
     },
     alternates: { canonical },
   };

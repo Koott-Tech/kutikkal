@@ -163,6 +163,7 @@ export default function Testimonials({
   headingLine1,
   headingLine2,
   useAccessibleHeading = false,
+  headingTag = "h2",
 } = {}) {
   const desktopYouTubeUrl = desktopYouTubeUrlProp ?? DEFAULT_DESKTOP_YOUTUBE_URL;
   const photos = photosProp ?? DEFAULT_PHOTOS;
@@ -170,6 +171,7 @@ export default function Testimonials({
   const resolvedEyebrow = eyebrowText ?? "Testimonials";
   const resolvedHeadingLine1 = headingLine1 ?? "What Families Are Saying About Our";
   const resolvedHeadingLine2 = headingLine2 === undefined ? "Child Counseling Support" : headingLine2;
+  const HeadingTag = headingTag === "h3" ? "h3" : "h2";
 
   const scrollContainerRef = useRef(null);
   const autoPlayRef = useRef(null);
@@ -918,11 +920,9 @@ export default function Testimonials({
         <div className="text-center max-w-4xl mx-auto px-4">
           <p className="p1">{resolvedEyebrow}</p>
           {useAccessibleHeading ? (
-            <div
+            <HeadingTag
               className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full font-sans"
-              style={{ fontWeight: 500 }}
-              role="heading"
-              aria-level={2}
+              style={{ fontWeight: 500, lineHeight: 1.05 }}
             >
               {resolvedHeadingLine1}
               {resolvedHeadingLine2 ? (
@@ -931,11 +931,11 @@ export default function Testimonials({
                   {resolvedHeadingLine2}
                 </>
               ) : null}
-            </div>
+            </HeadingTag>
           ) : (
-            <h2
+            <HeadingTag
               className="testimonials-heading mt-2 mb-16 text-lg md:text-xl lg:text-2xl max-w-full"
-              style={{ fontWeight: 500 }}
+              style={{ fontWeight: 500, lineHeight: 1.05 }}
             >
               {resolvedHeadingLine1}
               {resolvedHeadingLine2 ? (
@@ -944,7 +944,7 @@ export default function Testimonials({
                   {resolvedHeadingLine2}
                 </>
               ) : null}
-            </h2>
+            </HeadingTag>
           )}
         </div>
 

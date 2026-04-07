@@ -257,15 +257,13 @@ export default async function EventsPage() {
             <span className="inline-flex rounded-full border border-[#3f2e73]/20 bg-[#3f2e73]/10 px-4 py-1 text-xs font-semibold text-[#3f2e73]">
               Our mission
             </span>
-            <div
+          <h3
               className={`mt-4 text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-              role="heading"
-              aria-level={2}
-              style={BLOG_SECTION_HEADING_STYLE}
+              style={{ ...BLOG_SECTION_HEADING_STYLE, lineHeight: 1.05 }}
             >
               Building emotionally safer homes for every family
-            </div>
-            <p className={`mx-auto mt-4 max-w-2xl text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+          </h3>
+            <p className={`mx-auto mt-2 max-w-2xl text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               At Little Care, we design practical workshops where parents and children learn together, understand
               emotions better, and build stronger day-to-day communication with confidence.
             </p>
@@ -273,16 +271,14 @@ export default async function EventsPage() {
         </div>
 
         <section className="w-full pt-20 sm:pt-28" aria-labelledby="events-how-it-works-heading">
-          <div
+          <h3
             id="events-how-it-works-heading"
             className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-            role="heading"
-            aria-level={2}
-            style={BLOG_SECTION_HEADING_STYLE}
+            style={{ ...BLOG_SECTION_HEADING_STYLE, lineHeight: 1.05 }}
           >
             How it works
-          </div>
-          <p className={`mx-auto mt-2 max-w-2xl text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+          </h3>
+          <p className={`mx-auto mt-1.5 max-w-2xl text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             Register for your preferred event, receive the joining details, and attend the live session with your family.
           </p>
 
@@ -326,15 +322,13 @@ export default async function EventsPage() {
         </section>
 
         <section className="pt-24 sm:pt-32 lg:pt-40">
-          <div
+          <h3
             className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-            role="heading"
-            aria-level={2}
-            style={BLOG_SECTION_HEADING_STYLE}
+            style={{ ...BLOG_SECTION_HEADING_STYLE, lineHeight: 1.05 }}
           >
             Our panelists
-          </div>
-          <p className={`mt-2 !text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+          </h3>
+          <p className={`mt-1.5 !text-center text-gray-600 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
             Facilitators and voices guiding our event sessions.
           </p>
         </section>
@@ -365,21 +359,20 @@ export default async function EventsPage() {
           headingLine1="What families say about our workshops"
           headingLine2=""
           useAccessibleHeading
+          headingTag="h3"
         />
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-20 sm:px-6 sm:pt-28 lg:px-8">
         <div className="pb-12 sm:pb-16">
           <section className="mx-auto max-w-4xl" aria-labelledby="events-faq-heading">
-            <div
+            <h3
               id="events-faq-heading"
               className={`text-center text-gray-900 ${BLOG_SECTION_HEADING_CLASS}`}
-              role="heading"
-              aria-level={2}
-              style={BLOG_SECTION_HEADING_STYLE}
+              style={{ ...BLOG_SECTION_HEADING_STYLE, lineHeight: 1.05 }}
             >
               Frequently asked questions
-            </div>
+            </h3>
 
             <div className="mt-8">
               <details className="group">
