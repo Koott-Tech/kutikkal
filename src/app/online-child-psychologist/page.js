@@ -92,6 +92,14 @@ const Guide = () => {
     return slotMinutes <= nowMinutes;
   };
 
+  /** Local calendar YYYY-MM-DD (avoid UTC drift from toISOString()). */
+  const formatLocalYmd = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   // Cache management functions
   const CACHE_KEY = 'psychologists_list_cache';
   const CACHE_VERSION_KEY = 'psychologists_cache_version';
@@ -358,14 +366,15 @@ const Guide = () => {
       setLoadingAvailability(prev => new Set(prev).add(doctorId));
 
       const today = new Date();
-      const startDate = today.toISOString().split('T')[0]; // Today
-      const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 12); // Look ahead 12 days for upcoming availability
-      const endDateStr = endDate.toISOString().split('T')[0];
+      const startDate = formatLocalYmd(today);
+      const endCap = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      endCap.setDate(endCap.getDate() + 42); // ~6 weeks — closer to profile “full month” than 12 days
+      const endDateStr = formatLocalYmd(endCap);
 
-      // Increased timeout to 5 seconds (backend caching should make most requests fast)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
+      // Listing used 5s race: slow cache + GCal sync=?sync=1 often exceeded it → empty “next availability”.
+      const timeoutMs = withSync ? 50000 : 18000;
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
       );
 
       // Hybrid approach: sync=false for fast initial load, sync=true for on-demand accuracy
@@ -639,108 +648,73 @@ const Guide = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 
-  // OPTIMIZED: Only fetch availability for visible doctors (first 3-4) on initial load
-  // Use Intersection Observer to fetch availability as cards scroll into view
-  // This prevents loading ALL doctors' availability on page load (major performance improvement)
+  // Prefetch a few psychologists by API order + observe ALL cards by DOM order.
+  // IMPORTANT: DOM order is [all child specialists…][all better parenting…], while `doctors` is flat API order.
+  // Old logic skipped observing the first 4 DOM nodes but only prefetched `doctors.slice(0,4)` — psychologists
+  // who appeared in the first 4 *cards* but not in the first 4 *API rows* never got a fetch (stuck on "No availability").
   useEffect(() => {
     if (doctors.length === 0) return;
 
-    // Fetch availability for first 3-4 doctors immediately (above the fold)
-    const initialDoctors = doctors.slice(0, 4);
-    initialDoctors.forEach((doctor) => {
-      // Mark as loading
-      setLoadingAvailability(prev => new Set(prev).add(doctor.id));
-      
-      // Fetch in background - don't await
-      fetchDoctorAvailabilityForListing(doctor.id)
-        .then(availability => {
-          setDoctorAvailability(prev => ({
+    const fetchedIds = new Set();
+
+    const runListingAvailabilityFetch = (doctorId) => {
+      if (!doctorId || fetchedIds.has(doctorId)) return;
+      fetchedIds.add(doctorId);
+
+      setLoadingAvailability((prev) => new Set(prev).add(doctorId));
+
+      fetchDoctorAvailabilityForListing(doctorId)
+        .then((availability) => {
+          setDoctorAvailability((prev) => ({
             ...prev,
-            [doctor.id]: availability || { timeSlots: [], nextDate: null }
+            [doctorId]: availability || { timeSlots: [], nextDate: null },
           }));
         })
-        .catch(() => {
-          // Silently fail - availability will show as loading
-        })
+        .catch(() => {})
         .finally(() => {
-          setLoadingAvailability(prev => {
-            const updated = new Set(prev);
-            updated.delete(doctor.id);
-            return updated;
+          setLoadingAvailability((prev) => {
+            const next = new Set(prev);
+            next.delete(doctorId);
+            return next;
           });
         });
-    });
+    };
 
-    // Use Intersection Observer to fetch availability for remaining doctors as they scroll into view
-    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
-      const observerOptions = {
-        root: null,
-        rootMargin: '200px', // Start fetching 200px before card enters viewport
-        threshold: 0.1
-      };
+    // Warm-cache typical above-the-fold rows (API order — cheap parallel start)
+    doctors.slice(0, 4).forEach((d) => runListingAvailabilityFetch(d.id));
 
-      const observerCallback = (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const cardElement = entry.target;
-            const doctorId = cardElement.getAttribute('data-doctor-id');
-            
-            if (doctorId) {
-              // Check if already loaded or loading
-              const alreadyLoaded = doctorAvailability[doctorId];
-              const isLoading = loadingAvailability.has(doctorId);
-              
-              if (!alreadyLoaded && !isLoading) {
-                // Mark as loading
-                setLoadingAvailability(prev => new Set(prev).add(doctorId));
-                
-                // Fetch availability
-                fetchDoctorAvailabilityForListing(doctorId)
-                  .then(availability => {
-                    setDoctorAvailability(prev => ({
-                      ...prev,
-                      [doctorId]: availability || { timeSlots: [], nextDate: null }
-                    }));
-                  })
-                  .catch(() => {
-                    // Silently fail
-                  })
-                  .finally(() => {
-                    setLoadingAvailability(prev => {
-                      const updated = new Set(prev);
-                      updated.delete(doctorId);
-                      return updated;
-                    });
-                  });
-                
-                // Unobserve after fetching (only fetch once)
-                observer.unobserve(cardElement);
-              }
-            }
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      doctors.forEach((d) => runListingAvailabilityFetch(d.id));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const doctorId = entry.target.getAttribute('data-doctor-id');
+          if (doctorId) {
+            runListingAvailabilityFetch(doctorId);
+            observer.unobserve(entry.target);
           }
         });
-      };
+      },
+      {
+        root: null,
+        rootMargin: '200px',
+        threshold: 0.1,
+      }
+    );
 
-      const observer = new IntersectionObserver(observerCallback, observerOptions);
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        document.querySelectorAll('[data-doctor-id]').forEach((card) => {
+          observer.observe(card);
+        });
+      }, 100);
+    });
 
-      // Observe all doctor cards (skip first 4 since we fetch them immediately)
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const cards = document.querySelectorAll('[data-doctor-id]');
-          cards.forEach((card, index) => {
-            // Skip first 4 (already fetching immediately)
-            if (index >= 4) {
-              observer.observe(card);
-            }
-          });
-        }, 100); // Small delay to ensure DOM is rendered
-      });
-
-      return () => {
-        observer.disconnect();
-      };
-    }
+    return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctors.length]);
 

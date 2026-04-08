@@ -45,6 +45,10 @@ const getTimeoutForRequest = (endpoint) => {
   if (isRecurringBlocksEndpoint) {
     return 45000;
   }
+  // Public psychologist availability range: optional ?sync=1 runs GCal sync — must not abort at 15s
+  if (endpoint.includes('/availability/psychologist/') && endpoint.includes('/range')) {
+    return 60000;
+  }
   
   // High-latency regions get 25s, others get 15s
   return region === 'high-latency' ? 25000 : 15000;

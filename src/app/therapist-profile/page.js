@@ -22,6 +22,7 @@ import ChildSpecSessionSelect, {
 import {
   CHILD_SPEC_FOLLOWUP_SESSION_DURATION,
   CHILD_SPEC_INITIAL_SESSION_DURATION,
+  CHILD_SPEC_VARIANT_DISPLAY_ORDER,
 } from '@/lib/childSpecSessionDurations';
 // import QuickContactModal from '@/components/QuickContactModal'; // Removed - contact details collected during signup
 
@@ -270,12 +271,18 @@ const TherapistProfileContent = () => {
     selectedDoctor?.specialist_category === 'child_specialist' ||
     (!!selectedDoctor?.child_specialist_pricing?.initial &&
       selectedDoctor?.specialist_category !== 'better_parent');
-  const childSpecInitPackages = useMemo(
-    () => packages.filter((p) => p.package_type?.startsWith('cs_init_')),
-    [packages]
-  );
+  const childSpecInitPackages = useMemo(() => {
+    const init = packages.filter((p) => p.package_type?.startsWith('cs_init_'));
+    const rank = (pkg) => {
+      const m = /^cs_init_(parent|child|family)$/.exec(pkg.package_type || '');
+      const suffix = m?.[1];
+      const idx = suffix ? CHILD_SPEC_VARIANT_DISPLAY_ORDER.indexOf(suffix) : -1;
+      return idx >= 0 ? idx : CHILD_SPEC_VARIANT_DISPLAY_ORDER.length;
+    };
+    return [...init].sort((a, b) => rank(a) - rank(b));
+  }, [packages]);
 
-  const CHILD_SPEC_FU_SUFFIXES = ['parent', 'child', 'family'];
+  const CHILD_SPEC_FU_SUFFIXES = CHILD_SPEC_VARIANT_DISPLAY_ORDER;
   const CHILD_SPEC_VARIANT_LABELS = {
     parent: 'Parent only',
     child: 'Child only',
