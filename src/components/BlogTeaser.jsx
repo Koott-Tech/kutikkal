@@ -5,6 +5,9 @@ import Image from "next/image";
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+/** Must match mobile `.blog-grid` gap and desktop Tailwind gap for scroll snapping. */
+const BLOG_CARD_GAP_PX = 28;
+
 export default function BlogTeaser() {
   const router = useRouter();
 
@@ -31,7 +34,6 @@ export default function BlogTeaser() {
   const carouselRef = useRef(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const node = carouselRef.current;
@@ -40,18 +42,6 @@ export default function BlogTeaser() {
     const updateButtons = () => {
       setCanScrollPrev(node.scrollLeft > 0);
       setCanScrollNext(node.scrollLeft + node.offsetWidth < node.scrollWidth - 1);
-      
-      // Update current slide index for dots
-      if (posts.length > 0) {
-        const firstSlide = node.firstElementChild;
-        if (firstSlide) {
-          const slideWidth = firstSlide.getBoundingClientRect().width;
-          const gap = 20; // gap between slides
-          const total = slideWidth + gap;
-          const slideIndex = Math.round(node.scrollLeft / total);
-          setCurrentSlide(Math.max(0, Math.min(slideIndex, posts.length - 1)));
-        }
-      }
     };
 
     updateButtons();
@@ -128,21 +118,9 @@ export default function BlogTeaser() {
     const firstSlide = node.firstElementChild;
     const slideWidth = firstSlide?.getBoundingClientRect().width || node.offsetWidth * 0.75;
     const styles = window.getComputedStyle(node);
-    const gap =
-      parseFloat(styles.getPropertyValue("column-gap") || styles.getPropertyValue("gap")) || 20;
+    const parsedGap = parseFloat(styles.getPropertyValue("column-gap") || styles.getPropertyValue("gap"));
+    const gap = Number.isFinite(parsedGap) && parsedGap > 0 ? parsedGap : BLOG_CARD_GAP_PX;
     node.scrollTo({ left: node.scrollLeft + dir * (slideWidth + gap), behavior: "smooth" });
-  };
-
-  const scrollToSlide = (index) => {
-    if (isLoading) return;
-    const node = carouselRef.current;
-    if (!node) return;
-    const firstSlide = node.firstElementChild;
-    if (!firstSlide) return;
-    const slideWidth = firstSlide.getBoundingClientRect().width;
-    const gap = 20;
-    const total = slideWidth + gap;
-    node.scrollTo({ left: index * total, behavior: "smooth" });
   };
 
   return (
@@ -209,7 +187,7 @@ export default function BlogTeaser() {
             overflow-x: auto !important;
             scroll-snap-type: x mandatory !important;
             -webkit-overflow-scrolling: touch !important;
-            gap: 20px !important;
+            gap: ${BLOG_CARD_GAP_PX}px !important;
             padding-bottom: 12px !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
@@ -313,7 +291,7 @@ export default function BlogTeaser() {
         </div>
 
         <div className="overflow-hidden md:overflow-visible">
-          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-6 lg:gap-4" id="blog-carousel" suppressHydrationWarning>
+          <div ref={carouselRef} className="blog-grid md:grid md:grid-cols-3 md:gap-8 lg:gap-10" id="blog-carousel" suppressHydrationWarning>
            {posts.map((post, index) => {
             const imageSrc = normalizeImageUrl(post.featured_image_url || post.src);
             const author = post.author_name || post.author || "Little Care Team";
@@ -327,6 +305,15 @@ export default function BlogTeaser() {
               key={post.id || post.slug || post.title} 
               className="blog-card min-w-0 cursor-pointer"
               onClick={() => handleBlogClick(post)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleBlogClick(post);
+                }
+              }}
+              tabIndex={0}
+              role="link"
+              aria-label={`Read article: ${post.title || "Blog post"}`}
             >
                {imageSrc && (
                <div
