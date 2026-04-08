@@ -43,7 +43,7 @@ const StructuredContentRenderer = ({ content }) => {
   }
 
   return (
-    <div className={`prose prose-lg max-w-none space-y-12 ${BLOG_LETTER_SPACING_CLASS} [&_p]:leading-[24px] [&_li]:leading-[20px] [&_blockquote]:leading-[24px] [&_h1]:leading-[60px] [&_h2]:leading-tight [&_h3]:leading-tight [&_h4]:leading-tight`}>
+    <div className={`prose prose-lg max-w-none space-y-12 ${BLOG_LETTER_SPACING_CLASS} [&_p]:leading-normal [&_li]:leading-[20px] [&_blockquote]:leading-normal [&_h1]:leading-[60px] [&_h2]:leading-tight [&_h3]:leading-tight [&_h4]:leading-tight`}>
       {content.map((block, index) => {
         switch (block.type) {
                  case 'paragraph':
@@ -257,7 +257,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'bulletList':
             return (
-              <ul key={index} className="list-disc list-inside space-y-2 ml-4">
+              <ul key={index} className="list-disc list-outside space-y-2 ml-0 pl-5 sm:ml-4 sm:pl-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
@@ -268,7 +268,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'numberedList':
             return (
-              <ol key={index} className="list-decimal list-inside space-y-2 ml-4">
+              <ol key={index} className="list-decimal list-outside space-y-2 ml-0 pl-5 sm:ml-4 sm:pl-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
@@ -535,7 +535,17 @@ export default function BlogPost({ slug }) {
   return (
     <>
       <BlogMetaTags blog={blogPost} />
-      <style dangerouslySetInnerHTML={{ __html: BLOG_TYPOGRAPHY_ROOT_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: `
+        ${BLOG_TYPOGRAPHY_ROOT_CSS}
+        @media (max-width: 767px) {
+          .blog-typography-root .hero-description {
+            text-align: left !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            max-width: 100% !important;
+          }
+        }
+      ` }} />
     <article className={`min-h-screen bg-white ${BLOG_TYPOGRAPHY_ROOT_CLASS} ${BLOG_LETTER_SPACING_CLASS}`}>
       <div className="max-w-6xl mx-auto px-6 sm:px-32 lg:px-40 xl:px-44 pt-24 pb-12">
         {/* Title & Metadata */}
@@ -564,7 +574,7 @@ export default function BlogPost({ slug }) {
             {blogPost.title}
           </div>
           {blogPost.excerpt && (
-            <p className={`font-medium text-gray-600 mb-4 ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
+            <p className={`font-medium text-gray-600 mb-4 text-left ${HERO_BODY_TEXT_CLASS}`} style={{ ...HERO_BODY_TEXT_STYLE, textAlign: 'left' }}>
               {blogPost.excerpt}
             </p>
           )}
@@ -616,7 +626,7 @@ export default function BlogPost({ slug }) {
               <div
                 className="blog-content-html document-editor"
                 data-block-content="true"
-                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '24px', letterSpacing: '-0.7px' }}
+                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.5', letterSpacing: '-0.7px' }}
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             );

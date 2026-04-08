@@ -10,14 +10,14 @@ export function getBlogDocumentEditorTypographyCss(sel) {
             font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
             letter-spacing: -0.7px !important;
             color: #171717 !important;
-            text-align: justify !important;
+            text-align: left !important;
           }
           ${sel} p {
             display: block !important;
             margin-top: 0 !important;
             margin-bottom: 1rem !important;
             font-size: 1rem !important;
-            line-height: 24px !important;
+            line-height: 1.5 !important;
             font-weight: 400 !important;
           }
           ${sel} p:empty,
@@ -94,7 +94,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           ${sel} h6 br {
             display: block !important;
             font-size: 1rem !important;
-            line-height: 24px !important;
+            line-height: 1.5 !important;
             height: 24px !important;
             margin: 0 !important;
           }
@@ -131,7 +131,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
             display: block !important;
             margin-top: 0 !important;
             margin-bottom: 0.5rem !important;
-            line-height: 24px !important;
+            line-height: 1.5 !important;
           }
           ${sel} li > h2,
           ${sel} li > h3,
@@ -159,18 +159,31 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           ${sel} blockquote {
             display: block !important;
             margin: 1rem 0 !important;
-            line-height: 24px !important;
+            line-height: 1.5 !important;
             font-size: 1rem !important;
           }
           ${sel} pre {
             display: block !important;
             margin: 1rem 0 !important;
           }
+          ${sel} h1 *,
+          ${sel} h2 *,
+          ${sel} h3 *,
+          ${sel} h4 *,
+          ${sel} h5 *,
+          ${sel} h6 * {
+            font-size: inherit !important;
+            line-height: inherit !important;
+            letter-spacing: inherit !important;
+          }
+          ${sel} span {
+            letter-spacing: inherit !important;
+          }
           ${sel} div:not(.doc-editor-img-block):not(.document-editor-image-wrapper) {
             display: block !important;
             margin-top: 0 !important;
             margin-bottom: 1rem !important;
-            line-height: 24px !important;
+            line-height: 1.5 !important;
           }
           ${sel} br {
             display: block !important;
@@ -198,14 +211,14 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     .blog-content,
     .blog-content-html {
       letter-spacing: -0.7px !important;
-      text-align: justify !important;
+      text-align: left !important;
     }
     ${getBlogDocumentEditorTypographyCss('.blog-content .document-editor')}
     .blog-content p,
     .blog-content-html p {
       display: block !important;
       margin-bottom: 1rem !important;
-      line-height: 24px !important;
+      line-height: 1.5 !important;
       margin-left: 0 !important;
       padding-left: 0 !important;
     }
@@ -313,7 +326,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       display: block !important;
       margin-top: 0 !important;
       margin-bottom: 0.5rem !important;
-      line-height: 24px !important;
+      line-height: 1.5 !important;
     }
     .blog-content li > blockquote,
     .blog-content-html li > blockquote {
@@ -331,6 +344,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 60px !important;
       font-weight: 700 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 2rem !important;
       margin-bottom: 1rem !important;
       overflow: visible !important;
@@ -342,6 +356,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 700 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 1.75rem !important;
       margin-bottom: 0.875rem !important;
       overflow: visible !important;
@@ -353,6 +368,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 1.5rem !important;
       margin-bottom: 0.75rem !important;
       overflow: visible !important;
@@ -364,6 +380,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 1.25rem !important;
       margin-bottom: 0.625rem !important;
       overflow: visible !important;
@@ -375,6 +392,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 1rem !important;
       margin-bottom: 0.5rem !important;
       overflow: visible !important;
@@ -386,6 +404,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
+      text-align: left !important;
       margin-top: 0.875rem !important;
       margin-bottom: 0.5rem !important;
       overflow: visible !important;
@@ -397,6 +416,20 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     .blog-content a:hover {
       color: #1d1733 !important;
+    }
+    .blog-content span,
+    .blog-content-html span {
+      letter-spacing: inherit !important;
+    }
+    .blog-content h1 *, .blog-content-html h1 *,
+    .blog-content h2 *, .blog-content-html h2 *,
+    .blog-content h3 *, .blog-content-html h3 *,
+    .blog-content h4 *, .blog-content-html h4 *,
+    .blog-content h5 *, .blog-content-html h5 *,
+    .blog-content h6 *, .blog-content-html h6 * {
+      font-size: inherit !important;
+      line-height: inherit !important;
+      letter-spacing: inherit !important;
     }
     .blog-content .doc-editor-img-block,
     .blog-content .document-editor-image-wrapper {
@@ -447,57 +480,51 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     @media (max-width: 767px) {
       .blog-content .document-editor p {
-        line-height: 24px !important;
+        line-height: 1.5 !important;
       }
       .blog-content .document-editor div,
       .blog-content .document-editor blockquote {
-        line-height: 24px !important;
+        line-height: 1.5 !important;
       }
       .blog-content h1,
       .blog-content-html h1 {
         font-size: 22px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content h2,
       .blog-content-html h2 {
         font-size: 20px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content h3,
       .blog-content-html h3 {
         font-size: 18px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content h4,
       .blog-content-html h4 {
         font-size: 16px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content h5,
       .blog-content-html h5 {
         font-size: 15px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content h6,
       .blog-content-html h6 {
         font-size: 14px !important;
-      }
-      .blog-content h2,
-      .blog-content h3,
-      .blog-content h4,
-      .blog-content h5,
-      .blog-content h6,
-      .blog-content-html h2,
-      .blog-content-html h3,
-      .blog-content-html h4,
-      .blog-content-html h5,
-      .blog-content-html h6 {
-        line-height: 1.25 !important;
-        letter-spacing: -0.7px !important;
-      }
-      .blog-content h1,
-      .blog-content-html h1 {
-        line-height: 60px !important;
-        letter-spacing: -0.7px !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.5px !important;
       }
       .blog-content p,
       .blog-content-html p {
-        line-height: 24px !important;
+        line-height: 1.5 !important;
         letter-spacing: -0.7px !important;
       }
       .blog-content div,
@@ -505,6 +532,24 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       .blog-content-html div,
       .blog-content-html blockquote {
         letter-spacing: -0.7px !important;
+      }
+      .blog-content .document-editor ul,
+      .blog-content .document-editor ol,
+      .blog-content-html.document-editor ul,
+      .blog-content-html.document-editor ol {
+        margin-left: 0 !important;
+        padding-left: 1.25rem !important;
+      }
+      .blog-content .document-editor ul ul,
+      .blog-content .document-editor ol ul,
+      .blog-content .document-editor ul ol,
+      .blog-content .document-editor ol ol,
+      .blog-content-html.document-editor ul ul,
+      .blog-content-html.document-editor ol ul,
+      .blog-content-html.document-editor ul ol,
+      .blog-content-html.document-editor ol ol {
+        margin-left: 0 !important;
+        padding-left: 1rem !important;
       }
     }
   `.trim();
