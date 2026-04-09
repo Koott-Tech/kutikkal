@@ -134,8 +134,8 @@ export default function Blog() {
     <div
       role="heading"
       aria-level={1}
-      className={`text-gray-900 mb-4 text-left ${HERO_DISPLAY_HEADING_CLASS}`}
-      style={{ ...HERO_DISPLAY_HEADING_STYLE, textAlign: 'left' }}
+      className={`text-gray-900 mb-4 ${HERO_DISPLAY_HEADING_CLASS}`}
+      style={HERO_DISPLAY_HEADING_STYLE}
     >
       The Little Care Blog
     </div>
@@ -148,7 +148,7 @@ export default function Blog() {
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
           <div className="text-left mb-16 sm:mb-20">
             {pageTitle}
-            <p className={`text-gray-600 max-w-xl text-left ${HERO_BODY_TEXT_CLASS}`} style={{ ...HERO_BODY_TEXT_STYLE, textAlign: 'left' }}>
+            <p className={`text-gray-600 max-w-xl ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function Blog() {
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
           <div className="text-left mb-16 sm:mb-20">
             {pageTitle}
-            <p className={`text-gray-600 max-w-xl text-left ${HERO_BODY_TEXT_CLASS}`} style={{ ...HERO_BODY_TEXT_STYLE, textAlign: 'left' }}>
+            <p className={`text-gray-600 max-w-xl ${HERO_BODY_TEXT_CLASS}`} style={HERO_BODY_TEXT_STYLE}>
               A trusted resource for parents and families, offering expert insights and guidance on child mental health.
             </p>
           </div>
@@ -197,7 +197,7 @@ export default function Blog() {
           scrollbar-width: none;
         }
         @media (max-width: 767px) {
-          /* Override global mobile hero centering for blog page only */
+          /* Override global mobile hero centering for blog page */
           .blog-typography-root .hero-description {
             text-align: left !important;
             margin-left: 0 !important;

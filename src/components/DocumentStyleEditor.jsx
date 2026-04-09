@@ -1158,6 +1158,52 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     handleInput();
   }, [handleInput]);
 
+  // Add / edit / remove redirect link for image selected via context menu.
+  const setImageLinkByWrapperRef = useCallback(() => {
+    const editor = editorRef.current;
+    const wrapper = contextMenuImageWrapperRef.current;
+    if (!editor || !wrapper || !editor.contains(wrapper)) return;
+
+    const img = wrapper.querySelector('img');
+    if (!img) return;
+
+    const currentAnchor = wrapper.querySelector('a[href]');
+    const currentHref = currentAnchor?.getAttribute('href') || '';
+    const input = window.prompt('Enter image link URL (leave empty to remove link)', currentHref);
+    if (input === null) return;
+
+    const raw = input.trim();
+    if (!raw) {
+      if (currentAnchor) {
+        currentAnchor.replaceWith(img);
+      }
+      wrapper.removeAttribute('data-link-url');
+      handleInput();
+      return;
+    }
+
+    const href = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+    if (currentAnchor) {
+      currentAnchor.setAttribute('href', href);
+      currentAnchor.setAttribute('target', '_blank');
+      currentAnchor.setAttribute('rel', 'noopener noreferrer');
+      currentAnchor.className = 'document-editor-image-link';
+    } else {
+      const a = document.createElement('a');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'document-editor-image-link';
+      img.replaceWith(a);
+      a.appendChild(img);
+    }
+    // Redundant persistence for frontend fallback click handling.
+    wrapper.setAttribute('data-link-url', href);
+
+    handleInput();
+  }, [handleInput]);
+
   // Convert current block to new type (Google Docs style: Paragraph → Heading 1, etc.)
   const setBlockType = useCallback((type) => {
     const editor = editorRef.current;
@@ -2053,17 +2099,30 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
           {contextMenu.onImage && (
-            <button
-              type="button"
-              onClick={() => {
-                setContextMenu(prev => ({ ...prev, visible: false }));
-                removeImageByWrapperRef();
-              }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600"
-            >
-              <Trash2 className="h-4 w-4 text-red-600" />
-              Remove image
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setContextMenu(prev => ({ ...prev, visible: false }));
+                  setImageLinkByWrapperRef();
+                }}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+              >
+                <LinkIcon className="h-4 w-4 text-gray-600" />
+                Add / edit image link
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setContextMenu(prev => ({ ...prev, visible: false }));
+                  removeImageByWrapperRef();
+                }}
+                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 text-red-600"
+              >
+                <Trash2 className="h-4 w-4 text-red-600" />
+                Remove image
+              </button>
+            </>
           )}
           {contextMenu.onImage && <div className="border-t border-gray-100 my-1" />}
           <button

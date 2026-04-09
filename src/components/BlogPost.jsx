@@ -43,7 +43,7 @@ const StructuredContentRenderer = ({ content }) => {
   }
 
   return (
-    <div className={`prose prose-lg max-w-none space-y-12 ${BLOG_LETTER_SPACING_CLASS} [&_p]:leading-normal [&_li]:leading-[20px] [&_blockquote]:leading-normal [&_h1]:leading-[60px] [&_h2]:leading-tight [&_h3]:leading-tight [&_h4]:leading-tight`}>
+    <div className={`prose prose-lg max-w-none space-y-12 ${BLOG_LETTER_SPACING_CLASS} [&_p]:leading-[24px] [&_li]:leading-[20px] [&_blockquote]:leading-[24px] [&_h1]:leading-[60px] [&_h2]:leading-tight [&_h3]:leading-tight [&_h4]:leading-tight`}>
       {content.map((block, index) => {
         switch (block.type) {
                  case 'paragraph':
@@ -257,7 +257,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'bulletList':
             return (
-              <ul key={index} className="list-disc list-outside space-y-2 ml-0 pl-5 sm:ml-4 sm:pl-4">
+              <ul key={index} className="list-disc list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
@@ -268,7 +268,7 @@ const StructuredContentRenderer = ({ content }) => {
           
           case 'numberedList':
             return (
-              <ol key={index} className="list-decimal list-outside space-y-2 ml-0 pl-5 sm:ml-4 sm:pl-4">
+              <ol key={index} className="list-decimal list-inside space-y-2 ml-4">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex} className={`leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                     {item}
@@ -314,6 +314,31 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
 
   return (
     <section className="mt-16 pt-8 border-t border-gray-200" aria-label="You might also like">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 767px) {
+              .related-blog-card {
+                border-radius: 14px !important;
+                overflow: hidden !important;
+              }
+              .related-blog-image-card {
+                border-radius: 14px !important;
+                overflow: hidden !important;
+              }
+              .related-blog-meta,
+              .related-blog-title {
+                text-align: center !important;
+              }
+              .related-blog-title {
+                max-width: 92% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+              }
+            }
+          `,
+        }}
+      />
       <div className="related-posts text-left">
         <div role="heading" aria-level={2} className={BLOG_SECTION_HEADING_CLASS} style={BLOG_SECTION_HEADING_STYLE}>
           You might also like
@@ -324,25 +349,25 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
             <Link 
               key={blog.id} 
               href={`/blog/${blog.slug}`}
-              className="group block w-full max-w-[340px] mx-0"
+              className="group block w-full max-w-[340px] mx-auto md:mx-0"
             >
-              <article className="w-full cursor-pointer text-left">
+              <article className="related-blog-card w-full cursor-pointer text-center md:text-left rounded-xl md:rounded-none overflow-hidden md:overflow-visible">
                 {/* Image Container */}
                 {blog.featured_image_url && (
-                  <div className="relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-2xl">
+                  <div className="related-blog-image-card relative w-full h-[140px] sm:h-[150px] md:h-[160px] lg:aspect-[16/9] overflow-hidden rounded-xl md:rounded-2xl">
                     <Image
                       src={normalizeImageUrl(blog.featured_image_url || '')}
                       alt={blog.title}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
-                      className="object-contain object-left md:object-center"
+                      className="object-contain object-center"
                       priority={false}
                     />
                   </div>
                 )}
                 
                 {/* Meta Info */}
-                <div className={`mt-4 md:mt-6 lg:mt-4 text-gray-600 text-xs md:text-sm leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
+                <div className={`related-blog-meta mt-4 md:mt-6 lg:mt-4 px-2 md:px-0 text-gray-600 text-xs md:text-sm text-center md:text-left leading-[20px] ${BLOG_LETTER_SPACING_CLASS}`}>
                   <span>{blog.author_name || "Little Care Team"}</span>
                   <span className="px-1 md:px-2">•</span>
                   <span>{formatDate(blog.published_at || blog.created_at)}</span>
@@ -352,7 +377,7 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
                 <div
                   role="heading"
                   aria-level={3}
-                  className={`${BLOG_CARD_TITLE_CLASS} md:mt-3 lg:mt-2`}
+                  className={`related-blog-title ${BLOG_CARD_TITLE_CLASS} md:mt-3 lg:mt-2 text-center md:text-left px-2 md:px-0 max-w-[92%] md:max-w-none mx-auto md:mx-0`}
                   style={BLOG_CARD_TITLE_STYLE}
                 >
                   {blog.title}
@@ -438,11 +463,48 @@ export default function BlogPost({ slug }) {
           imgEl.style.setProperty('max-height', 'none', 'important');
           imgEl.style.setProperty('object-fit', 'cover', 'important');
         }
+        // Make whole image block clickable when editor saved a link.
+        // Supports both <a href><img/></a> and fallback data-link-url persistence.
+        const linkedAnchor = el.querySelector('a[href]');
+        const linkUrl = linkedAnchor?.getAttribute('href') || el.getAttribute('data-link-url') || '';
+        if (linkUrl) {
+          el.style.setProperty('cursor', 'pointer', 'important');
+          el.onclick = (evt) => {
+            evt.preventDefault();
+            evt.stopPropagation();
+            window.open(linkUrl, '_blank', 'noopener,noreferrer');
+          };
+        } else {
+          el.onclick = null;
+        }
         el.querySelectorAll('.doc-editor-img-drag-handle, .doc-editor-img-overlay').forEach((c) => c.remove());
       });
     };
+    const handleLinkedImageClick = (evt) => {
+      const target = evt.target;
+      if (!(target instanceof Element)) return;
+      const img = target.closest('img');
+      if (!img || !root.contains(img)) return;
+
+      // Prefer explicit anchor href. Fallback to preserved wrapper/data attribute link.
+      const hrefFromAnchor = img.closest('a[href]')?.getAttribute('href') || '';
+      const hrefFromData =
+        img.closest('[data-link-url]')?.getAttribute('data-link-url') ||
+        img.getAttribute('data-link-url') ||
+        '';
+      const href = (hrefFromAnchor || hrefFromData || '').trim();
+      if (!href) return;
+
+      evt.preventDefault();
+      evt.stopPropagation();
+      window.location.assign(href);
+    };
     const t = setTimeout(stripDragUI, 0);
-    return () => clearTimeout(t);
+    root.addEventListener('click', handleLinkedImageClick, true);
+    return () => {
+      clearTimeout(t);
+      root.removeEventListener('click', handleLinkedImageClick, true);
+    };
   }, [blogPost]);
 
   useEffect(() => {
@@ -538,6 +600,58 @@ export default function BlogPost({ slug }) {
       <style dangerouslySetInnerHTML={{ __html: `
         ${BLOG_TYPOGRAPHY_ROOT_CSS}
         @media (max-width: 767px) {
+          .blog-typography-root .blog-content,
+          .blog-typography-root .blog-content-html,
+          .blog-typography-root .blog-content .document-editor,
+          .blog-typography-root .blog-content [data-block-content="true"] {
+            text-align: left !important;
+            text-align-last: left !important;
+            word-spacing: normal !important;
+          }
+          .blog-typography-root .blog-post-title,
+          .blog-typography-root .blog-content h1,
+          .blog-typography-root .blog-content h2,
+          .blog-typography-root .blog-content h3,
+          .blog-typography-root .blog-content h4,
+          .blog-typography-root .blog-content h5,
+          .blog-typography-root .blog-content h6,
+          .blog-typography-root .blog-content-html h1,
+          .blog-typography-root .blog-content-html h2,
+          .blog-typography-root .blog-content-html h3,
+          .blog-typography-root .blog-content-html h4,
+          .blog-typography-root .blog-content-html h5,
+          .blog-typography-root .blog-content-html h6,
+          .blog-typography-root [data-block-content="true"] h1,
+          .blog-typography-root [data-block-content="true"] h2,
+          .blog-typography-root [data-block-content="true"] h3,
+          .blog-typography-root [data-block-content="true"] h4,
+          .blog-typography-root [data-block-content="true"] h5,
+          .blog-typography-root [data-block-content="true"] h6 {
+            text-align: left !important;
+            text-justify: auto !important;
+            word-spacing: normal !important;
+          }
+          /* Restore comfortable mobile heading rhythm after left-align overrides */
+          .blog-typography-root .blog-post-title {
+            line-height: 1.1 !important;
+          }
+          .blog-typography-root .blog-content h2,
+          .blog-typography-root .blog-content h3,
+          .blog-typography-root .blog-content h4,
+          .blog-typography-root .blog-content h5,
+          .blog-typography-root .blog-content h6,
+          .blog-typography-root .blog-content-html h2,
+          .blog-typography-root .blog-content-html h3,
+          .blog-typography-root .blog-content-html h4,
+          .blog-typography-root .blog-content-html h5,
+          .blog-typography-root .blog-content-html h6,
+          .blog-typography-root [data-block-content="true"] h2,
+          .blog-typography-root [data-block-content="true"] h3,
+          .blog-typography-root [data-block-content="true"] h4,
+          .blog-typography-root [data-block-content="true"] h5,
+          .blog-typography-root [data-block-content="true"] h6 {
+            line-height: 1.25 !important;
+          }
           .blog-typography-root .hero-description {
             text-align: left !important;
             margin-left: 0 !important;
@@ -568,8 +682,8 @@ export default function BlogPost({ slug }) {
           <div
             role="heading"
             aria-level={1}
-            className={`text-gray-900 mb-4 ${HERO_DISPLAY_HEADING_CLASS}`}
-            style={HERO_DISPLAY_HEADING_STYLE}
+            className={`blog-post-title text-gray-900 mb-4 ${HERO_DISPLAY_HEADING_CLASS}`}
+            style={{ ...HERO_DISPLAY_HEADING_STYLE, textAlign: 'left', wordSpacing: 'normal' }}
           >
             {blogPost.title}
           </div>
@@ -626,7 +740,7 @@ export default function BlogPost({ slug }) {
               <div
                 className="blog-content-html document-editor"
                 data-block-content="true"
-                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.5', letterSpacing: '-0.7px' }}
+                style={{ display: 'block', maxWidth: 'none', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '24px', letterSpacing: '-0.7px' }}
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
             );
