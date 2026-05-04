@@ -10,7 +10,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
             font-family: 'Work Sans', Arial, Helvetica, sans-serif !important;
             letter-spacing: -0.7px !important;
             color: #171717 !important;
-            text-align: justify !important;
+            text-align: justify;
           }
           ${sel} p {
             display: block !important;
@@ -158,13 +158,15 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           }
           ${sel} blockquote {
             display: block !important;
-            margin: 1rem 0 !important;
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
             line-height: 24px !important;
             font-size: 1rem !important;
           }
           ${sel} pre {
             display: block !important;
-            margin: 1rem 0 !important;
+            margin-top: 1rem !important;
+            margin-bottom: 1rem !important;
           }
           ${sel} div:not(.doc-editor-img-block):not(.document-editor-image-wrapper) {
             display: block !important;
@@ -198,7 +200,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     .blog-content,
     .blog-content-html {
       letter-spacing: -0.7px !important;
-      text-align: justify !important;
+      text-align: justify;
     }
     ${getBlogDocumentEditorTypographyCss('.blog-content .document-editor')}
     .blog-content p,
@@ -206,16 +208,12 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       display: block !important;
       margin-bottom: 1rem !important;
       line-height: 24px !important;
-      margin-left: 0 !important;
-      padding-left: 0 !important;
     }
     .blog-content blockquote,
     .blog-content-html blockquote,
     .blog-content-html pre {
       display: block !important;
       margin-bottom: 1rem !important;
-      margin-left: 0 !important;
-      padding-left: 0 !important;
     }
     .blog-content div,
     .blog-content h1,
@@ -233,8 +231,6 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     .blog-content-html h6 {
       display: block !important;
       margin-bottom: 1rem !important;
-      margin-left: 0 !important;
-      padding-left: 0 !important;
     }
     .blog-content > p,
     .blog-content > div,
@@ -245,8 +241,6 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     .blog-content > h5,
     .blog-content > h6,
     .blog-content > blockquote {
-      margin-left: 0 !important;
-      padding-left: 0 !important;
     }
     .blog-content p:last-child,
     .blog-content div:last-child,
@@ -331,7 +325,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 60px !important;
       font-weight: 700 !important;
       letter-spacing: -0.7px !important;
-      text-align: left !important;
+      text-align: left;
       margin-top: 2rem !important;
       margin-bottom: 1rem !important;
       overflow: visible !important;
@@ -343,7 +337,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 700 !important;
       letter-spacing: -0.7px !important;
-      text-align: left !important;
+      text-align: left;
       margin-top: 1.75rem !important;
       margin-bottom: 0.875rem !important;
       overflow: visible !important;
@@ -355,7 +349,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
-      text-align: left !important;
+      text-align: left;
       margin-top: 1.5rem !important;
       margin-bottom: 0.75rem !important;
       overflow: visible !important;
