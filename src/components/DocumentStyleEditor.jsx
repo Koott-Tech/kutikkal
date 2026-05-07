@@ -1316,10 +1316,16 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
         el.style.fontSize = '1.5rem';
         el.style.fontWeight = '600';
       } else if (blockType === 'h3') {
-        el.style.fontSize = '1.25rem';
+        el.style.fontSize = '1.5rem';
         el.style.fontWeight = '600';
       } else if (blockType === 'h4') {
+        el.style.fontSize = '1.375rem';
+        el.style.fontWeight = '600';
+      } else if (blockType === 'h5') {
         el.style.fontSize = '1.125rem';
+        el.style.fontWeight = '600';
+      } else if (blockType === 'h6') {
+        el.style.fontSize = '1rem';
         el.style.fontWeight = '600';
       } else if (blockType === 'quote') {
         el.style.borderLeft = '4px solid #d1d5db';
@@ -1536,28 +1542,115 @@ const DocumentStyleEditor = forwardRef(function DocumentStyleEditor({
     setTimeout(() => { skipContentSyncRef.current = false; }, 0);
   }, [restoreSelection, handleInput]);
 
-  // Apply font size to selection (wrap in span; works for heading and paragraph)
-  // Use same line-height as font-size so selection highlight height matches the reduced text
+  // Apply font size to selected text via the floating toolbar.
+  // The span is inserted directly into the DOM, then handleInput() syncs state.
+  // skipContentSyncRef prevents the content-sync useEffect from overwriting our change
+  // before the parent state update propagates (same guard used by image insertion).
   const applyFontSize = useCallback((px) => {
-    runWithSelection(() => {
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0) return;
-      const range = sel.getRangeAt(0);
-      if (range.collapsed) return;
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    // 1. Find a valid non-collapsed range.
+    //    Try the live selection first (toolbar buttons use onMouseDown+preventDefault so
+    //    it's often still intact), then fall back to the toolbar-appearance snapshot.
+    let workingRange = null;
+
+    const liveSelNow = window.getSelection();
+    if (liveSelNow && liveSelNow.rangeCount > 0) {
       try {
-        const fragment = range.extractContents();
-        const span = document.createElement('span');
-        span.style.fontSize = `${px}px`;
-        span.style.lineHeight = `${px}px`;
-        while (fragment.firstChild) span.appendChild(fragment.firstChild);
-        range.insertNode(span);
-        range.setStartAfter(span);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        const r = liveSelNow.getRangeAt(0);
+        if (!r.collapsed && editor.contains(r.commonAncestorContainer)) {
+          workingRange = r.cloneRange();
+        }
       } catch (_) {}
-    });
-  }, [runWithSelection]);
+    }
+
+    if (!workingRange) {
+      for (const snap of [selectionWhenToolbarShownRef.current, savedSelectionRef.current]) {
+        if (!snap) continue;
+        try {
+          if (
+            snap.startContainer &&
+            document.contains(snap.startContainer) &&
+            editor.contains(snap.startContainer) &&
+            !snap.collapsed
+          ) {
+            workingRange = snap.cloneRange();
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+
+    if (!workingRange) return;
+
+    // 2. Focus editor, THEN restore selection.
+    //    focus() resets selection in Chrome/Safari, so we must set the range AFTER calling it.
+    editor.focus();
+    const liveSel = window.getSelection();
+    if (!liveSel) return;
+    liveSel.removeAllRanges();
+    liveSel.addRange(workingRange.cloneRange());
+
+    if (liveSel.rangeCount === 0) return;
+    const range = liveSel.getRangeAt(0);
+    if (range.collapsed) return;
+
+    // 3. Wrap selected content in <span style="font-size:Xpx">.
+    //    For selections inside a single <li>, use surroundContents to avoid leaving
+    //    an empty <li> in the DOM (which causes the blank bullet + extra space bug).
+    try {
+      const span = document.createElement('span');
+      span.style.fontSize = `${px}px`;
+      span.style.lineHeight = '1.5';
+
+      const ancestor = range.commonAncestorContainer;
+      const ancestorEl = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
+      const parentLi = ancestorEl?.closest?.('li');
+      const isInsideSingleLi =
+        parentLi &&
+        editor.contains(parentLi) &&
+        parentLi.contains(range.startContainer) &&
+        parentLi.contains(range.endContainer);
+
+      if (isInsideSingleLi) {
+        try {
+          range.surroundContents(span);
+        } catch (_) {
+          // Selection crosses element boundaries inside the li (e.g. bold+normal mix)
+          const frag = range.extractContents();
+          while (frag.firstChild) span.appendChild(frag.firstChild);
+          range.insertNode(span);
+        }
+        // Remove any empty <li> nodes left behind
+        editor.querySelectorAll('li').forEach((li) => {
+          if (!(li.textContent || '').trim() && !li.querySelector('img')) li.remove();
+        });
+      } else {
+        const frag = range.extractContents();
+        while (frag.firstChild) span.appendChild(frag.firstChild);
+        range.insertNode(span);
+      }
+
+      // Place cursor after the span
+      const afterRange = document.createRange();
+      afterRange.setStartAfter(span);
+      afterRange.collapse(true);
+      liveSel.removeAllRanges();
+      liveSel.addRange(afterRange);
+    } catch (_) {}
+
+    // 4. Sync state. Guard against the content-sync useEffect overwriting the DOM
+    //    before the parent's onChange has propagated (same pattern as image insertion).
+    skipContentSyncRef.current = true;
+    handleInput();
+    setTimeout(() => { skipContentSyncRef.current = false; }, 50);
+
+    setToolbarPosition(prev => ({ ...prev, visible: false }));
+    syncToolbarState();
+  }, [handleInput, syncToolbarState]);
+
+
 
   // Apply font family to selection
   const applyFontFamily = useCallback((font) => {

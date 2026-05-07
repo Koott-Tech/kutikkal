@@ -48,7 +48,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           }
           ${sel} h3 {
             font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-            font-size: 1.75rem !important;
+            font-size: 1.5rem !important;
             line-height: 1.25 !important;
             font-weight: 600 !important;
             letter-spacing: -0.7px !important;
@@ -58,7 +58,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           }
           ${sel} h4 {
             font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-            font-size: 1.5rem !important;
+            font-size: 1.375rem !important;
             line-height: 1.25 !important;
             font-weight: 600 !important;
             letter-spacing: -0.7px !important;
@@ -68,7 +68,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           }
           ${sel} h5 {
             font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-            font-size: 1.25rem !important;
+            font-size: 1.125rem !important;
             line-height: 1.25 !important;
             font-weight: 600 !important;
             letter-spacing: -0.7px !important;
@@ -78,7 +78,7 @@ export function getBlogDocumentEditorTypographyCss(sel) {
           }
           ${sel} h6 {
             font-family: 'DM Sans', Arial, Helvetica, sans-serif !important;
-            font-size: 1.125rem !important;
+            font-size: 1rem !important;
             line-height: 1.25 !important;
             font-weight: 600 !important;
             letter-spacing: -0.7px !important;
@@ -345,7 +345,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     .blog-content h3,
     .blog-content-html h3 {
-      font-size: 1.75rem !important;
+      font-size: 1.5rem !important;
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
@@ -357,7 +357,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     .blog-content h4,
     .blog-content-html h4 {
-      font-size: 1.5rem !important;
+      font-size: 1.375rem !important;
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
@@ -368,7 +368,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     .blog-content h5,
     .blog-content-html h5 {
-      font-size: 1.25rem !important;
+      font-size: 1.125rem !important;
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;
@@ -379,7 +379,7 @@ export function getBlogPostPageTypographyCss(blogBodyImageMaxWidth) {
     }
     .blog-content h6,
     .blog-content-html h6 {
-      font-size: 1.125rem !important;
+      font-size: 1rem !important;
       line-height: 1.25 !important;
       font-weight: 600 !important;
       letter-spacing: -0.7px !important;

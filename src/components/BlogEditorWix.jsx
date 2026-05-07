@@ -74,17 +74,6 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   const editorRef = useRef(null);
   const titleTextareaRef = useRef(null);
 
-  const adjustTitleTextareaHeight = useCallback(() => {
-    const el = titleTextareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, []);
-
-  useLayoutEffect(() => {
-    adjustTitleTextareaHeight();
-  }, [blog.title, adjustTitleTextareaHeight]);
-
   useImperativeHandle(ref, () => ({
     getContent: () => editorRef.current?.getContent?.() ?? ''
   }), []);
@@ -487,17 +476,25 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
             {/* Scrollable editor area, centered max-width 800px */}
             <div className={styles.editorScroll}>
               <div className={styles.editorInner}>
-                <textarea
+                <h1
                   ref={titleTextareaRef}
-                  required
-                  rows={1}
+                  contentEditable
+                  suppressContentEditableWarning
                   className={styles.editorTitle}
-                  value={blog.title ?? ''}
-                  onChange={(e) => onChange({ ...blog, title: e.target.value })}
-                  placeholder="Post title"
+                  onInput={(e) => onChange({ ...blog, title: e.target.innerText })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      // Focus the editor when Enter is pressed in the title
+                      editorRef.current?.focus?.();
+                    }
+                  }}
+                  data-placeholder="Post title"
                   aria-label="Post title"
                   spellCheck
-                />
+                >
+                  {blog.title}
+                </h1>
                 <textarea
                   className={styles.editorExcerpt}
                   value={blog.excerpt ?? ''}
