@@ -24,7 +24,12 @@ import {
   Redo2,
   Minus,
   Smile,
+  Clock,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, setHours, setMinutes, startOfDay } from 'date-fns';
 import DocumentStyleEditor, { getDefaultToolbarState } from '@/components/DocumentStyleEditor';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
 import styles from './BlogEditorWix.module.css';
@@ -82,6 +87,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   const [seoPreviewOpen, setSeoPreviewOpen] = useState(true);
   const [toolbarState, setToolbarState] = useState(() => getDefaultToolbarState());
   const [blockTypeDropdownOpen, setBlockTypeDropdownOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const blockTypeDropdownRef = useRef(null);
 
   useEffect(() => {
@@ -124,31 +130,52 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
 
   const addTag = () => {
     const input = document.getElementById('bec-tag-input');
-    const v = input?.value?.trim();
-    if (v && !(blog.tags || []).includes(v)) {
-      onChange({ ...blog, tags: [...(blog.tags || []), v] });
-      if (input) input.value = '';
+    const raw = input?.value?.trim();
+    if (!raw) return;
+    const items = raw.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = blog.tags || [];
+    const updated = [...existing];
+    items.forEach(item => {
+      if (!updated.includes(item)) updated.push(item);
+    });
+    if (updated.length > existing.length) {
+      onChange({ ...blog, tags: updated });
     }
+    if (input) input.value = '';
   };
   const removeTag = (t) => onChange({ ...blog, tags: (blog.tags || []).filter((x) => x !== t) });
 
   const addCategory = () => {
     const input = document.getElementById('bec-category-input');
-    const v = input?.value?.trim();
-    if (v && !(blog.categories || []).includes(v)) {
-      onChange({ ...blog, categories: [...(blog.categories || []), v] });
-      if (input) input.value = '';
+    const raw = input?.value?.trim();
+    if (!raw) return;
+    const items = raw.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = blog.categories || [];
+    const updated = [...existing];
+    items.forEach(item => {
+      if (!updated.includes(item)) updated.push(item);
+    });
+    if (updated.length > existing.length) {
+      onChange({ ...blog, categories: updated });
     }
+    if (input) input.value = '';
   };
   const removeCategory = (c) => onChange({ ...blog, categories: (blog.categories || []).filter((x) => x !== c) });
 
   const addMetaKeyword = () => {
     const input = document.getElementById('bec-meta-keyword-input');
-    const v = input?.value?.trim();
-    if (v && !(blog.meta_keywords || []).includes(v)) {
-      onChange({ ...blog, meta_keywords: [...(blog.meta_keywords || []), v] });
-      if (input) input.value = '';
+    const raw = input?.value?.trim();
+    if (!raw) return;
+    const items = raw.split(',').map(s => s.trim()).filter(Boolean);
+    const existing = blog.meta_keywords || [];
+    const updated = [...existing];
+    items.forEach(item => {
+      if (!updated.includes(item)) updated.push(item);
+    });
+    if (updated.length > existing.length) {
+      onChange({ ...blog, meta_keywords: updated });
     }
+    if (input) input.value = '';
   };
   const removeMetaKeyword = (k) => onChange({ ...blog, meta_keywords: (blog.meta_keywords || []).filter((x) => x !== k) });
 
@@ -229,13 +256,102 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                     <select
                       className={styles.settingsInput}
                       value={blog.status ?? 'draft'}
-                      onChange={(e) => onChange({ ...blog, status: e.target.value })}
+                      onChange={(e) => {
+                        const newStatus = e.target.value;
+                        const updates = { status: newStatus };
+                        if (newStatus !== 'scheduled') {
+                          updates.scheduled_at = null;
+                        }
+                        onChange({ ...blog, ...updates });
+                      }}
                     >
                       <option value="draft">Draft</option>
+                      <option value="scheduled">Scheduled</option>
                       <option value="published">Published</option>
                       <option value="archived">Archived</option>
                     </select>
                   </div>
+                  {blog.status === 'scheduled' && (
+                    <div className={styles.scheduleSection}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#3f2e73] shadow-sm">
+                          <Clock size={16} />
+                        </div>
+                        <span className="text-[13px] font-bold text-[#3f2e73]">Schedule Publish</span>
+                      </div>
+                      
+                      <label className={styles.settingsLabel}>Publish Date & Time</label>
+                      
+                      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                        <PopoverTrigger asChild>
+                          <button className={styles.scheduleInput} type="button">
+                            <div className="flex items-center gap-2">
+                              <CalendarIcon size={14} className="text-gray-400" />
+                              <span>
+                                {blog.scheduled_at 
+                                  ? format(new Date(blog.scheduled_at), 'PPP p') 
+                                  : 'Select date & time'}
+                              </span>
+                            </div>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 flex" align="start">
+                          <div className="p-3 border-r border-gray-100">
+                            <Calendar
+                              mode="single"
+                              selected={blog.scheduled_at ? new Date(blog.scheduled_at) : undefined}
+                              onSelect={(date) => {
+                                if (!date) return;
+                                const current = blog.scheduled_at ? new Date(blog.scheduled_at) : new Date();
+                                const updated = setMinutes(setHours(date, current.getHours()), current.getMinutes());
+                                onChange({ ...blog, scheduled_at: updated.toISOString() });
+                              }}
+                              initialFocus
+                              disabled={(date) => date < startOfDay(new Date())}
+                            />
+                          </div>
+                          <div className="w-[120px] p-2 flex flex-col">
+                            <div className="text-[10px] font-bold text-gray-400 uppercase mb-2 px-2">Time</div>
+                            <div className="flex-1 overflow-y-auto max-h-[300px] pr-1">
+                              {Array.from({ length: 24 * 2 }).map((_, i) => {
+                                const hour = Math.floor(i / 2);
+                                const minute = i % 2 === 0 ? 0 : 30;
+                                const timeDate = setMinutes(setHours(new Date(), hour), minute);
+                                const timeStr = format(timeDate, 'p');
+                                const isSelected = blog.scheduled_at && 
+                                  new Date(blog.scheduled_at).getHours() === hour && 
+                                  new Date(blog.scheduled_at).getMinutes() === minute;
+                                
+                                return (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => {
+                                      const current = blog.scheduled_at ? new Date(blog.scheduled_at) : new Date();
+                                      const updated = setMinutes(setHours(current, hour), minute);
+                                      onChange({ ...blog, scheduled_at: updated.toISOString() });
+                                      setIsCalendarOpen(false);
+                                    }}
+                                    className={`w-full text-left px-2 py-1.5 rounded text-[12px] transition-colors mb-0.5 ${
+                                      isSelected 
+                                        ? 'bg-[#3f2e73] text-white' 
+                                        : 'hover:bg-gray-100 text-gray-700'
+                                    }`}
+                                  >
+                                    {timeStr}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+
+                      <p className={styles.scheduleHint}>
+                        This post will go live automatically on the selected date.
+                      </p>
+                    </div>
+                  )}
                   <div className={styles.settingsSection}>
                     <label className={styles.settingsLabel}>Read time (min)</label>
                     <input
@@ -252,7 +368,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       id="bec-category-input"
                       type="text"
                       className={styles.settingsInput}
-                      placeholder="Add category"
+                      placeholder="Add categories (comma separated)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
                     />
                     <button type="button" onClick={addCategory} className={styles.addBtn}>Add</button>
@@ -271,7 +387,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       id="bec-tag-input"
                       type="text"
                       className={styles.settingsInput}
-                      placeholder="Add tag (Enter to add)"
+                      placeholder="Add tags (comma separated)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                     />
                     <button type="button" onClick={addTag} className={styles.addBtn}>Add</button>
@@ -353,7 +469,7 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                       id="bec-meta-keyword-input"
                       type="text"
                       className={styles.settingsInput}
-                      placeholder="Add keyword (Enter to add)"
+                      placeholder="Add keywords (comma separated)"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMetaKeyword())}
                     />
                     <button type="button" onClick={addMetaKeyword} className={styles.addBtn}>Add</button>

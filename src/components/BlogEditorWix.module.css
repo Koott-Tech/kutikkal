@@ -805,6 +805,61 @@
   }
 }
 
+@media (max-width: 480px) {
+  .editorTitle {
+    font-size: 1.75rem;
+  }
+}
+
+/* Schedule Section */
+.scheduleSection {
+  background: var(--bec-primary-bg);
+  border: 1px solid rgba(63, 46, 115, 0.1);
+  border-radius: var(--bec-radius-lg);
+  padding: 16px;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scheduleInput {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--bec-border);
+  border-radius: var(--bec-radius);
+  background: white;
+  color: var(--bec-text);
+  text-align: left;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.scheduleInput:hover {
+  border-color: var(--bec-primary);
+  box-shadow: 0 0 0 3px rgba(63, 46, 115, 0.08);
+}
+
+.scheduleInput:focus {
+  outline: none;
+  border-color: var(--bec-primary);
+  box-shadow: 0 0 0 3px rgba(63, 46, 115, 0.15);
+}
+
+.scheduleHint {
+  font-size: 11px;
+  color: var(--bec-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* Document editor wrapper — no tall min-height (was 400px) to avoid empty space below short posts */
 .becDocumentEditorWrap {
   min-height: 0;

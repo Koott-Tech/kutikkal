@@ -198,7 +198,7 @@ export default async function EventsPage() {
                     src={event.image}
                     alt={event.title}
                     fill
-                    className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                    className="object-cover scale-105"
                     sizes="(min-width: 768px) 300px, 100vw"
                     priority
                   />

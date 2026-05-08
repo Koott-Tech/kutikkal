@@ -67,7 +67,7 @@ export default function ResourcesTeaser() {
                   src={resource.src}
                   alt={resource.alt}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="object-cover scale-[1.02]"
                   sizes="(min-width: 1024px) 33vw, 100vw"
                 />
               </div>

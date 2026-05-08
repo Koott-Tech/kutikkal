@@ -232,7 +232,7 @@ export default function Blog() {
                     src={normalizeImageUrl(featuredPost.featured_image_url || "/kids.png")}
                     alt={featuredPost.title}
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover scale-105"
                     priority
                   />
                 </div>
@@ -394,7 +394,7 @@ export default function Blog() {
                         src={normalizeImageUrl(post.featured_image_url || '')}
                         alt={post.title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover scale-105"
                         sizes="(min-width: 1024px) 33vw, (min-width: 640px) 280px, 100vw"
                       />
                     </div>
