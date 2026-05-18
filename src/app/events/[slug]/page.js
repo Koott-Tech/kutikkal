@@ -2,12 +2,20 @@ import { notFound } from "next/navigation";
 import WorkshopEventPageClient from "@/components/events/WorkshopEventPageClient";
 import { mergeWorkshopEventCms } from "@/data/workshopEventPageCms";
 
+// Force dynamic rendering and disable caching so edits reflect immediately
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const dynamicParams = true;
+export const fetchCache = 'force-no-store';
+export const runtime = 'nodejs';
+
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001/api";
 
 async function fetchEventPageRow(slug) {
-  const url = `${BACKEND}/event-pages/public/${encodeURIComponent(slug)}`;
+  const timestamp = Date.now();
+  const url = `${BACKEND}/event-pages/public/${encodeURIComponent(slug)}?t=${timestamp}`;
   const res = await fetch(url, {
-    next: { revalidate: 60 },
+    cache: "no-store",
     headers: { Accept: "application/json" },
   });
   if (!res.ok) return null;
