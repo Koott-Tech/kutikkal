@@ -222,6 +222,7 @@ export default function WorkshopEventPageClient({
   cms: cmsPartial,
   previewMode = false,
   onPreviewSectionClick,
+  slug,
 } = {}) {
   const cms = mergeWorkshopEventCms(cmsPartial);
   const speakers = Array.isArray(cms.speakers?.items) ? cms.speakers.items : [];
@@ -289,6 +290,12 @@ export default function WorkshopEventPageClient({
       }
       setStatus("loading");
       setMessage("");
+
+      const defaultSlug = "little-care-summer-workshops-2026";
+      const actualEventSlug = cms.registerEventSlug && cms.registerEventSlug !== defaultSlug
+        ? cms.registerEventSlug
+        : (slug || defaultSlug);
+
       try {
         const res = await fetch("/api/events/workshop-register", {
           method: "POST",
@@ -298,7 +305,7 @@ export default function WorkshopEventPageClient({
             email,
             countryCode: dialFromPhoneCountryValue(phoneCountryValue),
             phone,
-            eventSlug: cms.registerEventSlug || "little-care-summer-workshops-2026",
+            eventSlug: actualEventSlug,
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -324,7 +331,7 @@ export default function WorkshopEventPageClient({
         setMessage("Network error. Please try again.");
       }
     },
-    [fullName, email, phoneCountryValue, phone, closeRegisterModal, cms.registerEventSlug, previewMode]
+    [fullName, email, phoneCountryValue, phone, closeRegisterModal, cms.registerEventSlug, previewMode, slug]
   );
 
   const activeSpeaker = speakers[speakerIndex] || speakers[0];

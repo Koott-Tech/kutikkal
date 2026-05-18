@@ -245,6 +245,7 @@ export default function EditEventPageCmsPage() {
               cms={cmsForm}
               previewMode
               onPreviewSectionClick={jumpEditorToSection}
+              slug={row?.slug}
             />
           ) : (
             <div className="p-8 text-center text-sm text-gray-500">Loading preview…</div>

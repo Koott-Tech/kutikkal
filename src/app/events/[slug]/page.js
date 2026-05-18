@@ -63,5 +63,5 @@ export default async function DynamicEventPage({ params }) {
   if (!row) {
     notFound();
   }
-  return <WorkshopEventPageClient cms={row.cms_data} />;
+  return <WorkshopEventPageClient cms={row.cms_data} slug={params.slug} />;
 }
