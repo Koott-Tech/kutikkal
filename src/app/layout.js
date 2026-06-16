@@ -325,6 +325,15 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="antialiased bg-gray-50" suppressHydrationWarning>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-M4LMMN68"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         {/* INSTANT - Server-rendered loader (appears at 0ms, no hydration needed) */}
         {/* Position:fixed overlay - NEVER affects layout flow, prevents CLS */}
         <div id="initial-loader">
@@ -375,6 +384,16 @@ export default function RootLayout({ children }) {
               t.onerror=function(){/* Silently handle blocked requests */};
               y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
             })(window, document, "clarity", "script", "v8mh6s1q7j");
+          `}
+        </Script>
+        {/* Google Tag Manager */}
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-M4LMMN68');
           `}
         </Script>
         {/* Meta Pixel Code */}
