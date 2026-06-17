@@ -112,6 +112,9 @@ export default function AdminLayout({ children }) {
 
   return (
     <AdminSidebarContext.Provider value={sidebarValue}>
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
     <div className="min-h-screen bg-white">
       {/* Mobile header with menu button */}
       <div 

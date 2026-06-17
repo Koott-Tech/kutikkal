@@ -1221,14 +1221,14 @@ export default function AdsLandingPage() {
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="hero-badge-text text-xs sm:text-sm">Convenient, proven online care for brighter future</span>
+                    <span className="hero-badge-text text-xs sm:text-sm">840+ families supported with expert care</span>
                   </div>
                   
                   <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
-                    Trusted by 840+ parents becoming family again.
+                    Struggling with your child&apos;s emotions, behaviour, or your connection with them right now?
                   </h1>
                   <p className="hero-description p1 mt-3 md:mt-3 text-base md:text-lg">
-                     Little care is led by Koott, helping parents who love deeply but struggle to connect, express and feel understood.
+                    Get support from experienced child psychologists who help parents better understand, connect with, and support their children through every stage of growth.
                   </p>
                   <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                     <style dangerouslySetInnerHTML={{__html: `

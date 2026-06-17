@@ -173,6 +173,9 @@ export default function SuperAdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-white">
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       {/* Mobile header with menu button */}
       <div 
         className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-end px-4 z-50"

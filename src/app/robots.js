@@ -4,7 +4,15 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/", "/profile/", "/superadmin/"],
+        disallow: [
+          "/admin/",
+          "/superadmin/",
+          "/psychologist/",
+          "/finance/",
+          "/ads",
+          "/api/",
+          "/profile/"
+        ],
       },
     ],
     sitemap: "https://www.little.care/sitemap.xml",

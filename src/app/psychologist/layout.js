@@ -66,6 +66,9 @@ export default function PsychologistLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-white">
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       {/* Mobile header with menu button */}
       <div 
         className="lg:hidden fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200"
