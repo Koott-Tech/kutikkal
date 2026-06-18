@@ -1533,7 +1533,12 @@ const Guide = () => {
                         boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
                         backdropFilter: 'blur(0.5px)',
                         WebkitBackdropFilter: 'blur(0.5px)',
-                        border: '1.5px solid rgba(255,255,255,0.18)'
+                        border: '1.5px solid rgba(255,255,255,0.18)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '100%',
+                        display: 'inline-block'
                       }}>
                           {doc.designation || doc.specialization}
                       </span>

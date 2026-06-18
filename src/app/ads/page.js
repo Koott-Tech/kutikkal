@@ -355,7 +355,10 @@ export default function AdsLandingPage() {
   };
 
   const handleGetStartedClick = () => {
-    router.push('/free-assessment');
+    const section = document.getElementById('psychologists-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Fetch psychologists
@@ -434,11 +437,14 @@ export default function AdsLandingPage() {
   const isSlotInPast = (slot, date) => {
     if (!slot || !date) return false;
     const now = new Date();
-    const isSameDay =
-      date.getFullYear() === now.getFullYear() &&
-      date.getMonth() === now.getMonth() &&
-      date.getDate() === now.getDate();
-    if (!isSameDay) return false;
+    
+    // Day comparison
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const slotDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    if (slotDay < today) return true;
+    if (slotDay > today) return false;
+    
     const slotMinutes = getSlotMinutes(slot);
     if (slotMinutes === null) return false;
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -452,10 +458,19 @@ export default function AdsLandingPage() {
       setLoadingAvailability(prev => new Set(prev).add(doctorId));
 
       const today = new Date();
-      const startDate = today.toISOString().split('T')[0]; // Today
+      
+      // Format local dates YYYY-MM-DD
+      const getLocalDateStr = (d) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      };
+      
+      const startDate = getLocalDateStr(today); // Today
       const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 7); // Next 7 days
-      const endDateStr = endDate.toISOString().split('T')[0];
+      const endDateStr = getLocalDateStr(endDate);
 
       // Timeout after 5 seconds
       const timeoutPromise = new Promise((_, reject) => 
@@ -718,6 +733,75 @@ export default function AdsLandingPage() {
       .replace(/^-+|-+$/g, '');
   };
 
+  // Get formatted availability information for the redesigned cards
+  const getAvailabilityDisplay = (psychId) => {
+    const isLoading = loadingAvailability.has(psychId);
+    if (isLoading) {
+      return { label: 'Checking...', timeText: 'Loading...' };
+    }
+    const availability = doctorAvailability[psychId];
+    if (!availability || !availability.timeSlots || availability.timeSlots.length === 0) {
+      return { label: 'Available', timeText: 'Soon' };
+    }
+    
+    // Find the first slot
+    const firstSlot = availability.timeSlots[0];
+    let slotDateStr, slotTimeStr;
+    if (typeof firstSlot === 'string') {
+      slotDateStr = availability.nextDate;
+      slotTimeStr = firstSlot;
+    } else if (firstSlot && firstSlot.date && firstSlot.time) {
+      slotDateStr = firstSlot.date;
+      slotTimeStr = firstSlot.time;
+    } else {
+      slotDateStr = availability.nextDate;
+      slotTimeStr = firstSlot.time || firstSlot;
+    }
+    
+    if (!slotDateStr) {
+      return { label: 'Available', timeText: slotTimeStr || 'Soon' };
+    }
+    
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const [year, month, dayNum] = slotDateStr.split('-');
+      const slotDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum));
+      
+      // Parse time into minutes to compare
+      const slotMinutes = getSlotMinutes(firstSlot);
+      if (slotMinutes !== null) {
+        slotDate.setHours(Math.floor(slotMinutes / 60), slotMinutes % 60, 0, 0);
+      }
+      
+      const now = new Date();
+      const diffMs = slotDate.getTime() - now.getTime();
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMins > 0 && diffMins < 60) {
+        return { label: 'Available in', timeText: `${diffMins} Mins` };
+      }
+      
+      // Check if it's today, tomorrow, or a future date
+      const todayTime = today.getTime();
+      const slotDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(dayNum)).getTime();
+      
+      if (slotDateTime === todayTime) {
+        return { label: 'Available', timeText: `Today, ${slotTimeStr}` };
+      } else if (slotDateTime === todayTime + 86400000) {
+        return { label: 'Available', timeText: `Tomorrow, ${slotTimeStr}` };
+      } else {
+        const formattedDate = slotDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+        return { label: 'Available on', timeText: `${formattedDate}, ${slotTimeStr}` };
+      }
+    } catch (error) {
+      return { label: 'Available', timeText: slotTimeStr || 'Soon' };
+    }
+  };
+
   // Handle psychologist card click
   const handlePsychologistClick = (psychologist) => {
     const name = psychologist.name || `${psychologist.first_name} ${psychologist.last_name}`;
@@ -777,9 +861,23 @@ export default function AdsLandingPage() {
               font-size: 24px !important;
             }
           }
+          @media (min-width: 1280px) {
+            .ads-page .hero-text {
+              position: relative;
+              top: -40px;
+            }
+          }
+          .ads-page .hero-description {
+            font-size: 14px !important;
+          }
+          @media (min-width: 768px) {
+            .ads-page .hero-description {
+              font-size: 16px !important;
+            }
+          }
           .ads-page h1 {
-            font-size: 28px !important;
-            line-height: 1.1 !important;
+            font-size: 22px !important;
+            line-height: 26px !important;
           }
           .ads-page h2 {
             font-size: 1.75rem !important;
@@ -796,7 +894,8 @@ export default function AdsLandingPage() {
           }
           @media (min-width: 640px) {
             .ads-page h1 {
-              font-size: 2.5rem !important;
+              font-size: 28px !important;
+              line-height: 32px !important;
             }
             .ads-page h2 {
               font-size: 2rem !important;
@@ -807,13 +906,27 @@ export default function AdsLandingPage() {
           }
           @media (min-width: 768px) {
             .ads-page h1 {
-              font-size: 3rem !important;
+              font-size: 33px !important;
+              line-height: 34px !important;
             }
             .ads-page h2 {
               font-size: 2.25rem !important;
             }
             .ads-page h3 {
               font-size: 1.5rem !important;
+            }
+          }
+          @media (max-width: 1279px) {
+            .ads-page h1 {
+              padding-left: 20px !important;
+              padding-right: 20px !important;
+              font-weight: 600 !important;
+              text-align: center !important;
+            }
+            .ads-page .hero-description {
+              text-align: center !important;
+              margin-left: auto !important;
+              margin-right: auto !important;
             }
           }
           .scrollbar-hide {
@@ -858,7 +971,7 @@ export default function AdsLandingPage() {
           @media (max-width: 640px) {
             .guide-cards-container {
               grid-template-columns: 1fr;
-              gap: 32px;
+              gap: 64px;
               padding: 0 1rem !important;
               max-width: 100% !important;
               width: 100% !important;
@@ -883,7 +996,7 @@ export default function AdsLandingPage() {
           @media (min-width: 641px) and (max-width: 768px) {
             .guide-cards-container {
               grid-template-columns: 1fr;
-              gap: 40px;
+              gap: 72px;
               padding: 0 clamp(1.5rem, 4vw, 2rem) !important;
               max-width: 92% !important;
               width: 92% !important;
@@ -913,6 +1026,13 @@ export default function AdsLandingPage() {
               max-width: 100%;
               width: 100%;
               height: 350px;
+            }
+          }
+          @media (min-width: 1025px) {
+            .guide-cards-container {
+              grid-template-columns: repeat(3, 1fr) !important;
+              max-width: 1240px !important;
+              gap: 48px 36px !important;
             }
           }
           .doctor-card-name {
@@ -1172,6 +1292,287 @@ export default function AdsLandingPage() {
               font-size: 2.5rem !important; /* text-5xl - reduced from text-6xl */
             }
           }
+
+          /* Redesigned Therapist Cards Styles */
+          .redesigned-therapist-card-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            text-align: left;
+          }
+          .redesigned-therapist-top-card {
+            background: linear-gradient(180deg, #FFF0E5 0%, #FFDEC6 100%);
+            border-radius: 28px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            border: 1px solid #FFEBE0;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-height: 290px;
+            justify-content: space-between;
+          }
+          .redesigned-therapist-top-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(63, 46, 115, 0.08);
+          }
+          .redesigned-therapist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+          }
+          .redesigned-therapist-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+          }
+          .redesigned-therapist-designation {
+            font-size: 12px;
+            font-weight: 500;
+            color: #3C3C3C;
+            line-height: 1.2;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            display: block;
+          }
+          .redesigned-therapist-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000000;
+            line-height: 1.1;
+            margin-bottom: 36px;
+            letter-spacing: -0.5px;
+            word-wrap: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 61.6px;
+          }
+          .redesigned-therapist-sessions-badge {
+            background-color: #3F2E73;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            display: inline-block;
+            line-height: 1.2;
+            white-space: nowrap;
+          }
+          .redesigned-therapist-sessions-badge .italic-text {
+            font-style: italic;
+            font-weight: 400;
+            opacity: 0.9;
+          }
+          .redesigned-therapist-avatar-container {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background-color: #D6CFFF;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .redesigned-therapist-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          .redesigned-therapist-avatar-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+          }
+          .redesigned-therapist-pills-section {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 0px;
+            width: 100%;
+          }
+          .redesigned-therapist-pills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            align-items: center;
+          }
+          .redesigned-therapist-pill {
+            background: rgba(205, 196, 255, 0.65);
+            color: #3f2e73;
+            border-radius: 9999px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(63, 46, 115, 0.08);
+            backdrop-filter: blur(0.5px);
+            -webkit-backdrop-filter: blur(0.5px);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.2;
+            white-space: nowrap;
+          }
+          .redesigned-therapist-bottom-bar {
+            background: linear-gradient(90deg, #FFFDFB 0%, #FFF4ED 100%);
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #FFE7D6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            width: 100%;
+          }
+          .redesigned-therapist-availability-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+          }
+          .redesigned-therapist-availability-label {
+            font-size: 13px;
+            font-weight: 400;
+            color: #4A4A4A;
+            line-height: 1.2;
+            margin-bottom: 2px;
+          }
+          .redesigned-therapist-availability-time {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000000;
+            line-height: 1.1;
+            letter-spacing: -0.3px;
+          }
+          .redesigned-therapist-book-button {
+            background-color: #3F2E73;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 24px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            white-space: nowrap;
+          }
+          .redesigned-therapist-book-button:hover {
+            background-color: #2D2054;
+          }
+          .redesigned-therapist-book-button:active {
+            transform: scale(0.97);
+          }
+          .redesigned-therapist-view-profile {
+            background-color: transparent;
+            color: #3F2E73;
+            border: 1px solid #3F2E73;
+            border-radius: 9999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+            margin-left: auto;
+            margin-right: 10px;
+            align-self: center;
+            margin-top: 6px;
+          }
+          .redesigned-therapist-view-profile:hover {
+            background-color: rgba(63, 46, 115, 0.08);
+          }
+          .redesigned-therapist-view-profile:active {
+            transform: scale(0.97);
+          }
+
+          /* Mobile responsive overrides (placed at the end to guarantee override priority) */
+          @media (max-width: 767px) {
+            .redesigned-therapist-top-card {
+              padding: 20px;
+              min-height: 250px;
+            }
+            .redesigned-therapist-avatar-container {
+              width: 100px;
+              height: 100px;
+            }
+            .redesigned-therapist-name {
+              font-size: 22px;
+              margin-bottom: 20px;
+              min-height: 48.4px;
+            }
+            .redesigned-therapist-designation {
+              font-size: 11px;
+            }
+            .redesigned-therapist-bottom-bar {
+              padding: 12px 16px;
+            }
+            .redesigned-therapist-book-button {
+              font-size: 14px;
+              padding: 8px 16px;
+            }
+            .redesigned-therapist-availability-label {
+              font-size: 11px;
+            }
+            .redesigned-therapist-availability-time {
+              font-size: 15px;
+            }
+            .redesigned-therapist-view-profile {
+              font-size: 10px;
+              padding: 3px 8px;
+            }
+          }
+          @media (max-width: 360px) {
+            .redesigned-therapist-top-card {
+              padding: 16px;
+            }
+            .redesigned-therapist-avatar-container {
+              width: 90px;
+              height: 90px;
+            }
+            .redesigned-therapist-name {
+              font-size: 20px;
+              margin-bottom: 16px;
+              min-height: 44px;
+            }
+            .redesigned-therapist-availability-label {
+              font-size: 10px;
+            }
+            .redesigned-therapist-availability-time {
+              font-size: 13px;
+            }
+            .redesigned-therapist-view-profile {
+              font-size: 9px;
+              padding: 2px 6px;
+            }
+          }
         `
       }} />
       {/* Structured Data */}
@@ -1221,14 +1622,14 @@ export default function AdsLandingPage() {
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="hero-badge-text text-xs sm:text-sm">840+ families supported with expert care</span>
+                    <span className="hero-badge-text text-xs sm:text-sm">Trusted by 840+ families</span>
                   </div>
                   
-                  <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-medium break-words" style={{ color: '#2C1A4A', fontWeight: 600}}>
-                    Struggling with your child&apos;s emotions, behaviour, or your connection with them right now?
+                  <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-bold break-words" style={{ color: '#2C1A4A', fontWeight: 700}}>
+                    Worried about your child&apos;s behaviour, emotions, or struggling with parenting challenges?
                   </h1>
                   <p className="hero-description p1 mt-3 md:mt-3 text-base md:text-lg">
-                    Get support from experienced child psychologists who help parents better understand, connect with, and support their children through every stage of growth.
+                    Children often show their struggles through behaviour and emotions. Understanding these signs early can make a big difference in their growth and well-being.
                   </p>
                   <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                     <style dangerouslySetInnerHTML={{__html: `
@@ -1248,7 +1649,7 @@ export default function AdsLandingPage() {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
                     >
-                      <span style={{ fontWeight: 500 }}>Book a Free Session Now</span>
+                      <span style={{ fontWeight: 500 }}>Talk to an Expert</span>
                     </button>
                     <div ref={counterRef} className="text-center flex-shrink-0 counter-container">
                       <p className="text-gray-800 counter-sentence flex items-center justify-center gap-1 flex-wrap">
@@ -1316,298 +1717,46 @@ export default function AdsLandingPage() {
           <GuideModal open={showGuide} onClose={() => setShowGuide(false)} />
         )}
 
-        {/* Services Section - Choose Options (Rebuilt from component) */}
-        <section className="pt-0 pb-0 choose-guide-section" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, rgb(245, 246, 253) 100%)' }}>
-          <section
-            id="choose-your-guide"
-            className="w-full px-4 md:px-4 mt-12 md:mt-20 scroll-mt-48"
-            style={{ paddingTop: '2rem', paddingBottom: '0.5rem' }}
-          >
-            <style jsx>{`
-              @media (max-width: 767px) {
-                #choose-your-guide {
-                  margin-top: 0 !important;
-                }
-                .choose-options-heading {
-                  white-space: pre-line;
-                }
-                .psychologists-heading {
-                  white-space: pre-line;
-                }
-              }
-              @media (min-width: 768px) {
-                .choose-options-heading {
-                  white-space: normal;
-                }
-                .psychologists-heading {
-                  white-space: normal;
-                }
-              }
-              @media (max-width: 479px) {
-                .cards-grid {
-                  gap: 20px !important;
-                  max-width: 100% !important;
-                  width: 100% !important;
-                  padding: 0 16px !important;
-                }
-                .card-container {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  height: 450px !important;
-                  min-height: 450px !important;
-                  max-height: 450px !important;
-                }
-                .card-image {
-                  height: 310px !important;
-                  top: 160px !important;
-                }
-                .read-more-button {
-                  bottom: 75px !important;
-                  left: 20px !important;
-                }
-                h2.choose-options-heading,
-                h2.psychologists-heading,
-                h2.reviews-section-heading {
-                  font-size: 24px !important;
-                  font-weight: 600 !important;
-                  line-height: 1.1 !important;
-                  text-align: center;
-                  padding-left: 0;
-                  padding-right: 0;
-                }
-              }
-              @media (min-width: 480px) and (max-width: 599px) {
-                .cards-grid {
-                  gap: 22px !important;
-                  max-width: 100% !important;
-                  width: 100% !important;
-                  padding: 0 20px !important;
-                }
-                .card-container {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  height: 480px !important;
-                  min-height: 480px !important;
-                  max-height: 480px !important;
-                }
-                .card-image {
-                  height: 370px !important;
-                  top: 165px !important;
-                }
-                .read-more-button {
-                  bottom: 85px !important;
-                  left: 22px !important;
-                }
-                h2.choose-options-heading,
-                h2.psychologists-heading,
-                h2.reviews-section-heading {
-                  font-size: 24px !important;
-                  font-weight: 600 !important;
-                  line-height: 1.1 !important;
-                  text-align: center;
-                  padding-left: 0;
-                  padding-right: 0;
-                }
-              }
-              @media (min-width: 600px) and (max-width: 767px) {
-                .cards-grid {
-                  gap: 24px !important;
-                  max-width: 100% !important;
-                  width: 100% !important;
-                  padding: 0 24px !important;
-                }
-                .card-container {
-                  width: 100% !important;
-                  max-width: 100% !important;
-                  height: 500px !important;
-                  min-height: 500px !important;
-                  max-height: 500px !important;
-                }
-                .card-image {
-                  height: 410px !important;
-                  top: 170px !important;
-                }
-                .read-more-button {
-                  bottom: 95px !important;
-                  left: 24px !important;
-                }
-                h2.choose-options-heading,
-                h2.psychologists-heading,
-                h2.reviews-section-heading {
-                  font-size: 24px !important;
-                  font-weight: 600 !important;
-                  line-height: 1.1 !important;
-                  text-align: center;
-                  padding-left: 0;
-                  padding-right: 0;
-                }
-              }
-              @media (min-width: 768px) {
-                /* Desktop/laptop overrides - must override global h2 (48px) */
-                h2.choose-options-heading,
-                h2.psychologists-heading,
-                h2.reviews-section-heading {
-                  font-size: 24px !important;
-                  font-weight: 600 !important;
-                  line-height: 1.1 !important;
-                }
-              }
-              @media (min-width: 1024px) {
-                /* Laptop/desktop overrides - must override global h2 (48px) */
-                h2.choose-options-heading,
-                h2.psychologists-heading,
-                h2.reviews-section-heading {
-                  font-size: 24px !important;
-                  font-weight: 600 !important;
-                  line-height: 1.1 !important;
-                }
-              }
-              @media (max-width: 767px) {
-                .choose-options-heading {
-                  max-width: 100% !important;
-                }
-                .card-content {
-                  padding: 20px !important;
-                  padding-bottom: 0 !important;
-                }
-                .card-title {
-                  font-size: 24px !important;
-                  margin-bottom: 8px !important;
-                  line-height: 1.1 !important;
-                  max-width: none !important;
-                  width: 100% !important;
-                  white-space: nowrap !important;
-                  overflow: hidden !important;
-                  text-overflow: ellipsis !important;
-                }
-                .card-description {
-                  font-size: 14px !important;
-                }
-                .card-image img {
-                  transform: scale(0.9) !important;
-                  object-position: center center !important;
-                }
-              }
-                @media (min-width: 768px) {
-                  .card-container {
-                    height: 500px !important;
-                    min-height: 500px !important;
-                    max-height: 500px !important;
-                    align-self: stretch !important;
-                  }
-                  .cards-grid {
-                    grid-template-rows: 500px !important;
-                    align-items: stretch !important;
-                  }
-                  .card-image {
-                    top: 180px !important;
-                  }
-                }
-                /* Override h3 tag font size to match original span size */
-                .card-tag-pill {
-                  font-size: 12px !important;
-                  line-height: 1 !important;
-                  margin: 0 !important;
-                  font-weight: 300 !important; /* lighter weight to reduce boldness */
-                  padding: 2px 8px !important;
-                }
-            `}</style>
-            <div className="mx-auto max-w-[1400px]">
-              {/* Header */}
-              <div className="text-center md:text-left mb-8 md:mb-6 max-w-4xl mx-auto px-4" style={{ marginTop: '2rem' }}>
-                <p className="p1 text-base md:text-lg mb-2">Still confused?</p>
-                  <h2 className="choose-options-heading text-base md:text-xl lg:text-2xl font-semibold" style={{ fontSize: '24px', fontWeight: 600, lineHeight: '1.1' }}>
-                    Together, lets choose the right care for your child{'\n'}to get started
-                  </h2>
-              </div>
-
-              {/* Cards Grid */}
-              <div className="cards-grid grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-20 max-w-md md:max-w-4xl mx-auto justify-items-center md:justify-items-stretch items-stretch rounded-[37.8px]">
-                {chooseOptionsCards.map((card) => (
-                  <div
-                    key={card.id}
-                    className={`card-container relative bg-white rounded-[20px] overflow-hidden flex flex-col h-[500px] md:h-[500px] min-h-[500px] md:min-h-[500px] max-h-[500px] md:max-h-[500px] flex-shrink-0 cursor-pointer`}
-                    onClick={() => {
-                      const mapping = { 1: 'counselling', 2: 'assessments', 3: 'better-parenting' };
-                      openGuide(mapping[card.id]);
-                    }}
-                    style={{ height: '500px' }}
-                  >
-                    {/* Colored background that matches image width */}
-                    <div className={`absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-b ${card.gradient} pointer-events-none z-0 rounded-[10px]`} />
-                    {/* Gradient overlay from half to bottom - matches image width on mobile */}
-                    <div className="absolute top-1/2 left-0 right-0 bottom-0 pointer-events-none z-0 rounded-b-[10px]" style={{ background: 'linear-gradient(to bottom, transparent, rgb(245, 246, 253))' }} />
-                    {/* Card Content */}
-                    <div className="card-content p-6 pb-0 mb-0 px-6 md:px-8 relative z-10">
-                      {/* Tags */}
-                      <div className="flex gap-2 mb-4">
-                        <h3
-                          className={`card-tag-pill rounded-full ${card.tagColors.primary}`}
-                          style={{ fontFamily: 'inherit' }}
-                        >
-                          {card.tags[0]}
-                        </h3>
-                        <h3
-                          className={`card-tag-pill rounded-full ${card.tagColors.secondary}`}
-                          style={{ fontFamily: 'inherit' }}
-                        >
-                          {card.tags[1]}
-                        </h3>
-                      </div>
-
-                      {/* Title */}
-                      <h5 className="card-title text-2xl md:text-3xl lg:text-4xl font-medium text-gray-900 mb-1 whitespace-pre-line" style={{ fontWeight: 'bold' }}>
-                        {card.title}
-                      </h5>
-
-                      {/* Description */}
-                      <p className="card-description p1 text-sm md:text-sm mb-0" style={{ lineHeight: '1.3' }}>
-                        {card.description}
-                      </p>
-                    </div>
-
-                    {/* Image Section */}
-                    <div className="card-image absolute left-0 right-0 z-10 h-[320px] md:h-64 min-h-[320px] md:min-h-64 max-h-[320px] md:max-h-64 overflow-hidden rounded-[20px]" style={{ top: '160px' }}>
-                      <Image
-                        src={card.image}
-                        alt={card.title}
-                        fill
-                        className={`${card.imageClass ? `${card.imageClass.replace('object-[50%_100%]', 'object-center')}` : "object-cover object-center md:object-[50%_100%]"}`}
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        priority={card.image === "/Child Assessment.webp"}
-                      />
-                      
-                      {/* Read More Button */}
-                      <div className="read-more-button absolute bottom-6 md:bottom-8 left-6">
-                        <button className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white p-0 h-8 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center shadow-sm border border-white/20 overflow-hidden group">
-                          <span className="px-3">Find more</span>
-                           <span className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-[#EAE4F4] transition-colors duration-200" style={{ backgroundColor: 'rgb(245, 246, 253)' }}>
-                            <svg
-                              className="w-3.5 h-3.5 group-hover:scale-110 transition-all duration-200"
-                              fill="none"
-                              stroke="#000000"
-                              strokeOpacity="0.6"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={3}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {chooseOptionsShowGuide && (
-                <GuideModal open={chooseOptionsShowGuide} onClose={() => setChooseOptionsShowGuide(false)} defaultCategory={defaultCategory} />
-              )}
+        {/* Support Points Section */}
+        <section className="py-12 md:py-16 lg:py-20 bg-gray-50/50">
+          <div className="mx-auto max-w-[1400px] px-6 md:px-12 lg:px-4">
+            <div className="text-center max-w-5xl mx-auto mb-10 md:mb-12">
+              <p className="p1 text-base md:text-lg mb-2" style={{ color: '#3f2e73', fontWeight: 500 }}>
+                How therapy helps
+              </p>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#2C1A4A', lineHeight: '1.2' }}>
+                Sometimes a Little Extra Support Can Make A Difference
+              </h2>
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed">
+                Whether your child is struggling with emotions, behaviour, confidence, learning, or friendships, the right support can help your child feel understood, build confidence, and handle life&apos;s challenges in a healthier way.
+              </p>
             </div>
-          </section>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 max-w-6xl mx-auto">
+              {[
+                "Anxiety, Worry & Exam Stress",
+                "Anger, Tantrums & Emotional Outbursts",
+                "Sadness, Low Mood & Depression",
+                "Low Confidence & Self-Esteem",
+                "ADHD, Focus & Attention Difficulties",
+                "Learning Challenges & School Struggles",
+                "Behaviour Changes at Home or School",
+                "Trauma, Abuse & Emotional Recovery",
+                "Friendship, Social Skills & Peer Challenges",
+                "Family Conflict & Relationship Stress",
+                "Parenting Support & Guidance",
+                "Parent–Child Relationship & Communication"
+              ].map((point, index) => (
+                <div 
+                  key={index}
+                  className="flex items-start gap-3 py-1 px-2"
+                >
+                  <span className="text-xl flex-shrink-0">✅</span>
+                  <span className="text-gray-800 font-medium text-base leading-snug">{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Psychologists Section */}
@@ -1659,311 +1808,120 @@ export default function AdsLandingPage() {
                     
                     return (
                       <React.Fragment key={psych.id || idx}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                          <div
-                            className="guide-video-card"
+                        <div className="redesigned-therapist-card-wrapper">
+                          {/* Top Peach Card */}
+                          <div 
+                            className="redesigned-therapist-top-card"
                             onClick={() => handlePsychologistClick(psych)}
                           >
-                        <div style={{ 
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          minHeight: "100%"
-                        }}>
-                          {imageSrc && (
-                            <img
-                              src={imageSrc}
-                              alt={`${name} - Child psychologist profile photo`}
-                              className="doctor-card-image"
-                              width={400}
-                              height={500}
-                              loading="lazy"
-                              decoding="async"
-                              style={{ 
-                                width: "100%", 
-                                height: "100%", 
-                                minHeight: "100%",
-                                objectFit: "cover",
-                                aspectRatio: "4/5",
-                                position: "relative",
-                                zIndex: 2
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                if (e.target.nextSibling) {
-                                  e.target.nextSibling.style.display = 'flex';
-                                }
-                              }}
-                            />
-                          )}
-                        </div>
-                        
-                        {/* Gradient Overlay - Black fade from bottom to top */}
-                        <div style={{
-                          position: "absolute",
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '55%',
-                          background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 75%, rgba(0,0,0,0) 100%)",
-                          pointerEvents: "none",
-                          zIndex: 2
-                        }} />
-                        
-                        {/* Fallback: Doctor Initials Avatar */}
-                        <div 
-                          style={{
-                            display: (() => {
-                              const nameLower = name.toLowerCase();
-                              if (psych.cover_image_url) return 'none';
-                              if (nameLower.includes('irene') || nameLower.includes('marium') || 
-                                  nameLower.includes('doug') || nameLower.includes('douglas') || 
-                                  nameLower.includes('ashley') || nameLower.includes('ash') || 
-                                  nameLower.includes('child') || nameLower.includes('teen') ||
-                                  nameLower.includes('sarah') || nameLower.includes('liana')) return 'none';
-                              return 'flex';
-                            })(),
-                            width: "100%",
-                            height: "100%",
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "4rem",
-                            fontWeight: "bold",
-                            color: "#fff",
-                            textShadow: "0 2px 8px rgba(0,0,0,0.3)"
-                          }}
-                        >
-                          {name ? 
-                            name.split(' ').map(n => n.charAt(0)).join('').toUpperCase() :
-                            psych.first_name ? 
-                              psych.first_name.charAt(0).toUpperCase() : 
-                              'D'
-                          }
-                        </div>
-                        
-                        {/* Doctor name and expertise bubbles */}
-                        <div style={{
-                          position: "absolute",
-                          left: 18,
-                          bottom: 10,
-                          zIndex: 3,
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
-                          gap: 0,
-                          width: "80%"
-                        }}>
-                          <div className="doctor-card-name" style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem', textShadow: '0 2px 8px rgba(0,0,0,0.25)', paddingLeft: 10, paddingBottom: 0, marginBottom: 0 }}>
-                            {name || 'Dr. ' + (psych.first_name || 'Unknown')}
-                          </div>
-                          {/* Expertise bubbles - Personality chips */}
-                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 1 }}>
-                            {/* Personality chips */}
-                            {(() => {
-                              const rawTraits = psych.personality_traits || psych.personalityTraits || psych.personalities || null;
-                              let traits = [];
-                              if (Array.isArray(rawTraits)) {
-                                traits = rawTraits;
-                              } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
-                                traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
-                              }
-                              return traits.slice(0, 1).map((trait, i) => (
-                                <span key={`p_${i}`} style={{ background: 'rgba(255,255,255,0.16)', color: '#fff', borderRadius: 16, padding: '0.05em 0.5em', fontWeight: 400, fontSize: '0.85rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.2px solid rgba(255,255,255,0.18)' }}>
-                                  {trait}
+                            <div className="redesigned-therapist-header">
+                              <div className="redesigned-therapist-info">
+                                <span className="redesigned-therapist-designation">
+                                  {psych.designation || 'Consultant Psychologist'}
                                 </span>
-                              ));
-                            })()}
-                            {/* Price chip */}
-                            <span style={{ background: 'rgba(255,255,255,0.22)', color: '#fff', borderRadius: 16, padding: '0.05em 0.5em', fontWeight: 400, fontSize: '0.9rem', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', backdropFilter: 'blur(0.5px)', WebkitBackdropFilter: 'blur(0.5px)', border: '1.5px solid rgba(255,255,255,0.18)' }}>
-                              {psych.price ? `₹${psych.price}` : (psych.individual_session_price ? `₹${psych.individual_session_price}` : '₹—')}
-                            </span>
-                            {/* Experience chip */}
-                            <span style={{
-                              background: 'rgba(255,255,255,0.22)',
-                              color: '#fff',
-                              borderRadius: 16,
-                              padding: '0.05em 0.5em',
-                              fontWeight: 400,
-                              fontSize: '0.9rem',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                              backdropFilter: 'blur(0.5px)',
-                              WebkitBackdropFilter: 'blur(0.5px)',
-                              border: '1.5px solid rgba(255,255,255,0.18)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 6
-                            }}>
-                              <span role="img" aria-label="experience" style={{ fontSize: 14, lineHeight: 1 }}>⚡️</span>
-                              {`${(psych.experience_years || 3)}+ yrs Experience`}
-                            </span>
-                            {/* Designation chip */}
-                            {psych.designation && (
-                              <span style={{
-                                background: 'rgba(255,255,255,0.22)',
-                                color: '#fff',
-                                borderRadius: 16,
-                                padding: '0.05em 0.5em',
-                                fontWeight: 400,
-                                fontSize: '0.9rem',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-                                backdropFilter: 'blur(0.5px)',
-                                WebkitBackdropFilter: 'blur(0.5px)',
-                                border: '1.5px solid rgba(255,255,255,0.18)'
-                              }}>
-                                {psych.designation}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Availability information - below card */}
-                      <div className="availability-container" style={{
-                        marginTop: 0,
-                        marginBottom: 20
-                      }}>
-                        <div style={{
-                          background: 'rgba(255,255,255,0.25)',
-                          color: '#000000',
-                          borderRadius: '0 0 12px 12px',
-                          padding: '8px 12px 12px 12px',
-                          fontWeight: 500,
-                          fontSize: '0.75rem',
-                          boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
-                          backdropFilter: 'blur(0.5px)',
-                          WebkitBackdropFilter: 'blur(0.5px)',
-                          border: '1px solid #ffffff',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                          lineHeight: '1.4', // Better line spacing
-                          overflow: 'visible', // Allow button to be visible
-                          minHeight: '7.5rem' // Reserve space so cards with 1–2 availability lines + button align
-                        }}>
-                          {(() => {
-                            const isLoading = loadingAvailability.has(psych.id);
-                            const availability = doctorAvailability[psych.id];
-                            
-                            // Show loading state first
-                            if (isLoading) {
-                              return 'Loading next availability...';
-                            }
-                            
-                            // Show availability if it exists
-                            if (availability && availability.timeSlots && availability.timeSlots.length > 0) {
-                              const today = new Date();
-                              today.setHours(0, 0, 0, 0);
+                                <h3 className="redesigned-therapist-name">
+                                  {name || 'Dr. ' + (psych.first_name || 'Unknown')}
+                                </h3>
+                                <span className="redesigned-therapist-sessions-badge">
+                                  {800 + (psych.experience_years || 2) * 100}+ <span className="italic-text">hrs sessions</span>
+                                </span>
+                              </div>
                               
-                              // Group slots by date
-                              // Handle both old format (strings) and new format (objects with date/time)
-                              const slotsByDate = {};
-                              availability.timeSlots.forEach(slot => {
-                                let slotDate, slotTime;
-                                
-                                if (typeof slot === 'string') {
-                                  // Old format: just a time string, use nextDate
-                                  slotDate = availability.nextDate;
-                                  slotTime = slot;
-                                } else if (slot && slot.date && slot.time) {
-                                  // New format: object with date and time
-                                  slotDate = slot.date;
-                                  slotTime = slot.time;
-                                } else {
-                                  // Fallback
-                                  slotDate = availability.nextDate;
-                                  slotTime = slot.time || slot;
-                                }
-                                
-                                if (!slotsByDate[slotDate]) {
-                                  slotsByDate[slotDate] = [];
-                                }
-                                slotsByDate[slotDate].push(slotTime);
-                              });
-                              
-                              // Format and display slots grouped by date
-                              const formattedSlots = Object.entries(slotsByDate).map(([dateStr, times]) => {
-                                const [year, month, day] = dateStr.split('-');
-                                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                                const isToday = dateObj.getTime() === today.getTime();
-                                const isTomorrow = dateObj.getTime() === today.getTime() + 86400000;
-                                
-                                let dateLabel;
-                                if (isToday) {
-                                  dateLabel = 'Today';
-                                } else if (isTomorrow) {
-                                  dateLabel = 'Tomorrow';
-                                } else {
-                                  dateLabel = dateObj.toLocaleDateString('en-US', { 
-                                    month: 'short', 
-                                    day: 'numeric',
-                                    year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-                                  });
-                                }
-                                
-                                return { dateLabel, text: `${dateLabel}: ${times.join(' • ')}` };
-                              });
+                              <div className="redesigned-therapist-avatar-container">
+                                {imageSrc && (
+                                  <img
+                                    src={imageSrc}
+                                    alt={`${name} - Child psychologist`}
+                                    className="redesigned-therapist-avatar-img"
+                                    width={140}
+                                    height={140}
+                                    loading="lazy"
+                                    decoding="async"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      const sibling = e.target.nextSibling;
+                                      if (sibling) {
+                                        sibling.style.display = 'flex';
+                                      }
+                                    }}
+                                  />
+                                )}
+                                <div 
+                                  className="redesigned-therapist-avatar-fallback"
+                                  style={{ display: imageSrc ? 'none' : 'flex' }}
+                                >
+                                  {name ? 
+                                    name.split(' ').filter(Boolean).map(n => n.charAt(0)).join('').toUpperCase().slice(0, 2) :
+                                    'D'
+                                  }
+                                </div>
+                              </div>
+                            </div>
 
-                              return (
-                                <>
-                                  Next available:
-                                  <br />
-                                  {formattedSlots.map((slot, index) => (
-                                    <React.Fragment key={index}>
-                                      {slot.text}
-                                      {index < formattedSlots.length - 1 ? <br /> : null}
-                                    </React.Fragment>
-                                  ))}
-                                </>
-                              );
-                            }
-                            
-                            // Only show "No availability" if not loading and no slots found
-                            return 'No availability';
-                          })()}
-                          {/* Book Now Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePsychologistClick(psych);
-                            }}
-                            style={{
-                              marginTop: '12px',
-                              width: '100%',
-                              padding: '8px 16px',
-                              backgroundColor: '#3f2e73',
-                              color: '#ffffff',
-                              border: '2px solid #3f2e73',
-                              borderRadius: '8px',
-                              fontSize: '0.875rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              boxShadow: '0 2px 4px rgba(63, 46, 115, 0.2)'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (typeof window !== 'undefined' && window.innerWidth > 767) {
-                                e.target.style.backgroundColor = '#6b5299';
-                                e.target.style.borderColor = '#6b5299';
-                              e.target.style.transform = 'translateY(-1px)';
-                                e.target.style.boxShadow = '0 4px 8px rgba(107, 82, 153, 0.3)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (typeof window !== 'undefined' && window.innerWidth > 767) {
-                              e.target.style.backgroundColor = '#3f2e73';
-                              e.target.style.borderColor = '#3f2e73';
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = '0 2px 4px rgba(63, 46, 115, 0.2)';
-                              }
-                            }}
-                          >
-                            Book Now
-                          </button>
-                        </div>
-                      </div>
+                            {/* Pills row at the bottom of the peach card */}
+                            <div className="redesigned-therapist-pills-section">
+                              {/* Row 1: Experience & Price */}
+                              <div className="redesigned-therapist-pills-row">
+                                <span className="redesigned-therapist-pill">
+                                  ⚡️ {psych.experience_years || 2}+ yrs Experience
+                                </span>
+                                <span className="redesigned-therapist-pill">
+                                  ₹{psych.price || psych.individual_session_price || '1299'}
+                                </span>
+                              </div>
+                              {/* Row 2: Personality Traits & View Profile */}
+                              <div className="redesigned-therapist-pills-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1, minWidth: 0 }}>
+                                  {(() => {
+                                    const rawTraits = psych.personality_traits || psych.personalityTraits || psych.personalities || null;
+                                    let traits = [];
+                                    if (Array.isArray(rawTraits)) {
+                                      traits = rawTraits;
+                                    } else if (typeof rawTraits === 'string' && rawTraits.trim().length > 0) {
+                                      traits = rawTraits.split(/[,|/]/).map(t => t.trim()).filter(Boolean);
+                                    }
+                                    const displayTraits = traits.length > 0 ? traits.slice(0, 2) : ["Friendly", "Empathetic"];
+                                    return displayTraits.map((trait, i) => (
+                                      <span key={`trait_${i}`} className="redesigned-therapist-pill">
+                                        {/^[a-zA-Z0-9]/.test(trait) ? `😇 ${trait}` : trait}
+                                      </span>
+                                    ));
+                                  })()}
+                                </div>
+                                <span className="redesigned-therapist-view-profile">
+                                  View Profile
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Bottom bar with availability and CTA */}
+                          <div className="redesigned-therapist-bottom-bar">
+                            <div className="redesigned-therapist-availability-info">
+                              {(() => {
+                                const display = getAvailabilityDisplay(psych.id);
+                                return (
+                                  <>
+                                    <span className="redesigned-therapist-availability-label">
+                                      {display.label}
+                                    </span>
+                                    <span className="redesigned-therapist-availability-time">
+                                      {display.timeText}
+                                    </span>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            <button
+                              className="redesigned-therapist-book-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePsychologistClick(psych);
+                              }}
+                            >
+                              Book Now
+                            </button>
+                          </div>
                         </div>
                       </React.Fragment>
                     );
