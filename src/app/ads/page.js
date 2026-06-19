@@ -8,8 +8,6 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { publicApi } from '@/lib/backendApi';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
-import HowItWorks from '@/components/HowItWorks';
-import VideosShowcase from '@/components/VideosShowcase';
 import GuideModal from '@/components/GuideModal';
 import { Counter } from '@/components/ui/animated-counter';
 import { TrendingUp } from 'lucide-react';
@@ -193,6 +191,7 @@ export default function AdsLandingPage() {
   const [loadingAvailability, setLoadingAvailability] = useState(new Set()); // Track which doctors are loading
   const [videos, setVideos] = useState([]); // Store random videos
   const [videosLoading, setVideosLoading] = useState(true); // Track if videos are being loaded
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false); // Track if the custom video is playing
   const [showGuide, setShowGuide] = useState(false);
   const [chooseOptionsShowGuide, setChooseOptionsShowGuide] = useState(false);
   const [defaultCategory, setDefaultCategory] = useState(null);
@@ -280,28 +279,6 @@ export default function AdsLandingPage() {
     };
   }, []);
 
-  // Override How It Works button to scroll to psychologists section
-  useEffect(() => {
-    const handleButtonClick = (e) => {
-      const button = e.target.closest('#how-it-works button[type="button"]');
-      if (button && button.textContent.trim() === 'Get started') {
-        e.preventDefault();
-        e.stopPropagation();
-        const psychologistsSection = document.getElementById('psychologists-section');
-        if (psychologistsSection) {
-          psychologistsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
-    };
-
-    const howItWorksSection = document.getElementById('how-it-works');
-    if (howItWorksSection) {
-      howItWorksSection.addEventListener('click', handleButtonClick);
-      return () => {
-        howItWorksSection.removeEventListener('click', handleButtonClick);
-      };
-    }
-  }, []);
 
   const openGuide = (categoryKey) => {
     setDefaultCategory(categoryKey);
@@ -1214,6 +1191,29 @@ export default function AdsLandingPage() {
               object-position: center bottom !important;
             }
           }
+
+          /* Scoped overrides to force left-alignment in mobile, tablet, and small laptop views */
+          @media (max-width: 1279px) {
+            .ads-page main .hero-title,
+            .ads-page .hero-title {
+              text-align: left !important;
+              margin-left: 0 !important;
+              margin-right: auto !important;
+            }
+            .ads-page .hero-description {
+              text-align: left !important;
+              margin-left: 0 !important;
+              margin-right: auto !important;
+              max-width: 100% !important;
+            }
+            .ads-page .hero-badge {
+              margin: 0 !important;
+              margin-right: auto !important;
+            }
+            .ads-page .hero-buttons {
+              align-items: flex-start !important;
+            }
+          }
           @media (min-width: 1024px) {
             .ads-page .hero-section.hero-home {
               margin-top: 3rem !important;
@@ -1573,6 +1573,23 @@ export default function AdsLandingPage() {
               padding: 2px 6px;
             }
           }
+          @media (max-width: 767px) {
+            .ads-page .hero-badge {
+              margin-left: 0 !important;
+              margin-right: auto !important;
+              align-self: flex-start !important;
+            }
+            .ads-page .hero-title {
+              text-align: left !important;
+              padding-left: 0 !important;
+              padding-right: 0 !important;
+            }
+            .ads-page .hero-description {
+              text-align: left !important;
+              margin-left: 0 !important;
+              margin-right: auto !important;
+            }
+          }
         `
       }} />
       {/* Structured Data */}
@@ -1616,9 +1633,9 @@ export default function AdsLandingPage() {
             >
               <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
                 {/* Left: Text */}
-                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-center xl:text-left items-center xl:items-start mt-0 px-0 sm:px-0 order-1">
+                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-left items-start mt-0 px-4 sm:px-6 xl:px-0 order-1">
                   {/* Badge */}
-                  <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mx-auto xl:mx-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
+                  <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mr-auto xl:mr-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                     </svg>
@@ -1631,7 +1648,7 @@ export default function AdsLandingPage() {
                   <p className="hero-description p1 mt-3 md:mt-3 text-base md:text-lg">
                     Children often show their struggles through behaviour and emotions. Understanding these signs early can make a big difference in their growth and well-being.
                   </p>
-                  <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-center gap-4 sm:flex-row sm:gap-6 sm:justify-start">
+                  <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-start gap-4 sm:flex-row sm:gap-6 sm:justify-start">
                     <style dangerouslySetInnerHTML={{__html: `
                       @media (max-width: 767px) {
                         .hero-book-button {
@@ -1651,8 +1668,8 @@ export default function AdsLandingPage() {
                     >
                       <span style={{ fontWeight: 500 }}>Talk to an Expert</span>
                     </button>
-                    <div ref={counterRef} className="text-center flex-shrink-0 counter-container">
-                      <p className="text-gray-800 counter-sentence flex items-center justify-center gap-1 flex-wrap">
+                    <div ref={counterRef} className="text-left flex-shrink-0 counter-container">
+                      <p className="text-gray-800 counter-sentence flex items-center justify-start gap-1 flex-wrap">
                         <TrendingUp size={14} style={{ color: '#3f2e73', strokeWidth: 2.5 }} />
                         Booked by{' '}
                         <span className="inline-flex items-center" style={{ gap: 0 }}>
@@ -1720,7 +1737,7 @@ export default function AdsLandingPage() {
         {/* Support Points Section */}
         <section className="py-12 md:py-16 lg:py-20 bg-gray-50/50">
           <div className="mx-auto max-w-[1400px] px-6 md:px-12 lg:px-4">
-            <div className="text-center max-w-5xl mx-auto mb-10 md:mb-12">
+            <div className="text-left md:text-center max-w-5xl mx-auto mb-10 md:mb-12">
               <p className="p1 text-base md:text-lg mb-2" style={{ color: '#3f2e73', fontWeight: 500 }}>
                 How therapy helps
               </p>
@@ -1932,79 +1949,471 @@ export default function AdsLandingPage() {
         </section>
 
         {/* How It Works Section */}
-        <div className="mt-12 md:mt-16 lg:mt-20 pt-4 md:pt-6 lg:pt-8 pb-12 md:pb-16 lg:pb-20" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
+        <section id="how-it-works" className="mt-12 md:mt-16 lg:mt-20 pt-4 md:pt-6 lg:pt-8 pb-12 md:pb-16 lg:pb-20" style={{ backgroundColor: 'rgb(250, 251, 254)' }}>
           <style dangerouslySetInnerHTML={{__html: `
-            .ads-page .how-it-works-heading {
-              line-height: 1.2 !important;
+            .how-it-works-grid {
+              display: grid;
+              grid-template-columns: 1fr 300px;
+              gap: 12px 48px;
+              width: 100%;
             }
-            @media (max-width: 767px) {
-              .ads-page .how-it-works-heading {
-                white-space: pre-line;
+            .how-it-works-main-heading {
+              grid-column: 1 / -1;
+              font-size: 32px;
+              font-weight: 700;
+              line-height: 1.25;
+              color: #111827;
+              text-align: left;
+              margin-bottom: 0px;
+            }
+            .how-it-works-subheading {
+              grid-column: 1 / -1;
+              font-size: 16px;
+              line-height: 1.5;
+              color: #4B5563;
+              text-align: left;
+              margin-bottom: 28px;
+              max-width: 850px;
+            }
+            .how-it-works-left-col {
+              grid-column: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              min-width: 0;
+              height: 533px;
+            }
+            .how-it-works-video-card-container {
+              grid-column: 2;
+              width: 300px;
+              height: 533px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            .how-it-works-video-wrapper {
+              width: 100%;
+              aspect-ratio: 9/16;
+              border-radius: 20px;
+              overflow: hidden;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+              border: 1px solid #E5E7EB;
+              background-color: #000;
+              position: relative;
+            }
+            .video-poster-overlay {
+              width: 100%;
+              height: 100%;
+              background-size: cover;
+              background-position: center;
+              cursor: pointer;
+              position: relative;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .video-play-button {
+              width: 64px;
+              height: 64px;
+              border-radius: 50%;
+              background-color: rgba(63, 46, 115, 0.9);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: transform 0.2s ease, background-color 0.2s ease;
+              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+              padding-left: 4px;
+            }
+            .video-poster-overlay:hover .video-play-button {
+              transform: scale(1.1);
+              background-color: #3F2E73;
+            }
+            .custom-how-it-works-card {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              background-color: #ffffff;
+              border: 1px solid #E4E7EC;
+              border-radius: 16px;
+              padding: 16px 24px;
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+              text-align: left;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            }
+            .custom-how-it-works-card:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+            .custom-step-number {
+              color: #3F2E73;
+              font-weight: 700;
+              font-size: 1.25rem;
+              margin-right: 4px;
+            }
+            .custom-step-title {
+              color: #111827;
+              font-size: 1.125rem;
+              font-weight: 700;
+            }
+            .custom-step-desc {
+              color: #4B5563;
+              font-size: 0.95rem;
+              line-height: 1.55;
+              margin-top: 8px;
+            }
+            @media (max-width: 1024px) {
+              .how-it-works-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                justify-items: center;
+              }
+              .how-it-works-main-heading {
+                grid-column: 1;
+                order: 2;
+                font-size: 26px;
+                text-align: center;
+              }
+              .how-it-works-subheading {
+                grid-column: 1;
+                order: 3;
+                font-size: 14px;
+                text-align: center;
+                margin-bottom: 24px;
+              }
+              .how-it-works-video-card-container {
+                grid-column: 1;
+                order: 1;
+                width: 100%;
+                max-width: 300px;
+                height: auto;
+                margin: 0 auto 12px auto;
+              }
+              .how-it-works-left-col {
+                grid-column: 1;
+                order: 4;
+                height: auto;
+                gap: 16px;
+                width: 100%;
               }
             }
-            @media (min-width: 768px) {
-              .ads-page .how-it-works-heading {
-                white-space: normal;
+            @media (max-width: 640px) {
+              .custom-how-it-works-card {
+                padding: 20px;
               }
-            }
-            .ads-page #how-it-works button[type="button"] {
-              background-color: #6b7280 !important;
-            }
-            .ads-page #how-it-works button[type="button"]:hover {
-              background-color: #4b5563 !important;
             }
           `}} />
-          <HowItWorks 
-            heading={
-              <>
-                Your <span style={{ color: '#3f2e73', fontStyle: 'italic' }}>Little one</span> deserves{'\n'}
-                <span className="how-it-works-mobile-break">care</span> & support
-              </>
-            }
-          />
-        </div>
+          <div className="mx-auto max-w-[960px] px-4 lg:px-6 overflow-hidden">
+            
+            <div className="how-it-works-grid">
+              
+              <h2 className="how-it-works-main-heading">
+                How Online Counselling Works at Koott
+              </h2>
+              <p className="how-it-works-subheading">
+                With understanding and care, we help you navigate your healing journey. We have made it easy and accessible for you.
+              </p>
 
-        {/* Videos Showcase Section */}
-        {!videosLoading && videos.length > 0 && (
-          <div className="pt-0" style={{ marginTop: '-16px' }}>
-            <style dangerouslySetInnerHTML={{__html: `
-              .ads-page .videos-showcase-mobile {
-                margin-top: 3rem !important;
-                padding-top: 3rem !important;
-              }
-              @media (max-width: 767px) {
-                .ads-page .videos-showcase-mobile {
-                  margin-top: 2rem !important;
-                  padding-top: 2.5rem !important;
-                }
-                .ads-page .how-it-works-heading {
-                  white-space: pre-line;
-                }
-              }
-              @media (min-width: 768px) {
-                .ads-page .how-it-works-heading {
-                  white-space: normal;
-                }
-              }
-              @media (min-width: 768px) and (max-width: 1180px) {
-                .ads-page .videos-showcase-mobile {
-                  margin-top: 4.5rem !important;
-                  padding-top: 3rem !important;
-                }
-              }
-            `}} />
-            <VideosShowcase cmsData={{ 
-            videosHeading: "Follow our journey\nto see how we help children and families.",
-            videos: videos.map(video => ({
-              url: video.url || video.src,
-              src: video.url || video.src,
-              thumbnailUrl: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
-              poster: normalizeImageUrl(video.thumbnailUrl || video.poster || ''),
-              title: video.title
-            }))
-          }} />
+              {/* Left Column: Step Cards */}
+              <div className="how-it-works-left-col">
+                
+                {/* Step 1 */}
+                <div className="custom-how-it-works-card">
+                  <h3 className="flex items-baseline">
+                    <span className="custom-step-number">1.</span>
+                    <span className="custom-step-title">Choose a Therapist</span>
+                  </h3>
+                  <p className="custom-step-desc">
+                    Select any of our licensed psychologists online in Kerala for your mental health.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="custom-how-it-works-card">
+                  <h3 className="flex items-baseline">
+                    <span className="custom-step-number">2.</span>
+                    <span className="custom-step-title">Book a Session</span>
+                  </h3>
+                  <p className="custom-step-desc">
+                    Schedule securely and connect according to your convenience and flexibility
+                  </p>
+                </div>
+
+                {/* Step 3 */}
+                <div className="custom-how-it-works-card">
+                  <h3 className="flex items-baseline">
+                    <span className="custom-step-number">3.</span>
+                    <span className="custom-step-title">Attend Online Session</span>
+                  </h3>
+                  <p className="custom-step-desc">
+                    Join a secure video or audio session from a comfortable space anywhere in the world.
+                  </p>
+                </div>
+
+                {/* Step 4 */}
+                <div className="custom-how-it-works-card">
+                  <h3 className="flex items-baseline">
+                    <span className="custom-step-number">4.</span>
+                    <span className="custom-step-title">Continuous Support</span>
+                  </h3>
+                  <p className="custom-step-desc">
+                    Our ongoing follow-ups help track progress and maintain emotional well-being effectively.
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Right Column: YouTube Shorts Embed with Custom Cover Image */}
+              <div className="how-it-works-video-card-container">
+                <div className="how-it-works-video-wrapper">
+                  {!isPlayingVideo ? (
+                    <div 
+                      className="video-poster-overlay"
+                      style={{
+                        backgroundImage: `url('https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/Reel%20Cover-4%20copy.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvUmVlbCBDb3Zlci00IGNvcHkud2VicCIsImlhdCI6MTc2ODQxMjE3NiwiZXhwIjoxNzk5OTQ4MTc2fQ.LQRFt1-_b-rfaVBXJkGihq36hy8ipIPzl2GEDE1S_eM')`
+                      }}
+                      onClick={() => setIsPlayingVideo(true)}
+                    >
+                      <div className="video-play-button">
+                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" style={{ width: '32px', height: '32px', color: '#ffffff', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }}>
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      src="https://www.youtube.com/embed/VZPE-u-wCYE?autoplay=1&rel=0&modestbranding=1"
+                      title="How Online Counselling Works at Koott"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                    ></iframe>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
           </div>
-        )}
+        </section>
+
+        {/* Confused, how to start? Section */}
+        <section id="confused-start-section" className="mt-8 md:mt-12 lg:mt-16 pt-4 md:pt-6 pb-12 md:pb-16" style={{ backgroundColor: '#ffffff' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            .confused-grid {
+              display: grid;
+              grid-template-columns: 1.05fr 2fr;
+              gap: 24px;
+              width: 100%;
+            }
+            .confused-text-wrapper {
+              grid-column: 1 / -1;
+              text-align: left;
+            }
+            .confused-subheading {
+              color: #4B5563;
+              font-weight: 500;
+              text-align: left;
+            }
+            .confused-heading {
+              font-weight: 700;
+              color: #111827;
+              text-align: left;
+            }
+            .confused-whatsapp-card {
+              grid-column: 1;
+              height: 380px;
+              border-radius: 24px;
+              background-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0) 100%), url('https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/pexels-timur-weber-9127700.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvcGV4ZWxzLXRpbXVyLXdlYmVyLTkxMjc3MDAud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODE4NDk4NjUsImV4cCI6MTgxMzM4NTg2NX0.n3_1VCd44nDBCCcQSDKhaDLyq5BJqsBLlJbgvcQyI4o');
+              background-size: cover;
+              background-position: center;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-end;
+              padding: 24px;
+              position: relative;
+              cursor: pointer;
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+              text-decoration: none;
+            }
+            .confused-whatsapp-card:hover {
+              transform: translateY(-4px);
+              box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            }
+            .confused-whatsapp-card-content {
+              display: flex;
+              align-items: flex-end;
+              justify-content: space-between;
+              width: 100%;
+            }
+            .confused-whatsapp-text-block {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              color: #ffffff;
+              text-align: left;
+            }
+            .confused-whatsapp-title {
+              font-size: 24px;
+              font-weight: 700;
+              line-height: 1.2;
+              white-space: pre-line;
+            }
+            .confused-whatsapp-desc {
+              font-size: 13px;
+              font-weight: 400;
+              opacity: 0.9;
+              line-height: 1.4;
+              white-space: pre-line;
+            }
+            .confused-whatsapp-icon-wrapper {
+              flex-shrink: 0;
+              margin-left: auto;
+            }
+            .confused-book-card {
+              grid-column: 2;
+              height: 380px;
+              border-radius: 24px;
+              background-image: linear-gradient(to left, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.2) 100%), url('/treatment-plan.webp');
+              background-size: cover;
+              background-position: center;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              padding: 40px;
+              position: relative;
+              cursor: pointer;
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .confused-book-card:hover {
+              transform: translateY(-4px);
+              box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            }
+            .confused-book-text {
+              color: #ffffff;
+              font-size: 26px;
+              font-weight: 600;
+              line-height: 1.3;
+              text-align: right;
+              align-self: flex-end;
+              max-width: 320px;
+              margin-top: 10px;
+            }
+            .confused-book-btn-wrapper {
+              align-self: flex-end;
+            }
+            .confused-book-btn {
+              background-color: rgba(0, 0, 0, 0.6);
+              color: #ffffff;
+              border: 1.5px solid #3F2E73;
+              border-radius: 12px;
+              padding: 10px 24px;
+              font-size: 16px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+            }
+            .confused-book-btn:hover {
+              background-color: #3F2E73;
+              border-color: #3F2E73;
+              color: #ffffff;
+            }
+            .confused-book-btn:active {
+              transform: scale(0.97);
+            }
+            @media (max-width: 768px) {
+              .confused-grid {
+                grid-template-columns: 1.2fr 1fr;
+                gap: 24px;
+                align-items: end;
+              }
+              .confused-text-wrapper {
+                grid-column: 1;
+                padding: 4px !important;
+              }
+              .confused-subheading {
+                font-size: 11px !important;
+                margin-bottom: 2px !important;
+              }
+              .confused-heading {
+                font-size: 14px !important;
+                line-height: 1.2 !important;
+                margin-bottom: 0px !important;
+              }
+              .confused-whatsapp-card {
+                grid-column: 2;
+                height: 180px;
+                padding: 16px;
+                border-radius: 20px;
+              }
+              .confused-whatsapp-text-block {
+                display: none;
+              }
+              .confused-whatsapp-icon-wrapper svg {
+                width: 28px;
+                height: 28px;
+              }
+              .confused-book-card {
+                display: none;
+              }
+            }
+          `}} />
+          <div className="mx-auto max-w-[960px] px-4 lg:px-6 overflow-hidden">
+            
+            <div className="confused-grid">
+              
+              <div className="confused-text-wrapper p-1 md:p-0">
+                <p className="confused-subheading text-[11px] md:text-sm mb-[2px] md:mb-1">We got you.</p>
+                <h2 className="confused-heading text-sm md:text-3xl mb-0 md:mb-8">Confused, how to start?</h2>
+              </div>
+
+              {/* Left Card: WhatsApp Support */}
+              <a 
+                href="https://wa.me/919539007766?text=Hi%20Little%20Care%2C%20I%27d%20like%20to%20know%20more%20about%20your%20services."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="confused-whatsapp-card"
+              >
+                <div className="confused-whatsapp-card-content">
+                  <div className="confused-whatsapp-text-block">
+                    <h3 className="confused-whatsapp-title">
+                      We&apos;re here,<br />For you.
+                    </h3>
+                    <p className="confused-whatsapp-desc">
+                      Speak to our support<br />team instantnly.
+                    </p>
+                  </div>
+                  <div className="confused-whatsapp-icon-wrapper">
+                    <svg viewBox="0 0 24 24" width="32" height="32" fill="#25D366" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                    </svg>
+                  </div>
+                </div>
+              </a>
+
+              {/* Right Card: Book Session */}
+              <div 
+                onClick={handleGetStartedClick}
+                className="confused-book-card"
+              >
+                <div className="confused-book-text">
+                  It&apos;s always the first step, How about we take the first step today.
+                </div>
+                <div className="confused-book-btn-wrapper">
+                  <button 
+                    type="button" 
+                    className="confused-book-btn"
+                  >
+                    Book Your Session
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
 
         {/* Reviews Section */}
         <section className="w-screen pt-8 md:pt-10 lg:pt-12 pb-0 bg-white">
