@@ -1555,9 +1555,9 @@ export default function AdsLandingPage() {
               height: 110px;
             }
             .redesigned-therapist-name {
-              font-size: 22px;
+              font-size: 24px;
               margin-bottom: 8px;
-              height: 48.4px;
+              height: 52.8px;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
@@ -1609,9 +1609,9 @@ export default function AdsLandingPage() {
               height: 90px;
             }
             .redesigned-therapist-name {
-              font-size: 18px;
+              font-size: 20px;
               margin-bottom: 6px;
-              height: 39.6px;
+              height: 44px;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
