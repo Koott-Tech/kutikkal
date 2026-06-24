@@ -1300,14 +1300,14 @@ export default function AdsLandingPage() {
             text-align: left;
           }
           .redesigned-therapist-top-card {
-            background: linear-gradient(135deg, rgba(205, 196, 255, 0.30) 0%, #ffffff 100%);
+            background: linear-gradient(180deg, rgba(205, 196, 255, 0.45) 0%, #ffffff 25%);
             border-radius: 28px;
             padding: 24px;
             display: flex;
             flex-direction: column;
             position: relative;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(205, 196, 255, 0.35);
+            border: 1.5px solid rgba(196, 181, 253, 0.7);
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             min-height: 290px;
@@ -1332,7 +1332,7 @@ export default function AdsLandingPage() {
             min-width: 0;
           }
           .redesigned-therapist-designation {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             color: #3C3C3C;
             line-height: 1.2;
@@ -1348,55 +1348,73 @@ export default function AdsLandingPage() {
             font-weight: 700;
             color: #000000;
             line-height: 1.1;
-            margin-bottom: 36px;
+            margin-bottom: 8px;
             letter-spacing: -0.5px;
             word-wrap: break-word;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            min-height: 61.6px;
+            height: 61.6px;
           }
           .redesigned-therapist-sessions-badge {
-            background-color: #3F2E73;
-            color: #FFFFFF;
-            font-size: 12px;
-            font-weight: 500;
-            padding: 6px 14px;
+            background: rgba(235, 231, 255, 0.7);
+            color: #3F2E73;
             border-radius: 9999px;
-            display: inline-block;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 550;
+            box-shadow: 0 2px 6px rgba(63, 46, 115, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: inline-flex;
+            align-items: center;
             line-height: 1.2;
             white-space: nowrap;
           }
           .redesigned-therapist-sessions-badge .italic-text {
-            font-style: italic;
-            font-weight: 400;
-            opacity: 0.9;
+            font-style: normal;
+            font-weight: 500;
+            opacity: 1;
           }
           .redesigned-therapist-price-label {
             color: #3F2E73;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
+            font-style: italic;
             display: inline-block;
             line-height: 1.2;
             white-space: nowrap;
+            margin-top: 36px;
+            margin-bottom: 20px;
+          }
+          .redesigned-therapist-price-session {
+            font-size: 16px;
+            font-weight: 400;
+            color: #3F2E73;
+            opacity: 0.85;
+            font-style: italic;
           }
           .redesigned-therapist-avatar-container {
             width: 140px;
             height: 140px;
-            border-radius: 50%;
-            background-color: #D6CFFF;
+            border-radius: 45% 55% 45% 55% / 55% 45% 55% 45%;
+            background-color: #E8E3FF;
             position: relative;
             flex-shrink: 0;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            transform: rotate(-10deg);
+            border: 1px solid rgba(196, 181, 253, 0.4);
           }
           .redesigned-therapist-avatar-img {
-            width: 100%;
-            height: 100%;
+            width: 120%;
+            height: 120%;
             object-fit: cover;
+            transform: rotate(10deg);
           }
           .redesigned-therapist-avatar-fallback {
             display: flex;
@@ -1408,13 +1426,14 @@ export default function AdsLandingPage() {
             color: #ffffff;
             font-size: 32px;
             font-weight: bold;
+            transform: rotate(10deg);
           }
           .redesigned-therapist-pills-section {
             margin-top: auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding-top: 0px;
+            padding-top: 16px;
             width: 100%;
           }
           .redesigned-therapist-pills-row {
@@ -1424,17 +1443,24 @@ export default function AdsLandingPage() {
             width: 100%;
             align-items: center;
           }
+          .redesigned-therapist-pills-row-nowrap {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 8px;
+            width: 100%;
+            align-items: center;
+          }
           .redesigned-therapist-pill {
-            background: rgba(255, 255, 255, 0.45);
-            color: #3f2e73;
+            background: rgba(235, 231, 255, 0.7);
+            color: #3F2E73;
             border-radius: 9999px;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(63, 46, 115, 0.04);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1.5px solid rgba(255, 255, 255, 0.70);
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 550;
+            box-shadow: 0 2px 6px rgba(63, 46, 115, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -1442,14 +1468,14 @@ export default function AdsLandingPage() {
             white-space: nowrap;
           }
           .redesigned-therapist-bottom-bar {
-            background: linear-gradient(90deg, #FFFDFB 0%, #FFF4ED 100%);
+            background: linear-gradient(135deg, #ffffff 75%, rgba(205, 196, 255, 0.45) 100%);
             border-radius: 20px;
-            padding: 16px 20px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid #FFE7D6;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+            border: 1.5px solid rgba(196, 181, 253, 0.7);
+            box-shadow: 0 4px 15px rgba(63, 46, 115, 0.02);
             width: 100%;
           }
           .redesigned-therapist-availability-info {
@@ -1457,20 +1483,23 @@ export default function AdsLandingPage() {
             flex-direction: column;
             align-items: flex-start;
             justify-content: center;
+            height: 42px;
           }
           .redesigned-therapist-availability-label {
             font-size: 13px;
             font-weight: 400;
-            color: #4A4A4A;
+            color: #2C2C2C;
             line-height: 1.2;
             margin-bottom: 2px;
+            white-space: nowrap;
           }
           .redesigned-therapist-availability-time {
             font-size: 20px;
-            font-weight: 600;
+            font-weight: 700;
             color: #000000;
             line-height: 1.1;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
           }
           .redesigned-therapist-book-button {
             background-color: #3F2E73;
@@ -1491,13 +1520,14 @@ export default function AdsLandingPage() {
             transform: scale(0.97);
           }
           .redesigned-therapist-view-profile {
-            background-color: transparent;
-            color: #3F2E73;
-            border: 1px solid #3F2E73;
+            background-color: #3F2E73;
+            color: #FFFFFF;
+            border: none;
             border-radius: 9999px;
             padding: 4px 10px;
             font-size: 11px;
             font-weight: 600;
+            font-style: italic;
             cursor: pointer;
             white-space: nowrap;
             transition: background-color 0.2s ease, transform 0.1s ease;
@@ -1506,12 +1536,9 @@ export default function AdsLandingPage() {
             justify-content: center;
             line-height: 1.2;
             margin-left: auto;
-            margin-right: 10px;
-            align-self: center;
-            margin-top: 6px;
           }
           .redesigned-therapist-view-profile:hover {
-            background-color: rgba(63, 46, 115, 0.08);
+            background-color: #2D2054;
           }
           .redesigned-therapist-view-profile:active {
             transform: scale(0.97);
@@ -1524,36 +1551,53 @@ export default function AdsLandingPage() {
               min-height: 250px;
             }
             .redesigned-therapist-avatar-container {
-              width: 100px;
-              height: 100px;
+              width: 110px;
+              height: 110px;
             }
             .redesigned-therapist-name {
               font-size: 22px;
-              margin-bottom: 20px;
-              min-height: 48.4px;
+              margin-bottom: 8px;
+              height: 48.4px;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
             }
             .redesigned-therapist-designation {
               font-size: 11px;
             }
+            .redesigned-therapist-price-label {
+              font-size: 18px;
+              margin-top: 24px;
+              margin-bottom: 16px;
+            }
+            .redesigned-therapist-price-session {
+              font-size: 13px;
+            }
+            .redesigned-therapist-pill, .redesigned-therapist-sessions-badge {
+              padding: 6px 12px;
+              font-size: 12px;
+            }
             .redesigned-therapist-bottom-bar {
-              padding: 12px 16px;
+              padding: 12px 18px;
             }
             .redesigned-therapist-book-button {
               font-size: 14px;
               padding: 8px 16px;
+              border-radius: 12px;
             }
             .redesigned-therapist-availability-label {
               font-size: 11px;
             }
             .redesigned-therapist-availability-time {
-              font-size: 15px;
+              font-size: 16px;
+            }
+            .redesigned-therapist-availability-info {
+              height: 34px;
             }
             .redesigned-therapist-view-profile {
               font-size: 10px;
               padding: 3px 8px;
-            }
-            .redesigned-therapist-price-label {
-              font-size: 13px;
             }
           }
           @media (max-width: 360px) {
@@ -1565,22 +1609,38 @@ export default function AdsLandingPage() {
               height: 90px;
             }
             .redesigned-therapist-name {
-              font-size: 20px;
-              margin-bottom: 16px;
-              min-height: 44px;
+              font-size: 18px;
+              margin-bottom: 6px;
+              height: 39.6px;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+            .redesigned-therapist-price-label {
+              font-size: 16px;
+              margin-top: 20px;
+              margin-bottom: 12px;
+            }
+            .redesigned-therapist-price-session {
+              font-size: 11px;
+            }
+            .redesigned-therapist-pill, .redesigned-therapist-sessions-badge {
+              padding: 5px 10px;
+              font-size: 11px;
             }
             .redesigned-therapist-availability-label {
               font-size: 10px;
             }
             .redesigned-therapist-availability-time {
-              font-size: 13px;
+              font-size: 14px;
+            }
+            .redesigned-therapist-availability-info {
+              height: 30px;
             }
             .redesigned-therapist-view-profile {
               font-size: 9px;
               padding: 2px 6px;
-            }
-            .redesigned-therapist-price-label {
-              font-size: 12px;
             }
           }
           @media (max-width: 767px) {
@@ -1854,7 +1914,7 @@ export default function AdsLandingPage() {
                                   {name || 'Dr. ' + (psych.first_name || 'Unknown')}
                                 </h3>
                                 <span className="redesigned-therapist-price-label">
-                                  ₹{psych.price || psych.individual_session_price || '1299'} / session
+                                  ₹{psych.price || psych.individual_session_price || '1299'}<span className="redesigned-therapist-price-session"> / session</span>
                                 </span>
                               </div>
                               
@@ -1892,7 +1952,7 @@ export default function AdsLandingPage() {
                             {/* Pills row at the bottom of the peach card */}
                             <div className="redesigned-therapist-pills-section">
                               {/* Row 1: Experience & Sessions Hours */}
-                              <div className="redesigned-therapist-pills-row">
+                              <div className="redesigned-therapist-pills-row-nowrap">
                                 <span className="redesigned-therapist-pill">
                                   ⚡️ {psych.experience_years || 2}+ yrs Experience
                                 </span>
