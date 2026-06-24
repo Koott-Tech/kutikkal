@@ -1496,7 +1496,8 @@ const TherapistProfileContent = ({ slug, packageId }) => {
       const isSlotConflict =
         message.toLowerCase().includes('time slot is not available') ||
         message.toLowerCase().includes('time slot is already booked') ||
-        message.toLowerCase().includes('slot is already booked');
+        message.toLowerCase().includes('slot is already booked') ||
+        message.toLowerCase().includes('currently being booked by someone else');
 
       if (isSlotConflict) {
         // More user-friendly message when someone else just booked this slot

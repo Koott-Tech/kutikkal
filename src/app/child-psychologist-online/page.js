@@ -36,7 +36,7 @@ const pageMetadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.little.care/ads',
+    url: 'https://www.little.care/child-psychologist-online',
     siteName: 'Little Care',
     title: 'Child Psychology Services & Online Counseling | Little Care',
     description: 'Discover professional child psychology services and online counseling for children and families. Expert child psychologists help with anxiety, behavior, ADHD, and emotional support.',
@@ -57,7 +57,7 @@ const pageMetadata = {
     creator: '@littlecare',
   },
   alternates: {
-    canonical: 'https://www.little.care/ads',
+    canonical: 'https://www.little.care/child-psychologist-online',
   },
 };
 
@@ -132,7 +132,7 @@ const breadcrumbStructuredData = {
       '@type': 'ListItem',
       position: 2,
       name: 'Child Psychology Services',
-      item: 'https://www.little.care/ads',
+      item: 'https://www.little.care/child-psychologist-online',
     },
   ],
 };
@@ -844,17 +844,13 @@ export default function AdsLandingPage() {
               top: -40px;
             }
           }
-          .ads-page .hero-description {
-            font-size: 14px !important;
-          }
           @media (min-width: 768px) {
             .ads-page .hero-description {
               font-size: 16px !important;
             }
           }
           .ads-page h1 {
-            font-size: 22px !important;
-            line-height: 26px !important;
+            line-height: 31px !important;
           }
           .ads-page h2 {
             font-size: 1.75rem !important;
@@ -1304,14 +1300,14 @@ export default function AdsLandingPage() {
             text-align: left;
           }
           .redesigned-therapist-top-card {
-            background: linear-gradient(180deg, #FFF0E5 0%, #FFDEC6 100%);
+            background: linear-gradient(135deg, rgba(205, 196, 255, 0.30) 0%, #ffffff 100%);
             border-radius: 28px;
             padding: 24px;
             display: flex;
             flex-direction: column;
             position: relative;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-            border: 1px solid #FFEBE0;
+            border: 1px solid rgba(205, 196, 255, 0.35);
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             min-height: 290px;
@@ -1377,6 +1373,14 @@ export default function AdsLandingPage() {
             font-weight: 400;
             opacity: 0.9;
           }
+          .redesigned-therapist-price-label {
+            color: #3F2E73;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            line-height: 1.2;
+            white-space: nowrap;
+          }
           .redesigned-therapist-avatar-container {
             width: 140px;
             height: 140px;
@@ -1421,16 +1425,16 @@ export default function AdsLandingPage() {
             align-items: center;
           }
           .redesigned-therapist-pill {
-            background: rgba(205, 196, 255, 0.65);
+            background: rgba(255, 255, 255, 0.45);
             color: #3f2e73;
             border-radius: 9999px;
             padding: 6px 14px;
             font-size: 13px;
             font-weight: 500;
-            box-shadow: 0 2px 8px rgba(63, 46, 115, 0.08);
-            backdrop-filter: blur(0.5px);
-            -webkit-backdrop-filter: blur(0.5px);
-            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 2px 8px rgba(63, 46, 115, 0.04);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255, 255, 255, 0.70);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -1548,6 +1552,9 @@ export default function AdsLandingPage() {
               font-size: 10px;
               padding: 3px 8px;
             }
+            .redesigned-therapist-price-label {
+              font-size: 13px;
+            }
           }
           @media (max-width: 360px) {
             .redesigned-therapist-top-card {
@@ -1572,6 +1579,9 @@ export default function AdsLandingPage() {
               font-size: 9px;
               padding: 2px 6px;
             }
+            .redesigned-therapist-price-label {
+              font-size: 12px;
+            }
           }
           @media (max-width: 767px) {
             .ads-page .hero-badge {
@@ -1579,10 +1589,12 @@ export default function AdsLandingPage() {
               margin-right: auto !important;
               align-self: flex-start !important;
             }
-            .ads-page .hero-title {
+            .ads-page h1.hero-title {
               text-align: left !important;
               padding-left: 0 !important;
               padding-right: 0 !important;
+              font-size: 26px !important;
+              line-height: 1.2 !important;
             }
             .ads-page .hero-description {
               text-align: left !important;
@@ -1633,7 +1645,7 @@ export default function AdsLandingPage() {
             >
               <div className="flex flex-col xl:flex-row w-full hero-content-wrapper" style={{ minHeight: 'inherit', border: 'none', outline: 'none', margin: 0, padding: 0 }}>
                 {/* Left: Text */}
-                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-left items-start mt-0 px-4 sm:px-6 xl:px-0 order-1">
+                <div className="hero-text flex flex-col justify-center xl:w-[45%] xl:order-1 xl:pl-2 text-left items-start mt-0 pl-8 pr-2 sm:pl-10 sm:pr-3 xl:px-0 order-1">
                   {/* Badge */}
                   <div className="hero-badge inline-flex items-center gap-2 border border-gray-200 rounded-full px-3 py-1 text-gray-800 w-fit mr-auto xl:mr-0" style={{ backgroundColor: 'rgba(242, 242, 252, 0.7)' }}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -1642,25 +1654,27 @@ export default function AdsLandingPage() {
                     <span className="hero-badge-text text-xs sm:text-sm">Trusted by 840+ families</span>
                   </div>
                   
-                  <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-bold break-words" style={{ color: '#2C1A4A', fontWeight: 700}}>
+                  <h1 className="hero-title mt-4 text-4xl md:text-5xl lg:text-6xl font-bold break-words" style={{ color: '#2C1A4A', fontWeight: 700 }}>
                     Worried about your child&apos;s behaviour, emotions, or struggling with parenting challenges?
                   </h1>
-                  <p className="hero-description p1 mt-3 md:mt-3 text-base md:text-lg">
+                  <p className="hero-description p1 mt-5 md:mt-3 text-base md:text-lg pr-6 sm:pr-8 xl:pr-0" style={{ fontSize: '13px', lineHeight: '1.6' }}>
                     Children often show their struggles through behaviour and emotions. Understanding these signs early can make a big difference in their growth and well-being.
                   </p>
-                  <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-start gap-4 sm:flex-row sm:gap-6 sm:justify-start">
+                  <div className="hero-buttons mt-6 md:mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6 sm:justify-start">
                     <style dangerouslySetInnerHTML={{__html: `
                       @media (max-width: 767px) {
                         .hero-book-button {
-                          width: 100% !important;
-                          max-width: 100% !important;
-                          min-width: 280px !important;
+                          width: fit-content !important;
+                          max-width: fit-content !important;
+                          min-width: unset !important;
                         }
+                        .hero-buttons .counter-container { order: -1; }
+                        .hero-buttons .hero-book-button { order: 0; }
                       }
                     `}} />
                     <button
                       onClick={handleGetStartedClick}
-                      className="hero-book-button inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40 flex-shrink-0"
+                      className="hero-book-button inline-flex items-center justify-center rounded-full px-4 py-2 text-base font-normal text-white shadow-sm transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#593494]/40 flex-shrink-0"
                       style={{ backgroundColor: '#3f2e73' }}
                       type="button"
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
@@ -1700,7 +1714,7 @@ export default function AdsLandingPage() {
                 <div className="hero-mobile-wrapper block xl:hidden order-2 mt-6 w-screen relative left-1/2 right-1/2 -translate-x-1/2">
                   <div className="relative w-full hero-image-box overflow-hidden flex items-end" style={{ minHeight: 'auto', border: 'none', outline: 'none', boxShadow: 'none' }}>
                     <Image
-                      src="/hee.webp"
+                      src="/Hero Card ads.webp"
                       alt="Hero illustration of a child with a parent during online counseling"
                       fill
                       className="hero-mobile-image object-bottom w-full h-full"
@@ -1716,7 +1730,7 @@ export default function AdsLandingPage() {
                   {/* Responsive image box aligned to bottom of column */}
                   <div className="hero-image-box absolute inset-0 flex items-end justify-center" style={{ border: 'none', outline: 'none', boxShadow: 'none' }}>
                     <Image
-                      src="/hee.webp"
+                      src="/Hero Card ads.webp"
                       alt="Hero illustration showing Little Care's child counseling and parent support"
                       fill
                       className="object-contain object-bottom"
@@ -1839,8 +1853,8 @@ export default function AdsLandingPage() {
                                 <h3 className="redesigned-therapist-name">
                                   {name || 'Dr. ' + (psych.first_name || 'Unknown')}
                                 </h3>
-                                <span className="redesigned-therapist-sessions-badge">
-                                  {800 + (psych.experience_years || 2) * 100}+ <span className="italic-text">hrs sessions</span>
+                                <span className="redesigned-therapist-price-label">
+                                  ₹{psych.price || psych.individual_session_price || '1299'} / session
                                 </span>
                               </div>
                               
@@ -1877,13 +1891,13 @@ export default function AdsLandingPage() {
 
                             {/* Pills row at the bottom of the peach card */}
                             <div className="redesigned-therapist-pills-section">
-                              {/* Row 1: Experience & Price */}
+                              {/* Row 1: Experience & Sessions Hours */}
                               <div className="redesigned-therapist-pills-row">
                                 <span className="redesigned-therapist-pill">
                                   ⚡️ {psych.experience_years || 2}+ yrs Experience
                                 </span>
-                                <span className="redesigned-therapist-pill">
-                                  ₹{psych.price || psych.individual_session_price || '1299'}
+                                <span className="redesigned-therapist-sessions-badge">
+                                  {800 + (psych.experience_years || 2) * 100}+ <span className="italic-text">hrs sessions</span>
                                 </span>
                               </div>
                               {/* Row 2: Personality Traits & View Profile */}

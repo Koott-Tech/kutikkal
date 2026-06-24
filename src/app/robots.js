@@ -9,7 +9,7 @@ export default function robots() {
           "/superadmin/",
           "/psychologist/",
           "/finance/",
-          "/ads",
+          "/child-psychologist-online",
           "/api/",
           "/profile/"
         ],

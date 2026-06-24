@@ -308,7 +308,14 @@ export default function Footer({ isHomePage = false, isCmsPage = false, isTherap
                                 style={{ backgroundColor: '#3f2e73' }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1d1733'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3f2e73'}
-                                onClick={() => router.push('/online-child-psychologist')}
+                                onClick={() => {
+                                    if (pathname === '/child-psychologist-online') {
+                                        const section = document.getElementById('psychologists-section');
+                                        if (section) section.scrollIntoView({ behavior: 'smooth' });
+                                    } else {
+                                        router.push('/online-child-psychologist');
+                                    }
+                                }}
                             >
                                 {pathname === '/about' ? 'Join Our Team' : 'Book  Now'}
                             </button>
