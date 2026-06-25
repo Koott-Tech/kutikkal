@@ -1336,7 +1336,7 @@ export default function AdsLandingPage() {
             font-weight: 500;
             color: #3C3C3C;
             line-height: 1.2;
-            margin-bottom: 2px;
+            margin-bottom: 0px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1347,15 +1347,15 @@ export default function AdsLandingPage() {
             font-size: 28px;
             font-weight: 700;
             color: #000000;
-            line-height: 1.1;
-            margin-bottom: 8px;
+            line-height: 1.05;
+            margin-bottom: 0px;
             letter-spacing: -0.5px;
             word-wrap: break-word;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 61.6px;
+            height: 58px;
           }
           .redesigned-therapist-sessions-badge {
             background: rgba(235, 231, 255, 0.7);
@@ -1386,7 +1386,7 @@ export default function AdsLandingPage() {
             display: inline-block;
             line-height: 1.2;
             white-space: nowrap;
-            margin-top: 36px;
+            margin-top: 0px;
             margin-bottom: 20px;
           }
           .redesigned-therapist-price-session {
@@ -1407,14 +1407,25 @@ export default function AdsLandingPage() {
             display: flex;
             align-items: center;
             justify-content: center;
-            transform: rotate(-10deg);
-            border: 1px solid rgba(196, 181, 253, 0.4);
+            transform: rotate(-10deg) translateZ(0);
+            -webkit-transform: rotate(-10deg) translateZ(0);
+            border: none !important;
+            outline: 1px solid transparent !important;
+            box-shadow: none !important;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
           }
           .redesigned-therapist-avatar-img {
             width: 120%;
             height: 120%;
             object-fit: cover;
-            transform: rotate(10deg);
+            transform: rotate(10deg) translateZ(0);
+            -webkit-transform: rotate(10deg) translateZ(0);
+            border: none !important;
+            outline: none !important;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
           }
           .redesigned-therapist-avatar-fallback {
             display: flex;
@@ -1426,7 +1437,10 @@ export default function AdsLandingPage() {
             color: #ffffff;
             font-size: 32px;
             font-weight: bold;
-            transform: rotate(10deg);
+            transform: rotate(10deg) translateZ(0);
+            -webkit-transform: rotate(10deg) translateZ(0);
+            border: none !important;
+            outline: none !important;
           }
           .redesigned-therapist-pills-section {
             margin-top: auto;
@@ -1556,8 +1570,9 @@ export default function AdsLandingPage() {
             }
             .redesigned-therapist-name {
               font-size: 24px;
-              margin-bottom: 8px;
-              height: 52.8px;
+              margin-bottom: 0px;
+              height: 49px;
+              line-height: 1.05;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
@@ -1568,7 +1583,7 @@ export default function AdsLandingPage() {
             }
             .redesigned-therapist-price-label {
               font-size: 18px;
-              margin-top: 24px;
+              margin-top: 0px;
               margin-bottom: 16px;
             }
             .redesigned-therapist-price-session {
@@ -1610,8 +1625,9 @@ export default function AdsLandingPage() {
             }
             .redesigned-therapist-name {
               font-size: 20px;
-              margin-bottom: 6px;
-              height: 44px;
+              margin-bottom: 0px;
+              height: 42px;
+              line-height: 1.05;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
@@ -1619,7 +1635,7 @@ export default function AdsLandingPage() {
             }
             .redesigned-therapist-price-label {
               font-size: 16px;
-              margin-top: 20px;
+              margin-top: 0px;
               margin-bottom: 12px;
             }
             .redesigned-therapist-price-session {
