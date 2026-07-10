@@ -1557,7 +1557,7 @@ const Guide = () => {
                     borderRadius: '0 0 12px 12px',
                     padding: '8px 12px 12px 12px',
                     fontWeight: 500,
-                    fontSize: '0.75rem',
+                    fontSize: '0.65rem',
                     boxShadow: '0 1px 4px rgba(63, 46, 115, 0.15)',
                     backdropFilter: 'blur(0.5px)',
                     WebkitBackdropFilter: 'blur(0.5px)',

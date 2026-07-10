@@ -1349,6 +1349,7 @@ export default function AdsLandingPage() {
             color: #000000;
             line-height: 1.05;
             margin-bottom: 0px;
+            margin-top: 5px;
             letter-spacing: -0.5px;
             word-wrap: break-word;
             display: -webkit-box;
@@ -1500,7 +1501,7 @@ export default function AdsLandingPage() {
             height: 42px;
           }
           .redesigned-therapist-availability-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 400;
             color: #2C2C2C;
             line-height: 1.2;
@@ -1508,7 +1509,7 @@ export default function AdsLandingPage() {
             white-space: nowrap;
           }
           .redesigned-therapist-availability-time {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: #000000;
             line-height: 1.1;
@@ -1571,6 +1572,7 @@ export default function AdsLandingPage() {
             .redesigned-therapist-name {
               font-size: 24px;
               margin-bottom: 0px;
+              margin-top: 5px;
               height: 49px;
               line-height: 1.05;
               display: -webkit-box;
@@ -1605,7 +1607,7 @@ export default function AdsLandingPage() {
               font-size: 11px;
             }
             .redesigned-therapist-availability-time {
-              font-size: 16px;
+              font-size: 15px;
             }
             .redesigned-therapist-availability-info {
               height: 34px;
@@ -1626,6 +1628,7 @@ export default function AdsLandingPage() {
             .redesigned-therapist-name {
               font-size: 20px;
               margin-bottom: 0px;
+              margin-top: 5px;
               height: 42px;
               line-height: 1.05;
               display: -webkit-box;
@@ -1649,7 +1652,7 @@ export default function AdsLandingPage() {
               font-size: 10px;
             }
             .redesigned-therapist-availability-time {
-              font-size: 14px;
+              font-size: 13px;
             }
             .redesigned-therapist-availability-info {
               height: 30px;
@@ -2365,7 +2368,7 @@ export default function AdsLandingPage() {
               grid-column: 2;
               height: 380px;
               border-radius: 24px;
-              background-image: linear-gradient(to left, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.2) 100%), url('/treatment-plan.webp');
+              background-image: linear-gradient(to left, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.2) 100%), url('https://iylutfwntoqcnqnjdnnp.supabase.co/storage/v1/object/sign/static-files/pexels-markoklaric-6159662.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzNiMzNkZC0wYWM1LTRhN2UtYTE3NC04MDU2NTQ4MjE0YjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdGF0aWMtZmlsZXMvcGV4ZWxzLW1hcmtva2xhcmljLTYxNTk2NjIuanBnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4MzY2MDc1OCwiZXhwIjo0OTM3MjYwNzU4fQ.5yzUYstk5xk1yqCdWov5zDKvG7wnS7F4fhdYmlI31YQ');
               background-size: cover;
               background-position: center;
               display: flex;
@@ -2394,7 +2397,7 @@ export default function AdsLandingPage() {
               align-self: flex-end;
             }
             .confused-book-btn {
-              background-color: rgba(0, 0, 0, 0.6);
+              background-color: #3F2E73;
               color: #ffffff;
               border: 1.5px solid #3F2E73;
               border-radius: 12px;
