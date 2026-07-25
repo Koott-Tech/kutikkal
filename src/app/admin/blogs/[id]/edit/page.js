@@ -149,6 +149,22 @@ export default function EditBlogPage() {
     return { success: false, error: result.message };
   };
 
+  const handlePreview = () => {
+    try {
+      const editorContent = blogEditorRef.current?.getContent?.() ?? blog.content;
+      const previewData = {
+        ...blog,
+        content: editorContent,
+        updated_at: new Date().toISOString()
+      };
+      sessionStorage.setItem('blogPreviewData', JSON.stringify(previewData));
+      window.open('/blog/preview', '_blank');
+    } catch (err) {
+      console.error('Failed to prepare preview:', err);
+      showError('Could not prepare preview. Please try again.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
     if (!blog?.title?.trim()) {
@@ -243,16 +259,14 @@ export default function EditBlogPage() {
           }
           headerRight={
             <>
-              {blog.status === 'published' && blog.slug && (
-                <Link
-                  href={`/blog/${blog.slug}`}
-                  target="_blank"
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Eye className="h-4 w-4" />
-                  <span>Preview</span>
-                </Link>
-              )}
+              <button
+                type="button"
+                onClick={handlePreview}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
+              </button>
               <button
                 type="button"
                 onClick={handleSubmit}

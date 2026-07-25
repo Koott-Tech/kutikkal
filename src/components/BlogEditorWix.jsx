@@ -32,6 +32,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, setHours, setMinutes, startOfDay } from 'date-fns';
 import DocumentStyleEditor, { getDefaultToolbarState } from '@/components/DocumentStyleEditor';
 import { normalizeImageUrl } from '@/utils/urlNormalizer';
+import { getStoredToken } from '@/lib/authStorage';
 import styles from './BlogEditorWix.module.css';
 
 const generateSlug = (title) => {
@@ -89,6 +90,40 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
   const [blockTypeDropdownOpen, setBlockTypeDropdownOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const blockTypeDropdownRef = useRef(null);
+  
+  const [availableBlogs, setAvailableBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchAvailableBlogs = async () => {
+      try {
+        const token = getStoredToken() || '';
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+        const res = await fetch(`${baseUrl}/blogs/admin?status=published&limit=100`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) {
+            setAvailableBlogs(json.data.blogs || []);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch available blogs', e);
+      }
+    };
+    if (showSidebar) {
+      fetchAvailableBlogs();
+    }
+  }, [showSidebar]);
+
+  const handleRelatedBlogChange = (blogId) => {
+    const current = blog.related_blogs || [];
+    if (current.includes(blogId)) {
+      onChange({ ...blog, related_blogs: current.filter(id => id !== blogId) });
+    } else {
+      onChange({ ...blog, related_blogs: [...current, blogId] });
+    }
+  };
 
   useEffect(() => {
     const close = (e) => {
@@ -398,6 +433,25 @@ const BlogEditorWix = forwardRef(function BlogEditorWix({
                           <button type="button" onClick={() => removeTag(tag)} className={styles.tagChipRemove}>×</button>
                         </span>
                       ))}
+                    </div>
+                  </div>
+                  <div className={styles.settingsSection}>
+                    <label className={styles.settingsLabel}>Related Blogs</label>
+                    <div className="mt-2 max-h-[350px] overflow-y-auto border border-gray-200 rounded-md p-2 space-y-2 bg-white">
+                      {availableBlogs.filter(b => b.id !== blog.id).map(b => (
+                        <label key={b.id} title={b.title} className="flex items-start space-x-2 cursor-pointer p-1 hover:bg-gray-50 rounded">
+                          <input 
+                            type="checkbox" 
+                            className="mt-1 flex-shrink-0"
+                            checked={(blog.related_blogs || []).includes(b.id)}
+                            onChange={() => handleRelatedBlogChange(b.id)}
+                          />
+                          <span className="text-sm text-gray-700 line-clamp-2 leading-tight">{b.title}</span>
+                        </label>
+                      ))}
+                      {availableBlogs.filter(b => b.id !== blog.id).length === 0 && (
+                        <p className="text-xs text-gray-500 italic">No other published blogs available.</p>
+                      )}
                     </div>
                   </div>
                 </>

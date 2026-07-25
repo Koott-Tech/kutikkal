@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, PanelLeft, PanelLeftClose } from 'lucide-react';
+import { ArrowLeft, Save, PanelLeft, PanelLeftClose, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminSidebar } from '@/contexts/AdminSidebarContext';
 import { useNotification } from '@/contexts/NotificationContext';
@@ -27,7 +27,8 @@ const initialBlogState = (userName = '') => ({
   seo_description: '',
   focus_keyword: '',
   meta_keywords: [],
-  canonical_url: ''
+  canonical_url: '',
+  related_blogs: []
 });
 
 export default function NewBlogPage() {
@@ -110,6 +111,22 @@ export default function NewBlogPage() {
     }
     showError(result.message || 'Failed to upload image');
     return { success: false, error: result.message };
+  };
+
+  const handlePreview = () => {
+    try {
+      const editorContent = blogEditorRef.current?.getContent?.() ?? blog.content;
+      const previewData = {
+        ...blog,
+        content: editorContent,
+        updated_at: new Date().toISOString()
+      };
+      sessionStorage.setItem('blogPreviewData', JSON.stringify(previewData));
+      window.open('/blog/preview', '_blank');
+    } catch (err) {
+      console.error('Failed to prepare preview:', err);
+      showError('Could not prepare preview. Please try again.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -199,6 +216,14 @@ export default function NewBlogPage() {
           }
           headerRight={
             <>
+              <button
+                type="button"
+                onClick={handlePreview}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Eye className="h-4 w-4" />
+                <span>Preview</span>
+              </button>
               <Link
                 href="/admin/blogs"
                 className="hidden sm:flex items-center px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"

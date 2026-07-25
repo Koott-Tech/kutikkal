@@ -307,7 +307,7 @@ const StructuredContentRenderer = ({ content }) => {
 };
 
 // Latest Blogs Suggestion Component
-const LatestBlogsSection = ({ blogs, currentSlug }) => {
+const LatestBlogsSection = ({ blogs, currentSlug, title = "You might also like" }) => {
   if (!blogs || blogs.length === 0) {
     return null;
   }
@@ -341,7 +341,7 @@ const LatestBlogsSection = ({ blogs, currentSlug }) => {
       />
       <div className="related-posts text-left">
         <div role="heading" aria-level={2} className={BLOG_SECTION_HEADING_CLASS} style={BLOG_SECTION_HEADING_STYLE}>
-          You might also like
+          {title}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -412,7 +412,7 @@ const formatDate = (dateString) => {
   });
 };
 
-export default function BlogPost({ slug }) {
+export default function BlogPost({ slug, isPreview = false, previewData = null }) {
   const router = useRouter();
   const blogContentRef = useRef(null);
   const hasResetScrollRef = useRef(false);
@@ -423,10 +423,16 @@ export default function BlogPost({ slug }) {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    loadBlogPost();
-    loadLatestBlogs();
+    if (isPreview) {
+      setBlogPost(previewData);
+      setLoading(false);
+      loadLatestBlogs();
+    } else if (slug) {
+      loadBlogPost();
+      loadLatestBlogs();
+    }
     hasResetScrollRef.current = false;
-  }, [slug]);
+  }, [slug, isPreview, previewData]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -747,8 +753,12 @@ export default function BlogPost({ slug }) {
           })()}
         </div>
 
-        {/* You might also like – always after the blog content */}
-        <LatestBlogsSection blogs={latestBlogs.slice(0, 2)} currentSlug={slug} />
+        {/* You might also like / Related Blogs – always after the blog content */}
+        <LatestBlogsSection 
+          blogs={blogPost?.related_blogs_data?.length > 0 ? blogPost.related_blogs_data.slice(0, 2) : latestBlogs.slice(0, 2)} 
+          currentSlug={slug} 
+          title={blogPost?.related_blogs_data?.length > 0 ? "Related Blogs" : "You might also like"}
+        />
         </div>
       </div>
     </article>
